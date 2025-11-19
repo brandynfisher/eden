@@ -1,169 +1,41 @@
 'use client'
 
+import { useAppShell } from '@/components/layout/app-shell'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
-import { Button } from '@/components/ui/button'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
-import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
-import { cn } from '@/lib/utils'
-import { MenuIcon, UserPlus, Zap } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 
 export default function ExploreLayout({ children }: PropsWithChildren) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const { setConfig, resetConfig } = useAppShell()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Get content type from URL
   const contentType = searchParams?.get('type') || 'creations'
 
-  // Map content types to display names
-  const getContentLabel = () => {
-    switch (contentType) {
-      case 'agents':
-        return 'Agents'
-      case 'models':
-        return 'Models'
-      case 'tools':
-        return 'Tools'
-      case 'creations':
-      default:
-        return 'Creations'
-    }
-  }
-
-  // Listen for custom toggle-sidebar event
   useEffect(() => {
-    const handleToggleSidebar = () => {
-      setIsSheetOpen(true)
-    }
-
-    window.addEventListener('toggle-sidebar', handleToggleSidebar)
-    return () =>
-      window.removeEventListener('toggle-sidebar', handleToggleSidebar)
-  }, [])
-
-  return (
-    <div className="flex flex-col fixed inset-0">
-      {/* Mobile navbar */}
-      <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
-        <button
-          onClick={() => setIsSheetOpen(true)}
-          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
-          aria-label="Open sidebar"
-        >
-          <MenuIcon className="w-5 h-5 text-muted-foreground" />
-        </button>
-        <h1 className="text-xl font-bold">Explore {getContentLabel()}</h1>
-
-        {/* Action buttons in navbar */}
-        <div className="ml-auto">
-          {contentType === 'agents' && (
-            <Button size="icon" variant="ghost" asChild>
-              <Link href="/new/agent" title="New Agent">
-                <UserPlus className="h-5 w-5 text-muted-foreground" />
-              </Link>
-            </Button>
-          )}
-          {contentType === 'models' && (
-            <Button size="icon" variant="ghost" asChild>
-              <Link href="/train" title="Train Model">
-                <Zap className="h-5 w-5 text-muted-foreground" />
-              </Link>
-            </Button>
-          )}
+    setConfig({
+      sidebarVariant: 'sessions',
+      mobileSidebarHeader: ({ close }) => (
+        <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+          <button
+            onClick={() => {
+              close()
+              router.push('/')
+            }}
+            className="flex items-center gap-2"
+          >
+            <EdenLogoBw className="w-[28px]" />
+            <span className="text-lg font-semibold">
+              Explore{' '}
+              {contentType.charAt(0).toUpperCase() + contentType.slice(1)}
+            </span>
+          </button>
         </div>
-      </div>
+      ),
+    })
 
-      {/* MOBILE LEFT BAR SHEET */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent
-          side="left"
-          className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
-        >
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          {/* Mobile sticky header with logo */}
-          <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
-            <button
-              onClick={() => {
-                setIsSheetOpen(false)
-                router.push('/')
-              }}
-              className="flex items-center gap-2"
-            >
-              <EdenLogoBw className="w-[28px]" />
-            </button>
-          </div>
-          {/* Scrollable sidebar content */}
-          <div className="flex-1 overflow-y-auto pl-3">
-            <SessionsSidebarContent
-              onItemClick={() => setIsSheetOpen(false)}
-              isMobileSidebar={true}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
+    return () => resetConfig()
+  }, [contentType, resetConfig, router, setConfig])
 
-      <div className="flex flex-col flex-1 md:flex-row overflow-hidden">
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-        >
-          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-          <ResizablePanel
-            defaultSize={20}
-            minSize={isSidebarCollapsed ? 0 : 15}
-            maxSize={30}
-            collapsible={false}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-              isSidebarCollapsed
-                ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-                : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-            )}
-          >
-            {isSidebarCollapsed ? (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(false)}
-                isCollapsed={true}
-              />
-            ) : (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(true)}
-              />
-            )}
-          </ResizablePanel>
-
-          {/* Separator Handle - hidden, keeping for resizing functionality */}
-          <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-          {/* MAIN CONTENT PANEL */}
-          <ResizablePanel
-            defaultSize={80}
-            className="relative flex flex-col bg-background -ml-px"
-          >
-            <ScrollContainerProvider value={scrollRef}>
-              <div className="flex flex-col h-full overflow-hidden">
-                <div
-                  ref={scrollRef}
-                  className="mx-auto flex flex-col h-full w-full overflow-y-auto"
-                >
-                  {children}
-                </div>
-              </div>
-            </ScrollContainerProvider>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </div>
-  )
+  return <>{children}</>
 }

@@ -10,8 +10,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { getMediaUrl } from '@/features/tools/tools-grid-section'
 import { useFilteredToolsQuery } from '@/hooks/use-filtered-tools-query'
@@ -24,7 +30,7 @@ import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 type Props = {
-  currentTool: ToolV2
+  currentTool?: ToolV2 | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -110,13 +116,39 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
     [router, onOpenChange],
   )
 
-  // Find current tool's category for default tab
-  const defaultTab = React.useMemo(() => {
+  // Find current tool's category for default selection
+  const currentToolKey = currentTool?.key
+  const defaultCategoryId = React.useMemo(() => {
+    if (!categories.length) {
+      return 'featured'
+    }
+
+    if (!currentToolKey) {
+      return categories[0]?.id || 'featured'
+    }
+
     const currentCategory = categories.find(cat =>
-      cat.tools.some(tool => tool.key === currentTool.key),
+      cat.tools.some(tool => tool.key === currentToolKey),
     )
     return currentCategory?.id || categories[0]?.id || 'featured'
-  }, [categories, currentTool.key])
+  }, [categories, currentToolKey])
+
+  const [selectedCategory, setSelectedCategory] = React.useState<string>('')
+
+  React.useEffect(() => {
+    if (!categories.length) {
+      setSelectedCategory('')
+      return
+    }
+
+    setSelectedCategory(prev => {
+      const hasPrev = categories.some(cat => cat.id === prev)
+      if (prev && hasPrev) {
+        return prev
+      }
+      return defaultCategoryId
+    })
+  }, [categories, defaultCategoryId])
 
   // Prevent autofocus on mobile by blurring the input after a brief delay
   React.useEffect(() => {
@@ -161,48 +193,47 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
           />
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          defaultValue={defaultTab}
-          className="flex-1 flex flex-col min-h-0"
-        >
-          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 flex-shrink-0">
-            {categories.map(category => (
-              <TabsTrigger
-                key={category.id}
-                value={category.id}
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
-                {category.title}
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {category.tools.length}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {/* Category selector */}
+        <div className="px-4 py-3 border-b flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">Filter by category</p>
+          <Select
+            value={selectedCategory}
+            onValueChange={setSelectedCategory}
+            disabled={!categories.length}
+          >
+            <SelectTrigger className="w-full sm:w-60">
+              <SelectValue placeholder="Choose a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(category => (
+                <SelectItem key={category.id} value={category.id}>
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <span>{category.title}</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {category.tools.length}
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Tab Content */}
-          <div className="flex-1 min-h-0">
-            {categories.map(category => (
-              <TabsContent
-                key={category.id}
-                value={category.id}
-                className="m-0 p-4 h-full overflow-y-auto"
-              >
-                <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                  {category.tools.map(tool => (
-                    <ToolItem
-                      key={tool.key}
-                      tool={tool}
-                      isActive={tool.key === currentTool.key}
-                      onClick={() => handleToolSelect(tool)}
-                    />
-                  ))}
-                </div>
-              </TabsContent>
-            ))}
+        {/* Category content */}
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto">
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+            {categories
+              .find(category => category.id === selectedCategory)
+              ?.tools.map(tool => (
+                <ToolItem
+                  key={tool.key}
+                  tool={tool}
+                  isActive={currentToolKey === tool.key}
+                  onClick={() => handleToolSelect(tool)}
+                />
+              ))}
           </div>
-        </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   )

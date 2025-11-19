@@ -27,11 +27,14 @@ export const ListSkeleton = () => {
   )
 }
 
+type TimelineTool = Pick<ToolV2, 'key' | 'output_type'>
+
 type Props = {
-  tool: ToolV2
+  tool: TimelineTool
+  subscribeToAll?: boolean
 }
 
-const Timeline = ({ tool }: Props) => {
+const Timeline = ({ tool, subscribeToAll = false }: Props) => {
   // const [showAllToolResults, setShowAllToolResults] = useState(true)
   const queryClient = useQueryClient()
   const { subscribeToTaskUpdates } = useTaskStatus()
@@ -60,7 +63,7 @@ const Timeline = ({ tool }: Props) => {
   // Subscribe to task updates via TaskStatusProvider
   useEffect(() => {
     const callback = (taskUpdate: TaskV2) => {
-      if (taskUpdate.tool !== tool.key) return
+      if (!subscribeToAll && taskUpdate.tool !== tool.key) return
 
       // Update the query cache for the infinite query in the timeline
       // queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, oldData => {
@@ -107,7 +110,7 @@ const Timeline = ({ tool }: Props) => {
     // return () => {
     //   unsubscribe()
     // }
-  }, [subscribeToTaskUpdates, queryClient, queryKey, tool.key])
+  }, [subscribeToTaskUpdates, queryClient, queryKey, tool.key, subscribeToAll])
 
   return (
     <div className="mb-8">
