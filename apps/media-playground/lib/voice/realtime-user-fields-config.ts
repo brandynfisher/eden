@@ -35,6 +35,7 @@ export interface TTSConfig {
 }
 
 export interface AgentConfig {
+  agent_id?: string // ElevenLabs agent ID override
   firstMessage?: string
   language?: string
   prompt: PromptConfig
@@ -50,6 +51,7 @@ export type PromptConfigOverride = Partial<PromptConfig>
 export type TTSConfigOverride = Partial<TTSConfig>
 
 export interface AgentConfigOverride {
+  agent_id?: string
   firstMessage?: string
   language?: string
   prompt?: PromptConfigOverride
@@ -63,9 +65,12 @@ export interface ConversationConfigOverride {
 // Default configuration
 export const DEFAULT_AGENT_CONFIG: ConversationConfig = {
   agent: {
-    firstMessage:
-      'Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?',
-    language: 'nl',
+    //firstMessage:
+    //  'Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?',
+    //language: 'nl',
+    firstMessage: 'Whats up? Gigabrain online — what are we building today?',
+    language: 'en',
+
     prompt: {
       // prompt is always populated dynamically from agent persona + memory
       llm: 'claude-sonnet-4-5',

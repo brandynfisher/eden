@@ -1,3 +1,4 @@
+import { DEFAULT_AGENT_CONFIG } from '@/lib/voice/realtime-user-fields-config'
 import { getAuth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -12,7 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const apiKey = process.env.ELEVENLABS_API_KEY_REALTIME
-    const agentId = process.env.ELEVENLABS_AGENT_ID
+    const agentId =
+      DEFAULT_AGENT_CONFIG.agent.agent_id || process.env.ELEVENLABS_AGENT_ID
 
     if (!apiKey || !agentId) {
       return NextResponse.json(

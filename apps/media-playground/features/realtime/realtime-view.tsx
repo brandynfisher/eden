@@ -38,6 +38,9 @@ const RealtimeView: FC = () => {
   const [agentContext, setAgentContext] = useState<AgentContext | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [connectionStatus, setConnectionStatus] =
+    useState<string>('disconnected')
 
   // Fetch agent context function
   const fetch_agent_context = useCallback(async (): Promise<AgentContext> => {
@@ -127,18 +130,51 @@ const RealtimeView: FC = () => {
         {/* Single vertical container from 5% top to 5% bottom */}
         <div className="absolute top-[5%] bottom-[5%] left-1/2 -translate-x-1/2 w-full flex flex-col items-center z-10">
           {/* Agent Avatar and Name */}
-          <div className="flex flex-col items-center gap-4 flex-shrink-0">
+          <div
+            className={cn(
+              'flex flex-col items-center gap-4 flex-shrink-0 transition-all duration-500',
+              connectionStatus === 'connected' ? 'mt-[8%]' : 'mt-[3%]',
+            )}
+          >
             {/* Audio-Reactive Agent Avatar */}
             <AudioReactiveAvatar
               imageSrc={getCloudfrontOriginalUrl(agent?.userImage)}
               name={agent?.name || 'Agent'}
-              className="w-40 h-40"
+              className={cn(
+                'transition-all duration-500',
+                connectionStatus === 'connected' ? 'w-52 h-52' : 'w-40 h-40',
+              )}
+              isSpeaking={isSpeaking}
             />
 
-            {/* Agent Name */}
-            <h1 className="text-3xl font-bold text-foreground">
+            {/* Agent Name with smooth glow effect when speaking */}
+            <h1
+              className={cn(
+                'font-bold transition-all duration-500',
+                connectionStatus === 'connected' ? 'text-4xl' : 'text-3xl',
+                isSpeaking ? 'text-foreground' : 'text-foreground/80',
+              )}
+              style={
+                isSpeaking
+                  ? {
+                      animation: 'smoothGlow 3s ease-in-out infinite',
+                    }
+                  : undefined
+              }
+            >
               {agent?.name}
             </h1>
+            <style jsx>{`
+              @keyframes smoothGlow {
+                0%,
+                100% {
+                  filter: drop-shadow(0 0 12px hsl(var(--primary) / 0.5));
+                }
+                50% {
+                  filter: drop-shadow(0 0 24px hsl(var(--primary) / 1));
+                }
+              }
+            `}</style>
           </div>
 
           {/* Conversation Interface */}
@@ -148,6 +184,8 @@ const RealtimeView: FC = () => {
               agentContext={agentContext}
               edenAgentId={agent._id}
               isDevMode={false}
+              onSpeakingChange={setIsSpeaking}
+              onStatusChange={setConnectionStatus}
             />
           )}
         </div>
@@ -275,6 +313,8 @@ const RealtimeView: FC = () => {
                     agentContext={agentContext}
                     edenAgentId={agent._id}
                     isDevMode={true}
+                    onSpeakingChange={setIsSpeaking}
+                    onStatusChange={setConnectionStatus}
                   />
                 )}
               </div>

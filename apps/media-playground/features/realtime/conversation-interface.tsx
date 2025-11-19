@@ -14,13 +14,15 @@ import {
 import { useVoiceConversation } from '@/lib/voice/use-voice-conversation'
 import { Maximize2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 
 interface ConversationInterfaceProps {
   agentName: string
   agentContext: AgentContext
   edenAgentId: string
   isDevMode?: boolean
+  onSpeakingChange?: (isSpeaking: boolean) => void
+  onStatusChange?: (status: string) => void
 }
 
 const ConversationInterface: FC<ConversationInterfaceProps> = ({
@@ -28,6 +30,8 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   agentContext,
   edenAgentId,
   isDevMode = true,
+  onSpeakingChange,
+  onStatusChange,
 }) => {
   const router = useRouter()
 
@@ -41,6 +45,9 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
 
   const [userInfo, setUserInfo] =
     useState<Record<string, string>>(initialUserInfo)
+
+  // Local state to track if we're in the process of starting
+  const [isStarting, setIsStarting] = useState(false)
 
   // Helper to update a specific field
   const updateUserInfoField = (field: string, value: string) => {
@@ -77,6 +84,33 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   // In dev mode, always allow starting. In production, require complete info
   const canStartConversation = isDevMode || isUserInfoComplete
 
+  // Wrapper to immediately update UI when starting
+  const handleStartConversation = async () => {
+    setIsStarting(true)
+    await conversation.startConversation()
+  }
+
+  // Clear isStarting when status changes from disconnected
+  useEffect(() => {
+    if (conversation.status !== 'disconnected') {
+      setIsStarting(false)
+    }
+  }, [conversation.status])
+
+  // Notify parent component when speaking state changes
+  useEffect(() => {
+    if (onSpeakingChange) {
+      onSpeakingChange(conversation.isSpeaking)
+    }
+  }, [conversation.isSpeaking, onSpeakingChange])
+
+  // Notify parent component when connection status changes
+  useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(conversation.status)
+    }
+  }, [conversation.status, onStatusChange])
+
   // Handle stopping conversation and resetting form
   const handleStopConversation = async () => {
     await conversation.endConversation()
@@ -87,24 +121,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   // Minimal UI for production mode
   if (!isDevMode) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-between w-full px-4 mt-8 min-h-0">
+      <div className="flex-1 flex flex-col items-center justify-between w-full px-4 mt-12 min-h-0">
         {/* Spacer to push content to center */}
         <div className="flex-1 min-h-0" />
 
-        {/* Middle section - User Info Form and Volume */}
+        {/* Middle section - User Info Form only */}
         <div className="flex-shrink-0 w-full flex flex-col items-center gap-6">
-          {/* Microphone Volume Bar */}
-          {conversation.status === 'connected' && (
-            <div className="w-3/4 md:w-1/4">
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary"
-                  style={{ width: `${conversation.inputVolume}%` }}
-                />
-              </div>
-            </div>
-          )}
-
           {/* User Info Form - only show when not connected */}
           {conversation.status !== 'connected' && hasUserFields && (
             <div className="flex flex-col gap-4 w-3/4 md:w-1/4">
@@ -130,7 +152,9 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                       placeholder={label}
                       value={userInfo[field] || ''}
                       onChange={e => updateUserInfoField(field, e.target.value)}
-                      disabled={conversation.status === 'connecting'}
+                      disabled={
+                        isStarting || conversation.status === 'connecting'
+                      }
                       required
                     />
                   </div>
@@ -143,23 +167,41 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
         {/* Spacer to push content to center */}
         <div className="flex-1 min-h-0" />
 
-        {/* Bottom section - Button and Status */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-6 w-3/4 md:w-1/4 mb-4">
+        {/* Bottom section - Volume, Button and Status */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-6 w-3/4 md:w-1/4 mb-8">
+          {/* Microphone Volume Bar - shown at bottom when connected */}
+          {conversation.status === 'connected' && (
+            <div className="w-48">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${conversation.inputVolume}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Start/Stop Button */}
           {conversation.status !== 'connected' ? (
             <Button
-              onClick={conversation.startConversation}
+              onClick={handleStartConversation}
               className={`w-full h-16 text-xl ${
-                conversation.status === 'connecting' || !canStartConversation
+                isStarting ||
+                conversation.status === 'connecting' ||
+                !canStartConversation
                   ? 'bg-muted text-muted-foreground'
                   : 'bg-primary hover:bg-primary/90'
               }`}
               size="lg"
               disabled={
-                conversation.status === 'connecting' || !canStartConversation
+                isStarting ||
+                conversation.status === 'connecting' ||
+                !canStartConversation
               }
             >
-              {conversation.status === 'connecting' ? 'Connecting...' : 'Start'}
+              {isStarting || conversation.status === 'connecting'
+                ? 'Connecting...'
+                : 'Start'}
             </Button>
           ) : (
             <Button
@@ -178,13 +220,15 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
               className={`w-3 h-3 rounded-full ${
                 conversation.status === 'connected'
                   ? 'bg-green-500'
-                  : conversation.status === 'connecting'
+                  : isStarting || conversation.status === 'connecting'
                   ? 'bg-yellow-500 animate-pulse'
                   : 'bg-gray-500'
               }`}
             />
             <span className="text-sm font-medium text-muted-foreground">
-              {conversation.status}
+              {isStarting || conversation.status === 'connecting'
+                ? 'connecting'
+                : conversation.status}
             </span>
           </div>
         </div>
@@ -256,7 +300,9 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                         onChange={e =>
                           updateUserInfoField(field, e.target.value)
                         }
-                        disabled={conversation.status === 'connecting'}
+                        disabled={
+                          isStarting || conversation.status === 'connecting'
+                        }
                       />
                     </div>
                   )
@@ -269,12 +315,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
           <div className="flex gap-3">
             {conversation.status !== 'connected' ? (
               <Button
-                onClick={conversation.startConversation}
+                onClick={handleStartConversation}
                 className="bg-primary hover:bg-primary/90"
                 size="lg"
-                disabled={conversation.status === 'connecting'}
+                disabled={isStarting || conversation.status === 'connecting'}
               >
-                {conversation.status === 'connecting'
+                {isStarting || conversation.status === 'connecting'
                   ? 'Connecting...'
                   : 'Start'}
               </Button>
