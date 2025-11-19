@@ -44,6 +44,7 @@ export const metadata: Metadata = {
   title: 'Eden',
   applicationName: 'Eden',
   description: 'Garden Of Artificial Delights',
+  manifest: '/manifest.webmanifest',
   openGraph: {
     title: 'Eden',
     siteName: 'Eden',

@@ -1,5 +1,5 @@
 import { getAgentCached } from '@/lib/actions/agent'
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -7,52 +7,8 @@ export async function GET(request: NextRequest) {
 
   // Default manifest for homepage
   if (!agentId) {
-    return Response.json({
-      name: 'Eden',
-      short_name: 'Eden',
-      description: 'Garden of Artificial Delights',
-      start_url: '/',
-      scope: '/',
-      display: 'fullscreen',
-      background_color: '#030712',
-      theme_color: '#030712',
-      icons: [
-        {
-          src: '/favicon-16x16.png',
-          sizes: '16x16',
-          type: 'image/png',
-        },
-        {
-          src: '/favicon-32x32.png',
-          sizes: '32x32',
-          type: 'image/png',
-        },
-        {
-          src: '/favicon.ico',
-          sizes: '48x48',
-          type: 'image/x-icon',
-        },
-        {
-          src: '/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-    })
-  }
-
-  // Agent-specific manifest
-  try {
-    const response = await getAgentCached(agentId)
-
-    if (!response?.agent) {
-      // Return default manifest if agent not found
-      return Response.json({
+    return NextResponse.json(
+      {
         name: 'Eden',
         short_name: 'Eden',
         description: 'Garden of Artificial Delights',
@@ -62,6 +18,21 @@ export async function GET(request: NextRequest) {
         background_color: '#030712',
         theme_color: '#030712',
         icons: [
+          {
+            src: '/favicon-16x16.png',
+            sizes: '16x16',
+            type: 'image/png',
+          },
+          {
+            src: '/favicon-32x32.png',
+            sizes: '32x32',
+            type: 'image/png',
+          },
+          {
+            src: '/favicon.ico',
+            sizes: '48x48',
+            type: 'image/x-icon',
+          },
           {
             src: '/android-chrome-192x192.png',
             sizes: '192x192',
@@ -73,7 +44,52 @@ export async function GET(request: NextRequest) {
             type: 'image/png',
           },
         ],
-      })
+      },
+      {
+        headers: {
+          'Content-Type': 'application/manifest+json',
+          'Cache-Control': 'public, max-age=0, must-revalidate',
+        },
+      },
+    )
+  }
+
+  // Agent-specific manifest
+  try {
+    const response = await getAgentCached(agentId)
+
+    if (!response?.agent) {
+      // Return default manifest if agent not found
+      return NextResponse.json(
+        {
+          name: 'Eden',
+          short_name: 'Eden',
+          description: 'Garden of Artificial Delights',
+          start_url: '/',
+          scope: '/',
+          display: 'fullscreen',
+          background_color: '#030712',
+          theme_color: '#030712',
+          icons: [
+            {
+              src: '/android-chrome-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: '/android-chrome-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/manifest+json',
+            'Cache-Control': 'public, max-age=0, must-revalidate',
+          },
+        },
+      )
     }
 
     const agent = response.agent
@@ -108,42 +124,58 @@ export async function GET(request: NextRequest) {
           },
         ]
 
-    return Response.json({
-      name: `${agentName}`,
-      short_name: agentName,
-      description: agentDescription,
-      start_url: `/realtime/${agentId}`,
-      scope: `/realtime/${agentId}`,
-      display: 'fullscreen',
-      background_color: '#030712',
-      theme_color: '#030712',
-      icons,
-    })
+    return NextResponse.json(
+      {
+        name: `${agentName}`,
+        short_name: agentName,
+        description: agentDescription,
+        start_url: `/realtime/${agentId}`,
+        scope: '/',
+        display: 'fullscreen',
+        background_color: '#030712',
+        theme_color: '#030712',
+        icons,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/manifest+json',
+          'Cache-Control': 'public, max-age=0, must-revalidate',
+        },
+      },
+    )
   } catch (error) {
     console.error('Error generating agent manifest:', error)
 
     // Return default manifest on error
-    return Response.json({
-      name: 'Eden',
-      short_name: 'Eden',
-      description: 'Garden of Artificial Delights',
-      start_url: '/',
-      scope: '/',
-      display: 'fullscreen',
-      background_color: '#030712',
-      theme_color: '#030712',
-      icons: [
-        {
-          src: '/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
+    return NextResponse.json(
+      {
+        name: 'Eden',
+        short_name: 'Eden',
+        description: 'Garden of Artificial Delights',
+        start_url: '/',
+        scope: '/',
+        display: 'fullscreen',
+        background_color: '#030712',
+        theme_color: '#030712',
+        icons: [
+          {
+            src: '/android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+      {
+        headers: {
+          'Content-Type': 'application/manifest+json',
+          'Cache-Control': 'public, max-age=0, must-revalidate',
         },
-        {
-          src: '/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-    })
+      },
+    )
   }
 }
