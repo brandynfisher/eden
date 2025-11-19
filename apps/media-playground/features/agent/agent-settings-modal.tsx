@@ -10,6 +10,7 @@ import {
 import AgentDashboardView from '../sessions/views/agent-dashboard-view'
 import AgentMemoryView from '../sessions/views/agent-memory-view'
 import AgentTasksView from '../sessions/views/agent-tasks-view'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
@@ -56,6 +57,31 @@ interface AgentSettingsModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialTab?: string
+}
+
+const getTabDescription = (tabKey: string, agentName: string) => {
+  switch (tabKey) {
+    case 'profile':
+      return `Update ${agentName}'s identity, bio, and instructions.`
+    case 'dashboard':
+      return `Explore ${agentName}'s stats across Eden.`
+    case 'concepts':
+      return `Manage the visual styles available to ${agentName}.`
+    case 'tools':
+      return `Choose the models, reasoning, and tools ${agentName} can use.`
+    case 'integrations':
+      return `Connect ${agentName} to social platforms and utilities.`
+    case 'memories':
+      return `Review and edit ${agentName}'s memories.`
+    case 'tasks':
+      return `Schedule automated tasks for ${agentName}.`
+    case 'permissions':
+      return `Control who can view, edit, or manage ${agentName}.`
+    case 'manage':
+      return `Manage ${agentName}'s data.`
+    default:
+      return undefined
+  }
 }
 
 export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
@@ -288,6 +314,9 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   }
 
   const availableTabs = getAvailableTabs()
+  const currentTab = availableTabs.find(tab => tab.key === activeTab)
+  const headerDescription =
+    agent && currentTab ? getTabDescription(activeTab, agent.name) : undefined
 
   if (isAgentLoading || isPermissionsLoading || !agent) {
     return (
@@ -319,8 +348,29 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           {/* Desktop Sidebar - Hidden on mobile */}
           <div className="hidden md:flex w-56 border-r bg-muted/30 flex-col">
             <div className="p-4 border-b">
-              <h2 className="font-semibold text-lg">Settings</h2>
-              <p className="text-xs text-muted-foreground mt-1">{agent.name}</p>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 border border-border/40">
+                  <AvatarImage
+                    src={
+                      agent.userImage && agent.userImage.trim()
+                        ? getCloudfrontOriginalUrl(agent.userImage)
+                        : undefined
+                    }
+                    alt={agent.name}
+                  />
+                  <AvatarFallback className="text-sm">
+                    {agent.name?.charAt(0).toUpperCase() ?? 'A'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="font-semibold text-lg leading-tight">
+                    Settings
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {agent.name}
+                  </p>
+                </div>
+              </div>
             </div>
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-1">
@@ -349,13 +399,29 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           {/* Mobile Header with Dropdown Tabs */}
           <div className="md:hidden border-b bg-background">
             <div className="p-4 border-b">
-              <h2 className="font-semibold text-base">
-                {availableTabs.find(t => t.key === activeTab)?.label ||
-                  'Settings'}{' '}
-                <span className="text-sm text-muted-foreground font-normal">
-                  {agent.name}
-                </span>
-              </h2>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 border border-border/40">
+                  <AvatarImage
+                    src={
+                      agent.userImage && agent.userImage.trim()
+                        ? getCloudfrontOriginalUrl(agent.userImage)
+                        : undefined
+                    }
+                    alt={agent.name}
+                  />
+                  <AvatarFallback className="text-sm">
+                    {agent.name?.charAt(0).toUpperCase() ?? 'A'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="font-semibold text-base leading-tight">
+                    Settings
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {agent.name}
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="w-full px-4 py-3">
               <Select value={activeTab} onValueChange={setActiveTab}>
@@ -386,6 +452,18 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           <div className="flex-1 flex flex-col overflow-hidden">
             <ScrollArea className="flex-1">
               <div className="p-6">
+                {currentTab && (
+                  <div className="mb-8 space-y-2">
+                    <h1 className="text-3xl font-semibold">
+                      {currentTab.label}
+                    </h1>
+                    {headerDescription && (
+                      <p className="text-sm text-muted-foreground max-w-2xl">
+                        {headerDescription}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(handleSubmit)}
@@ -420,15 +498,11 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                     )}
 
                     {activeTab === 'memories' && hasEditAccess && (
-                      <div className="-m-6">
-                        <AgentMemoryView agent={agent} />
-                      </div>
+                      <AgentMemoryView agent={agent} variant="panel" />
                     )}
 
                     {activeTab === 'tasks' && hasEditAccess && (
-                      <div className="-m-6">
-                        <AgentTasksView agent={agent} />
-                      </div>
+                      <AgentTasksView agent={agent} variant="panel" />
                     )}
 
                     {activeTab === 'permissions' && isOriginalOwner && (
@@ -436,14 +510,12 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                     )}
 
                     {activeTab === 'dashboard' && hasEditAccess && (
-                      <div className="-m-6">
-                        <AgentDashboardView agent={agent} />
-                      </div>
+                      <AgentDashboardView agent={agent} variant="panel" />
                     )}
 
                     {activeTab === 'manage' && hasOwnerAccess && (
                       <div className="space-y-4">
-                        <div className="rounded-xl border border-destructive/60 bg-background/40 p-6">
+                        <div className="rounded-xl border border-destructive/60 bg-card p-6">
                           <p className="text-base font-semibold text-destructive">
                             Permanently delete this agent
                           </p>
@@ -479,24 +551,22 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
             </ScrollArea>
 
             {/* Action Footer */}
-            {(showSaveButton || hasOwnerAccess) && (
+            {showSaveButton && (
               <div className="border-t p-4 bg-background flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
-                {showSaveButton && (
-                  <Button
-                    onClick={form.handleSubmit(handleSubmit)}
-                    disabled={form.formState.isSubmitting || isDeleting}
-                    className="w-full md:w-auto"
-                  >
-                    {form.formState.isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Updating Agent...
-                      </>
-                    ) : (
-                      'Save Changes'
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={form.handleSubmit(handleSubmit)}
+                  disabled={form.formState.isSubmitting || isDeleting}
+                  className="w-full md:w-auto"
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating Agent...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </Button>
               </div>
             )}
           </div>

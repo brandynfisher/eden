@@ -9,7 +9,7 @@ import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/navigation'
-import { RefObject, useMemo } from 'react'
+import { ReactNode, RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedConceptsCursorArguments
@@ -25,6 +25,7 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
   selectedIds?: string[]
   variant?: 'default' | 'creation-page'
+  emptyState?: ReactNode
 }
 
 const ModelsFeed = ({
@@ -38,6 +39,7 @@ const ModelsFeed = ({
   scrollRef,
   selectedIds = [],
   variant = 'default',
+  emptyState,
 }: Props) => {
   const router = useRouter()
   const layoutScrollRef = useScrollContainer()
@@ -101,6 +103,7 @@ const ModelsFeed = ({
           variant={variant}
         />
       )}
+      emptyState={emptyState}
     />
   )
 }

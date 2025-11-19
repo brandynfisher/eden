@@ -43,6 +43,7 @@ import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { Agent, FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -51,7 +52,6 @@ import {
   BookmarkIcon,
   BotIcon,
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
   ComponentIcon,
@@ -773,6 +773,7 @@ const SidebarUserProfile = () => {
   })
   const { signOut } = useClerk()
   const { verifyAuth } = useAuthState()
+  const { unreadCount } = useNotificationContext()
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -832,7 +833,11 @@ const SidebarUserProfile = () => {
                 {Number((balance || 0).toFixed(0)).toLocaleString()} manna
               </span>
             </div>
-            <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            {unreadCount > 0 ? (
+              <span className="ml-2 flex h-5 min-w-[22px] items-center justify-center rounded-full border border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            ) : null}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -1077,6 +1082,12 @@ export const SessionsSidebarContent = ({
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
   const lastAgent =
     lastAgents.length > 0 ? lastAgents[0].username || lastAgents[0]._id : 'eve'
+  const agentUsername = agent?.username
+
+  const handleNewChatNavigation = useCallback(() => {
+    const targetAgentKey = agentUsername || agentId || lastAgent
+    router.push(`/chat/${targetAgentKey}`)
+  }, [agentUsername, agentId, lastAgent, router])
 
   // Get permissions for settings sidebar
   const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
@@ -1214,7 +1225,7 @@ export const SessionsSidebarContent = ({
 
         {/* New Chat icon */}
         <button
-          onClick={() => router.push(`/chat/${lastAgent}`)}
+          onClick={handleNewChatNavigation}
           className={cn(
             'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
             'hover:bg-muted/20',
@@ -1361,11 +1372,7 @@ export const SessionsSidebarContent = ({
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                if (agentId && agent) {
-                  onAgentSelect?.()
-                } else {
-                  router.push(`/chat/${lastAgent}`)
-                }
+                handleNewChatNavigation()
               }}
               className={cn(
                 'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
@@ -1546,13 +1553,7 @@ export const SessionsSidebarContent = ({
         <div className="flex w-full justify-between items-center gap-2">
           <Button
             variant="ghost"
-            onClick={() => {
-              if (agentId && agent) {
-                onAgentSelect?.()
-              } else {
-                router.push(`/chat/${lastAgent}`)
-              }
-            }}
+            onClick={handleNewChatNavigation}
             className={cn(
               'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
               '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
@@ -1730,11 +1731,7 @@ export const SessionsSidebarContent = ({
                 variant="ghost"
                 onClick={() => {
                   onItemClick?.()
-                  if (agentId && agent) {
-                    onAgentSelect?.()
-                  } else {
-                    router.push(`/chat/${lastAgent}`)
-                  }
+                  handleNewChatNavigation()
                 }}
                 className={cn(
                   'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',

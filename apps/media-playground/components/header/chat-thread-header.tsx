@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/error-boundary'
 import MannaBalance from '@/components/header/manna-balance'
 import LoadingIndicator from '@/components/loading-indicator'
 import MyAccountButton from '@/components/navigation/my-account-button'
+import NotificationDropdown from '@/components/notifications/notification-dropdown'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { useThreadQuery } from '@/hooks/query/use-thread-query'
@@ -125,6 +126,7 @@ const ChatThreadHeader = ({
             <TaskStatusIndicator />
           </ErrorBoundary>
         </Suspense>
+        <NotificationDropdown />
         <Suspense fallback={<LoadingIndicator />}>
           <div className="hidden sm:block">
             <MannaBalance />
