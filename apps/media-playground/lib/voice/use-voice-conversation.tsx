@@ -1,6 +1,6 @@
 'use client'
 
-import { DEFAULT_AGENT_CONFIG, mergeAgentConfig } from './agent-config'
+import { DEFAULT_AGENT_CONFIG } from './realtime-user-fields-config'
 import {
   ConnectionStatus,
   DebugLog,
@@ -8,7 +8,6 @@ import {
   VoiceConversation,
   VoiceProviderConfig,
 } from './types'
-import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import { useConversation } from '@elevenlabs/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -23,9 +22,7 @@ export function useVoiceConversation(
   const [agentId, setAgentId] = useState<string | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
-  const [isAgentUpdated, setIsAgentUpdated] = useState(false)
   const sessionIdRef = useRef<string | null>(null)
-  const isUpdatingRef = useRef(false)
 
   // Helper function to add debug logs
   const addDebugLog = useCallback(
@@ -92,117 +89,82 @@ export function useVoiceConversation(
     fetchConfig()
   }, [addDebugLog])
 
-  // Update agent with custom prompt and settings
-  const updateAgent = useCallback(async () => {
-    if (!apiKey || !agentId || isUpdatingRef.current || isAgentUpdated) return
+  // Build conversation overrides with user context
+  // This is the recommended approach per ElevenLabs docs
+  const buildConversationOverrides = useCallback(() => {
+    // Start with base prompt
+    let systemPrompt = config.agentPrompt
 
-    isUpdatingRef.current = true
+    // Filter out empty values from userInfo
+    const filledUserInfo = config.userInfo
+      ? Object.fromEntries(
+          Object.entries(config.userInfo).filter(
+            ([, value]) => value.trim() !== '',
+          ),
+        )
+      : {}
 
-    try {
-      addDebugLog('Checking agent configuration...', 'info')
-
-      const client = new ElevenLabsClient({
-        apiKey,
-      })
-
-      // Fetch current agent configuration
-      const currentAgent = await client.conversationalAi.agents.get(agentId)
-
-      // The API returns conversationConfig (camelCase) not conversation_config (snake_case)
-      const currentPromptConfig = currentAgent.conversationConfig?.agent?.prompt
-
-      // Merge default config with user overrides to get desired config
-      const baseConfig = {
-        ...DEFAULT_AGENT_CONFIG,
-        agent: {
-          ...DEFAULT_AGENT_CONFIG.agent,
-          prompt: {
-            ...DEFAULT_AGENT_CONFIG.agent.prompt,
-            prompt: config.agentPrompt, // Set the dynamic prompt
-          },
-        },
-      }
-
-      const desiredConfig = mergeAgentConfig(
-        baseConfig,
-        config.conversationConfig,
+    // Add user context if provided
+    if (Object.keys(filledUserInfo).length > 0) {
+      const userContextParts = Object.entries(filledUserInfo).map(
+        ([key, value]) => `${key}: ${value}`,
       )
-
-      // Compare all relevant config settings
-      const differences: string[] = []
-
-      if (currentPromptConfig?.prompt !== desiredConfig.agent.prompt.prompt) {
-        const currentLength = currentPromptConfig?.prompt?.length || 0
-        const desiredLength = desiredConfig.agent.prompt.prompt.length
-        differences.push(
-          `prompt (current: ${currentLength} chars, "${currentPromptConfig?.prompt?.substring(
-            0,
-            50,
-          )}..." | desired: ${desiredLength} chars, "${desiredConfig.agent.prompt.prompt.substring(
-            0,
-            50,
-          )}...")`,
-        )
-      }
-      if (currentPromptConfig?.llm !== desiredConfig.agent.prompt.llm) {
-        differences.push(
-          `llm (current: ${currentPromptConfig?.llm} | desired: ${desiredConfig.agent.prompt.llm})`,
-        )
-      }
-      if (
-        currentPromptConfig?.temperature !==
-        desiredConfig.agent.prompt.temperature
-      ) {
-        differences.push(
-          `temperature (current: ${currentPromptConfig?.temperature} | desired: ${desiredConfig.agent.prompt.temperature})`,
-        )
-      }
-      if (
-        currentPromptConfig?.maxTokens !== desiredConfig.agent.prompt.maxTokens
-      ) {
-        differences.push(
-          `maxTokens (current: ${currentPromptConfig?.maxTokens} | desired: ${desiredConfig.agent.prompt.maxTokens})`,
-        )
-      }
-
-      const needsUpdate = differences.length > 0
-
-      if (needsUpdate) {
-        addDebugLog(
-          `Configuration differs in ${differences.length} field(s):`,
-          'info',
-        )
-        differences.forEach(diff => {
-          addDebugLog(`  - ${diff}`, 'info')
-        })
-        addDebugLog('Updating agent...', 'info')
-
-        await client.conversationalAi.agents.update(agentId, {
-          conversationConfig: desiredConfig,
-        })
-
-        addDebugLog('Agent configuration updated successfully', 'success')
-      } else {
-        addDebugLog(
-          'Agent configuration already up to date, skipping update',
-          'success',
-        )
-      }
-
-      setIsAgentUpdated(true)
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error'
-      addDebugLog(`Failed to update agent: ${errorMessage}`, 'error')
-    } finally {
-      isUpdatingRef.current = false
+      systemPrompt += `\n\nUser Information:\n${userContextParts.join(
+        '\n',
+      )}\n\nUse this information to personalize your responses.`
     }
+
+    // Build first message with precedence:
+    // 1. Explicit override from conversationConfig has highest priority
+    // 2. Otherwise, personalize with user name if provided
+    let firstMessage = config.conversationConfig?.agent?.firstMessage
+    if (!firstMessage) {
+      const userName = filledUserInfo['name'] || filledUserInfo['Name']
+      if (userName) {
+        firstMessage = `Hello ${userName}! I'm ${config.agentName}. How can I help you today?`
+      }
+    }
+
+    // Merge with base config and user overrides
+    const overrides = {
+      agent: {
+        prompt: {
+          prompt: systemPrompt,
+          llm:
+            config.conversationConfig?.agent?.prompt?.llm ||
+            DEFAULT_AGENT_CONFIG.agent.prompt.llm,
+          temperature:
+            config.conversationConfig?.agent?.prompt?.temperature ||
+            DEFAULT_AGENT_CONFIG.agent.prompt.temperature,
+          maxTokens:
+            config.conversationConfig?.agent?.prompt?.maxTokens ||
+            DEFAULT_AGENT_CONFIG.agent.prompt.maxTokens,
+        },
+        ...(firstMessage && { firstMessage }),
+        ...(config.conversationConfig?.agent?.language && {
+          language: config.conversationConfig.agent.language,
+        }),
+      },
+    }
+
+    addDebugLog('Built conversation overrides', 'info')
+    addDebugLog(`  Prompt: ${systemPrompt.length} chars`, 'debug')
+    if (firstMessage) {
+      addDebugLog(`  First message: "${firstMessage}"`, 'debug')
+    }
+    if (Object.keys(filledUserInfo).length > 0) {
+      addDebugLog(
+        `  User info fields: ${Object.keys(filledUserInfo).join(', ')}`,
+        'debug',
+      )
+    }
+
+    return overrides
   }, [
-    apiKey,
-    agentId,
     config.agentPrompt,
+    config.agentName,
+    config.userInfo,
     config.conversationConfig,
-    isAgentUpdated,
     addDebugLog,
   ])
 
@@ -298,17 +260,25 @@ export function useVoiceConversation(
       await navigator.mediaDevices.getUserMedia({ audio: true })
       addDebugLog('Microphone access granted', 'success')
 
-      // Update agent configuration before starting
-      await updateAgent()
-
-      // Create Eden session
+      // Create Eden session with user info
       try {
         addDebugLog('Creating Eden session...', 'info')
+
+        // Filter out empty values from userInfo
+        const filledUserInfo = config.userInfo
+          ? Object.fromEntries(
+              Object.entries(config.userInfo).filter(
+                ([, value]) => value.trim() !== '',
+              ),
+            )
+          : {}
+
         const sessionResponse = await fetch('/api/realtime/session/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             agentId: config.edenAgentId,
+            userInfo: filledUserInfo,
           }),
         })
 
@@ -333,11 +303,15 @@ export function useVoiceConversation(
         addDebugLog('Error creating Eden session', 'warning')
       }
 
-      // Start the conversation
-      addDebugLog('Starting conversation session...', 'info')
+      // Build conversation overrides with user context
+      const overrides = buildConversationOverrides()
+
+      // Start the conversation with overrides
+      addDebugLog('Starting conversation session with overrides...', 'info')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (conversation.startSession as any)({
         agentId,
+        overrides,
       })
       addDebugLog('Session started successfully', 'success')
     } catch (error: unknown) {
@@ -345,15 +319,20 @@ export function useVoiceConversation(
         error instanceof Error ? error.message : 'Unknown error'
       addDebugLog(`Failed to start: ${errorMessage}`, 'error')
     }
-  }, [apiKey, agentId, conversation, updateAgent, addDebugLog])
+  }, [
+    apiKey,
+    agentId,
+    conversation,
+    config.edenAgentId,
+    buildConversationOverrides,
+    addDebugLog,
+  ])
 
   const endConversation = useCallback(async () => {
     try {
       addDebugLog('Stopping conversation...', 'info')
       await conversation.endSession()
       addDebugLog('Conversation stopped', 'success')
-      // Reset agent updated flag for next session
-      setIsAgentUpdated(false)
       sessionIdRef.current = null
     } catch (error: unknown) {
       const errorMessage =

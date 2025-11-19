@@ -2,6 +2,7 @@ import RealtimeView from '@/features/realtime/realtime-view'
 import { getAgentCached } from '@/lib/actions/agent'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { Metadata, ResolvingMetadata } from 'next'
+import { Suspense } from 'react'
 
 interface Props {
   params: { agentId: string }
@@ -59,7 +60,11 @@ export async function generateMetadata(
 }
 
 const RealtimePage = () => {
-  return <RealtimeView />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RealtimeView />
+    </Suspense>
+  )
 }
 
 export default RealtimePage
