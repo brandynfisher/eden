@@ -155,7 +155,7 @@ const ExplorePage = () => {
             'Browse through diverse models custom-trained by Eden creators',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/train">
+              <Link href="/create/lora/flux_trainer">
                 <Zap className="h-4 w-4" />
                 Train Model
               </Link>

@@ -16,6 +16,7 @@ import ModelsFeed from '@/features/feed/models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
+import { useRouter } from 'next/navigation'
 import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 type Props = {
@@ -39,6 +40,7 @@ const ModelSelectorModal = ({
   selectedIds = [],
 }: Props) => {
   const { user } = useAuthState()
+  const router = useRouter()
 
   const [open, setOpen] = useState(false)
   const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
@@ -50,6 +52,28 @@ const ModelSelectorModal = ({
   }
 
   const scrollRef = useRef<HTMLDivElement>(null)
+  const userModelsEmptyState = (
+    <div className="flex flex-col items-center gap-3 text-center py-10">
+      <p className="text-sm text-muted-foreground">
+        You don't have any custom models yet.
+      </p>
+      <div className="flex gap-2 justify-center">
+        <Button
+          type="button"
+          onClick={() => router.push('/create/lora/flux_trainer')}
+        >
+          Train a model
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setCurrentTab('public')}
+        >
+          View public models
+        </Button>
+      </div>
+    </div>
+  )
 
   const onOpenChange = (open: boolean) => {
     setOpen(open)
@@ -111,6 +135,7 @@ const ModelSelectorModal = ({
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
               selectedIds={selectedIds}
+              emptyState={userModelsEmptyState}
             />
           ) : (
             <ModelsFeed
