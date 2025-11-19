@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
@@ -306,7 +313,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0">
+      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden">
         <DialogTitle className="sr-only">Agent Settings</DialogTitle>
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
           {/* Desktop Sidebar - Hidden on mobile */}
@@ -339,7 +346,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
             </ScrollArea>
           </div>
 
-          {/* Mobile Header with Horizontal Tabs */}
+          {/* Mobile Header with Dropdown Tabs */}
           <div className="md:hidden border-b bg-background">
             <div className="p-4 border-b">
               <h2 className="font-semibold text-base">
@@ -350,27 +357,28 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                 </span>
               </h2>
             </div>
-            <div className="w-full">
-              <div className="flex flex-wrap gap-1 p-2">
-                {availableTabs.map(tab => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={cn(
-                        'flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
-                        activeTab === tab.key
-                          ? 'bg-primary/10 text-primary border border-primary/20'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" />
-                      {tab.label}
-                    </button>
-                  )
-                })}
-              </div>
+            <div className="w-full px-4 py-3">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger
+                  className="w-full"
+                  aria-label="Select settings tab"
+                >
+                  <SelectValue placeholder="Select tab" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTabs.map(tab => {
+                    const Icon = tab.icon
+                    return (
+                      <SelectItem key={tab.key} value={tab.key}>
+                        <span className="inline-flex items-center gap-2">
+                          <Icon className="h-3.5 w-3.5" />
+                          {tab.label}
+                        </span>
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

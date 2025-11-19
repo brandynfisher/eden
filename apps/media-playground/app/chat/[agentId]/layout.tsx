@@ -1,5 +1,6 @@
 'use client'
 
+import { SIDEBAR_COLLAPSE_STORAGE_KEY } from '@/components/layout/app-shell'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import {
   ResizableHandle,
@@ -92,7 +93,18 @@ const SessionChatLayout = ({
   const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') {
+      return false
+    }
+    try {
+      return (
+        window.localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY) === 'true'
+      )
+    } catch {
+      return false
+    }
+  })
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
@@ -158,12 +170,24 @@ const SessionChatLayout = ({
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    try {
+      window.localStorage.setItem(
+        SIDEBAR_COLLAPSE_STORAGE_KEY,
+        isSidebarCollapsed ? 'true' : 'false',
+      )
+    } catch {
+      // ignore storage failures
+    }
+  }, [isSidebarCollapsed])
+
   const handleSidebarToggle = () => {
     if (isSidebarCollapsed) {
-      // Just toggle state - panel will remount
       setIsSidebarCollapsed(false)
     } else {
-      // Collapse the panel
       const panel = sidebarPanelRef.current
       if (panel) {
         panel.collapse()

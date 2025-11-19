@@ -2,6 +2,7 @@
 
 import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical, {
+  BreakpointConfig,
   MasonryVirtualizerHandle,
 } from '@/components/masonry/masonry-virtualizer-vertical'
 import { useScrollContainer } from '@/contexts/scroll-container-context'
@@ -25,12 +26,19 @@ type Props = {
   query?: FeedCreationsCursorArguments
   minCols?: number
   maxCols?: number
+  breakpoints?: BreakpointConfig[]
   multiselect?: boolean
   scrollRef?: RefObject<HTMLDivElement>
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
   showSkeleton?: boolean
 }
+
+const DEFAULT_CREATIONS_BREAKPOINTS: BreakpointConfig[] = [
+  { minWidth: 1024, columns: 4 },
+  { minWidth: 768, columns: 2 },
+  { minWidth: 0, columns: 1 },
+]
 
 export type CreationsFeedHandle = {
   getAdjacentCreationId: (
@@ -46,6 +54,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       query: queryProp,
       minCols,
       maxCols,
+      breakpoints,
       multiselect,
       scrollRef,
       initialScrollIndex,
@@ -133,6 +142,14 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       onScrollRestored?.()
     }, [setScrollPosition, onScrollRestored])
 
+    const resolvedBreakpoints = useMemo(
+      () =>
+        (breakpoints ?? DEFAULT_CREATIONS_BREAKPOINTS).map(bp => ({
+          ...bp,
+        })),
+      [breakpoints],
+    )
+
     // Expose navigation helpers via ref
     useImperativeHandle(
       ref,
@@ -162,8 +179,9 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
         apiEndpoint={'/api/feed/creations'}
         queryKey={queryKey}
         query={query}
-        minCols={minCols || 2}
+        minCols={minCols ?? 1}
         maxCols={maxCols || undefined}
+        breakpoints={resolvedBreakpoints}
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef ?? layoutScrollRef ?? undefined}

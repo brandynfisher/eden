@@ -94,7 +94,7 @@ export const AgentDeploymentSettings = ({
                       >
                         <ToggleGroupItem
                           value="off"
-                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors text-left"
                         >
                           <div className="font-medium text-sm">Off</div>
                           <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
@@ -103,7 +103,7 @@ export const AgentDeploymentSettings = ({
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="deployments"
-                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors text-left"
                         >
                           <div className="font-medium text-sm">
                             Deployments only
@@ -115,7 +115,7 @@ export const AgentDeploymentSettings = ({
                         </ToggleGroupItem>
                         <ToggleGroupItem
                           value="full"
-                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+                          className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors text-left"
                         >
                           <div className="font-medium text-sm">Full</div>
                           <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">

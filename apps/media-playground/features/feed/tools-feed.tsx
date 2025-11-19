@@ -100,6 +100,7 @@ const ToolsFeed = ({ category, searchQuery }: ToolsFeedProps) => {
                 : `create/${tool.output_type}`
             }/${tool.key}`}
             priority={category === 'featured'}
+            outputType={tool.output_type}
           />
         ))
       ) : (

@@ -4,6 +4,7 @@ import ArrowNavigation from '@/components/modal/arrow-navigation'
 import FullScreenModal from '@/components/modal/full-screen-modal'
 import CreationDetail from '@/features/detail/creation-detail'
 import { CreationV2 } from '@edenlabs/eden-sdk'
+import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface CreationDetailModalProps {
@@ -24,6 +25,8 @@ export default function CreationDetailModal({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [currentId, setCurrentId] = useState(creationId)
   const originPathRef = useRef<string | null>(null)
+  const pathname = usePathname()
+  const lastPathnameRef = useRef(pathname)
 
   // Update currentId when creationId prop changes
   useEffect(() => {
@@ -31,6 +34,22 @@ export default function CreationDetailModal({
       setCurrentId(creationId)
     }
   }, [creationId])
+
+  // Close the modal if a navigation occurs while it's open
+  useEffect(() => {
+    const previousPath = lastPathnameRef.current
+    if (previousPath === pathname) return
+
+    if (isOpen && currentId) {
+      const expectedPath = `/creations/${currentId}`
+      if (pathname !== expectedPath) {
+        originPathRef.current = null
+        onClose()
+      }
+    }
+
+    lastPathnameRef.current = pathname
+  }, [pathname, isOpen, currentId, onClose])
 
   // Update URL when modal opens for sharing/back button without triggering navigation
   useEffect(() => {

@@ -1,5 +1,6 @@
 'use client'
 
+import { useAppShell } from '@/components/layout/app-shell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -7,19 +8,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -37,7 +30,7 @@ import {
   PlusIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
@@ -217,6 +210,7 @@ const TaskItem: FC<{
 }
 
 const TasksPage = () => {
+  const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
   const userTimezone = useMemo(() => {
     if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
@@ -226,8 +220,6 @@ const TasksPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TriggerWithAgent | null>(null)
   const [showFinished, setShowFinished] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
 
   const triggersQuery = useUserTriggersQuery({
@@ -286,10 +278,10 @@ const TasksPage = () => {
     }
   }, [triggersQuery.triggers])
 
-  const handleCreateNew = () => {
+  const handleCreateNew = useCallback(() => {
     setEditingTask(null)
     setIsModalOpen(true)
-  }
+  }, [])
 
   const handleEdit = (trigger: TriggerWithAgent) => {
     setEditingTask(trigger)
@@ -311,12 +303,42 @@ const TasksPage = () => {
     triggersQuery.invalidate()
   }
 
+  useEffect(() => {
+    setConfig({
+      sidebarVariant: 'chat',
+      mobileSidebarHeader: ({ close }) => (
+        <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+          <button
+            onClick={() => {
+              close()
+            }}
+            className="flex items-center gap-2"
+          >
+            <span className="text-lg font-semibold">Tasks</span>
+          </button>
+          <button
+            onClick={() => {
+              close()
+              handleCreateNew()
+            }}
+            className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+            aria-label="New Task"
+          >
+            <PlusIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+      ),
+    })
+
+    return () => resetConfig()
+  }, [handleCreateNew, resetConfig, setConfig])
+
   return (
     <>
       {/* Mobile navbar */}
       <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
         <button
-          onClick={() => setIsSheetOpen(true)}
+          onClick={openMobileSidebar}
           className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
           aria-label="Open sidebar"
         >
@@ -334,224 +356,133 @@ const TasksPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-12 md:top-0">
-        {/* MOBILE LEFT BAR SHEET */}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetContent
-            side="left"
-            className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
-          >
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            {/* Mobile sticky header */}
-            <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
-              <button
-                onClick={() => {
-                  setIsSheetOpen(false)
-                }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-lg font-semibold">Tasks</span>
-              </button>
-              <button
-                onClick={() => {
-                  setIsSheetOpen(false)
-                  handleCreateNew()
-                }}
-                className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                aria-label="New Task"
-              >
-                <PlusIcon className="w-5 h-5 text-muted-foreground" />
-              </button>
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="w-full max-w-4xl mx-auto px-4 py-6 flex-1 min-h-0">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold hidden md:block">Tasks</h2>
+              <p className="text-muted-foreground">
+                Schedule automated tasks for all your agents
+              </p>
             </div>
-            {/* Scrollable sidebar content */}
-            <div className="flex-1 overflow-y-auto pl-3">
-              <SessionsSidebarContent
-                onItemClick={() => setIsSheetOpen(false)}
-                isChat={true}
-                isMobileSidebar={true}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+            <Button onClick={handleCreateNew} className="gap-2 hidden md:flex">
+              <PlusIcon className="w-4 h-4" />
+              Create Task
+            </Button>
+          </div>
 
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-        >
-          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-          <ResizablePanel
-            defaultSize={20}
-            minSize={isSidebarCollapsed ? 0 : 15}
-            maxSize={30}
-            collapsible={false}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-              isSidebarCollapsed
-                ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-                : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-            )}
-          >
-            {isSidebarCollapsed ? (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(false)}
-                isCollapsed={true}
-                isChat={true}
-              />
-            ) : (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(true)}
-                isChat={true}
-              />
-            )}
-          </ResizablePanel>
-
-          {/* Separator Handle */}
-          <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-          {/* MAIN CONTENT PANEL */}
-          <ResizablePanel
-            defaultSize={80}
-            className="relative flex flex-col bg-background -ml-px"
-          >
-            <div className="flex-1 overflow-auto bg-accent">
-              <div className="w-full max-w-4xl mx-auto px-4 py-6">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold hidden md:block">
-                      Tasks
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Schedule automated tasks for all your agents
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleCreateNew}
-                    className="gap-2 hidden md:flex"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    Create Task
-                  </Button>
+          {/* Tasks List */}
+          <div className="space-y-6">
+            {triggersQuery.isPending ? (
+              <div className="bg-background rounded-lg border">
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 </div>
-
-                {/* Tasks List */}
-                <div className="space-y-6">
-                  {triggersQuery.isPending ? (
-                    <div className="bg-background rounded-lg border">
-                      <div className="flex items-center justify-center p-8">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      </div>
-                    </div>
-                  ) : triggersQuery.isError ? (
-                    <div className="bg-background rounded-lg border">
-                      <div className="flex items-center justify-center gap-2 p-8 text-destructive">
-                        <AlertCircle className="w-5 h-5" />
-                        <p>Failed to load tasks. Please try again later.</p>
-                      </div>
-                    </div>
-                  ) : activeTriggers.length === 0 &&
-                    finishedTriggers.length === 0 ? (
-                    <div className="bg-background rounded-lg border">
-                      <div className="text-center p-8 text-muted-foreground">
-                        <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg font-medium mb-2">
-                          No scheduled tasks
-                        </p>
-                        <p className="text-sm">
-                          Create your first automated task to get started.
-                        </p>
-                      </div>
+              </div>
+            ) : triggersQuery.isError ? (
+              <div className="bg-background rounded-lg border">
+                <div className="flex items-center justify-center gap-2 p-8 text-destructive">
+                  <AlertCircle className="w-5 h-5" />
+                  <p>Failed to load tasks. Please try again later.</p>
+                </div>
+              </div>
+            ) : activeTriggers.length === 0 && finishedTriggers.length === 0 ? (
+              <div className="bg-background rounded-lg border">
+                <div className="text-center p-8 text-muted-foreground">
+                  <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium mb-2">No scheduled tasks</p>
+                  <p className="text-sm">
+                    Create your first automated task to get started.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Active Tasks */}
+                <div className="bg-background rounded-lg border">
+                  <div className="p-4 border-b">
+                    <h3 className="font-semibold">Active Tasks</h3>
+                  </div>
+                  {activeTriggers.length === 0 ? (
+                    <div className="text-center p-8 text-muted-foreground">
+                      <p className="text-sm">No active tasks</p>
                     </div>
                   ) : (
-                    <>
-                      {/* Active Tasks */}
-                      <div className="bg-background rounded-lg border">
-                        <div className="p-4 border-b">
-                          <h3 className="font-semibold">Active Tasks</h3>
-                        </div>
-                        {activeTriggers.length === 0 ? (
-                          <div className="text-center p-8 text-muted-foreground">
-                            <p className="text-sm">No active tasks</p>
-                          </div>
-                        ) : (
-                          <div className="divide-y">
-                            {activeTriggers.map(trigger => (
-                              <TaskItem
-                                key={trigger._id}
-                                trigger={trigger}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                isFinished={false}
-                                timezone={userTimezone}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Finished Tasks - Collapsible Section */}
-                      {finishedTriggers.length > 0 && (
-                        <div className="bg-background rounded-lg border">
-                          <Collapsible
-                            open={showFinished}
-                            onOpenChange={setShowFinished}
-                          >
-                            <CollapsibleTrigger asChild>
-                              <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
-                                <div className="flex items-center justify-between">
-                                  <h3 className="font-semibold">
-                                    Finished Tasks ({finishedTriggers.length})
-                                  </h3>
-                                  <ChevronDownIcon
-                                    className={`h-4 w-4 transition-transform ${
-                                      showFinished ? 'rotate-180' : ''
-                                    }`}
-                                  />
-                                </div>
-                              </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                              <div className="divide-y">
-                                {finishedTriggers.map(trigger => (
-                                  <TaskItem
-                                    key={trigger._id}
-                                    trigger={trigger}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    isFinished={true}
-                                    timezone={userTimezone}
-                                  />
-                                ))}
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        </div>
-                      )}
-                    </>
+                    <div className="divide-y">
+                      {activeTriggers.map(trigger => (
+                        <TaskItem
+                          key={trigger._id}
+                          trigger={trigger}
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          isFinished={false}
+                          timezone={userTimezone}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
 
-                {/* Task Modal */}
-                <TaskFormModal
-                  editingTask={editingTask}
-                  open={isModalOpen}
-                  onOpenChange={handleModalClose}
-                  onSave={handleSave}
-                />
+                {/* Finished Tasks - Collapsible Section */}
+                {finishedTriggers.length > 0 && (
+                  <div className="bg-background rounded-lg border">
+                    <Collapsible
+                      open={showFinished}
+                      onOpenChange={setShowFinished}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">
+                              Finished Tasks ({finishedTriggers.length})
+                            </h3>
+                            <ChevronDownIcon
+                              className={`h-4 w-4 transition-transform ${
+                                showFinished ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="divide-y">
+                          {finishedTriggers.map(trigger => (
+                            <TaskItem
+                              key={trigger._id}
+                              trigger={trigger}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                              isFinished={true}
+                              timezone={userTimezone}
+                            />
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-                {/* Agent Selector Modal */}
-                <SingleAgentSelectorModal
-                  open={isAgentSelectorOpen}
-                  onOpenChange={setIsAgentSelectorOpen}
-                  onSelect={() => {
-                    setIsAgentSelectorOpen(false)
-                    // Could navigate to agent's tasks page if desired
-                  }}
-                />
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          {/* Task Modal */}
+          <TaskFormModal
+            editingTask={editingTask}
+            open={isModalOpen}
+            onOpenChange={handleModalClose}
+            onSave={handleSave}
+          />
+
+          {/* Agent Selector Modal */}
+          <SingleAgentSelectorModal
+            open={isAgentSelectorOpen}
+            onOpenChange={setIsAgentSelectorOpen}
+            onSelect={() => {
+              setIsAgentSelectorOpen(false)
+            }}
+          />
+        </div>
       </div>
     </>
   )

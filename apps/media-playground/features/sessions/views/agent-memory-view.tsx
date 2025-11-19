@@ -83,6 +83,7 @@ const AgentMemoryView: FC<{
   const [pendingDirectiveData, setPendingDirectiveData] =
     useState<MemoryFormDto | null>(null)
   const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
+  const [isLoadingMemory, setIsLoadingMemory] = useState<boolean>(false)
 
   // Collective Memory Access Logic - Three Scenarios:
   // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
@@ -114,7 +115,7 @@ const AgentMemoryView: FC<{
 
     // Lower tier users see upgrade prompt
     return { showTab: true, hasAccess: false, needsPreview: false }
-  }, [hasEditAccess, authUser?.subscriptionTier, authUser?.featureFlags])
+  }, [hasEditAccess, authUser])
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -153,6 +154,7 @@ const AgentMemoryView: FC<{
 
         // 2. If enabled, fetch memory data; if disabled, clear display
         if (isUserMemoryEnabled) {
+          setIsLoadingMemory(true)
           try {
             const response = await axios.get(`/api/agents/${agent._id}/memory`)
             const content = response.data.content || ''
@@ -164,17 +166,20 @@ const AgentMemoryView: FC<{
             form.setValue('content', '')
             setDisplayContent('')
             setUnabsorbedDirectives([])
+          } finally {
+            setIsLoadingMemory(false)
           }
         } else {
           form.setValue('content', '')
           setDisplayContent('')
           setUnabsorbedDirectives([])
+          setIsLoadingMemory(false)
         }
       }
     }
 
     loadData()
-  }, [agent?._id, authUser, form, agent?.user_memory_enabled])
+  }, [agent, authUser, form])
 
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
@@ -290,6 +295,7 @@ const AgentMemoryView: FC<{
       // 3. Refresh display based on new state
       if (newValue) {
         // If enabled, fetch memory data
+        setIsLoadingMemory(true)
         try {
           const response = await axios.get(`/api/agents/${agent._id}/memory`)
           const content = response.data.content || ''
@@ -298,12 +304,15 @@ const AgentMemoryView: FC<{
           setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
         } catch (error) {
           console.error('Error loading memory data after toggle:', error)
+        } finally {
+          setIsLoadingMemory(false)
         }
       } else {
         // If disabled, clear display
         form.setValue('content', '')
         setDisplayContent('')
         setUnabsorbedDirectives([])
+        setIsLoadingMemory(false)
       }
 
       toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
@@ -481,25 +490,45 @@ const AgentMemoryView: FC<{
           {/* Tab Content */}
           {memoryTab === 'user' ? (
             <div className="space-y-8">
-              <div className="relative group">
-                <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
-                  <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[150px] max-h-[312px] overflow-y-auto">
-                    {displayContent || (
-                      <span className="text-muted-foreground italic">
-                        {!userMemoryEnabled
-                          ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
-                          : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here. You can also manually add memories here.`}
-                      </span>
-                    )}
+              <div className="rounded-2xl border border-border/60 bg-gradient-to-b from-card/80 via-card to-background shadow-lg overflow-hidden">
+                {isLoadingMemory ? (
+                  <div className="flex items-center justify-center px-4 py-12 min-h-[170px]">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                   </div>
-                  <Button
-                    onClick={handleEditClick}
-                    size="sm"
-                    className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                          Personal Memory
+                        </p>
+                        <p className="text-sm text-muted-foreground/90">
+                          Context {agent.name} keeps about you
+                        </p>
+                      </div>
+                      {hasEditAccess && (
+                        <Button
+                          onClick={handleEditClick}
+                          size="sm"
+                          variant="secondary"
+                          className="h-8 px-3 rounded-full shadow-sm"
+                        >
+                          <Edit className="w-4 h-4 mr-1.5" />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                    <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-gradient-to-b from-background/20 to-transparent">
+                      {displayContent || (
+                        <span className="block text-sm text-muted-foreground italic">
+                          {!userMemoryEnabled
+                            ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
+                            : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here. You can also manually add memories here.`}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Unabsorbed Directives Display - Only show if there are directives and user memory is enabled */}

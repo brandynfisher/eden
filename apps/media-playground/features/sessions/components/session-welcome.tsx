@@ -121,7 +121,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
         </div>
 
         <div className="mb-8">
-          <p className="text-2xl font-light">
+          <p className="text-2xl font-light text-center">
             {agent.greeting || 'What do you want to create today?'}
           </p>
         </div>
