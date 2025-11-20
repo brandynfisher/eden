@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             context: requestJson.context,
             budget: requestJson.budget,
             title: requestJson.title,
-            type: requestJson.type,
+            session_type: requestJson.session_type,
             settings: requestJson.settings,
             extras: requestJson.extras,
           }),

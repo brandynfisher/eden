@@ -52,8 +52,8 @@ export const useAppShell = () => {
 
 export const useOptionalAppShell = () => useContext(AppShellContext)
 
-const DISABLE_PREFIXES = ['/sign-in', '/sign-up', '/chat']
-const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks']
+const DISABLE_PREFIXES = ['/sign-in', '/sign-up', '/new']
+const CHAT_VARIANT_PREFIXES = ['/chat', '/chat2', '/agents', '/tasks']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'
 
 const shouldDisableShell = (pathname?: string | null) => {
@@ -61,6 +61,10 @@ const shouldDisableShell = (pathname?: string | null) => {
     return false
   }
   if (pathname.includes('/sessions/share')) {
+    return true
+  }
+  // Special handling: disable shell for /chat/[agentId] routes but NOT /chat2
+  if (pathname.startsWith('/chat/') || pathname === '/chat') {
     return true
   }
   return DISABLE_PREFIXES.some(prefix => pathname.startsWith(prefix))
