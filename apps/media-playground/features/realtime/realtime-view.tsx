@@ -142,7 +142,9 @@ const RealtimeView: FC = () => {
               name={agent?.name || 'Agent'}
               className={cn(
                 'transition-all duration-500',
-                connectionStatus === 'connected' ? 'w-52 h-52' : 'w-40 h-40',
+                connectionStatus === 'connected'
+                  ? 'w-[clamp(12rem,25vw,16rem)] h-[clamp(12rem,25vw,16rem)]'
+                  : 'w-[clamp(10rem,20vw,12rem)] h-[clamp(10rem,20vw,12rem)]',
               )}
               isSpeaking={isSpeaking}
             />
@@ -151,7 +153,9 @@ const RealtimeView: FC = () => {
             <h1
               className={cn(
                 'font-bold transition-all duration-500',
-                connectionStatus === 'connected' ? 'text-4xl' : 'text-3xl',
+                connectionStatus === 'connected'
+                  ? 'text-[clamp(1.875rem,5vw,2.5rem)]'
+                  : 'text-[clamp(1.5rem,4vw,2rem)]',
                 isSpeaking ? 'text-foreground' : 'text-foreground/80',
               )}
               style={

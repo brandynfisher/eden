@@ -129,7 +129,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
         <div className="flex-shrink-0 w-full flex flex-col items-center gap-6">
           {/* User Info Form - only show when not connected */}
           {conversation.status !== 'connected' && hasUserFields && (
-            <div className="flex flex-col gap-4 w-3/4 md:w-1/4">
+            <div className="flex flex-col gap-4 w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw]">
               {/* Dynamically generate input fields from config */}
               {REALTIME_USER_FIELDS.map(field => {
                 const label =
@@ -142,7 +142,9 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                   <div key={field} className="flex flex-col gap-2">
                     <Label
                       htmlFor={`user-${field}`}
-                      className={isFilled ? 'text-white' : 'text-orange-500'}
+                      className={`text-[clamp(1rem,2.5vw,1.125rem)] ${
+                        isFilled ? 'text-white' : 'text-orange-500'
+                      }`}
                     >
                       {label}:
                     </Label>
@@ -156,6 +158,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                         isStarting || conversation.status === 'connecting'
                       }
                       required
+                      className="text-[clamp(1rem,2.5vw,1.25rem)] h-[clamp(2.75rem,6vh,3.5rem)]"
                     />
                   </div>
                 )
@@ -168,24 +171,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
         <div className="flex-1 min-h-0" />
 
         {/* Bottom section - Volume, Button and Status */}
-        <div className="flex-shrink-0 flex flex-col items-center gap-6 w-3/4 md:w-1/4 mb-8">
-          {/* Microphone Volume Bar - shown at bottom when connected */}
-          {conversation.status === 'connected' && (
-            <div className="w-48">
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary"
-                  style={{ width: `${conversation.inputVolume}%` }}
-                />
-              </div>
-            </div>
-          )}
-
+        <div className="flex-shrink-0 flex flex-col items-center gap-6 w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] mb-8">
           {/* Start/Stop Button */}
           {conversation.status !== 'connected' ? (
             <Button
               onClick={handleStartConversation}
-              className={`w-full h-16 text-xl ${
+              className={`w-full h-[clamp(3.5rem,8vh,5rem)] text-[clamp(1.125rem,3vw,1.5rem)] ${
                 isStarting ||
                 conversation.status === 'connecting' ||
                 !canStartConversation
@@ -206,18 +197,18 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
           ) : (
             <Button
               onClick={handleStopConversation}
-              variant="destructive"
+              variant="outline"
               size="lg"
-              className="w-full h-16 text-xl"
+              className="w-full h-[clamp(3.5rem,8vh,5rem)] text-[clamp(1.125rem,3vw,1.5rem)] border-muted-foreground/30 hover:bg-muted/50"
             >
-              Stop
+              Stop gesprek
             </Button>
           )}
 
           {/* Status Indicator */}
           <div className="flex items-center gap-3">
             <div
-              className={`w-3 h-3 rounded-full ${
+              className={`w-[clamp(0.75rem,1.5vw,1rem)] h-[clamp(0.75rem,1.5vw,1rem)] rounded-full ${
                 conversation.status === 'connected'
                   ? 'bg-green-500'
                   : isStarting || conversation.status === 'connecting'
@@ -225,7 +216,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                   : 'bg-gray-500'
               }`}
             />
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-[clamp(0.875rem,2vw,1rem)] font-medium text-muted-foreground">
               {isStarting || conversation.status === 'connecting'
                 ? 'connecting'
                 : conversation.status}
@@ -327,10 +318,11 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
             ) : (
               <Button
                 onClick={handleStopConversation}
-                variant="destructive"
+                variant="outline"
                 size="lg"
+                className="border-muted-foreground/30 hover:bg-muted/50"
               >
-                Stop
+                Stop gesprek
               </Button>
             )}
           </div>
