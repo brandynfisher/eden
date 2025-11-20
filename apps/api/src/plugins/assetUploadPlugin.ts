@@ -25,7 +25,7 @@ export const mediaTypeMap: Record<string, MediaType> = {
 const uploadUrlAsset = async (server: FastifyInstance, url: string) => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
-  const fileType = await fileTypeFromBuffer(assetB64)
+  const fileType = await fileTypeFromBuffer(assetB64 as unknown as Uint8Array)
   const fileSize = assetB64.byteLength
 
   if (!fileType) {

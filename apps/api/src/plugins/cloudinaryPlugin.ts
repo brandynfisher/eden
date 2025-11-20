@@ -44,7 +44,7 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
-  const fileType = await fileTypeFromBuffer(buffer)
+  const fileType = await fileTypeFromBuffer(buffer as unknown as Uint8Array)
 
   try {
     const uploadConfig: UploadApiOptions = {

@@ -147,7 +147,7 @@ const AgentSelectorModal = ({
           className,
         ])}
       >
-        <DialogHeader className="mt-4">
+        <DialogHeader className="space-y-1 pb-2">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">
               {title || 'Select Agents'}

@@ -11,8 +11,8 @@ import { SocialPostEmbed } from '@/features/sessions/tools/social-post-embed'
 import { ToolFallback } from '@/features/sessions/tools/tool-fallback'
 import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
 import { WebSearchCitations } from '@/features/sessions/tools/web-search-citations'
-import { TaskV2Result, TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
-import React from 'react'
+import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
+import React, { useMemo } from 'react'
 
 export type TaskResultToolProps = {
   toolCall: ToolCall
@@ -146,11 +146,30 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
       result =>
         result &&
         (Array.isArray(result?.output) ||
-          (typeof (result as TaskV2Result)?.output === 'string' &&
-            (result as TaskV2Result)?.output.length > 0)),
+          (typeof result?.output === 'string' &&
+            (result?.output as string).length > 0)),
     )
-  const isCompletedWithResults =
-    toolCall.status === 'completed' && hasDisplayableResults
+
+  // Memoize the result object to prevent infinite re-renders
+  const toolFallbackResult = useMemo(
+    () => ({
+      tool: tool!,
+      result: toolResults || [],
+      status:
+        toolCall.status === 'completed'
+          ? TaskV2Status.Completed
+          : toolCall.status === 'failed'
+          ? TaskV2Status.Failed
+          : toolCall.status === 'running'
+          ? TaskV2Status.Running
+          : toolCall.status === 'cancelled'
+          ? TaskV2Status.Cancelled
+          : TaskV2Status.Pending,
+      error: toolCall.error,
+      task: toolCall.task,
+    }),
+    [tool, toolResults, toolCall.status, toolCall.error, toolCall.task],
+  )
 
   return (
     <div className="mb-2 max-w-full">
@@ -224,28 +243,13 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           <ToolMediaRenderer results={toolResults || []} args={toolCall.args} />
         )}
       </ErrorBoundary>
-      {/* Show ToolFallback only for tools that don't have session posts or child sessions */}
-      {!isCompletedWithResults &&
+      {/* Show ToolFallback only when there are no displayable results */}
+      {!hasDisplayableResults &&
         !(isWebSearchTool && toolCall.status === 'completed') &&
         !isSessionPost &&
         !toolCall.child_session && (
           <ToolFallback
-            result={{
-              tool: tool!,
-              result: toolResults || [],
-              status:
-                toolCall.status === 'completed'
-                  ? TaskV2Status.Completed
-                  : toolCall.status === 'failed'
-                  ? TaskV2Status.Failed
-                  : toolCall.status === 'running'
-                  ? TaskV2Status.Running
-                  : toolCall.status === 'cancelled'
-                  ? TaskV2Status.Cancelled
-                  : TaskV2Status.Pending,
-              error: toolCall.error,
-              task: toolCall.task,
-            }}
+            result={toolFallbackResult}
             toolName={tool!}
             args={toolCall.args}
             onCancel={onCancel}
