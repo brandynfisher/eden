@@ -5,6 +5,7 @@ import { StatusIndicator } from './components/status-indicator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { AgentContext, buildAgentPrompt } from '@/lib/voice/build-agent-prompt'
 import {
   REALTIME_USER_FIELDS,
@@ -34,6 +35,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   onStatusChange,
 }) => {
   const router = useRouter()
+  const { verifyAuth } = useAuthState()
 
   // Initialize userInfo state based on config fields
   const initialUserInfo = useMemo(() => {
@@ -86,6 +88,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
 
   // Wrapper to immediately update UI when starting
   const handleStartConversation = async () => {
+    // Check if user is authenticated first
+    const isAuthenticated = await verifyAuth()
+    if (!isAuthenticated) {
+      return
+    }
+
     setIsStarting(true)
     await conversation.startConversation()
   }
