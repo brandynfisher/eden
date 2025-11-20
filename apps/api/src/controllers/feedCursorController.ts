@@ -116,7 +116,7 @@ type GenericFilters = {
 const createCursorMatch = (cursor: string) => {
   // If a cursor is provided, convert it to an ObjectId, otherwise match all
   const lastSeenIdMatch = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
-  return [lastSeenIdMatch] || []
+  return [lastSeenIdMatch]
 }
 
 const maybeAddCursorFilterStage = (

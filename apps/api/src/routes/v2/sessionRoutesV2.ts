@@ -4,6 +4,7 @@ import {
   untrackSessionView,
 } from '../../controllers/sessionTrackingController'
 import {
+  addPassiveMessage,
   addSessionMessageReaction,
   cancelSession,
   createSession,
@@ -977,6 +978,51 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => isSessionActive(server, request, reply),
+  })
+
+  // Add passive message endpoint (for realtime voice conversations)
+  server.post<{
+    Body: {
+      session_id: string
+      user_id: string
+      role: 'user' | 'assistant'
+      content: string
+    }
+  }>('/v2/sessions/add-message', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Add Passive Message',
+      description:
+        'Add a message to a session without triggering agent responses. Used for realtime voice conversations where messages are recorded but should not trigger the async prompt flow.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+        user_id: Type.String(),
+        role: Type.Union([Type.Literal('user'), Type.Literal('assistant')]),
+        content: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          message_id: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => addPassiveMessage(server, request, reply),
   })
 }
 

@@ -35,7 +35,7 @@ export function VoiceSelector({
   const selectedVoice = useMemo(() => {
     if (!voicesQuery.voices) return null
 
-    return voicesQuery.voices.find(voice => voice.voice_id === value)
+    return voicesQuery.voices.find(voice => voice.voiceId === value)
   }, [voicesQuery.voices, value])
 
   const handlePlayVoiceSample = useCallback((url: string) => {
@@ -76,9 +76,9 @@ export function VoiceSelector({
                 <ScrollArea className="max-h-80 overflow-y-auto">
                   {voicesQuery.voices.map(voice => (
                     <CommandItem
-                      key={voice.voice_id}
+                      key={voice.voiceId}
                       onSelect={() => {
-                        onChange(voice.voice_id)
+                        onChange(voice.voiceId!)
                         setOpen(false)
                       }}
                       className="group flex items-center justify-between"
@@ -87,7 +87,7 @@ export function VoiceSelector({
                         <Check
                           className={cn(
                             'h-4 w-4',
-                            value === voice.voice_id
+                            value === voice.voiceId
                               ? 'opacity-100'
                               : 'opacity-0',
                           )}
@@ -100,14 +100,14 @@ export function VoiceSelector({
                               voice.labels?.age,
                               voice.labels?.gender,
                               voice.description,
-                              voice.labels?.use_case,
+                              voice.labels?.useCase,
                             ]
                               .filter(Boolean)
                               .join(', ')}
                           </div>
                         </div>
                       </div>
-                      {voice.preview_url && (
+                      {voice.previewUrl && (
                         <Button
                           className="sm:opacity-0 group-hover:opacity-100"
                           variant="outline"
@@ -115,8 +115,8 @@ export function VoiceSelector({
                           onClick={e => {
                             e.stopPropagation()
                             e.preventDefault()
-                            if (voice.preview_url) {
-                              handlePlayVoiceSample(voice.preview_url)
+                            if (voice.previewUrl) {
+                              handlePlayVoiceSample(voice.previewUrl)
                             }
                           }}
                         >
@@ -137,10 +137,10 @@ export function VoiceSelector({
           variant="ghost"
           className="w-fit gap-2"
           type="button"
-          disabled={!selectedVoice.preview_url}
+          disabled={!selectedVoice.previewUrl}
           onClick={() => {
-            if (selectedVoice.preview_url) {
-              handlePlayVoiceSample(selectedVoice.preview_url)
+            if (selectedVoice.previewUrl) {
+              handlePlayVoiceSample(selectedVoice.previewUrl)
             }
           }}
         >

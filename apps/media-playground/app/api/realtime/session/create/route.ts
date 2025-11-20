@@ -1,0 +1,95 @@
+import { getAuthToken } from '@/lib/auth'
+import { env } from '@/lib/config'
+import { handleAxiosServerError } from '@/lib/fetcher'
+import { EdenClient, SessionType } from '@edenlabs/eden-sdk'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  const authToken = await getAuthToken(request)
+
+  if (!authToken) {
+    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
+      status: 401,
+    })
+  }
+
+  try {
+    // Parse request body
+    const body = await request.json()
+    const { agentId, userInfo } = body
+
+    if (!agentId) {
+      return new NextResponse(JSON.stringify({ message: 'Missing agentId' }), {
+        status: 400,
+      })
+    }
+
+    // Initialize Eden client with user's auth token
+    const eden = new EdenClient({
+      edenApiUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+      token: authToken,
+    })
+
+    // Create session using Eden SDK
+    const res = await eden.sessions.v2.create({
+      agent_ids: [agentId],
+      title: 'Realtime Conversation',
+      session_type: SessionType.CHAT,
+      status: 'active',
+    })
+
+    if (!res.success) {
+      return new NextResponse(
+        JSON.stringify({
+          message: res.message || 'Session creation failed',
+        }),
+        {
+          status: 500,
+        },
+      )
+    }
+
+    // If user info provided, dump it as JSON as the first passive message
+    const sessionId = (res.session as { _id?: string } | undefined)?._id
+    if (userInfo && Object.keys(userInfo).length > 0 && sessionId) {
+      try {
+        // Get user ID for the passive message endpoint
+        const userResponse = await eden.creators.meV2()
+        const userId = userResponse?.creator?._id
+
+        if (userId) {
+          // Dump user info as JSON string
+          const userInfoJson = JSON.stringify(userInfo, null, 2)
+
+          // Add passive message using the Fastify endpoint
+          await fetch(
+            `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/add-message`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+              },
+              body: JSON.stringify({
+                session_id: sessionId,
+                user_id: userId,
+                role: 'user',
+                content: userInfoJson,
+              }),
+            },
+          )
+        }
+      } catch (error) {
+        // Log but don't fail session creation if user info message fails
+        console.error('Failed to add user info message:', error)
+      }
+    }
+
+    return NextResponse.json(res)
+  } catch (error) {
+    const errorMessage = handleAxiosServerError(error)
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+      status: 500,
+    })
+  }
+}

@@ -76,7 +76,7 @@ export const registerAssetUpload = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.log.info('Successfully registered plugin: AssetUpload')
   } catch (err) {
-    fastify.log.error('Plugin: AssetUpload, error on register', err)
+    fastify.log.error({ err }, 'Plugin: AssetUpload, error on register')
     console.error(err)
   }
 }

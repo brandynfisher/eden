@@ -61,7 +61,7 @@ export const registerLogos = async (fastify: FastifyInstance) => {
     fastify.decorate('handleInteractionTest', handleInteractionTest)
     fastify.log.info('Successfully registered plugin: Logos')
   } catch (err) {
-    fastify.log.error('Plugin: Logos, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Logos, error on register')
   }
 }
 

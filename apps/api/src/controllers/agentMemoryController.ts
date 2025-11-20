@@ -99,7 +99,10 @@ const invalidateFullyFormedMemories = async (
       }
     }
   } catch (error) {
-    server.log.error('Error invalidating fully formed memories:', error)
+    server.log.error(
+      { err: error },
+      'Error invalidating fully formed memories:',
+    )
   }
 }
 
@@ -161,7 +164,7 @@ export const getAgentMemory = async (
       unabsorbedDirectives,
     })
   } catch (error) {
-    server.log.error('Error fetching user memory:', error)
+    server.log.error({ err: error }, 'Error fetching user memory:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -211,7 +214,7 @@ export const saveAgentMemory = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error saving user memory:', error)
+    server.log.error({ err: error }, 'Error saving user memory:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -244,7 +247,7 @@ export const retrieveMemoryUser = async (
 
     return reply.status(200).send(memoryRecord || {})
   } catch (error) {
-    server.log.error('Error retrieving memory user:', error)
+    server.log.error({ err: error }, 'Error retrieving memory user:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -344,7 +347,7 @@ export const retrieveMemoryAgent = async (
       shards: processedRecords,
     })
   } catch (error) {
-    server.log.error('Error retrieving memory agent:', error)
+    server.log.error({ err: error }, 'Error retrieving memory agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -408,7 +411,7 @@ export const updateMemoryAgent = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory agent:', error)
+    server.log.error({ err: error }, 'Error updating memory agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -466,7 +469,7 @@ export const removeMemoryFromAgent = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error removing memory from agent:', error)
+    server.log.error({ err: error }, 'Error removing memory from agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -499,7 +502,7 @@ export const retrieveMemorySession = async (
 
     return reply.status(200).send(memoryRecord)
   } catch (error) {
-    server.log.error('Error retrieving memory session:', error)
+    server.log.error({ err: error }, 'Error retrieving memory session:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -549,7 +552,7 @@ export const updateMemoryUser = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory user:', error)
+    server.log.error({ err: error }, 'Error updating memory user:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -601,7 +604,7 @@ export const updateMemorySession = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory session:', error)
+    server.log.error({ err: error }, 'Error updating memory session:')
 
     // Provide more specific error messages based on the error type
     if (error instanceof Error) {
@@ -669,7 +672,7 @@ export const removeUnabsorbedMemory = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error removing unabsorbed directive:', error)
+    server.log.error({ err: error }, 'Error removing unabsorbed directive:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -755,7 +758,7 @@ export const createMemoryAgent = async (
       message: 'Collective Memory Shard created successfully',
     })
   } catch (error) {
-    server.log.error('Error creating memory agent shard:', error)
+    server.log.error({ err: error }, 'Error creating memory agent shard:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -797,7 +800,74 @@ export const updateUserMemoryEnabled = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating user memory enabled status:', error)
+    server.log.error(
+      { err: error },
+      'Error updating user memory enabled status:',
+    )
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+export const getAgentMemoryContext = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    let userMemoryContent = ''
+    let collectiveMemoryShards: Array<{ shard_name: string; content: string }> =
+      []
+
+    // Query user memory only if user_memory_enabled is true
+    if (agent?.user_memory_enabled) {
+      const memoryUserCollection =
+        server.mongoose.connection.db.collection('memory_user')
+      const userMemory = await memoryUserCollection.findOne({
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      })
+
+      userMemoryContent = userMemory?.fully_formed_memory || ''
+    }
+
+    // Query collective memory (active shards)
+    const memoryAgentCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const activeShards = await memoryAgentCollection
+      .find({
+        agent_id: agentObjectId,
+        is_active: true,
+      })
+      .toArray()
+
+    collectiveMemoryShards = activeShards
+      .filter(
+        shard => shard.fully_formed_memory && shard.fully_formed_memory.trim(),
+      )
+      .map(shard => ({
+        shard_name: shard.shard_name || 'unnamed_shard',
+        content: shard.fully_formed_memory,
+      }))
+
+    return reply.status(200).send({
+      userMemory: userMemoryContent,
+      collectiveMemory: collectiveMemoryShards,
+    })
+  } catch (error) {
+    server.log.error({ err: error }, 'Error fetching agent memory context:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }

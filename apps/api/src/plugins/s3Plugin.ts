@@ -382,7 +382,7 @@ export const registerS3 = async (fastify: FastifyInstance) => {
     fastify.decorate('generateS3UploadSignedUrl', generateS3UploadSignedUrl)
     fastify.log.info('Successfully registered plugin: S3')
   } catch (err) {
-    fastify.log.error('Plugin: S3, error on register', err)
+    fastify.log.error({ err }, 'Plugin: S3, error on register')
     console.error(err)
   }
 }

@@ -9,7 +9,7 @@ export const registerStripe = async (fastify: FastifyInstance) => {
     fastify.decorate('stripe', stripe)
     fastify.log.info('Successfully registered plugin: Stripe')
   } catch (err) {
-    fastify.log.error('Plugin: Stripe, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Stripe, error on register')
   }
 }
 

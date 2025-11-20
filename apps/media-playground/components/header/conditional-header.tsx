@@ -20,6 +20,7 @@ const ConditionalHeader = () => {
     pathname?.startsWith('/gigabrain') ||
     pathname?.startsWith('/explore') ||
     pathname?.startsWith('/create') ||
+    pathname?.startsWith('/realtime') ||
     pathname?.startsWith('/agents') ||
     pathname?.startsWith('/tasks') ||
     pathname?.startsWith('/new') ||

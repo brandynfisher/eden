@@ -61,7 +61,7 @@ export const registerPlayHt = async (fastify: FastifyInstance) => {
     fastify.decorate('playHt', playHt)
     fastify.log.info('Successfully registered plugin: PlayHt')
   } catch (err) {
-    fastify.log.error('Plugin: PlayHt, error on register', err)
+    fastify.log.error({ err }, 'Plugin: PlayHt, error on register')
   }
 }
 

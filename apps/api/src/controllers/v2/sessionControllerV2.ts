@@ -2053,7 +2053,7 @@ export const updateSessionStatus = async (
 
     return reply.status(200).send(response)
   } catch (error) {
-    server.log.error('Error updating session status:', error)
+    server.log.error({ err: error }, 'Error updating session status:')
 
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500
@@ -2064,6 +2064,125 @@ export const updateSessionStatus = async (
         message,
       })
     }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}
+
+/**
+ * Add a message to a session passively (without triggering agent responses)
+ * This is used for realtime voice conversations where messages are recorded
+ * but should not trigger the async prompt flow
+ */
+export const addPassiveMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Body: {
+      session_id: string
+      user_id: string
+      role: 'user' | 'assistant'
+      content: string
+    }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { session_id, user_id, role, content } = request.body
+
+  // Validation
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'session_id is required',
+    })
+  }
+
+  if (!user_id) {
+    return reply.status(400).send({
+      message: 'user_id is required',
+    })
+  }
+
+  if (!role || !['user', 'assistant'].includes(role)) {
+    return reply.status(400).send({
+      message: 'role must be either "user" or "assistant"',
+    })
+  }
+
+  if (!content || typeof content !== 'string') {
+    return reply.status(400).send({
+      message: 'content is required and must be a string',
+    })
+  }
+
+  try {
+    // Verify session exists
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Verify user exists
+    const user = await User.findById(user_id)
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    // For assistant role, we need to find the agent
+    let senderId: ObjectId
+    if (role === 'assistant') {
+      // Get the first agent in the session as the sender
+      // (or you could pass agent_id in the request body if needed)
+      if (!session.agents || session.agents.length === 0) {
+        return reply.status(400).send({
+          message: 'Session has no agents for assistant message',
+        })
+      }
+      const firstAgent = session.agents[0]
+      // Handle both ObjectId and populated AgentDocument
+      senderId =
+        firstAgent instanceof ObjectId
+          ? firstAgent
+          : new ObjectId((firstAgent as any)._id || firstAgent)
+    } else {
+      senderId = new ObjectId(user_id)
+    }
+
+    // Create and save the message directly to MongoDB
+    const message = new Message({
+      session: new ObjectId(session_id),
+      sender: senderId,
+      eden_user_id: new ObjectId(user_id),
+      role: role,
+      content: content,
+    })
+
+    await message.save()
+
+    // Add message to session's messages array
+    session.messages.push(message._id as any)
+    await session.save()
+
+    server.log.info(
+      {
+        sessionId: session_id,
+        messageId: message._id,
+        role,
+        userId: user_id,
+      },
+      'Passive message added to session',
+    )
+
+    return reply.status(200).send({
+      success: true,
+      message_id: message._id.toString(),
+    })
+  } catch (error) {
+    server.log.error({ err: error }, 'Error adding passive message:')
 
     return reply.status(500).send({
       message: 'Internal server error',

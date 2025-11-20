@@ -135,7 +135,10 @@ export const requestAccountDeletion = async (
       requestId: deletionRequest._id,
     })
   } catch (error) {
-    request.server.log.error('Failed to request account deletion', error)
+    request.server.log.error(
+      { err: error },
+      'Failed to request account deletion',
+    )
     return reply.status(500).send({
       message: 'Failed to submit account deletion request',
     })
@@ -182,7 +185,7 @@ export const addLastAgent = async (
       preferences: updatedPreferences,
     })
   } catch (error) {
-    request.server.log.error('Failed to update last agent', error)
+    request.server.log.error({ err: error }, 'Failed to update last agent')
     return reply.status(500).send({
       message: 'Failed to update last agent',
     })
@@ -381,7 +384,7 @@ export const submitUserFeedback = async (
         MAX_FEEDBACK_SUBMISSIONS_PER_DAY - (submissionsToday + 1),
     })
   } catch (error) {
-    request.server.log.error('Failed to submit user feedback', error)
+    request.server.log.error({ err: error }, 'Failed to submit user feedback')
     return reply.status(500).send({
       message: 'Failed to submit feedback',
     })

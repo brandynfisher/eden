@@ -60,7 +60,10 @@ export async function sendLoraTrainingCompletedEmail(
       message,
     })
   } catch (error) {
-    server.log.error('Failed to send Lora training completion email', error)
+    server.log.error(
+      { err: error },
+      'Failed to send Lora training completion email',
+    )
     throw error
   }
 }
@@ -103,7 +106,7 @@ export async function sendWelcomeEmail(
       message,
     })
   } catch (error) {
-    server.log.error('Failed to send welcome email', error)
+    server.log.error({ err: error }, 'Failed to send welcome email')
     throw error
   }
 }
@@ -147,7 +150,7 @@ export async function sendOutOfMannaEmail(
       message,
     })
   } catch (error) {
-    server.log.error('Failed to send out of manna email', error)
+    server.log.error({ err: error }, 'Failed to send out of manna email')
     throw error
   }
 }
@@ -191,7 +194,10 @@ export async function sendAccountDeletionRequestEmail(
       message,
     })
   } catch (error) {
-    server.log.error('Failed to send account deletion request email', error)
+    server.log.error(
+      { err: error },
+      'Failed to send account deletion request email',
+    )
     throw error
   }
 }
@@ -270,7 +276,7 @@ export async function sendUserFeedbackEmail(
       message,
     })
   } catch (error) {
-    server.log.error('Failed to send user feedback email', error)
+    server.log.error({ err: error }, 'Failed to send user feedback email')
     throw error
   }
 }

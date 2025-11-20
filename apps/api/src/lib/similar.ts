@@ -11,6 +11,7 @@ export const getSimilarCreationIds = async (
 
   const collection = await chromadb.getCollection({
     name: 'creation_clip_embeddings',
+    embeddingFunction: undefined as any,
   })
 
   if (!collection) {

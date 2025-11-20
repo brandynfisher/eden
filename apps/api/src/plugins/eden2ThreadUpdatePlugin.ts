@@ -172,8 +172,8 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
           }
         } catch (err) {
           fastify.log.error(
-            'Failed to handle change stream onChange: Eden2Tasks',
             { err },
+            'Failed to handle change stream onChange: Eden2Tasks',
           )
         }
       },
@@ -192,7 +192,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
       done()
     })
   } catch (err) {
-    fastify.log.error('Failed to register plugin: Eden2ThreadUpdates', { err })
+    fastify.log.error({ err }, 'Failed to register plugin: Eden2ThreadUpdates')
   }
 }
 

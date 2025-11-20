@@ -122,8 +122,8 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
           }
         } catch (err) {
           fastify.log.error(
-            'Failed to handle change stream onChange: Eden2SessionUpdates',
             { err },
+            'Failed to handle change stream onChange: Eden2SessionUpdates',
           )
         }
       })
@@ -143,9 +143,10 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
 
       fastify.log.info('Successfully registered plugin: Eden2SessionUpdates')
     } catch (err) {
-      fastify.log.error('Failed to register plugin: Eden2SessionUpdates', {
-        err,
-      })
+      fastify.log.error(
+        { err },
+        'Failed to register plugin: Eden2SessionUpdates',
+      )
     }
   }
 

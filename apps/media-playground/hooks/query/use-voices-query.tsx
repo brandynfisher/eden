@@ -1,6 +1,8 @@
 import { fetcher } from '@/lib/fetcher'
+import type { ElevenLabs } from '@elevenlabs/elevenlabs-js'
 import { useQuery } from '@tanstack/react-query'
-import { Voice } from 'elevenlabs/api'
+
+type Voice = ElevenLabs.Voice
 
 export const useVoicesQuery = () => {
   const {

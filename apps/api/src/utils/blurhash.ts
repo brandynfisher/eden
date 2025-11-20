@@ -39,7 +39,10 @@ export const generateBlurhash = async (
 
     return blurhash
   } catch (e) {
-    server.log.error(`Error creating blurhash for result: ${imageUrl}`, e)
+    server.log.error(
+      { err: e },
+      `Error creating blurhash for result: ${imageUrl}`,
+    )
     return ''
   }
 }

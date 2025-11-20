@@ -17,6 +17,7 @@ import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
   createMemoryAgent as _createMemoryAgent,
   getAgentMemory as _getAgentMemory,
+  getAgentMemoryContext as _getAgentMemoryContext,
   removeMemoryFromAgent as _removeMemoryFromAgent,
   removeUnabsorbedMemory as _removeUnabsorbedMemory,
   retrieveMemoryAgent as _retrieveMemoryAgent,
@@ -73,6 +74,7 @@ export {
 // Re-export functions from agentMemoryController
 export {
   _getAgentMemory as getAgentMemory,
+  _getAgentMemoryContext as getAgentMemoryContext,
   _saveAgentMemory as saveAgentMemory,
   _retrieveMemoryUser as retrieveMemoryUser,
   _retrieveMemoryAgent as retrieveMemoryAgent,
@@ -858,7 +860,7 @@ export const getAgentCreations = async (
       totalDocs,
     })
   } catch (error) {
-    server.log.error('Error fetching agent creations', error)
+    server.log.error({ err: error }, 'Error fetching agent creations')
     if ((error as any).name === 'CastError') {
       return reply.status(400).send({ message: 'Invalid parameter format' })
     }
