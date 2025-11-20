@@ -129,3 +129,11 @@ ArgoCD is used for deployments:
 - Production environments for Create, Garden, and API
 - Staging environments for all apps
 - Status badges in README.md show deployment health
+
+## Additional Context Documentation
+
+For detailed information about specific systems and features, see the `docs/context/` directory:
+- **[user-preferences.md](./docs/context/user-preferences.md)**: UserPreferences collection, lastAgents stack, agent sorting
+- More context documents available in [docs/context/README.md](./docs/context/README.md)
+
+These documents provide deep-dive context for specific subsystems and should be referenced when working with those features.
