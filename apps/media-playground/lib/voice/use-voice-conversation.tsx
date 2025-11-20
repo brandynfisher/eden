@@ -9,7 +9,7 @@ import {
   VoiceProviderConfig,
 } from './types'
 import { useConversation } from '@elevenlabs/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 /**
  * Hook for managing voice conversations with abstracted provider support
@@ -137,24 +137,22 @@ export function useVoiceConversation(
     [addDebugLog],
   )
 
-  // Fetch configuration on mount
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch('/api/realtime/config')
-        if (!response.ok) {
-          throw new Error('Failed to fetch configuration')
-        }
-        const data = await response.json()
-        setApiKey(data.apiKey)
-        setAgentId(data.agentId)
-        addDebugLog('Configuration loaded successfully', 'success')
-      } catch (error) {
-        addDebugLog('Failed to fetch ElevenLabs configuration', 'error')
+  // Helper function to fetch configuration
+  const fetchConfig = useCallback(async () => {
+    try {
+      const response = await fetch('/api/realtime/config')
+      if (!response.ok) {
+        throw new Error('Failed to fetch configuration')
       }
+      const data = await response.json()
+      setApiKey(data.apiKey)
+      setAgentId(data.agentId)
+      addDebugLog('Configuration loaded successfully', 'success')
+      return { apiKey: data.apiKey, agentId: data.agentId }
+    } catch (error) {
+      addDebugLog('Failed to fetch ElevenLabs configuration', 'error')
+      return null
     }
-
-    fetchConfig()
   }, [addDebugLog])
 
   // Build conversation overrides with user context
@@ -319,9 +317,19 @@ export function useVoiceConversation(
   })
 
   const startConversation = useCallback(async () => {
-    if (!apiKey || !agentId) {
-      addDebugLog('Configuration not ready yet', 'error')
-      return
+    // Fetch configuration if not already loaded
+    let currentApiKey = apiKey
+    let currentAgentId = agentId
+
+    if (!currentApiKey || !currentAgentId) {
+      addDebugLog('Loading configuration...', 'info')
+      const configData = await fetchConfig()
+      if (!configData) {
+        addDebugLog('Failed to load configuration', 'error')
+        return
+      }
+      currentApiKey = configData.apiKey
+      currentAgentId = configData.agentId
     }
 
     try {
@@ -384,7 +392,7 @@ export function useVoiceConversation(
       addDebugLog('Starting conversation session with overrides...', 'info')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (conversation.startSession as any)({
-        agentId,
+        agentId: currentAgentId,
         overrides,
       })
       addDebugLog('Session started successfully', 'success')
@@ -398,9 +406,11 @@ export function useVoiceConversation(
     agentId,
     conversation,
     config.edenAgentId,
+    config.userInfo,
     buildConversationOverrides,
     addDebugLog,
     startVolumeMonitoring,
+    fetchConfig,
   ])
 
   const endConversation = useCallback(async () => {
