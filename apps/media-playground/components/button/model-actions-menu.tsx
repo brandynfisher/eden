@@ -80,7 +80,7 @@ const ModelActionsMenu = ({
               <DropdownMenuItem asChild>
                 <Link
                   className="cursor-pointer"
-                  href={`/create/image/${
+                  href={`/studio/image/${
                     modelData.base_model && modelData.base_model === 'flux-dev'
                       ? 'flux_dev'
                       : 'txt2img'

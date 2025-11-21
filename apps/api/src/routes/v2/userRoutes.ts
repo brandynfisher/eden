@@ -1,7 +1,6 @@
 import {
   SubmitFeedbackBody,
   addLastAgent,
-  hideAgent,
   listTransactions,
   pinAgent,
   requestAccountDeletion,
@@ -138,31 +137,6 @@ const userRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unpinAgent(request, reply),
-  })
-
-  server.post('/v2/user-preferences/hide-agent', {
-    schema: {
-      tags: ['User'],
-      summary: 'Hide Agent',
-      description: 'Hide an agent from the agents list.',
-      hide: true,
-      body: Type.Object({
-        agent_id: Type.String(),
-      }),
-      response: {
-        200: Type.Object({
-          message: Type.String(),
-        }),
-        400: Type.Object({
-          message: Type.String(),
-        }),
-        500: Type.Object({
-          message: Type.String(),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => hideAgent(request, reply),
   })
 
   server.post('/v2/user/feedback', {

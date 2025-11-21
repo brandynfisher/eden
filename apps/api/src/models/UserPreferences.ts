@@ -4,7 +4,6 @@ export interface UserPreferencesSchema {
   user: Schema.Types.ObjectId
   last_agents: Schema.Types.ObjectId[]
   pinned_agents: Schema.Types.ObjectId[]
-  hidden_agents: Schema.Types.ObjectId[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -34,11 +33,6 @@ const userPreferencesSchema = new Schema<UserPreferencesDocument>(
       },
     },
     pinned_agents: {
-      type: [Schema.Types.ObjectId],
-      ref: 'users3',
-      default: [],
-    },
-    hidden_agents: {
       type: [Schema.Types.ObjectId],
       ref: 'users3',
       default: [],
@@ -127,32 +121,6 @@ userPreferencesSchema.statics.unpinAgent = async function (
   await userPrefs.save()
 }
 
-// Static method to hide an agent
-userPreferencesSchema.statics.hideAgent = async function (
-  userId: mongoose.Types.ObjectId,
-  agentId: mongoose.Types.ObjectId,
-) {
-  const userPrefs = await this.findOne({ user: userId })
-
-  if (!userPrefs) {
-    await this.create({
-      user: userId,
-      hidden_agents: [agentId],
-    })
-    return
-  }
-
-  // Check if already hidden
-  const isHidden = userPrefs.hidden_agents.some(
-    (id: Schema.Types.ObjectId) => id.toString() === agentId.toString(),
-  )
-
-  if (!isHidden) {
-    userPrefs.hidden_agents.push(agentId)
-    await userPrefs.save()
-  }
-}
-
 export const UserPreferences = mongoose.model<
   UserPreferencesDocument,
   mongoose.Model<UserPreferencesDocument> & {
@@ -165,10 +133,6 @@ export const UserPreferences = mongoose.model<
       agentId: mongoose.Types.ObjectId,
     ) => Promise<void>
     unpinAgent: (
-      userId: mongoose.Types.ObjectId,
-      agentId: mongoose.Types.ObjectId,
-    ) => Promise<void>
-    hideAgent: (
       userId: mongoose.Types.ObjectId,
       agentId: mongoose.Types.ObjectId,
     ) => Promise<void>

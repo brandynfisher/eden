@@ -17,11 +17,12 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon, Plus, Settings, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 const ChatLaunchpad = () => {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isSignedIn } = useAuthState()
   const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
   const [isCreatingSession, setIsCreatingSession] = useState(false)
@@ -46,19 +47,86 @@ const ChatLaunchpad = () => {
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
   const lastAgentId = lastAgents.length > 0 ? lastAgents[0]._id : undefined
 
-  // Start with one agent (either last agent or default to eve)
+  // Parse agent parameter from URL
+  const agentParam = searchParams?.get('agent')
+  const agentKeys = agentParam ? agentParam.split(',') : []
+
+  // Fetch agents from URL parameter
+  const { agent: urlAgent1 } = useAgentQuery({
+    key: agentKeys[0] || '',
+    enabled: agentKeys.length > 0,
+  })
+  const { agent: urlAgent2 } = useAgentQuery({
+    key: agentKeys[1] || '',
+    enabled: agentKeys.length > 1,
+  })
+  const { agent: urlAgent3 } = useAgentQuery({
+    key: agentKeys[2] || '',
+    enabled: agentKeys.length > 2,
+  })
+  const { agent: urlAgent4 } = useAgentQuery({
+    key: agentKeys[3] || '',
+    enabled: agentKeys.length > 3,
+  })
+  const { agent: urlAgent5 } = useAgentQuery({
+    key: agentKeys[4] || '',
+    enabled: agentKeys.length > 4,
+  })
+  const { agent: urlAgent6 } = useAgentQuery({
+    key: agentKeys[5] || '',
+    enabled: agentKeys.length > 5,
+  })
+  const { agent: urlAgent7 } = useAgentQuery({
+    key: agentKeys[6] || '',
+    enabled: agentKeys.length > 6,
+  })
+  const { agent: urlAgent8 } = useAgentQuery({
+    key: agentKeys[7] || '',
+    enabled: agentKeys.length > 7,
+  })
+
+  // Start with one agent (either last agent or default to eve) if no URL params
   const { agent: defaultAgent } = useAgentQuery({
     key: lastAgentId || 'eve',
+    enabled: agentKeys.length === 0,
   })
 
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([])
 
-  // Initialize with default agent once it loads
+  // Initialize with agents from URL or default agent
   useEffect(() => {
-    if (defaultAgent && selectedAgents.length === 0) {
+    if (agentKeys.length > 0) {
+      // Use agents from URL parameter
+      const urlAgents = [
+        urlAgent1,
+        urlAgent2,
+        urlAgent3,
+        urlAgent4,
+        urlAgent5,
+        urlAgent6,
+        urlAgent7,
+        urlAgent8,
+      ].filter((agent): agent is Agent => !!agent)
+
+      if (urlAgents.length > 0) {
+        setSelectedAgents(urlAgents)
+      }
+    } else if (defaultAgent) {
+      // Use default agent if no URL parameter
       setSelectedAgents([defaultAgent])
     }
-  }, [defaultAgent, selectedAgents.length])
+  }, [
+    defaultAgent,
+    urlAgent1,
+    urlAgent2,
+    urlAgent3,
+    urlAgent4,
+    urlAgent5,
+    urlAgent6,
+    urlAgent7,
+    urlAgent8,
+    agentParam, // Watch for changes in the agent parameter itself
+  ])
 
   // Configure app shell with sidebar
   useEffect(() => {
@@ -183,10 +251,8 @@ const ChatLaunchpad = () => {
 
         const result = await response.json()
         if (result.session_id) {
-          // Navigate to the session with the first agent's username
-          const firstAgent = selectedAgents[0]
-          const agentUsername = firstAgent.username || firstAgent._id
-          router.push(`/chat/${agentUsername}/${result.session_id}`)
+          // Navigate to the session
+          router.push(`/sessions/${result.session_id}`)
         }
       } catch (error) {
         console.error('Error creating session:', error)
@@ -279,7 +345,7 @@ const ChatLaunchpad = () => {
       <main className="chat-launchpad-container">
         <div className="chat-launchpad-content">
           {/* Agent Display Area */}
-          <div className="agents-gallery">
+          <div className="agents-section">
             <div className="agents-collection">
               {selectedAgents.map((agent, index) => {
                 const isOwner = user && agent.owner?._id === user._id
@@ -368,12 +434,6 @@ const ChatLaunchpad = () => {
               />
             </div>
 
-            {selectedAgents.length > 1 && (
-              <p className="multi-agent-hint">
-                Multi-agent collaboration enabled
-              </p>
-            )}
-
             {/* Session Settings Button */}
             <button
               className="session-settings-btn"
@@ -384,8 +444,8 @@ const ChatLaunchpad = () => {
             </button>
           </div>
 
-          {/* Message Input at Bottom */}
-          <div className="message-input-wrapper">
+          {/* Message Input below agents */}
+          <div className="message-input-section">
             <div className="message-input-container">
               <MessageInput
                 sessionId="new"
@@ -437,12 +497,11 @@ const ChatLaunchpad = () => {
           settings={sessionSettings}
           onSettingsChange={setSessionSettings}
           agents={selectedAgents}
+          minimal={true}
         />
 
         {/* Styles - Using Eden's purple/blue color scheme */}
         <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
-
           .chat-launchpad-container {
             flex: 1;
             overflow: hidden;
@@ -468,29 +527,30 @@ const ChatLaunchpad = () => {
             flex: 1;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             position: relative;
             z-index: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            gap: 2rem;
           }
 
-          .agents-gallery {
-            flex: 1;
+          .agents-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 3rem 2rem;
-            overflow-y: auto;
-            gap: 3rem;
-            min-height: 0;
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
           }
 
           .agents-collection {
             display: flex;
             flex-wrap: wrap;
-            gap: 2rem;
+            gap: 1.5rem;
             justify-content: center;
             align-items: flex-start;
-            max-width: 1200px;
             width: 100%;
           }
 
@@ -605,7 +665,6 @@ const ChatLaunchpad = () => {
           }
 
           .agent-avatar-fallback {
-            font-family: 'Playfair Display', serif;
             font-size: 2.5rem;
             font-weight: 600;
             background: hsl(var(--muted));
@@ -621,20 +680,17 @@ const ChatLaunchpad = () => {
           }
 
           .agent-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 600;
             color: hsl(var(--foreground));
-            letter-spacing: -0.02em;
-            line-height: 1.2;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
           }
 
           .agent-creator {
-            font-family: 'DM Sans', sans-serif;
             font-size: 0.875rem;
             color: hsl(var(--muted-foreground));
-            font-weight: 500;
-            letter-spacing: 0.01em;
+            font-weight: 400;
           }
 
           .add-agent-card {
@@ -679,7 +735,6 @@ const ChatLaunchpad = () => {
           }
 
           .add-agent-text {
-            font-family: 'DM Sans', sans-serif;
             font-size: 0.875rem;
             color: hsl(var(--muted-foreground) / 0.6);
             font-weight: 500;
@@ -689,23 +744,11 @@ const ChatLaunchpad = () => {
             color: hsl(var(--muted-foreground));
           }
 
-          .multi-agent-hint {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground) / 0.7);
-            text-align: center;
-            font-style: italic;
-            letter-spacing: 0.02em;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-            opacity: 0;
-          }
-
           .session-settings-btn {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            font-family: 'DM Sans', sans-serif;
             font-size: 0.875rem;
             color: hsl(var(--muted-foreground) / 0.7);
             background: transparent;
@@ -730,38 +773,23 @@ const ChatLaunchpad = () => {
             opacity: 1;
           }
 
-          .message-input-wrapper {
-            padding: 2rem;
-            background: linear-gradient(
-              to top,
-              hsl(var(--background)) 0%,
-              transparent 100%
-            );
-            backdrop-filter: blur(8px);
-            border-top: 1px solid hsl(var(--border));
+          .message-input-section {
+            max-width: 900px;
+            width: 100%;
           }
 
           .message-input-container {
-            max-width: 900px;
-            margin: 0 auto;
+            width: 100%;
           }
 
           @media (max-width: 768px) {
-            .chat-launchpad-container {
-              overflow: hidden;
-            }
-
             .chat-launchpad-content {
-              overflow: hidden;
-              min-height: 0;
+              padding: 1.5rem 1rem;
+              gap: 1.5rem;
             }
 
-            .agents-gallery {
-              padding: 1.5rem 1rem 1rem;
+            .agents-section {
               gap: 1.5rem;
-              overflow-y: auto;
-              -webkit-overflow-scrolling: touch;
-              justify-content: flex-start;
             }
 
             .agents-collection {

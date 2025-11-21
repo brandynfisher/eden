@@ -67,7 +67,7 @@ export const taskV2Type = Type.Object({
   tool: Type.String(),
   cost: Type.Optional(Type.Number()),
   output_type: Type.Optional(Type.String()),
-  args: Type.Any(),
+  args: Type.Optional(Type.Any()),
   status: Type.String(),
   performance: Type.Optional(Type.Any()),
   result: Type.Optional(Type.Any()),

@@ -40,6 +40,8 @@ import { useEffect, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -93,7 +95,9 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   }, [session])
 
   const handleNewSession = () => {
-    router.push('/sessions/new')
+    // Create URL with current session's agents
+    const agentKeys = session?.agents?.map(a => a.username || a._id).join(',')
+    router.push(agentKeys ? `/chat?agent=${agentKeys}` : '/chat')
   }
 
   const handleHamburgerClick = () => {
@@ -229,11 +233,12 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
         {/* Right section - Icon buttons only (hide on share route) */}
         <div className="flex items-center gap-1 shrink-0">
-          {/* Status Toggle - only show for session owner and when session exists */}
+          {/* Status Toggle - only show for automatic sessions when user is owner */}
           {!isShareRoute &&
             session &&
             session.owner._id === user?._id &&
-            sessionId !== 'new' && (
+            sessionId !== 'new' &&
+            session.session_type === 'automatic' && (
               <SessionStatusToggle
                 sessionId={sessionId}
                 currentStatus={session.status}
@@ -257,14 +262,14 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
               />
             )}
 
-          {/* New Session button - icon only */}
+          {/* New Chat button - icon only */}
           {!isShareRoute && (
             <Button
               variant="ghost"
               size="icon"
               onClick={handleNewSession}
               className="h-9 w-9"
-              title="New Session"
+              title="New Chat"
             >
               <EditIcon className="w-4 h-4" />
             </Button>
@@ -282,6 +287,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           agents={session.agents}
           sessionId={sessionId}
           onSave={handleSaveSettings}
+          minimal={true}
         />
       )}
     </>

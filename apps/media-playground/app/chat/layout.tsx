@@ -1,17 +1,10 @@
-import React, { PropsWithChildren } from 'react'
+'use client'
 
-interface LayoutProps {
-  creationModal: React.ReactNode
+import { LiveAudioProvider } from '@/features/sessions/live-audio'
+import { PropsWithChildren } from 'react'
+
+const Chat2Layout = ({ children }: PropsWithChildren) => {
+  return <LiveAudioProvider>{children}</LiveAudioProvider>
 }
 
-export default function ChatLayout({
-  children,
-  creationModal,
-}: PropsWithChildren<LayoutProps>) {
-  return (
-    <>
-      {children}
-      {creationModal}
-    </>
-  )
-}
+export default Chat2Layout

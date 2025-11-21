@@ -85,6 +85,7 @@ export const siteConfig: SiteConfig = {
     '/home',
     '/chat',
     '/create',
+    '/studio',
     '/train',
     '/explore',
     '/sign-in',

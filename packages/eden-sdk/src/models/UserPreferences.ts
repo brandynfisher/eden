@@ -13,7 +13,6 @@ export interface MinimalAgent {
 export interface UserPreferencesGetResponse extends WebAPICallResult {
   last_agents: MinimalAgent[]
   pinned_agents: MinimalAgent[]
-  hidden_agents: string[]
 }
 
 export interface UserPreferencesGetArguments {

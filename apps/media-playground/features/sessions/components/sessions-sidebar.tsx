@@ -34,7 +34,6 @@ import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import {
-  useHideAgent,
   usePinAgent,
   useUnpinAgent,
 } from '@/hooks/mutation/use-agent-preferences'
@@ -275,13 +274,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5 border',
+        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-[15px] relative p-0.5 border',
         isActive
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
           : 'hover:text-foreground hover:bg-muted/50 border-transparent',
       )}
     >
-      <div className="flex-grow min-w-0 px-2 py-1.5 flex items-stretch">
+      <div className="flex-grow min-w-0 px-1.5 py-1 flex items-stretch">
         {isEditing ? (
           <div className="flex items-center gap-1 flex-grow min-w-0 text-foreground">
             <Input
@@ -569,7 +568,6 @@ interface AgentListItemProps {
   onItemClick?: () => void
   onPin?: () => void
   onUnpin?: () => void
-  onHide?: () => void
   onSettingsOpen?: () => void
   isMobile?: boolean
 }
@@ -581,7 +579,6 @@ const AgentListItem: FC<AgentListItemProps> = ({
   onItemClick,
   onPin,
   onUnpin,
-  onHide,
   onSettingsOpen,
   isMobile = false,
 }) => {
@@ -594,7 +591,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
 
   const handleAgentClick = () => {
     onItemClick?.()
-    router.push(`/chat/${agent.username || agent._id}`)
+    router.push(`/chat?agent=${agent.username || agent._id}`)
   }
 
   const handleSettingsClick = (e: React.MouseEvent) => {
@@ -605,7 +602,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between items-center gap-2 rounded-md transition-all mr-1 text-sm relative p-2 border w-full',
+        'group flex justify-between items-center gap-2 rounded-md transition-all mr-1 text-[15px] relative px-1.5 py-1.5 border w-full',
         isActive
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
           : 'hover:text-foreground hover:bg-muted/50 border-transparent',
@@ -613,7 +610,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
     >
       <button
         onClick={handleAgentClick}
-        className="flex items-center gap-2 min-w-0 flex-1"
+        className="flex items-center gap-2.5 min-w-0 flex-1"
       >
         <Avatar className="h-8 w-8 shrink-0">
           <AvatarImage
@@ -677,15 +674,6 @@ const AgentListItem: FC<AgentListItemProps> = ({
                 Pin
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              onClick={e => {
-                e.stopPropagation()
-                onHide?.()
-              }}
-            >
-              <TrashIcon className="mr-2 h-4 w-4" />
-              Hide
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -702,13 +690,11 @@ const RecentAgents = ({
   isMobile?: boolean
 }) => {
   const { isSignedIn, user } = useAuthState()
-  const { lastAgents, pinnedAgents, hiddenAgents, isLoading } =
-    useUserPreferencesQuery({
-      enabled: !!isSignedIn,
-    })
+  const { lastAgents, pinnedAgents, isLoading } = useUserPreferencesQuery({
+    enabled: !!isSignedIn,
+  })
   const { mutate: pinAgent } = usePinAgent()
   const { mutate: unpinAgent } = useUnpinAgent()
-  const { mutate: hideAgent } = useHideAgent()
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
@@ -717,24 +703,23 @@ const RecentAgents = ({
     return null
   }
 
-  // Combine and deduplicate agents from both lastAgents and pinnedAgents
-  const allAgentsMap = new Map()
-
-  // Add pinned agents first
-  pinnedAgents.forEach(agent => {
-    if (!hiddenAgents.includes(agent._id)) {
-      allAgentsMap.set(agent._id, { ...agent, isPinned: true })
-    }
-  })
-
-  // Add last agents (non-pinned)
-  lastAgents.forEach(agent => {
-    if (!hiddenAgents.includes(agent._id) && !allAgentsMap.has(agent._id)) {
-      allAgentsMap.set(agent._id, { ...agent, isPinned: false })
-    }
-  })
-
-  const displayAgents = Array.from(allAgentsMap.values()).slice(0, 3)
+  // Show up to 3 agents total: pinned agents first, then lastAgents to fill remaining slots
+  const pinnedAgentIds = new Set(pinnedAgents.map(a => a._id))
+  const displayAgents: Array<{
+    _id: string
+    username?: string
+    userImage?: string
+    name?: string
+    owner?: string
+    isPinned: boolean
+  }> = [
+    // First, add all pinned agents (marked as pinned)
+    ...pinnedAgents.map(agent => ({ ...agent, isPinned: true })),
+    // Then add lastAgents that aren't already pinned (marked as not pinned)
+    ...lastAgents
+      .filter(agent => !pinnedAgentIds.has(agent._id))
+      .map(agent => ({ ...agent, isPinned: false })),
+  ].slice(0, 3) // Max 3 total
 
   // Only show if we have agents
   if (displayAgents.length === 0) {
@@ -774,7 +759,6 @@ const RecentAgents = ({
                   onItemClick={onItemClick}
                   onPin={() => pinAgent(agent._id)}
                   onUnpin={() => unpinAgent(agent._id)}
-                  onHide={() => hideAgent(agent._id)}
                   onSettingsOpen={() => {
                     setSettingsAgentId(agent.username || agent._id)
                     setIsSettingsModalOpen(true)
@@ -804,13 +788,11 @@ const MainLeft = ({
   onItemClick,
   agentId,
   isChat,
-  onViewModeChange,
   scrollContainerRef,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
-  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
   scrollContainerRef?: React.MutableRefObject<HTMLDivElement | null>
 }) => {
   const { isSignedIn, user } = useAuthState()
@@ -967,31 +949,10 @@ const MainLeft = ({
                       hideAvatars={false}
                       onItemClick={() => {
                         onItemClick?.()
-                        if (isChat) {
-                          // In chat mode, navigate to /chat/{agent}/{session}
-                          // Use the agent from the session or the current agentId
-                          const sessionAgent =
-                            session.agents?.[0]?.username || agentId
-                          if (sessionAgent) {
-                            onViewModeChange?.('chat')
-                            router.push(
-                              `/chat/${sessionAgent}/${session._id}`,
-                              {
-                                scroll: false,
-                              },
-                            )
-                          } else {
-                            // Fallback to sessions if no agent
-                            router.push(`/sessions/${session._id}`, {
-                              scroll: false,
-                            })
-                          }
-                        } else {
-                          // For regular sessions, go to /sessions/[sessionId]
-                          router.push(`/sessions/${session._id}`, {
-                            scroll: false,
-                          })
-                        }
+                        // Always navigate to /sessions/{session_id}
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
                       }}
                     />
                   ))}
@@ -1054,7 +1015,7 @@ const SidebarUserProfile = () => {
   // Show sign-in button when not signed in
   if (!isSignedIn || !user) {
     return (
-      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)] flex-shrink-0">
+      <div className="border-t bg-background p-3 md:-ml-2 md:w-[calc(100%+0.5rem)] flex-shrink-0">
         <Button onClick={verifyAuth} className="w-full" variant="default">
           Sign In
         </Button>
@@ -1063,12 +1024,12 @@ const SidebarUserProfile = () => {
   }
 
   return (
-    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full flex-shrink-0">
+    <div className="border-t bg-background -ml-2 md:w-[calc(100%+0.5rem)] w-full flex-shrink-0">
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <button
             ref={dropdownTriggerRef}
-            className="flex items-center gap-3 w-full py-3 pr-3 pl-[18px] hover:bg-muted/20 transition-colors"
+            className="flex items-center gap-3 w-full py-3 pr-3 pl-4 hover:bg-muted/20 transition-colors"
           >
             <UserAvatar
               image={user?.userImage}
@@ -1303,7 +1264,7 @@ export const SessionsSidebarContent = ({
   isChat,
   agent,
   viewMode,
-  onViewModeChange,
+  onViewModeChange: _onViewModeChange, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
   onAgentSelect,
   onSidebarToggle,
   isCollapsed = false,
@@ -1336,7 +1297,7 @@ export const SessionsSidebarContent = ({
 
   const handleNewChatNavigation = useCallback(() => {
     const targetAgentKey = agentUsername || agentId || lastAgent
-    router.push(`/chat/${targetAgentKey}`)
+    router.push(`/chat?agent=${targetAgentKey}`)
   }, [agentUsername, agentId, lastAgent, router])
 
   // Get permissions for settings sidebar
@@ -1424,9 +1385,10 @@ export const SessionsSidebarContent = ({
         ),
       },
       {
-        title: 'Create',
-        onClick: () => router.push('/create'),
-        isActive: pathname?.startsWith('/create'),
+        title: 'Studio',
+        onClick: () => router.push('/studio'),
+        isActive: pathname?.startsWith('/studio'),
+        isExternal: true,
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1543,7 +1505,7 @@ export const SessionsSidebarContent = ({
         <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-2"
+            className="flex items-center pl-2"
           >
             <EdenLogoBw className="w-[28px]" />
           </button>
@@ -1589,7 +1551,7 @@ export const SessionsSidebarContent = ({
       <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center gap-2"
+          className="flex items-center pl-2"
         >
           <EdenLogoBw className="w-[28px]" />
         </button>
@@ -1615,9 +1577,9 @@ export const SessionsSidebarContent = ({
 
       {/* Mobile: Navigation Buttons - scrollable when in sheet, shown outside scroll container when NOT in sheet */}
       {!isMobileSidebar && (
-        <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
+        <div className="mb-4 mr-2 flex-col md:hidden flex">
           {/* New Chat button with selected agent avatar */}
-          <div className="flex w-full justify-between items-center gap-2">
+          <div className="flex w-full items-center gap-2">
             <Button
               variant="ghost"
               onClick={() => {
@@ -1625,21 +1587,21 @@ export const SessionsSidebarContent = ({
                 handleNewChatNavigation()
               }}
               className={cn(
-                'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
-                '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                'bg-transparent hover:bg-muted/50 text-foreground',
               )}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-4"
+                className="size-5"
               >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
@@ -1674,23 +1636,23 @@ export const SessionsSidebarContent = ({
               router.push('/agents')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
               pathname === '/agents' || pathname?.startsWith('/agents/')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -1708,23 +1670,23 @@ export const SessionsSidebarContent = ({
               router.push('/tasks')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
               pathname === '/tasks' || pathname?.startsWith('/tasks/')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
@@ -1740,23 +1702,23 @@ export const SessionsSidebarContent = ({
               router.push('/explore?type=creations')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
               pathname?.startsWith('/explore')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
@@ -1764,20 +1726,35 @@ export const SessionsSidebarContent = ({
             <span>Explore</span>
           </Button>
 
-          {/* Create button */}
+          {/* Studio button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/create')
+              router.push('/studio')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/create')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+              pathname?.startsWith('/studio')
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5"
+            >
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+            <span className="flex-1 text-left">Studio</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -1788,38 +1765,38 @@ export const SessionsSidebarContent = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              <path d="M7 17L17 7" />
+              <path d="M7 7h10v10" />
             </svg>
-            <span>Create</span>
           </Button>
         </div>
       )}
 
       {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
-      <div className="mb-4 mr-2 flex-shrink-0 flex-col gap-2 hidden md:flex">
+      <div className="mb-4 mr-2 flex-shrink-0 flex-col hidden md:flex">
         {/* New Chat button with selected agent avatar */}
-        <div className="flex w-full justify-between items-center gap-2">
+        <div className="flex w-full items-center gap-2">
           <Button
             variant="ghost"
             onClick={handleNewChatNavigation}
             className={cn(
-              'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
-              '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+              'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
@@ -1847,23 +1824,23 @@ export const SessionsSidebarContent = ({
             router.push('/agents')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
             pathname === '/agents' || pathname?.startsWith('/agents/')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -1880,23 +1857,23 @@ export const SessionsSidebarContent = ({
             router.push('/tasks')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
             pathname === '/tasks' || pathname?.startsWith('/tasks/')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
@@ -1911,23 +1888,23 @@ export const SessionsSidebarContent = ({
             router.push('/explore?type=creations')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
             pathname?.startsWith('/explore')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
@@ -1935,19 +1912,34 @@ export const SessionsSidebarContent = ({
           <span>Explore</span>
         </Button>
 
-        {/* Create button */}
+        {/* Studio button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/create')
+            router.push('/studio')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/create')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+            pathname?.startsWith('/studio')
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span className="flex-1 text-left">Studio</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -1958,11 +1950,11 @@ export const SessionsSidebarContent = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            <path d="M7 17L17 7" />
+            <path d="M7 7h10v10" />
           </svg>
-          <span>Create</span>
         </Button>
       </div>
 
@@ -1974,9 +1966,9 @@ export const SessionsSidebarContent = ({
       >
         {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
         {isMobileSidebar && (
-          <div className="mb-4 mr-2 flex-col gap-2 flex pt-3">
+          <div className="mb-4 mr-2 flex-col flex pt-3">
             {/* New Chat button with selected agent avatar */}
-            <div className="flex w-full justify-between items-center gap-2">
+            <div className="flex w-full items-center gap-2">
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -1984,21 +1976,21 @@ export const SessionsSidebarContent = ({
                   handleNewChatNavigation()
                 }}
                 className={cn(
-                  'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
-                  '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                  'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  'bg-transparent hover:bg-muted/50 text-foreground',
                 )}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="size-4"
+                  className="size-5"
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
@@ -2033,23 +2025,23 @@ export const SessionsSidebarContent = ({
                 router.push('/agents')
               }}
               className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
                 pathname === '/agents' || pathname?.startsWith('/agents/')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                  : 'bg-transparent hover:bg-muted/50 text-foreground',
               )}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-4"
+                className="size-5"
               >
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
@@ -2067,23 +2059,23 @@ export const SessionsSidebarContent = ({
                 router.push('/tasks')
               }}
               className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
                 pathname === '/tasks' || pathname?.startsWith('/tasks/')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                  : 'bg-transparent hover:bg-muted/50 text-foreground',
               )}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-4"
+                className="size-5"
               >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
@@ -2099,23 +2091,23 @@ export const SessionsSidebarContent = ({
                 router.push('/explore?type=creations')
               }}
               className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
                 pathname?.startsWith('/explore')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                  : 'bg-transparent hover:bg-muted/50 text-foreground',
               )}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-4"
+                className="size-5"
               >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
@@ -2123,20 +2115,35 @@ export const SessionsSidebarContent = ({
               <span>Explore</span>
             </Button>
 
-            {/* Create button */}
+            {/* Studio button */}
             <Button
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                router.push('/create')
+                router.push('/studio')
               }}
               className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/create')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+                pathname?.startsWith('/studio')
+                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                  : 'bg-transparent hover:bg-muted/50 text-foreground',
               )}
             >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5"
+              >
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              <span className="flex-1 text-left">Studio</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -2147,11 +2154,11 @@ export const SessionsSidebarContent = ({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-4"
+                className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                <path d="M7 17L17 7" />
+                <path d="M7 7h10v10" />
               </svg>
-              <span>Create</span>
             </Button>
           </div>
         )}
@@ -2162,7 +2169,6 @@ export const SessionsSidebarContent = ({
           onItemClick={onItemClick}
           agentId={agentId}
           isChat={isChat}
-          onViewModeChange={onViewModeChange}
           scrollContainerRef={scrollContainerRef}
         />
       </div>
@@ -2202,7 +2208,7 @@ export const SessionsSidebar = React.memo(
     return (
       <div
         className={cn(
-          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out',
           'max-w-[320px]',
           isSidebarCollapsed && 'p-0 border-none',
         )}

@@ -24,7 +24,8 @@ export const usePinAgent = () => {
       return fetcher('/api/user-preferences/pin-agent', { agentId })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      // Force refetch to immediately update UI
+      queryClient.refetchQueries({ queryKey: ['user-preferences'] })
     },
   })
 }
@@ -37,20 +38,8 @@ export const useUnpinAgent = () => {
       return fetcher('/api/user-preferences/unpin-agent', { agentId })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
-    },
-  })
-}
-
-export const useHideAgent = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (agentId: string) => {
-      return fetcher('/api/user-preferences/hide-agent', { agentId })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      // Force refetch to immediately update UI
+      queryClient.refetchQueries({ queryKey: ['user-preferences'] })
     },
   })
 }

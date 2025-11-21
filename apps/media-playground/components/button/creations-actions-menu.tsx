@@ -116,7 +116,7 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
             <DropdownMenuItem asChild disabled={!isSignedIn}>
               <Link
                 className="cursor-pointer flex items-center"
-                href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
+                href={`/studio/${fileType}/${creationData.tool}?creation=${creationData._id}`}
                 scroll={false}
                 shallow={true}
                 prefetch={false}

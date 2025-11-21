@@ -14,7 +14,6 @@ export const useUserPreferencesQuery = ({ enabled }: { enabled: boolean }) => {
   return {
     lastAgents: data?.last_agents || [],
     pinnedAgents: data?.pinned_agents || [],
-    hiddenAgents: data?.hidden_agents || [],
     isLoading,
     error,
     refetch,

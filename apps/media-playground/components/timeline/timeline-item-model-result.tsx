@@ -26,7 +26,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
             <Image
               loader={customImageLoader}
               src={output.thumbnail || siteConfig.mediaErrorUrl}
-              alt={task.args.name || ''}
+              alt={task.args?.name || ''}
               width={1024}
               height={1024}
               className="w-full h-full"

@@ -270,45 +270,6 @@ export const unpinAgent = async (
   }
 }
 
-export const hideAgent = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
-
-  const { agent_id } = request.body as { agent_id: string }
-  if (!agent_id) {
-    return reply.status(400).send({
-      message: 'agent_id is required',
-    })
-  }
-
-  try {
-    const userOid =
-      userId instanceof mongoose.Types.ObjectId
-        ? userId
-        : new mongoose.Types.ObjectId(userId.toString())
-
-    const agentOid = new mongoose.Types.ObjectId(agent_id)
-
-    await UserPreferences.hideAgent(userOid, agentOid)
-
-    return reply.status(200).send({
-      message: 'Successfully hid agent',
-    })
-  } catch (error) {
-    request.server.log.error('Failed to hide agent', error)
-    return reply.status(500).send({
-      message: 'Failed to hide agent',
-    })
-  }
-}
-
 export const submitUserFeedback = async (
   request: FastifyRequest<{ Body: SubmitFeedbackBody }>,
   reply: FastifyReply,

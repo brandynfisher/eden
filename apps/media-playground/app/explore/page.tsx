@@ -183,7 +183,7 @@ const ExplorePage = () => {
             'Browse through diverse models custom-trained by Eden creators',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/create/lora/flux_trainer">
+              <Link href="/studio/lora/flux_trainer">
                 <Zap className="h-4 w-4" />
                 Train Model
               </Link>
@@ -196,7 +196,7 @@ const ExplorePage = () => {
           description: 'Create multimedia with AI tools',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/create/image/flux_dev">
+              <Link href="/studio/image/flux_dev">
                 <Zap className="h-4 w-4" />
                 Use Tools
               </Link>
@@ -210,7 +210,7 @@ const ExplorePage = () => {
           description: 'Discover what people are creating with Eden',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/create/image/flux_dev">
+              <Link href="/studio/image/flux_dev">
                 <Plus className="h-4 w-4" />
                 Create an Image
               </Link>

@@ -33,7 +33,6 @@ export const getUserPreferences = async (
       return reply.status(200).send({
         last_agents: [],
         pinned_agents: [],
-        hidden_agents: [],
       })
     }
 
@@ -52,7 +51,6 @@ export const getUserPreferences = async (
     return reply.status(200).send({
       last_agents: topAgents,
       pinned_agents: validPinnedAgents,
-      hidden_agents: preferences.hidden_agents || [],
     })
   } catch (e) {
     console.error('Error fetching user preferences:', e)

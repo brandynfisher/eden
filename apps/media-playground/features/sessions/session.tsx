@@ -1469,14 +1469,14 @@ const Session = ({
             {/* New Chat button - icon only */}
             <button
               onClick={() => {
-                if (ischatRoute && params?.agentId) {
-                  router.push(`/chat/${params.agentId}`)
-                } else {
-                  router.push('/sessions/new')
-                }
+                // Create URL with current session's agents
+                const agentKeys = session?.agents
+                  ?.map(a => a.username || a._id)
+                  .join(',')
+                router.push(agentKeys ? `/chat?agent=${agentKeys}` : '/chat')
               }}
               className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
-              title={ischatRoute ? 'New Chat' : 'New Session'}
+              title="New Chat"
             >
               <EditIcon className="h-4 w-4" />
             </button>
@@ -1543,19 +1543,21 @@ const Session = ({
 
           {/* Right section - Share, New Chat/Session (no Status Toggle for chat) */}
           <div className="flex items-center gap-2">
-            {/* Status Toggle - only show for sessions, not chat */}
-            {!ischatRoute && isOwner && (
-              <SessionStatusToggle
-                sessionId={sessionId as string}
-                currentStatus={session.status}
-                onStatusChange={newStatus => {
-                  // Update session in cache
-                  if (session) {
-                    session.status = newStatus
-                  }
-                }}
-              />
-            )}
+            {/* Status Toggle - only show for automatic sessions, not chat */}
+            {!ischatRoute &&
+              isOwner &&
+              session.session_type === 'automatic' && (
+                <SessionStatusToggle
+                  sessionId={sessionId as string}
+                  currentStatus={session.status}
+                  onStatusChange={newStatus => {
+                    // Update session in cache
+                    if (session) {
+                      session.status = newStatus
+                    }
+                  }}
+                />
+              )}
 
             {/* Settings button - only show for single agent in chat route */}
             {ischatRoute &&
@@ -1585,20 +1587,20 @@ const Session = ({
               />
             )}
 
-            {/* New Chat button (for chat routes) or New Session button (for sessions routes) */}
+            {/* New Chat button */}
             <button
               onClick={() => {
-                if (ischatRoute && params?.agentId) {
-                  router.push(`/chat/${params.agentId}`)
-                } else {
-                  router.push('/sessions/new')
-                }
+                // Create URL with current session's agents
+                const agentKeys = session?.agents
+                  ?.map(a => a.username || a._id)
+                  .join(',')
+                router.push(agentKeys ? `/chat?agent=${agentKeys}` : '/chat')
               }}
               className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
-              title={ischatRoute ? 'New Chat' : 'New Session'}
+              title="New Chat"
             >
               <EditIcon className="h-3.5 w-3.5" />
-              {ischatRoute ? 'New Chat' : 'New Session'}
+              New Chat
             </button>
           </div>
         </div>
@@ -2214,6 +2216,7 @@ const Session = ({
           agents={session.agents}
           sessionId={sessionId}
           onSave={handleSaveSettings}
+          minimal={true}
         />
       )}
     </div>
