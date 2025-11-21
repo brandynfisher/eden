@@ -1,7 +1,8 @@
 import { Colors } from './src/constants/theme'
-import AgentsList from './src/features/agents/agents-list'
 import { useColorScheme } from './src/hooks/use-color-scheme'
+import Navigator from './src/navigator'
 import Providers from './src/providers'
+import { NavigationContainer } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -17,11 +18,11 @@ export default function App() {
   const colors = Colors[colorScheme ?? 'light']
 
   const [fontsLoaded] = useFonts({
-    'Inter-Regular': require('./assets/fonts/Inter_18pt-Regular.ttf'),
-    'Inter-Medium': require('./assets/fonts/Inter_18pt-Medium.ttf'),
-    'Inter-SemiBold': require('./assets/fonts/Inter_18pt-SemiBold.ttf'),
-    'Inter-Bold': require('./assets/fonts/Inter_18pt-Bold.ttf'),
-    'Inter-Italic': require('./assets/fonts/Inter_18pt-Italic.ttf'),
+    'SpaceGrotesk-Regular': require('@assets/fonts/SpaceGrotesk-Regular.ttf'),
+    'SpaceGrotesk-Medium': require('@assets/fonts/SpaceGrotesk-Medium.ttf'),
+    'SpaceGrotesk-SemiBold': require('@assets/fonts/SpaceGrotesk-SemiBold.ttf'),
+    'SpaceGrotesk-Bold': require('@assets/fonts/SpaceGrotesk-Bold.ttf'),
+    'SpaceGrotesk-Light': require('@assets/fonts/SpaceGrotesk-Light.ttf'),
   })
 
   useEffect(() => {
@@ -36,16 +37,18 @@ export default function App() {
 
   return (
     <Providers>
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <StatusBar
-          style={colorScheme === 'dark' ? 'light' : 'dark'}
-          backgroundColor={colors.background}
-          translucent={false}
-        />
-        <SafeAreaView style={{ flex: 1 }}>
-          <AgentsList />
-        </SafeAreaView>
-      </View>
+      <NavigationContainer>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <StatusBar
+            style={colorScheme === 'dark' ? 'light' : 'dark'}
+            backgroundColor={colors.background}
+            translucent={false}
+          />
+          <SafeAreaView style={{ flex: 1 }}>
+            <Navigator />
+          </SafeAreaView>
+        </View>
+      </NavigationContainer>
     </Providers>
   )
 }

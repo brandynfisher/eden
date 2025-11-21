@@ -803,6 +803,14 @@ const SidebarUserProfile = ({
   const logout = async () => {
     if (isSignedIn) {
       await signOut()
+
+      // Send logout message to mobile app if running in WebView
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: 'logout' }),
+        )
+      }
+
       window.location.href = '/'
     }
   }
@@ -876,7 +884,7 @@ const SidebarUserProfile = ({
       hidden={hasOpenDialog}
       onCloseAutoFocus={event => {
         if (focusRef.current) {
-          (focusRef.current as HTMLButtonElement).focus()
+          ;(focusRef.current as HTMLButtonElement).focus()
           focusRef.current = null
           event.preventDefault()
         }
