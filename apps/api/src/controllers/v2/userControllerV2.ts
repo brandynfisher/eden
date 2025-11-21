@@ -224,7 +224,7 @@ export const pinAgent = async (
       message: 'Successfully pinned agent',
     })
   } catch (error) {
-    request.server.log.error('Failed to pin agent', error)
+    request.server.log.error({ error }, 'Failed to pin agent')
     return reply.status(500).send({
       message: 'Failed to pin agent',
     })
@@ -263,7 +263,7 @@ export const unpinAgent = async (
       message: 'Successfully unpinned agent',
     })
   } catch (error) {
-    request.server.log.error('Failed to unpin agent', error)
+    request.server.log.error({ error }, 'Failed to unpin agent')
     return reply.status(500).send({
       message: 'Failed to unpin agent',
     })
