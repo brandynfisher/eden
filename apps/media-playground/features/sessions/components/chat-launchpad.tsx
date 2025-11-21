@@ -52,44 +52,57 @@ const ChatLaunchpad = () => {
   const agentKeys = agentParam ? agentParam.split(',') : []
 
   // Fetch agents from URL parameter
-  const { agent: urlAgent1 } = useAgentQuery({
+  const { agent: urlAgent1, isLoading: loading1 } = useAgentQuery({
     key: agentKeys[0] || '',
-    enabled: agentKeys.length > 0,
+    enabled: agentKeys.length > 0 && !!agentKeys[0],
   })
-  const { agent: urlAgent2 } = useAgentQuery({
+  const { agent: urlAgent2, isLoading: loading2 } = useAgentQuery({
     key: agentKeys[1] || '',
-    enabled: agentKeys.length > 1,
+    enabled: agentKeys.length > 1 && !!agentKeys[1],
   })
-  const { agent: urlAgent3 } = useAgentQuery({
+  const { agent: urlAgent3, isLoading: loading3 } = useAgentQuery({
     key: agentKeys[2] || '',
-    enabled: agentKeys.length > 2,
+    enabled: agentKeys.length > 2 && !!agentKeys[2],
   })
-  const { agent: urlAgent4 } = useAgentQuery({
+  const { agent: urlAgent4, isLoading: loading4 } = useAgentQuery({
     key: agentKeys[3] || '',
-    enabled: agentKeys.length > 3,
+    enabled: agentKeys.length > 3 && !!agentKeys[3],
   })
-  const { agent: urlAgent5 } = useAgentQuery({
+  const { agent: urlAgent5, isLoading: loading5 } = useAgentQuery({
     key: agentKeys[4] || '',
-    enabled: agentKeys.length > 4,
+    enabled: agentKeys.length > 4 && !!agentKeys[4],
   })
-  const { agent: urlAgent6 } = useAgentQuery({
+  const { agent: urlAgent6, isLoading: loading6 } = useAgentQuery({
     key: agentKeys[5] || '',
-    enabled: agentKeys.length > 5,
+    enabled: agentKeys.length > 5 && !!agentKeys[5],
   })
-  const { agent: urlAgent7 } = useAgentQuery({
+  const { agent: urlAgent7, isLoading: loading7 } = useAgentQuery({
     key: agentKeys[6] || '',
-    enabled: agentKeys.length > 6,
+    enabled: agentKeys.length > 6 && !!agentKeys[6],
   })
-  const { agent: urlAgent8 } = useAgentQuery({
+  const { agent: urlAgent8, isLoading: loading8 } = useAgentQuery({
     key: agentKeys[7] || '',
-    enabled: agentKeys.length > 7,
+    enabled: agentKeys.length > 7 && !!agentKeys[7],
   })
 
   // Start with one agent (either last agent or default to eve) if no URL params
-  const { agent: defaultAgent } = useAgentQuery({
+  const { agent: defaultAgent, isLoading: loadingDefault } = useAgentQuery({
     key: lastAgentId || 'eve',
     enabled: agentKeys.length === 0,
   })
+
+  // Check if we're still loading agents
+  const isLoadingAgents =
+    agentKeys.length > 0
+      ? (agentKeys[0] && loading1) ||
+        (agentKeys[1] && loading2) ||
+        (agentKeys[2] && loading3) ||
+        (agentKeys[3] && loading4) ||
+        (agentKeys[4] && loading5) ||
+        (agentKeys[5] && loading6) ||
+        (agentKeys[6] && loading7) ||
+        (agentKeys[7] && loading8)
+      : loadingDefault
 
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([])
 
@@ -273,7 +286,7 @@ const ChatLaunchpad = () => {
     }
   }
 
-  if (!defaultAgent || isCreatingSession || selectedAgents.length === 0) {
+  if (isLoadingAgents || isCreatingSession || selectedAgents.length === 0) {
     return (
       <main className="chat-launchpad-container">
         <div className="chat-launchpad-loading">
