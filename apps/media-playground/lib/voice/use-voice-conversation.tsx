@@ -8,6 +8,7 @@ import {
   VoiceConversation,
   VoiceProviderConfig,
 } from './types'
+// @ts-ignore - Optional dependency
 import { useConversation } from '@elevenlabs/react'
 import { useCallback, useRef, useState } from 'react'
 
@@ -244,13 +245,13 @@ export function useVoiceConversation(
     onConnect: () => {
       addDebugLog('Connected to agent', 'success')
     },
-    onDisconnect: reason => {
+    onDisconnect: (reason: unknown) => {
       addDebugLog(
         `Disconnected from agent. Reason: ${JSON.stringify(reason)}`,
         'warning',
       )
     },
-    onMessage: async message => {
+    onMessage: async (message: { source: string; message: string }) => {
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'
       if (message.source === 'ai') {
         addDebugLog(
@@ -311,7 +312,7 @@ export function useVoiceConversation(
           : JSON.stringify(error)
       addDebugLog(`Error: ${errorMessage}`, 'error')
     },
-    onStatusChange: status => {
+    onStatusChange: (status: unknown) => {
       addDebugLog(`Status changed to: ${JSON.stringify(status)}`, 'info')
     },
   })

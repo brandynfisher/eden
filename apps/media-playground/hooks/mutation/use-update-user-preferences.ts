@@ -15,8 +15,8 @@ export const useUpdateUserPreferences = () => {
       })
     },
     onSuccess: () => {
-      // Invalidate user preferences query to refetch
-      queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      // Force refetch user preferences to immediately update UI
+      queryClient.refetchQueries({ queryKey: ['user-preferences'] })
     },
   })
 }

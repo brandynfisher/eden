@@ -32,7 +32,7 @@ const HeaderNavLinks = ({
       return (
         (pathname?.startsWith('/explore') &&
           searchParams?.get('type') === 'tools') ||
-        pathname?.startsWith('/create')
+        pathname?.startsWith('/studio')
       )
     }
     if (path === 'explore') {
@@ -61,10 +61,15 @@ const HeaderNavLinks = ({
     onLinkClick?.()
   }
 
+  // Special links for /studio page
+  const isStudioPage = pathname?.startsWith('/studio')
+
   return (
     <nav className={cn(baseClassName, className)}>
       <Link
-        href={isHydrated ? getChatUrl() : '/chat/eve'}
+        href={
+          isStudioPage ? '/chat' : isHydrated ? getChatUrl() : '/chat?agent=eve'
+        }
         className={getLinkClassName('chat')}
         onClick={handleLinkClick}
       >
@@ -77,25 +82,29 @@ const HeaderNavLinks = ({
         />
       )}
       <Link
-        href="/explore?type=agents"
+        href={isStudioPage ? '/explore?type=creations' : '/explore?type=agents'}
         className={getLinkClassName('explore')}
         onClick={handleLinkClick}
       >
         Explore
       </Link>
-      {orientation === 'horizontal' && (
-        <Separator
-          orientation="vertical"
-          className="h-3 sm:h-4 flex-shrink-0"
-        />
+      {!isStudioPage && (
+        <>
+          {orientation === 'horizontal' && (
+            <Separator
+              orientation="vertical"
+              className="h-3 sm:h-4 flex-shrink-0"
+            />
+          )}
+          <Link
+            href="/explore?type=tools"
+            className={getLinkClassName('tools')}
+            onClick={handleLinkClick}
+          >
+            Tools
+          </Link>
+        </>
       )}
-      <Link
-        href="/explore?type=tools"
-        className={getLinkClassName('tools')}
-        onClick={handleLinkClick}
-      >
-        Tools
-      </Link>
     </nav>
   )
 }

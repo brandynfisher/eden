@@ -48,15 +48,15 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           {item.name ? (
             <TaskParameter name={'prompt'} label={'Name'} value={item.name} />
           ) : null}
-          {item.args.prompt || item.args.text_input || item.args.name ? (
+          {item.args?.prompt || item.args?.text_input || item.args?.name ? (
             <TaskParameter
               name={'prompt'}
               label={'Prompt'}
               value={
-                item.args.prompt ||
-                item.args.text_input ||
-                item.args.name ||
-                item.args.prompt_text ||
+                item.args?.prompt ||
+                item.args?.text_input ||
+                item.args?.name ||
+                item.args?.prompt_text ||
                 ''
               }
             />
@@ -85,12 +85,12 @@ const ParameterTableCollapsible = ({ item }: Props) => {
         </div>
       </div>
       <CollapsibleContent className="data-[state=open]:animate-none data-[state=closed]:animate-none mb-2">
-        {item.args.lora ? (
+        {item.args?.lora ? (
           <Suspense fallback={<LoadingIndicator />}>
             <ModelMiniCard modelId={item.args.lora} className="bg-popover mb-2">
               <Button size="sm" variant="outline" asChild>
                 <Link
-                  href={`/create/image/${item.tool}?lora=${item.args.lora}`}
+                  href={`/studio/image/${item.tool}?lora=${item.args.lora}`}
                   className="ml-auto mr-2"
                   scroll={false}
                   shallow={true}
@@ -102,7 +102,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
             </ModelMiniCard>
           </Suspense>
         ) : null}
-        {item.args.lora2 ? (
+        {item.args?.lora2 ? (
           <Suspense fallback={<LoadingIndicator />}>
             <ModelMiniCard
               modelId={item.args.lora2}
@@ -110,7 +110,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
             >
               <Button size="sm" variant="outline" asChild>
                 <Link
-                  href={`/create/image/${item.tool}?lora2=${item.args.lora2}`}
+                  href={`/studio/image/${item.tool}?lora2=${item.args.lora2}`}
                   className="ml-auto mr-2"
                   scroll={false}
                   shallow={true}

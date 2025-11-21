@@ -1,4 +1,5 @@
 import { fetcher } from '@/lib/fetcher'
+// @ts-ignore - Optional dependency
 import type { ElevenLabs } from '@elevenlabs/elevenlabs-js'
 import { useQuery } from '@tanstack/react-query'
 

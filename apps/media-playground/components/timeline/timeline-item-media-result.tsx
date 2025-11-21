@@ -31,7 +31,7 @@ export const MediaResultOutput = ({
   output: TasksV2ResultOutput
   index?: number
 }) => {
-  const num_samples = task.args.n_samples || task.args.num_outputs || false
+  const num_samples = task.args?.n_samples || task.args?.num_outputs || false
 
   return (
     <div
@@ -39,10 +39,10 @@ export const MediaResultOutput = ({
       className={cn([
         'relative bg-accent z-10 rounded-md',
         'max-h-[calc(60vh_-_72.4px)]',
-        (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
+        (task.args?.width ?? 1024) / (task.args?.height ?? 1024) < 1 ||
         ((task.output_type === 'audio' ? 3 : 1) < 1 && (num_samples || 1) === 1)
           ? 'h-full max-w-full flex justify-center '
-          : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
+          : (task.args?.width ?? 1024) / (task.args?.height ?? 1024) > 1 &&
             (num_samples || 1) === 1
           ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
           : '',
@@ -96,7 +96,7 @@ export const MediaResultOutput = ({
             height: output.mediaAttributes?.height,
             duration: output.mediaAttributes?.duration || undefined,
             title: task.tool || undefined,
-            description: task.args.prompt || undefined,
+            description: task.args?.prompt || undefined,
           }}
           startIndex={index}
           videoProps={{
@@ -113,7 +113,7 @@ export const MediaResultOutput = ({
 }
 
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
-  const num_samples = task.args.n_samples || task.args.num_outputs || false
+  const num_samples = task.args?.n_samples || task.args?.num_outputs || false
 
   return (
     <>

@@ -2,8 +2,10 @@ import {
   SubmitFeedbackBody,
   addLastAgent,
   listTransactions,
+  pinAgent,
   requestAccountDeletion,
   submitUserFeedback,
+  unpinAgent,
 } from '../../controllers/v2/userControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -85,6 +87,56 @@ const userRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => addLastAgent(request, reply),
+  })
+
+  server.post('/v2/user-preferences/pin-agent', {
+    schema: {
+      tags: ['User'],
+      summary: 'Pin Agent',
+      description: 'Pin an agent to show it at the top of the agents list.',
+      hide: true,
+      body: Type.Object({
+        agent_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          message: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => pinAgent(request, reply),
+  })
+
+  server.post('/v2/user-preferences/unpin-agent', {
+    schema: {
+      tags: ['User'],
+      summary: 'Unpin Agent',
+      description: 'Unpin an agent from the pinned agents list.',
+      hide: true,
+      body: Type.Object({
+        agent_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          message: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unpinAgent(request, reply),
   })
 
   server.post('/v2/user/feedback', {

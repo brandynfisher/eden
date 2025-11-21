@@ -48,18 +48,29 @@ const AgentCard = ({
     return (
       <Card
         className={cn([
-          'relative overflow-hidden border-2 border-border/60 z-10 transition-all group cursor-pointer bg-card/80 h-full w-full max-w-full',
-          onClick
-            ? 'hover:bg-muted/80 hover:shadow-md hover:border-primary/60'
-            : 'hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-          isSelected && 'ring-2 ring-primary ring-offset-2',
+          'relative overflow-hidden border-2 z-10 transition-all duration-300 group cursor-pointer h-full w-full max-w-full',
+          // Base state
+          !isSelected && 'border-border/60 bg-card/80',
+          // Hover states
+          onClick &&
+            !isSelected &&
+            'hover:bg-muted/80 hover:shadow-md hover:border-primary/60',
+          !onClick &&
+            !isSelected &&
+            'hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
+          // Selected state - bold border with glow and background tint
+          isSelected && [
+            'border-primary bg-primary/5',
+            'shadow-lg shadow-primary/25',
+            'hover:shadow-xl hover:shadow-primary/30',
+          ],
           className,
         ])}
         onClick={onClick ? () => onClick(agent) : undefined}
       >
         {!agent.public ? <PrivateIcon className="" /> : null}
         {isSelected && (
-          <div className="absolute top-2 right-2 z-50 bg-primary text-primary-foreground rounded-full p-1">
+          <div className="absolute top-3 right-3 z-50 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg shadow-primary/50 ring-2 ring-background">
             <CheckIcon className="h-4 w-4" />
           </div>
         )}
@@ -147,14 +158,22 @@ const AgentCard = ({
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-0 z-10 transition-all group bg-card/70 hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
-        isSelected && 'ring-2 ring-primary ring-offset-2',
+        'relative overflow-hidden z-10 transition-all duration-300 group',
+        // Base state
+        !isSelected &&
+          'border-0 bg-card/70 hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
+        // Selected state - bold border with glow and background tint
+        isSelected && [
+          'border-2 border-primary bg-primary/5',
+          'shadow-lg shadow-primary/25',
+          'hover:shadow-xl hover:shadow-primary/30',
+        ],
         className,
       ])}
     >
       {!agent.public ? <PrivateIcon className="" /> : null}
       {isSelected && (
-        <div className="absolute top-2 right-2 z-50 bg-primary text-primary-foreground rounded-full p-1">
+        <div className="absolute top-3 right-3 z-50 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg shadow-primary/50 ring-2 ring-background">
           <CheckIcon className="h-4 w-4" />
         </div>
       )}

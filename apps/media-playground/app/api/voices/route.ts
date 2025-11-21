@@ -1,3 +1,4 @@
+// @ts-ignore - Optional dependency
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import { NextResponse } from 'next/server'
 

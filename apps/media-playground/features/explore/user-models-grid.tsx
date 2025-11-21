@@ -95,7 +95,7 @@ export default function UserModelsGrid() {
           !user && !isAuthLoading ? 'opacity-0 pointer-events-none' : ''
         }`}
       >
-        <Link href="/create/lora/flux_trainer" prefetch={false}>
+        <Link href="/studio/lora/flux_trainer" prefetch={false}>
           <PlusIcon className="w-4 h-4" />
           Train Model
         </Link>

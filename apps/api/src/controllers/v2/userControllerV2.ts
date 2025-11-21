@@ -192,6 +192,84 @@ export const addLastAgent = async (
   }
 }
 
+export const pinAgent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agent_id } = request.body as { agent_id: string }
+  if (!agent_id) {
+    return reply.status(400).send({
+      message: 'agent_id is required',
+    })
+  }
+
+  try {
+    const userOid =
+      userId instanceof mongoose.Types.ObjectId
+        ? userId
+        : new mongoose.Types.ObjectId(userId.toString())
+
+    const agentOid = new mongoose.Types.ObjectId(agent_id)
+
+    await UserPreferences.pinAgent(userOid, agentOid)
+
+    return reply.status(200).send({
+      message: 'Successfully pinned agent',
+    })
+  } catch (error) {
+    request.server.log.error('Failed to pin agent', error)
+    return reply.status(500).send({
+      message: 'Failed to pin agent',
+    })
+  }
+}
+
+export const unpinAgent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agent_id } = request.body as { agent_id: string }
+  if (!agent_id) {
+    return reply.status(400).send({
+      message: 'agent_id is required',
+    })
+  }
+
+  try {
+    const userOid =
+      userId instanceof mongoose.Types.ObjectId
+        ? userId
+        : new mongoose.Types.ObjectId(userId.toString())
+
+    const agentOid = new mongoose.Types.ObjectId(agent_id)
+
+    await UserPreferences.unpinAgent(userOid, agentOid)
+
+    return reply.status(200).send({
+      message: 'Successfully unpinned agent',
+    })
+  } catch (error) {
+    request.server.log.error('Failed to unpin agent', error)
+    return reply.status(500).send({
+      message: 'Failed to unpin agent',
+    })
+  }
+}
+
 export const submitUserFeedback = async (
   request: FastifyRequest<{ Body: SubmitFeedbackBody }>,
   reply: FastifyReply,

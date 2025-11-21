@@ -6,10 +6,13 @@ export interface MinimalAgent {
   _id: string
   username?: string
   userImage?: string
+  name?: string
+  owner?: string
 }
 
 export interface UserPreferencesGetResponse extends WebAPICallResult {
   last_agents: MinimalAgent[]
+  pinned_agents: MinimalAgent[]
 }
 
 export interface UserPreferencesGetArguments {

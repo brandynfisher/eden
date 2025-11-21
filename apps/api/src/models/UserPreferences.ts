@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose'
 export interface UserPreferencesSchema {
   user: Schema.Types.ObjectId
   last_agents: Schema.Types.ObjectId[]
+  pinned_agents: Schema.Types.ObjectId[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -30,6 +31,11 @@ const userPreferencesSchema = new Schema<UserPreferencesDocument>(
         },
         message: 'last_agents can contain at most 10 agents',
       },
+    },
+    pinned_agents: {
+      type: [Schema.Types.ObjectId],
+      ref: 'users3',
+      default: [],
     },
   },
   {
@@ -71,10 +77,62 @@ userPreferencesSchema.statics.updateLastAgent = async function (
   await userPrefs.save()
 }
 
+// Static method to pin an agent
+userPreferencesSchema.statics.pinAgent = async function (
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
+) {
+  const userPrefs = await this.findOne({ user: userId })
+
+  if (!userPrefs) {
+    await this.create({
+      user: userId,
+      pinned_agents: [agentId],
+    })
+    return
+  }
+
+  // Check if already pinned
+  const isPinned = userPrefs.pinned_agents.some(
+    (id: Schema.Types.ObjectId) => id.toString() === agentId.toString(),
+  )
+
+  if (!isPinned) {
+    userPrefs.pinned_agents.push(agentId)
+    await userPrefs.save()
+  }
+}
+
+// Static method to unpin an agent
+userPreferencesSchema.statics.unpinAgent = async function (
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
+) {
+  const userPrefs = await this.findOne({ user: userId })
+
+  if (!userPrefs) {
+    return
+  }
+
+  userPrefs.pinned_agents = userPrefs.pinned_agents.filter(
+    (id: Schema.Types.ObjectId) => id.toString() !== agentId.toString(),
+  )
+
+  await userPrefs.save()
+}
+
 export const UserPreferences = mongoose.model<
   UserPreferencesDocument,
   mongoose.Model<UserPreferencesDocument> & {
     updateLastAgent: (
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
+    ) => Promise<void>
+    pinAgent: (
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
+    ) => Promise<void>
+    unpinAgent: (
       userId: mongoose.Types.ObjectId,
       agentId: mongoose.Types.ObjectId,
     ) => Promise<void>

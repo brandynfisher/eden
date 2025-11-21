@@ -13,6 +13,11 @@ const ConditionalHeader = () => {
     return null
   }
 
+  // Show the main header on /studio, hide it on other specialized routes
+  if (pathname?.startsWith('/studio')) {
+    return <Header />
+  }
+
   // Don't show the main header on these routes as they have their own specialized headers
   if (
     pathname?.startsWith('/chat') ||

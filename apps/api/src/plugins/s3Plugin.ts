@@ -22,7 +22,7 @@ const getS3MediaAttributes = async (
   }
 
   const tempFilePath = join(tmpdir(), randomUUID())
-  fs.writeFileSync(tempFilePath, buffer)
+  fs.writeFileSync(tempFilePath, buffer as unknown as Uint8Array)
 
   if (mediaType === MediaType.Video || mediaType === MediaType.Audio) {
     const duration = await new Promise<number | undefined>(
@@ -86,7 +86,7 @@ export const uploadS3UrlAsset = async (
 ): Promise<Asset> => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
-  const fileType = await fileTypeFromBuffer(assetB64)
+  const fileType = await fileTypeFromBuffer(assetB64 as unknown as Uint8Array)
 
   // Allow images, video, audio, text, and .bin files
   if (
@@ -152,7 +152,7 @@ export const uploadS3BufferAsset = async (
 ): Promise<Asset> => {
   const client = server.s3
   const S3_BUCKET = server.config.AWS_S3_BUCKET as string
-  const sha = util.sha256(buffer)
+  const sha = util.sha256(buffer as unknown as Uint8Array)
   const metadata = { 'Content-Type': fileType.mime, SHA: sha }
   const filename = `${sha}.${fileType.ext}`
   const urlUpload = s3Url(server, filename)

@@ -1,7 +1,16 @@
-import CreateLanding from '@/features/tools/create-landing'
+'use client'
 
-const CreatePage = () => {
-  return <CreateLanding />
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
+const CreateRedirect = () => {
+  const router = useRouter()
+
+  useEffect(() => {
+    router.replace('/studio')
+  }, [router])
+
+  return null
 }
 
-export default CreatePage
+export default CreateRedirect

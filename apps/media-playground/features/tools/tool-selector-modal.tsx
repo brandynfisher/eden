@@ -110,7 +110,7 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
       const outputType = tool.key.includes('legacy')
         ? 'legacy'
         : tool.output_type
-      router.push(`/create/${outputType}/${tool.key}`)
+      router.push(`/studio/${outputType}/${tool.key}`)
       onOpenChange(false)
     },
     [router, onOpenChange],

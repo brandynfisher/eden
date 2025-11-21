@@ -188,7 +188,7 @@ const TaskStatusIndicator = () => {
                                     className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
                                     loader={customImageLoader}
                                     src={output.filename || ''}
-                                    alt={task.args.prompt || ''}
+                                    alt={task.args?.prompt || ''}
                                     width={48}
                                     height={48}
                                   />

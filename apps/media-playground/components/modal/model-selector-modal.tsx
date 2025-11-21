@@ -60,7 +60,7 @@ const ModelSelectorModal = ({
       <div className="flex gap-2 justify-center">
         <Button
           type="button"
-          onClick={() => router.push('/create/lora/flux_trainer')}
+          onClick={() => router.push('/studio/lora/flux_trainer')}
         >
           Train a model
         </Button>

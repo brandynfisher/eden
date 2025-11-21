@@ -131,11 +131,6 @@ const AgentsFeed = ({
                 queryKey={queryKey}
                 onClick={isSelectable ? onClick : undefined}
                 isSelected={isSelectable && selectedIds.includes(agent._id)}
-                className={
-                  isSelectable && selectedIds.includes(agent._id)
-                    ? 'ring-2 ring-primary ring-offset-2'
-                    : undefined
-                }
                 hideContextMenu={hideContextMenu}
                 improvedLayout={improvedLayout}
               />
@@ -182,11 +177,6 @@ const AgentsFeed = ({
             onClick={isSelectable ? onClick : undefined}
             isSelected={
               isSelectable && selectedIds.includes((item as Agent)._id)
-            }
-            className={
-              isSelectable && selectedIds.includes((item as Agent)._id)
-                ? 'ring-2 ring-primary ring-offset-2'
-                : undefined
             }
             hideContextMenu={hideContextMenu}
             improvedLayout={improvedLayout}

@@ -19,7 +19,7 @@ const CreationPresetLink = React.forwardRef<HTMLAnchorElement, Props>(
       <Link
         ref={ref} // pass the ref here
         className="cursor-pointer flex items-center"
-        href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
+        href={`/studio/${fileType}/${creation.tool}?creation=${creation._id}`}
         scroll={false}
         shallow={true}
       >

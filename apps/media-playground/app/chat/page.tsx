@@ -1,3 +1,9 @@
-import HomePage from '../(home)/page'
+'use client'
 
-export default HomePage
+import ChatLaunchpad from '@/features/sessions/components/chat-launchpad'
+
+const ChatPage = () => {
+  return <ChatLaunchpad />
+}
+
+export default ChatPage

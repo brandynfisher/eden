@@ -61,7 +61,7 @@ const ProfileTabs = () => {
       ),
       actionButton: isOwnProfile ? (
         <Button asChild size="lg" className="gap-2">
-          <Link href="/create/image/flux_dev">
+          <Link href="/studio/image/flux_dev">
             <Plus className="h-4 w-4" />
             Create an Image
           </Link>
@@ -80,7 +80,7 @@ const ProfileTabs = () => {
       ),
       actionButton: isOwnProfile ? (
         <Button asChild size="lg" className="gap-2">
-          <Link href="/create/lora/flux_trainer">
+          <Link href="/studio/lora/flux_trainer">
             <LightningBoltIcon className="h-4 w-4" />
             Train Model
           </Link>

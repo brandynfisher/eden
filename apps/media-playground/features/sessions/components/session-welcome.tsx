@@ -1,5 +1,4 @@
 import { MessageInput } from './message-input'
-import { QuickSwitchAgents } from '@/components/agent/quick-switch-agents'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
@@ -116,8 +115,6 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
               </AvatarFallback>
             </Avatar>
           </div>
-          {/* Quick switch to recent agents */}
-          <QuickSwitchAgents currentAgentId={agent._id} className="mt-4" />
         </div>
 
         <div className="mb-8">
