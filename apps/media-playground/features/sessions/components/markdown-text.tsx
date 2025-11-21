@@ -222,6 +222,7 @@ const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children }) => {
               return (
                 <div className="relative">
                   <CodeHeader language={language} code={code} />
+                  {/* @ts-ignore - SyntaxHighlighter type issue with React 18+ */}
                   <SyntaxHighlighter
                     language={language}
                     // @ts-expect-error - style prop type mismatch
