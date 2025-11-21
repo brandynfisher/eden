@@ -52,11 +52,11 @@ export const Colors = {
 // Typography
 export const Typography = {
   fontFamily: {
-    regular: 'Inter-Regular',
-    medium: 'Inter-Medium',
-    semibold: 'Inter-SemiBold',
-    bold: 'Inter-Bold',
-    italic: 'Inter-Italic',
+    regular: 'SpaceGrotesk-Regular',
+    medium: 'SpaceGrotesk-Medium',
+    semibold: 'SpaceGrotesk-SemiBold',
+    bold: 'SpaceGrotesk-Bold',
+    light: 'SpaceGrotesk-Light',
   },
   fontSize: {
     xs: wp(3),

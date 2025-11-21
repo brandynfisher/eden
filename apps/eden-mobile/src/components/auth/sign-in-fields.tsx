@@ -103,10 +103,14 @@ export default function SignInFields({
           placeholderTextColor={colors.placeholderText}
           value={identifier}
           onChangeText={setIdentifier}
+          onChange={() => {
+            setNeedsPassword(false)
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
-          editable={!isEmailLoading && !needsPassword}
+          editable={!isEmailLoading}
+          onSubmitEditing={handleContinue}
         />
       </View>
 
@@ -123,6 +127,7 @@ export default function SignInFields({
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               editable={!isEmailLoading}
+              onSubmitEditing={handleEmailPasswordSignIn}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
