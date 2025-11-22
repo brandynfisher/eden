@@ -12,6 +12,7 @@ import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
+import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -154,10 +155,49 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
-  const gmailDeployment = deployments?.find(
+
+  // Always subscribe to the deployments query; seed it with any passed-in data
+  const deploymentsQuery = useAgentDeploymentsQuery({
+    key: agent._id,
+    initialData: deployments ? { deployments } : undefined,
+    enabled: true,
+  })
+  const effectiveDeployments = deploymentsQuery.deployments
+  const loadingState = deploymentsQuery.isLoading || isLoading
+  const errorState = deploymentsQuery.isError || isError
+
+  const gmailDeployment = effectiveDeployments?.find(
     deployment => deployment.platform === 'gmail',
   )
-  if (isLoading) {
+  const discordDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'discord',
+  )
+  const telegramDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'telegram',
+  )
+  const twitterDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'twitter',
+  )
+  const farcasterDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'farcaster',
+  )
+  const tiktokDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'tiktok',
+  )
+  const shopifyDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'shopify',
+  )
+  const printifyDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'printify',
+  )
+  const captionsDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'captions',
+  )
+  const emailDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'email',
+  )
+
+  if (loadingState) {
     return (
       <div className="flex items-center justify-center mt-10">
         <Loader2 className="size-4 animate-spin" />
@@ -165,7 +205,7 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
     )
   }
 
-  if (isError) {
+  if (errorState) {
     return (
       <div className="flex items-center justify-center gap-2 mt-10">
         <AlertCircle className="size-4 text-destructive" />
@@ -177,7 +217,7 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <h2 className="text-lg font-medium text-foreground">
           Social Platforms
@@ -185,34 +225,29 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
         <div className="space-y-4">
           <DiscordDeploymentForm
             agentId={agent._id}
-            deployment={deployments?.find(
-              deployment => deployment.platform === 'discord',
-            )}
+            key={`discord-${discordDeployment?._id || 'new'}`}
+            deployment={discordDeployment}
           />
           <TelegramDeploymentForm
             agentId={agent._id}
-            deployment={deployments?.find(
-              deployment => deployment.platform === 'telegram',
-            )}
+            key={`telegram-${telegramDeployment?._id || 'new'}`}
+            deployment={telegramDeployment}
           />
           <TwitterDeploymentForm
             agentId={agent._id}
-            deployment={deployments?.find(
-              deployment => deployment.platform === 'twitter',
-            )}
+            key={`twitter-${twitterDeployment?._id || 'new'}`}
+            deployment={twitterDeployment}
           />
           <FarcasterDeploymentForm
             agentId={agent._id}
-            deployment={deployments?.find(
-              deployment => deployment.platform === 'farcaster',
-            )}
+            key={`farcaster-${farcasterDeployment?._id || 'new'}`}
+            deployment={farcasterDeployment}
           />
           {isPreviewUser && (
             <TiktokDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'tiktok',
-              )}
+              key={`tiktok-${tiktokDeployment?._id || 'new'}`}
+              deployment={tiktokDeployment}
             />
           )}
         </div>
@@ -224,27 +259,23 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
           <div className="space-y-4">
             <ShopifyDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'shopify',
-              )}
+              key={`shopify-${shopifyDeployment?._id || 'new'}`}
+              deployment={shopifyDeployment}
             />
             <PrintifyDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'printify',
-              )}
+              key={`printify-${printifyDeployment?._id || 'new'}`}
+              deployment={printifyDeployment}
             />
             <CaptionsDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'captions',
-              )}
+              key={`captions-${captionsDeployment?._id || 'new'}`}
+              deployment={captionsDeployment}
             />
             <EmailDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'email',
-              )}
+              key={`email-${emailDeployment?._id || 'new'}`}
+              deployment={emailDeployment}
             />
             {gmailDeployment && (
               <GmailDeploymentForm

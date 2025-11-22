@@ -1,12 +1,11 @@
 'use client'
 
-import { getQueryClient } from '@/app/get-query-client'
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { AgentClientType, AgentsDeployArguments } from '@edenlabs/eden-sdk'
 import { StopIcon } from '@radix-ui/react-icons'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { BookTextIcon, RocketIcon, SaveIcon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -35,9 +34,18 @@ export const DeploymentFormFooter = ({
 }: DeploymentFormFooterProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
+  const queryClient = useQueryClient()
+  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
+  const refreshDeployments = async () => {
+    try {
+      const latest = await axios.get(`/api/agents/${agentId}/deployments`)
+      queryClient.setQueryData(deploymentsQueryKey, latest.data)
+    } catch (err) {
+      console.error('Failed to refresh deployments cache', err)
+    }
+  }
 
   const handleDelete = async () => {
-    const queryClient = getQueryClient()
     setIsDeleting(true)
     try {
       await axios.delete(`/api/agents/${agentId}/deployments`, {
@@ -62,16 +70,22 @@ export const DeploymentFormFooter = ({
         dismissible: true,
       })
     } finally {
-      queryClient.invalidateQueries({
-        queryKey: ['agents', agentId, 'deployments'],
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
       })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
+      await refreshDeployments()
       setIsDeleting(false)
     }
   }
 
   const handleSubmit = async (data: any) => {
     setIsDeploying(true)
-    const queryClient = getQueryClient()
     const loadingMessage = isDeployed
       ? `Updating ${platform} deployment`
       : `Deploying agent to ${platform}`
@@ -319,15 +333,21 @@ export const DeploymentFormFooter = ({
         dismissible: true,
       })
     } finally {
-      queryClient.invalidateQueries({
-        queryKey: ['agents', agentId, 'deployments'],
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
       })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
+      await refreshDeployments()
       setIsDeploying(false)
     }
   }
 
   const handleStop = async () => {
-    const queryClient = getQueryClient()
     try {
       await axios.post(`/api/agents/${agentId}/deployments/stop`, {
         platform,
@@ -352,9 +372,16 @@ export const DeploymentFormFooter = ({
         dismissible: true,
       })
     } finally {
-      queryClient.invalidateQueries({
-        queryKey: ['agents', agentId, 'deployments'],
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
       })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
+      await refreshDeployments()
     }
   }
 

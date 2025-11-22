@@ -11,6 +11,7 @@ import TwitterIcon from '@/components/icons/twitter'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import DialogMenuItem from '@/components/modal/dialog-menu-item'
+import NotificationDropdown from '@/components/notifications/notification-dropdown'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -611,6 +612,10 @@ const MainLeft = ({
 
   // Scroll-based pagination
   useEffect(() => {
+    if (isSessionsCollapsed) {
+      return
+    }
+
     const container = scrollContainerRef?.current
     if (!container) {
       return
@@ -633,11 +638,13 @@ const MainLeft = ({
     }
 
     container.addEventListener('scroll', handleScroll)
+    // Run once in case we're already near the bottom on mount
+    handleScroll()
 
     return () => {
       container.removeEventListener('scroll', handleScroll)
     }
-  }, [fetchNextPage, scrollContainerRef])
+  }, [fetchNextPage, scrollContainerRef, isLoading, isSessionsCollapsed])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
@@ -668,7 +675,7 @@ const MainLeft = ({
   }, [sessions])
 
   return (
-    <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
+    <div className="flex flex-col text-sm font-medium mr-2 min-h-0">
       {isLoading ? (
         <div className="flex flex-col items-stretch gap-1 pb-2">
           <Skeleton className="w-full h-9" />
@@ -695,7 +702,7 @@ const MainLeft = ({
 
               {/* Scrollable session list */}
               {!isSessionsCollapsed && (
-                <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1 pb-2">
+                <nav className="flex flex-col items-stretch gap-1 pb-2">
                   {allSessions.map(session => (
                     <SessionListItem
                       key={session._id}
@@ -744,7 +751,11 @@ const ThemeToggleForwardWrap = React.forwardRef<HTMLDivElement>(
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 // User Profile component for sidebar bottom
-const SidebarUserProfile = () => {
+const SidebarUserProfile = ({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'collapsed'
+}) => {
   const { isSignedIn } = useAuth()
   const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
@@ -782,237 +793,277 @@ const SidebarUserProfile = () => {
   // Show sign-in button when not signed in
   if (!isSignedIn || !user) {
     return (
-      <div className="border-t bg-background p-3 md:-ml-2 md:w-[calc(100%+0.5rem)] flex-shrink-0">
-        <Button onClick={verifyAuth} className="w-full" variant="default">
+      <div
+        className={cn(
+          'border-t bg-background flex-shrink-0',
+          variant === 'collapsed'
+            ? 'p-2 w-full flex justify-center'
+            : 'p-3 md:-ml-2 md:w-[calc(100%+0.5rem)]',
+        )}
+      >
+        <Button
+          onClick={verifyAuth}
+          className={variant === 'collapsed' ? 'w-10 h-10 p-0' : 'w-full'}
+          variant="default"
+        >
           Sign In
         </Button>
       </div>
     )
   }
 
-  return (
-    <div className="border-t bg-background -ml-2 md:w-[calc(100%+0.5rem)] w-full flex-shrink-0">
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <button
-            ref={dropdownTriggerRef}
-            className="flex items-center gap-3 w-full py-3 pr-3 pl-4 hover:bg-muted/20 transition-colors"
-          >
-            <UserAvatar
-              image={user?.userImage}
-              name={user?.username}
-              className="w-8 h-8"
-            />
-            <div className="flex flex-col flex-1 min-w-0 text-left">
-              <span className="text-sm font-medium truncate">
-                {user?.username}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {Number((balance || 0).toFixed(0)).toLocaleString()} manna
-              </span>
+  const dropdownContent = (
+    <DropdownMenuContent
+      side={variant === 'collapsed' ? 'right' : 'top'}
+      align={variant === 'collapsed' ? 'end' : 'start'}
+      className="w-60 mb-2"
+      hidden={hasOpenDialog}
+      onCloseAutoFocus={event => {
+        if (focusRef.current) {
+          (focusRef.current as HTMLButtonElement).focus()
+          focusRef.current = null
+          event.preventDefault()
+        }
+      }}
+    >
+      <DropdownMenuItem className="cursor-pointer group" asChild>
+        <Link
+          href={`/creators/${user?.username}`}
+          className="group flex gap-2 items-center cursor-pointer "
+        >
+          <UserAvatar
+            image={user?.userImage}
+            name={user?.username}
+            className="h-8 w-8"
+          />
+          <div className="flex flex-col justify-center min-w-0">
+            <div className="group-hover:text-primary text-xs transition-colors">
+              {user?.username}
             </div>
-            {unreadCount > 0 ? (
-              <span className="ml-2 flex h-5 min-w-[22px] items-center justify-center rounded-full border border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white">
-                {unreadCount > 99 ? '99+' : unreadCount}
+            {user?.email ? (
+              <span className="text-xs text-muted-foreground/70 truncate">
+                {user?.email}
               </span>
             ) : null}
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="top"
-          align="start"
-          className="w-60 mb-2"
-          hidden={hasOpenDialog}
-          onCloseAutoFocus={event => {
-            if (focusRef.current) {
-              (focusRef.current as HTMLButtonElement).focus()
-              focusRef.current = null
-              event.preventDefault()
-            }
-          }}
+          </div>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link
+          href={'/settings/subscription'}
+          className="flex items-center justify-between w-full"
         >
-          <DropdownMenuItem className="cursor-pointer group" asChild>
-            <Link
-              href={`/creators/${user?.username}`}
-              className="group flex gap-2 items-center cursor-pointer "
+          <div className="capitalize text-xs">
+            <span>
+              {
+                subscriptionTierNameMap[
+                  user?.subscriptionTier || SubscriptionTier.Free
+                ]
+              }
+            </span>
+            <span className="ml-1 text-muted-foreground/70">plan</span>
+          </div>
+          <div className="text-xs">
+            <span>{Number((balance || 0).toFixed(0)).toLocaleString()}</span>
+            <span className="ml-1 text-muted-foreground/70">manna</span>
+          </div>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}`}>
+          <ImageIcon className="mr-2 h-4 w-4" />
+          <span>Creations</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=models`}>
+          <ComponentIcon className="mr-2 h-4 w-4" />
+          <span>Models</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=collections`}>
+          <BookmarkIcon className="mr-2 h-4 w-4" />
+          <span>Collections</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=agents`}>
+          <BotIcon className="mr-2 h-4 w-4" />
+          <span>Agents</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+
+      {isPreviewUser && (
+        <>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href="/sessions">
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              <span>Sessions</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/tasks`}>
+              <ClockIcon className="mr-2 h-4 w-4" />
+              <span>Tasks</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/integrations`}>
+              <ActivityIcon className="mr-2 h-4 w-4" />
+              <span>Integrations</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </>
+      )}
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/settings/subscription`}>
+          <CreditCardIcon className="mr-2 h-4 w-4" />
+          <span>Subscription</span>
+        </Link>
+      </DropdownMenuItem>
+      <DialogMenuItem
+        onSelect={handleDialogItemSelect}
+        onOpenChange={handleDialogItemOpenChange}
+        triggerChildren={
+          <>
+            <TicketIcon className="mr-2 h-4 w-4" />
+            <span>Redeem Voucher</span>
+          </>
+        }
+      >
+        <RedeemVoucherForm />
+      </DialogMenuItem>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        onSelect={() => {
+          setSettingsModalOpen(true)
+          setDropdownOpen(false)
+        }}
+      >
+        <SettingsIcon className="mr-2 h-4 w-4" />
+        <span>Settings</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <ThemeToggleForwardWrap />
+      </DropdownMenuItem>
+      <DialogMenuItem
+        onSelect={handleDialogItemSelect}
+        onOpenChange={handleDialogItemOpenChange}
+        triggerChildren={
+          <>
+            <MessageSquareIcon className="mr-2 h-4 w-4" />
+            <span>Send Feedback</span>
+          </>
+        }
+      >
+        <FeedbackForm />
+      </DialogMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+        <LogOutIcon className="mr-2 h-4 w-4" />
+        <span>Log out</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <div className="pl-2">
+        <div className="flex items-center w-full">
+          <Link
+            className="text-xs hover:underline text-muted-foreground"
+            href={`https://docs.eden.art/legal/tos`}
+            prefetch={false}
+          >
+            <span>Terms</span>
+          </Link>
+
+          <div className="ml-auto flex gap-1">
+            <Button variant="ghost" size={'icon'} asChild>
+              <Link
+                href={siteConfig.links.discord}
+                target="_blank"
+                className="filter grayscale hover:grayscale-0"
+              >
+                <DiscordIcon size={20} />
+              </Link>
+            </Button>
+            <Button variant="ghost" size={'icon'} asChild>
+              <Link
+                href={siteConfig.links.twitter}
+                target="_blank"
+                className="group grayscale hover:grayscale-0 hover:text-white"
+              >
+                <TwitterIcon
+                  size={18}
+                  className="brightness-50 group-hover:!brightness-100"
+                />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </DropdownMenuContent>
+  )
+
+  if (variant === 'collapsed') {
+    return (
+      <div className="border-t bg-background w-full flex justify-center py-2 flex-shrink-0">
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              ref={dropdownTriggerRef}
+              className="relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted/20 transition-colors"
             >
               <UserAvatar
                 image={user?.userImage}
                 name={user?.username}
-                className="h-8 w-8"
+                className="w-8 h-8"
               />
-              <div className="flex flex-col justify-center min-w-0">
-                <div className="group-hover:text-primary text-xs transition-colors">
-                  {user?.username}
-                </div>
-                {user?.email ? (
-                  <span className="text-xs text-muted-foreground/70 truncate">
-                    {user?.email}
-                  </span>
-                ) : null}
-              </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link
-              href={'/settings/subscription'}
-              className="flex items-center justify-between w-full"
+              {unreadCount > 0 ? (
+                <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white shadow">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              ) : null}
+            </button>
+          </DropdownMenuTrigger>
+          {dropdownContent}
+        </DropdownMenu>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-t bg-background -ml-2 md:w-[calc(100%+0.5rem)] w-full flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 pt-3">
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              ref={dropdownTriggerRef}
+              className="flex items-center gap-3 flex-1 py-3 pr-3 pl-4 hover:bg-muted/20 transition-colors rounded-md text-left"
             >
-              <div className="capitalize text-xs">
-                <span>
-                  {
-                    subscriptionTierNameMap[
-                      user?.subscriptionTier || SubscriptionTier.Free
-                    ]
-                  }
+              <UserAvatar
+                image={user?.userImage}
+                name={user?.username}
+                className="w-8 h-8"
+              />
+              <div className="flex flex-col flex-1 min-w-0 text-left">
+                <span className="text-sm font-medium truncate">
+                  {user?.username}
                 </span>
-                <span className="ml-1 text-muted-foreground/70">plan</span>
-              </div>
-              <div className="text-xs">
-                <span>
-                  {Number((balance || 0).toFixed(0)).toLocaleString()}
+                <span className="text-xs text-muted-foreground">
+                  {Number((balance || 0).toFixed(0)).toLocaleString()} manna
                 </span>
-                <span className="ml-1 text-muted-foreground/70">manna</span>
               </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}`}>
-              <ImageIcon className="mr-2 h-4 w-4" />
-              <span>Creations</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=models`}>
-              <ComponentIcon className="mr-2 h-4 w-4" />
-              <span>Models</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=collections`}>
-              <BookmarkIcon className="mr-2 h-4 w-4" />
-              <span>Collections</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=agents`}>
-              <BotIcon className="mr-2 h-4 w-4" />
-              <span>Agents</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-
-          {isPreviewUser && (
-            <>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/sessions">
-                  <MessageSquareIcon className="mr-2 h-4 w-4" />
-                  <span>Sessions</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/settings/tasks`}>
-                  <ClockIcon className="mr-2 h-4 w-4" />
-                  <span>Tasks</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/settings/integrations`}>
-                  <ActivityIcon className="mr-2 h-4 w-4" />
-                  <span>Integrations</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/settings/subscription`}>
-              <CreditCardIcon className="mr-2 h-4 w-4" />
-              <span>Subscription</span>
-            </Link>
-          </DropdownMenuItem>
-          <DialogMenuItem
-            onSelect={handleDialogItemSelect}
-            onOpenChange={handleDialogItemOpenChange}
-            triggerChildren={
-              <>
-                <TicketIcon className="mr-2 h-4 w-4" />
-                <span>Redeem Voucher</span>
-              </>
-            }
-          >
-            <RedeemVoucherForm />
-          </DialogMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => {
-              setSettingsModalOpen(true)
-              setDropdownOpen(false)
-            }}
-          >
-            <SettingsIcon className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <ThemeToggleForwardWrap />
-          </DropdownMenuItem>
-          <DialogMenuItem
-            onSelect={handleDialogItemSelect}
-            onOpenChange={handleDialogItemOpenChange}
-            triggerChildren={
-              <>
-                <MessageSquareIcon className="mr-2 h-4 w-4" />
-                <span>Send Feedback</span>
-              </>
-            }
-          >
-            <FeedbackForm />
-          </DialogMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-            <LogOutIcon className="mr-2 h-4 w-4" />
-            <span>Log out</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <div className="pl-2">
-            <div className="flex items-center w-full">
-              <Link
-                className="text-xs hover:underline text-muted-foreground"
-                href={`https://docs.eden.art/legal/tos`}
-                prefetch={false}
-              >
-                <span>Terms</span>
-              </Link>
-
-              <div className="ml-auto flex gap-1">
-                <Button variant="ghost" size={'icon'} asChild>
-                  <Link
-                    href={siteConfig.links.discord}
-                    target="_blank"
-                    className="filter grayscale hover:grayscale-0"
-                  >
-                    <DiscordIcon size={20} />
-                  </Link>
-                </Button>
-                <Button variant="ghost" size={'icon'} asChild>
-                  <Link
-                    href={siteConfig.links.twitter}
-                    target="_blank"
-                    className="group grayscale hover:grayscale-0 hover:text-white"
-                  >
-                    <TwitterIcon
-                      size={18}
-                      className="brightness-50 group-hover:!brightness-100"
-                    />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </button>
+          </DropdownMenuTrigger>
+          {dropdownContent}
+        </DropdownMenu>
+        <div className="ml-auto">
+          <NotificationDropdown />
+        </div>
+      </div>
 
       {/* User Settings Modal */}
       {settingsModalOpen && (
@@ -1054,7 +1105,7 @@ export const SessionsSidebarContent = ({
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
-  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null)
+  const sessionsScrollContainerRef = React.useRef<HTMLDivElement | null>(null)
 
   // Get user preferences for last agent
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
@@ -1246,20 +1297,9 @@ export const SessionsSidebarContent = ({
         {/* Spacer to push profile to bottom */}
         <div className="flex-1" />
 
-        {/* User Profile icon at bottom */}
-        {user && (
-          <button
-            onClick={() => router.push(`/creators/${user.username}`)}
-            className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors mb-2"
-            title={user.username}
-          >
-            <UserAvatar
-              image={user.userImage}
-              name={user.username}
-              className="w-7 h-7"
-            />
-          </button>
-        )}
+        <div className="w-full px-1">
+          <SidebarUserProfile variant="collapsed" />
+        </div>
       </div>
     )
   }
@@ -1313,7 +1353,7 @@ export const SessionsSidebarContent = ({
 
   // Show regular chat sidebar for all other modes
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Desktop: Eden logo + close button at the top */}
       <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
         <button
@@ -1726,25 +1766,76 @@ export const SessionsSidebarContent = ({
       </div>
 
       {/* Content area based on mode */}
-      <div
-        id="sidebar-scroll-container"
-        ref={scrollContainerRef}
-        className="flex-1 min-h-0 overflow-y-auto"
-      >
-        {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
-        {isMobileSidebar && (
-          <div className="mb-4 mr-2 flex-col flex pt-3">
-            {/* New Chat button with selected agent avatar */}
-            <div className="flex w-full items-center gap-2">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div
+          ref={sessionsScrollContainerRef}
+          className="flex-1 min-h-0 flex flex-col overflow-y-auto"
+        >
+          {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
+          {isMobileSidebar && (
+            <div className="mb-4 mr-2 flex-col flex pt-3">
+              {/* New Chat button with selected agent avatar */}
+              <div className="flex w-full items-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    onItemClick?.()
+                    handleNewChatNavigation()
+                  }}
+                  className={cn(
+                    'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                    'bg-transparent hover:bg-muted/50 text-foreground',
+                  )}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-5"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>New Chat</span>
+                </Button>
+                {agentId && agent && (
+                  <button
+                    onClick={() => {
+                      onItemClick?.()
+                      onAgentSelect?.()
+                    }}
+                    className="shrink-0"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={getCloudfrontOriginalUrl(agent.userImage)}
+                        alt={agent.name || agent.username}
+                      />
+                      <AvatarFallback>
+                        {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                )}
+              </div>
+
+              {/* Agents button */}
               <Button
                 variant="ghost"
                 onClick={() => {
                   onItemClick?.()
-                  handleNewChatNavigation()
+                  router.push('/agents')
                 }}
                 className={cn(
-                  'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
-                  'bg-transparent hover:bg-muted/50 text-foreground',
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/agents' || pathname?.startsWith('/agents/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
                 )}
               >
                 <svg
@@ -1759,185 +1850,135 @@ export const SessionsSidebarContent = ({
                   strokeLinejoin="round"
                   className="size-5"
                 >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
-                <span>New Chat</span>
+                <span>Agents</span>
               </Button>
-              {agentId && agent && (
-                <button
-                  onClick={() => {
-                    onItemClick?.()
-                    onAgentSelect?.()
-                  }}
-                  className="shrink-0"
+
+              {/* Tasks button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/tasks')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/tasks' || pathname?.startsWith('/tasks/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
                 >
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={getCloudfrontOriginalUrl(agent.userImage)}
-                      alt={agent.name || agent.username}
-                    />
-                    <AvatarFallback>
-                      {(agent.name || agent.username)?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              )}
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Tasks</span>
+              </Button>
+
+              {/* Explore button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/explore?type=creations')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname?.startsWith('/explore')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <span>Explore</span>
+              </Button>
+
+              {/* Studio button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/studio')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+                  pathname?.startsWith('/studio')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+                <span className="flex-1 text-left">Studio</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <path d="M7 17L17 7" />
+                  <path d="M7 7h10v10" />
+                </svg>
+              </Button>
             </div>
+          )}
 
-            {/* Agents button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/agents')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
-                pathname === '/agents' || pathname?.startsWith('/agents/')
-                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
-                  : 'bg-transparent hover:bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              <span>Agents</span>
-            </Button>
+          <RecentAgents onItemClick={onItemClick} />
 
-            {/* Tasks button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/tasks')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
-                pathname === '/tasks' || pathname?.startsWith('/tasks/')
-                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
-                  : 'bg-transparent hover:bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span>Tasks</span>
-            </Button>
-
-            {/* Explore button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=creations')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
-                pathname?.startsWith('/explore')
-                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
-                  : 'bg-transparent hover:bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <span>Explore</span>
-            </Button>
-
-            {/* Studio button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/studio')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
-                pathname?.startsWith('/studio')
-                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
-                  : 'bg-transparent hover:bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-5"
-              >
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-              </svg>
-              <span className="flex-1 text-left">Studio</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <path d="M7 17L17 7" />
-                <path d="M7 7h10v10" />
-              </svg>
-            </Button>
-          </div>
-        )}
-
-        <RecentAgents onItemClick={onItemClick} />
-
-        <MainLeft
-          onItemClick={onItemClick}
-          agentId={agentId}
-          isChat={isChat}
-          scrollContainerRef={scrollContainerRef}
-        />
+          <MainLeft
+            onItemClick={onItemClick}
+            agentId={agentId}
+            isChat={isChat}
+            scrollContainerRef={sessionsScrollContainerRef}
+          />
+        </div>
       </div>
 
       {/* User Profile Section - Always outside scroll container to stay sticky at bottom */}
@@ -1975,7 +2016,7 @@ export const SessionsSidebar = React.memo(
     return (
       <div
         className={cn(
-          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out',
+          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out overflow-hidden',
           'max-w-[320px]',
           isSidebarCollapsed && 'p-0 border-none',
         )}

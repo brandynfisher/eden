@@ -14,11 +14,9 @@ import { formatDistanceToNow } from 'date-fns'
 import {
   ArchiveIcon,
   BellIcon,
-  CheckCheckIcon,
   ExternalLinkIcon,
   InboxIcon,
   Loader2,
-  RefreshCw,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -29,6 +27,7 @@ const NotificationDropdown = () => {
     notifications,
     unreadCount,
     isLoading,
+    isError,
     markAsRead,
     archiveNotifications,
     refreshNotifications,
@@ -36,12 +35,42 @@ const NotificationDropdown = () => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [hasFetchedOnOpen, setHasFetchedOnOpen] = useState(false)
+  const [hasMarkedOnOpen, setHasMarkedOnOpen] = useState(false)
+  const [isArchivingAll, setIsArchivingAll] = useState(false)
 
   useEffect(() => {
-    if (open) {
-      void refreshNotifications()
+    if (!open) {
+      setHasFetchedOnOpen(false)
+      setHasMarkedOnOpen(false)
+      return
     }
-  }, [open, refreshNotifications])
+
+    if (hasFetchedOnOpen) {
+      return
+    }
+
+    setHasFetchedOnOpen(true)
+    void refreshNotifications()
+  }, [hasFetchedOnOpen, open, refreshNotifications])
+
+  useEffect(() => {
+    if (!open || hasMarkedOnOpen || isLoading) {
+      return
+    }
+
+    if (unreadCount === 0) {
+      setHasMarkedOnOpen(true)
+      return
+    }
+
+    const mark = async () => {
+      await markAsRead()
+      setHasMarkedOnOpen(true)
+    }
+
+    void mark()
+  }, [hasMarkedOnOpen, isLoading, markAsRead, open, unreadCount])
 
   if (!isSignedIn) {
     return null
@@ -97,39 +126,51 @@ const NotificationDropdown = () => {
       <PopoverContent
         align="end"
         sideOffset={12}
-        className="w-[320px] sm:w-[360px] p-0"
+        className="w-[320px] sm:w-[360px] p-0 max-h-[520px] flex flex-col"
       >
-        <div className="flex items-center justify-between border-b px-3 py-2">
-          <div>
+        <div className="flex items-center justify-between border-b px-3 py-2 bg-muted/20 flex-shrink-0">
+          <div className="flex flex-col">
             <p className="text-sm font-semibold">Notifications</p>
-            <p className="text-xs text-muted-foreground">
-              Recent tasks, mentions, and alerts
-            </p>
           </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              onClick={() => void refreshNotifications()}
-              title="Refresh"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              disabled={unreadCount === 0}
-              onClick={() => void markAsRead()}
-              title="Mark all read"
-            >
-              <CheckCheckIcon className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs px-2"
+            disabled={notifications.length === 0 || isArchivingAll}
+            onClick={async () => {
+              setIsArchivingAll(true)
+              try {
+                await archiveNotifications(notifications.map(n => n._id))
+              } finally {
+                setIsArchivingAll(false)
+              }
+            }}
+          >
+            {isArchivingAll ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ArchiveIcon className="h-3.5 w-3.5 mr-1" />
+            )}
+            Archive all
+          </Button>
         </div>
-        <ScrollArea className="max-h-96">
-          {isLoading ? (
+        <ScrollArea className="flex-1">
+          {isError ? (
+            <div className="flex items-center gap-2 px-4 py-6 text-sm text-muted-foreground">
+              <span>Could not load notifications.</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2"
+                onClick={() => {
+                  setHasFetchedOnOpen(true)
+                  void refreshNotifications()
+                }}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="flex items-center gap-2 px-4 py-6 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading notifications...
@@ -140,7 +181,7 @@ const NotificationDropdown = () => {
               <div>You're all caught up</div>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="flex flex-col gap-2 px-3 py-3">
               {notifications.map(notification => {
                 const createdAt = new Date(notification.createdAt)
                 const relativeTime = formatDistanceToNow(createdAt, {
@@ -151,9 +192,11 @@ const NotificationDropdown = () => {
                   <div
                     key={notification._id}
                     className={cn(
-                      'px-4 py-3 text-sm transition-colors',
-                      notification.read ? 'bg-background' : 'bg-muted/30',
-                      'hover:bg-muted cursor-pointer',
+                      'px-4 py-3 text-sm transition-colors border rounded-md',
+                      notification.read
+                        ? 'bg-background border-border/60'
+                        : 'bg-muted/30 border-border',
+                      'hover:bg-muted cursor-pointer shadow-sm',
                     )}
                     onClick={() =>
                       void handleNotificationClick(

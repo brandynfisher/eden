@@ -18,7 +18,6 @@ import UserAvatar from '@/components/user/user-avatar'
 import { useMe } from '@/hooks/use-me'
 import { siteConfig } from '@/lib/config'
 import { subscriptionTierNameMap } from '@/lib/strings'
-import { useNotificationContext } from '@/providers/notification-provider'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
@@ -54,7 +53,6 @@ const AccountDropdown = () => {
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
-  const { unreadCount } = useNotificationContext()
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -94,11 +92,6 @@ const AccountDropdown = () => {
             name={user?.username}
             className="w-10 h-10"
           />
-          {unreadCount > 0 ? (
-            <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white shadow">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          ) : null}
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>

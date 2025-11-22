@@ -28,6 +28,9 @@ import {
 import { usePathname, useRouter } from 'next/navigation'
 import React, { FC, useMemo, useState } from 'react'
 
+const MAX_PINNED_AGENTS = 5
+const RECENT_AGENT_COUNT = 3
+
 interface AgentListItemProps {
   agent: MinimalAgent
   currentUserId?: string
@@ -36,6 +39,7 @@ interface AgentListItemProps {
   onPin?: () => void
   onUnpin?: () => void
   onSettingsOpen?: () => void
+  canPin?: boolean
 }
 
 const AgentListItem: FC<AgentListItemProps> = ({
@@ -46,6 +50,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
   onPin,
   onUnpin,
   onSettingsOpen,
+  canPin = true,
 }) => {
   const router = useRouter()
   const pathname = usePathname()
@@ -88,8 +93,14 @@ const AgentListItem: FC<AgentListItemProps> = ({
             {(agent.name || agent.username)?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className="truncate font-normal">
-          {agent.name || agent.username}
+        <span className="truncate font-normal flex items-center gap-1.5">
+          <span className="truncate">{agent.name || agent.username}</span>
+          {isPinned && (
+            <PinIcon
+              className="h-3.5 w-3.5 text-amber-500 shrink-0"
+              aria-label="Pinned agent"
+            />
+          )}
         </span>
       </button>
 
@@ -127,13 +138,15 @@ const AgentListItem: FC<AgentListItemProps> = ({
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
+                disabled={!canPin}
                 onClick={e => {
+                  if (!canPin) return
                   e.stopPropagation()
                   onPin?.()
                 }}
               >
                 <PinIcon className="mr-2 h-4 w-4" />
-                Pin
+                {canPin ? 'Pin' : `Max ${MAX_PINNED_AGENTS} pins reached`}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -154,17 +167,27 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
 
-  const displayAgents = useMemo(() => {
-    const pinnedAgentIds = new Set(pinnedAgents.map(a => a._id))
-    return [
-      ...pinnedAgents.map(agent => ({ ...agent, isPinned: true })),
-      ...lastAgents
-        .filter(agent => !pinnedAgentIds.has(agent._id))
-        .map(agent => ({ ...agent, isPinned: false })),
-    ].slice(0, 3)
-  }, [lastAgents, pinnedAgents])
+  const pinnedAgentIds = useMemo(
+    () => new Set(pinnedAgents.map(a => a._id)),
+    [pinnedAgents],
+  )
 
-  if (!isSignedIn || isLoading || displayAgents.length === 0) {
+  const pinnedDisplayAgents = useMemo(
+    () => pinnedAgents.map(agent => ({ ...agent, isPinned: true })),
+    [pinnedAgents],
+  )
+
+  const recentDisplayAgents = useMemo(() => {
+    return lastAgents
+      .filter(agent => !pinnedAgentIds.has(agent._id))
+      .slice(0, RECENT_AGENT_COUNT)
+      .map(agent => ({ ...agent, isPinned: false }))
+  }, [lastAgents, pinnedAgentIds])
+
+  const canPinMoreAgents = pinnedAgents.length < MAX_PINNED_AGENTS
+  const hasAgents = pinnedDisplayAgents.length + recentDisplayAgents.length > 0
+
+  if (!isSignedIn || isLoading || !hasAgents) {
     return null
   }
 
@@ -186,23 +209,52 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
 
         {!isAgentsCollapsed && (
           <nav className="flex flex-col items-stretch gap-1">
-            {displayAgents.map(agent => {
-              return (
-                <AgentListItem
-                  key={agent._id}
-                  agent={agent}
-                  currentUserId={user?._id}
-                  isPinned={agent.isPinned}
-                  onItemClick={onItemClick}
-                  onPin={() => pinAgent(agent._id)}
-                  onUnpin={() => unpinAgent(agent._id)}
-                  onSettingsOpen={() => {
-                    setSettingsAgentId(agent.username || agent._id)
-                    setIsSettingsModalOpen(true)
-                  }}
-                />
-              )
-            })}
+            {pinnedDisplayAgents.length > 0 && (
+              <>
+                {pinnedDisplayAgents.map(agent => {
+                  return (
+                    <AgentListItem
+                      key={agent._id}
+                      agent={agent}
+                      currentUserId={user?._id}
+                      isPinned
+                      onItemClick={onItemClick}
+                      onUnpin={() => unpinAgent(agent._id)}
+                      onSettingsOpen={() => {
+                        setSettingsAgentId(agent.username || agent._id)
+                        setIsSettingsModalOpen(true)
+                      }}
+                    />
+                  )
+                })}
+              </>
+            )}
+
+            {recentDisplayAgents.length > 0 && (
+              <>
+                {recentDisplayAgents.map(agent => {
+                  return (
+                    <AgentListItem
+                      key={agent._id}
+                      agent={agent}
+                      currentUserId={user?._id}
+                      isPinned={agent.isPinned}
+                      canPin={canPinMoreAgents}
+                      onItemClick={onItemClick}
+                      onPin={() => {
+                        if (!canPinMoreAgents) return
+                        pinAgent(agent._id)
+                      }}
+                      onUnpin={() => unpinAgent(agent._id)}
+                      onSettingsOpen={() => {
+                        setSettingsAgentId(agent.username || agent._id)
+                        setIsSettingsModalOpen(true)
+                      }}
+                    />
+                  )
+                })}
+              </>
+            )}
           </nav>
         )}
       </div>
