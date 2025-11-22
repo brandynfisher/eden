@@ -60,6 +60,9 @@ const shouldDisableShell = (pathname?: string | null) => {
   if (!pathname) {
     return false
   }
+  if (pathname.startsWith('/new/agent')) {
+    return false
+  }
   if (pathname.includes('/sessions/share')) {
     return true
   }

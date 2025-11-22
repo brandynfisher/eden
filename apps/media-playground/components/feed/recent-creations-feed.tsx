@@ -54,7 +54,7 @@ export default function RecentCreationsFeed({
     <div className="px-4 w-full">
       <div
         ref={observedRef}
-        className="lg:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"
+        className="lg:max-w-[95%] 2xl:max-w-[90%] mx-auto pb-12"
       >
         {shouldLoadCreations && (
           <Suspense fallback={null}>

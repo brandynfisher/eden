@@ -25,9 +25,11 @@ import { AssistantMessage } from '@/features/sessions/components/assistant-messa
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
+import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
@@ -35,6 +37,7 @@ import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message, SessionType } from '@edenlabs/eden-sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import {
@@ -69,7 +72,10 @@ const Session = ({
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const { user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
+  const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
+    GatedResource.SessionSettings,
+  )
   const { toast } = useToast()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
@@ -89,6 +95,9 @@ const Session = ({
     turn_budget_unlimited: true,
     exclude_memory: false,
   })
+  const queryClient = useQueryClient()
+  const { mutateAsync: updateUserPreferences } = useUpdateUserPreferences()
+  const lastSyncedSessionIdRef = useRef<string | null>(null)
 
   // Track session viewing for notifications
   useSessionTracking(sessionId)
@@ -170,6 +179,31 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  useEffect(() => {
+    if (!session || !sessionId || sessionId === 'new') return
+    if (!isSignedIn) return
+    if (lastSyncedSessionIdRef.current === sessionId) return
+
+    const agentIds = Array.from(
+      new Set((session.agents || []).map(agent => agent._id).filter(Boolean)),
+    )
+
+    if (agentIds.length === 0) return
+
+    const syncPreferences = async () => {
+      try {
+        await Promise.all(agentIds.map(id => updateUserPreferences(id)))
+        lastSyncedSessionIdRef.current = sessionId
+      } catch (error) {
+        console.error('Failed to update recent agents from session view', error)
+      } finally {
+        void queryClient.refetchQueries({ queryKey: ['user-preferences'] })
+      }
+    }
+
+    syncPreferences()
+  }, [isSignedIn, queryClient, session, sessionId, updateUserPreferences])
+
   // Update session settings when session data loads
   useEffect(() => {
     if (session) {
@@ -203,6 +237,7 @@ const Session = ({
   const isOwner = useMemo(() => {
     return user?._id === session?.owner?._id
   }, [user, session])
+  const canOpenSessionSettings = isOwner && isSessionSettingsAllowed
   const isPublicSession = session?.extras?.is_public === true
   const isReadOnlySession = Boolean(
     session && sessionId && sessionId !== 'new' && isPublicSession && !isOwner,
@@ -1430,13 +1465,17 @@ const Session = ({
                 {/* Session title - clickable for settings */}
                 {session.title && (
                   <button
-                    onClick={() => isOwner && setIsSessionSettingsOpen(true)}
+                    onClick={() =>
+                      canOpenSessionSettings && setIsSessionSettingsOpen(true)
+                    }
                     className={cn(
-                      'text-sm text-muted-foreground truncate flex-1 text-left',
-                      isOwner && 'hover:text-foreground transition-colors',
+                      'text-base font-semibold truncate flex-1 text-left',
+                      canOpenSessionSettings
+                        ? 'text-foreground hover:text-foreground transition-colors'
+                        : 'text-muted-foreground',
                     )}
                     title={session.title}
-                    disabled={!isOwner}
+                    disabled={!canOpenSessionSettings}
                   >
                     {session.title}
                   </button>
@@ -1536,13 +1575,17 @@ const Session = ({
                 {/* Session title - clickable for settings */}
                 {session.title && (
                   <button
-                    onClick={() => isOwner && setIsSessionSettingsOpen(true)}
+                    onClick={() =>
+                      canOpenSessionSettings && setIsSessionSettingsOpen(true)
+                    }
                     className={cn(
-                      'text-sm text-muted-foreground truncate flex-1 max-w-[400px] text-left ml-2',
-                      isOwner && 'hover:text-foreground transition-colors',
+                      'text-base font-semibold truncate flex-1 max-w-[400px] text-left ml-2',
+                      canOpenSessionSettings
+                        ? 'text-foreground hover:text-foreground transition-colors'
+                        : 'text-muted-foreground',
                     )}
                     title={session.title}
-                    disabled={!isOwner}
+                    disabled={!canOpenSessionSettings}
                   >
                     {session.title}
                   </button>

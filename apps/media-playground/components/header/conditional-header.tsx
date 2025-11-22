@@ -13,6 +13,21 @@ const ConditionalHeader = () => {
     return null
   }
 
+  // Agent detail pages use the app shell layout; hide the legacy header there too.
+  if (pathname?.startsWith('/agents')) {
+    return null
+  }
+
+  // Creator detail pages should also hide the legacy header.
+  if (pathname?.startsWith('/creators')) {
+    return null
+  }
+
+  // Settings pages manage their own layout; hide the legacy header.
+  if (pathname?.startsWith('/settings')) {
+    return null
+  }
+
   // Show the main header on /studio, hide it on other specialized routes
   if (pathname?.startsWith('/studio')) {
     return <Header />
@@ -26,7 +41,6 @@ const ConditionalHeader = () => {
     pathname?.startsWith('/explore') ||
     pathname?.startsWith('/create') ||
     pathname?.startsWith('/realtime') ||
-    pathname?.startsWith('/agents') ||
     pathname?.startsWith('/tasks') ||
     pathname?.startsWith('/new') ||
     pathname?.startsWith('/train') ||

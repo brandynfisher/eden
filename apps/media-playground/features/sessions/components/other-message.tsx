@@ -68,9 +68,10 @@ export const OtherMessage = ({
     return null
 
   const isEmpty = !message.content || message.content.length === 0
-  const hasUsername = !!message.sender?.username
-  // Make ANY sender with a username clickable - fuck the type checking
-  const shouldMakeClickable = hasUsername
+  const profileIdentifier =
+    message.sender?.username || message.sender?._id || ''
+  // Make any sender with an identifier clickable
+  const shouldMakeClickable = !!profileIdentifier
 
   const finalImageUrl = message.sender?.userImage
     ? message.sender.userImage.startsWith('https://')
@@ -87,7 +88,7 @@ export const OtherMessage = ({
       <div className="flex items-center md:items-start mr-1 gap-2">
         {shouldMakeClickable ? (
           <Link
-            href={`/chat/${message.sender.username}`}
+            href={`/agents/${profileIdentifier}`}
             className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0 block relative"
             style={{ minWidth: '2rem', minHeight: '2rem' }}
           >
@@ -151,7 +152,7 @@ export const OtherMessage = ({
         <div className="text-muted-foreground text-sm md:hidden">
           {shouldMakeClickable ? (
             <Link
-              href={`/chat/${message.sender.username}`}
+              href={`/agents/${profileIdentifier}`}
               className="hover:underline"
             >
               {message.sender?.username}

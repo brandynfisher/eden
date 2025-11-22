@@ -17,7 +17,7 @@ import { SessionsSidebarContent } from '@/features/sessions/components/sessions-
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { AgentContext } from '@/lib/voice/build-agent-prompt'
+import { AgentContext } from '@/lib/voice/build-dynamic-variables'
 import axios from 'axios'
 import { MenuIcon } from 'lucide-react'
 import { useParams, useSearchParams } from 'next/navigation'

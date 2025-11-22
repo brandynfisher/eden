@@ -2,6 +2,7 @@
 
 import { ProfileImageUploader } from '../../profile-image-uploader'
 import { AGENT_FIELD_GUIDANCE, AGENT_FIELD_LIMITS } from '../agent-constants'
+import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -23,7 +24,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
-import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -154,8 +154,8 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
             </div>
           </div>
 
-          {/* Agent ID Display - responsive positioning */}
-          <div className="mt-4 lg:mt-0 lg:absolute lg:bottom-6 lg:right-6 flex items-center gap-2">
+          {/* Agent ID Display - keep it below fields to avoid overlap */}
+          <div className="mt-4 flex flex-wrap items-center gap-2 justify-start lg:justify-end">
             <span className="text-xs text-muted-foreground">
               ID: {agent._id}
             </span>
@@ -187,9 +187,10 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
+                <GatedPrivacySwitch
+                  checked={field.value ?? false}
                   onCheckedChange={field.onChange}
+                  entityLabel="agents"
                 />
               </FormControl>
             </FormItem>

@@ -164,6 +164,12 @@ export const addLastAgent = async (
   }
 
   try {
+    if (!mongoose.Types.ObjectId.isValid(agent_id)) {
+      return reply.status(400).send({
+        message: 'agent_id is not a valid ObjectId',
+      })
+    }
+
     // Convert IDs to mongoose.Types.ObjectId
     const userOid =
       userId instanceof mongoose.Types.ObjectId
@@ -185,7 +191,10 @@ export const addLastAgent = async (
       preferences: updatedPreferences,
     })
   } catch (error) {
-    request.server.log.error({ err: error }, 'Failed to update last agent')
+    request.server.log.error(
+      { err: error, userId, agentId: agent_id },
+      'Failed to update last agent',
+    )
     return reply.status(500).send({
       message: 'Failed to update last agent',
     })

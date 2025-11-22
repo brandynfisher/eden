@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { AgentContext, buildAgentPrompt } from '@/lib/voice/build-agent-prompt'
 import {
+  AgentContext,
+  AgentData,
+  buildDynamicVariables,
+} from '@/lib/voice/build-dynamic-variables'
+import {
+  DEFAULT_AGENT_CONFIG,
   REALTIME_USER_FIELDS,
   REALTIME_USER_FIELD_LABELS,
   REALTIME_USER_FIELD_TYPES,
@@ -56,15 +61,24 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
     setUserInfo(prev => ({ ...prev, [field]: value }))
   }
 
-  // Build the agent prompt from context
-  const agentPrompt = buildAgentPrompt(agentContext, { name: agentName })
+  // Build dynamic variables from agent context and user info
+  // This constructs the complete system prompt and first message
+  const dynamicVariables = useMemo(() => {
+    const agentData: AgentData = { name: agentName }
+    const baseFirstMessage = DEFAULT_AGENT_CONFIG.agent.firstMessage || ''
+    return buildDynamicVariables(
+      agentContext,
+      agentData,
+      userInfo,
+      baseFirstMessage,
+    )
+  }, [agentContext, agentName, userInfo])
 
   // Initialize voice conversation with ElevenLabs provider
-  // User info is passed to enable conversation overrides at start time
+  // Dynamic variables are passed instead of agentPrompt
   const conversation = useVoiceConversation({
     provider: 'elevenlabs',
-    agentPrompt,
-    agentName,
+    dynamicVariables,
     edenAgentId,
     userInfo,
   })
@@ -341,7 +355,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
       <DevPanel
         conversation={conversation}
         agentContext={agentContext}
-        agentPrompt={agentPrompt}
+        dynamicVariables={dynamicVariables}
       />
     </div>
   )

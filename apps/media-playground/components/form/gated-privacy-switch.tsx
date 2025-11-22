@@ -10,10 +10,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
+import { useAuthState } from '@/hooks/use-auth-state'
 import {
   GatedActions,
   useSubscriptionGate,
 } from '@/hooks/use-subscription-gate'
+import { subscriptionTierNameMap } from '@/lib/strings'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
@@ -34,11 +37,20 @@ const GatedPrivacySwitch = ({
   subscriptionUrl = DEFAULT_SUBSCRIPTION_URL,
   entityLabel = 'agents',
 }: Props) => {
-  const { isAllowed: canMakePrivate } = useSubscriptionGate(
-    GatedActions.MakePrivate,
-  )
+  const { isAllowed: canMakePrivate, minimumSubscriptionTier } =
+    useSubscriptionGate(GatedActions.MakePrivate)
+  const { user } = useAuthState()
   const router = useRouter()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const requiredTierName =
+    subscriptionTierNameMap[minimumSubscriptionTier] ||
+    SubscriptionTier[minimumSubscriptionTier] ||
+    'your current plan'
+  const currentTierName = user?.subscriptionTier
+    ? subscriptionTierNameMap[user.subscriptionTier] ||
+      SubscriptionTier[user.subscriptionTier]
+    : 'Free'
 
   const handleChange = useCallback(
     (nextValue: boolean) => {
@@ -73,9 +85,15 @@ const GatedPrivacySwitch = ({
             <DialogTitle>
               Private {entityLabel} require a subscription
             </DialogTitle>
-            <DialogDescription>
-              Upgrade your plan (or use a preview account) to keep {entityLabel}{' '}
-              hidden from the public.
+            <DialogDescription className="space-y-2">
+              <p>
+                This feature needs the <strong>{requiredTierName}</strong> tier
+                or higher.
+              </p>
+              <p>
+                Your current plan:{' '}
+                <strong className="capitalize">{currentTierName}</strong>
+              </p>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-between">

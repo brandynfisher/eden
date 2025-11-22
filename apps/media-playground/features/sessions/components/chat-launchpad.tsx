@@ -11,14 +11,110 @@ import {
   SessionSettingsModal,
 } from '@/features/sessions/components/session-settings-modal'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { EditIcon, MenuIcon, Plus, Settings, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+type AgentCardProps = {
+  agent: Agent
+  index: number
+  canRemove: boolean
+  currentUserId?: string
+  onRemove: (agentId: string) => void
+  onOpenSettings: (agentKey: string) => void
+  onSelect: (agent: Agent) => void
+}
+
+const SelectedAgentCard = ({
+  agent,
+  index,
+  canRemove,
+  currentUserId,
+  onRemove,
+  onOpenSettings,
+  onSelect,
+}: AgentCardProps) => {
+  const { hasEditAccess, isLoading: isPermissionsLoading } =
+    useAgentPermissions(agent, currentUserId)
+  const showSettings = hasEditAccess && !isPermissionsLoading
+
+  return (
+    <div
+      className="agent-card"
+      style={{
+        animationDelay: `${index * 0.1}s`,
+      }}
+    >
+      <div
+        className="agent-card-inner group"
+        onClick={() => onSelect(agent)}
+        style={{ cursor: 'pointer' }}
+      >
+        {/* Remove button - only show if more than one agent */}
+        {canRemove && (
+          <button
+            className="agent-remove-btn"
+            onClick={e => {
+              e.stopPropagation()
+              onRemove(agent._id)
+            }}
+            aria-label="Remove agent"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Settings button - only show for agents user can edit */}
+        {showSettings && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={e => {
+              e.stopPropagation()
+              onOpenSettings(agent.username || agent._id)
+            }}
+            className="absolute top-3 left-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Agent Settings"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        )}
+
+        {/* Avatar */}
+        <div className="agent-avatar-wrapper">
+          <div className="agent-avatar-glow" />
+          <Avatar className="agent-avatar">
+            <AvatarImage
+              className="object-cover"
+              src={getCloudfrontOriginalUrl(agent.userImage)}
+              alt={agent.name}
+            />
+            <AvatarFallback className="agent-avatar-fallback">
+              {agent.name.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+
+        {/* Agent Info */}
+        <div className="agent-info">
+          <h2 className="agent-name">{agent.name}</h2>
+          <p className="agent-creator">
+            by @{agent.owner?.username || 'anonymous'}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const ChatLaunchpad = () => {
   const router = useRouter()
@@ -30,6 +126,9 @@ const ChatLaunchpad = () => {
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
+  const addAgentGate = useGatedResource(GatedResource.AddAgent)
+  const sessionSettingsGate = useGatedResource(GatedResource.SessionSettings)
+  const queryClient = useQueryClient()
 
   // Session settings state
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
@@ -106,6 +205,11 @@ const ChatLaunchpad = () => {
       : loadingDefault
 
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([])
+  const { mutateAsync: updateUserPreferences } = useUpdateUserPreferences()
+  const lastSyncedAgentsSignature = useRef<string | null>(null)
+
+  // Initialize selected agents from URL or default agent without overwriting user changes
+  const initializedAgentsRef = useRef<string | null>(null)
 
   // Initialize with agents from URL or default agent
   useEffect(() => {
@@ -122,12 +226,28 @@ const ChatLaunchpad = () => {
         urlAgent8,
       ].filter((agent): agent is Agent => !!agent)
 
+      if (urlAgents.length === 0) {
+        return
+      }
+
+      const signature = `params:${agentParam}|${urlAgents
+        .map(agent => agent._id)
+        .join(',')}`
+      if (initializedAgentsRef.current === signature) {
+        return
+      }
+
       if (urlAgents.length > 0) {
         setSelectedAgents(urlAgents)
+        initializedAgentsRef.current = signature
       }
     } else if (defaultAgent) {
-      // Use default agent if no URL parameter
-      setSelectedAgents([defaultAgent])
+      const signature = `default:${defaultAgent._id}`
+      if (initializedAgentsRef.current !== signature) {
+        // Use default agent if no URL parameter
+        setSelectedAgents([defaultAgent])
+        initializedAgentsRef.current = signature
+      }
     }
   }, [
     defaultAgent,
@@ -140,6 +260,41 @@ const ChatLaunchpad = () => {
     urlAgent7,
     urlAgent8,
     agentParam, // Watch for changes in the agent parameter itself
+  ])
+
+  useEffect(() => {
+    if (!isSignedIn) return
+    if (selectedAgents.length === 0) return
+
+    const agentIds = Array.from(
+      new Set(selectedAgents.map(agent => agent._id).filter(Boolean)),
+    ).sort()
+
+    if (agentIds.length === 0) return
+
+    const syncPreferences = async () => {
+      const signature = `${agentParam || 'manual'}|${agentIds.join(',')}`
+      if (lastSyncedAgentsSignature.current === signature) {
+        return
+      }
+
+      try {
+        await Promise.all(agentIds.map(id => updateUserPreferences(id)))
+        lastSyncedAgentsSignature.current = signature
+      } catch (error) {
+        console.error('Failed to update recent agents from chat params', error)
+      } finally {
+        void queryClient.refetchQueries({ queryKey: ['user-preferences'] })
+      }
+    }
+
+    syncPreferences()
+  }, [
+    agentParam,
+    isSignedIn,
+    queryClient,
+    selectedAgents,
+    updateUserPreferences,
   ])
 
   // Configure app shell with sidebar
@@ -372,103 +527,62 @@ const ChatLaunchpad = () => {
           {/* Agent Display Area */}
           <div className="agents-section">
             <div className="agents-collection">
-              {selectedAgents.map((agent, index) => {
-                const isOwner = user && agent.owner?._id === user._id
-                return (
-                  <div
-                    key={agent._id}
-                    className="agent-card"
-                    style={{
-                      animationDelay: `${index * 0.1}s`,
-                    }}
-                  >
-                    <div
-                      className="agent-card-inner group"
-                      onClick={() => setAgentToChange(agent)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {/* Remove button - only show if more than one agent */}
-                      {selectedAgents.length > 1 && (
-                        <button
-                          className="agent-remove-btn"
-                          onClick={e => {
-                            e.stopPropagation()
-                            removeAgent(agent._id)
-                          }}
-                          aria-label="Remove agent"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-
-                      {/* Settings button - only show for agents user owns */}
-                      {isOwner && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={e => {
-                            e.stopPropagation()
-                            setSettingsAgentId(agent.username || agent._id)
-                          }}
-                          className="absolute top-3 left-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Agent Settings"
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      )}
-
-                      {/* Avatar */}
-                      <div className="agent-avatar-wrapper">
-                        <div className="agent-avatar-glow" />
-                        <Avatar className="agent-avatar">
-                          <AvatarImage
-                            className="object-cover"
-                            src={getCloudfrontOriginalUrl(agent.userImage)}
-                            alt={agent.name}
-                          />
-                          <AvatarFallback className="agent-avatar-fallback">
-                            {agent.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-
-                      {/* Agent Info */}
-                      <div className="agent-info">
-                        <h2 className="agent-name">{agent.name}</h2>
-                        <p className="agent-creator">
-                          by @{agent.owner?.username || 'anonymous'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* Add Agent Button - opens modal (only for preview users) */}
-              {user?.featureFlags?.includes(FeatureFlag.Preview) && (
-                <AgentSelectorModal
-                  trigger={
-                    <button className="add-agent-card">
-                      <div className="add-agent-icon">
-                        <Plus className="w-5 h-5" />
-                      </div>
-                      <p className="add-agent-text">Add Agent</p>
-                    </button>
-                  }
-                  selectedAgents={selectedAgents}
-                  onChange={handleAgentsChange}
+              {selectedAgents.map((agent, index) => (
+                <SelectedAgentCard
+                  key={agent._id}
+                  agent={agent}
+                  index={index}
+                  canRemove={selectedAgents.length > 1}
+                  currentUserId={user?._id}
+                  onRemove={removeAgent}
+                  onOpenSettings={agentKey => setSettingsAgentId(agentKey)}
+                  onSelect={setAgentToChange}
                 />
-              )}
+              ))}
+
+              {/* Add Agent Button - opens modal (only for preview users with gate check) */}
+              {user?.featureFlags?.includes(FeatureFlag.Preview) &&
+                addAgentGate.shouldRender && (
+                  <AgentSelectorModal
+                    trigger={
+                      <button
+                        className="add-agent-card"
+                        onClick={event => {
+                          if (!addAgentGate.isAllowed) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            addAgentGate.openGate()
+                          }
+                        }}
+                      >
+                        <div className="add-agent-icon">
+                          <Plus className="w-5 h-5" />
+                        </div>
+                        <p className="add-agent-text">Add Agent</p>
+                      </button>
+                    }
+                    selectedAgents={selectedAgents}
+                    onChange={handleAgentsChange}
+                  />
+                )}
             </div>
 
             {/* Session Settings Button */}
-            <button
-              className="session-settings-btn"
-              onClick={() => setIsSessionSettingsOpen(true)}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Session settings</span>
-            </button>
+            {sessionSettingsGate.shouldRender && (
+              <button
+                className="session-settings-btn"
+                onClick={() => {
+                  if (!sessionSettingsGate.isAllowed) {
+                    sessionSettingsGate.openGate()
+                    return
+                  }
+                  setIsSessionSettingsOpen(true)
+                }}
+              >
+                <Settings className="w-4 h-4" />
+                <span>Session settings</span>
+              </button>
+            )}
           </div>
 
           {/* Message Input below agents */}

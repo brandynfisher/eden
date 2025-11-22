@@ -14,6 +14,9 @@ type Props = {
   link: string
   priority?: boolean
   outputType?: string
+  className?: string
+  isActive?: boolean
+  onClick?: () => void
 }
 
 type ToolCardMediaProps = {
@@ -113,6 +116,9 @@ const ToolCard = ({
   description,
   priority,
   outputType,
+  className,
+  isActive,
+  onClick,
 }: Props) => {
   const formattedOutputType = formatOutputType(outputType)
   const routeContext = getRouteContext(link, formattedOutputType)
@@ -121,8 +127,19 @@ const ToolCard = ({
     'See the guardrails, inputs, and costs for this workflow before you launch it.'
 
   return (
-    <Link prefetch={false} href={link} className="group block h-full">
-      <Card className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b from-[#0B0B12] via-[#040406] to-[#050507] text-white transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0px_35px_60px_-35px_rgba(0,0,0,0.85)]">
+    <Link
+      prefetch={false}
+      href={link}
+      onClick={onClick}
+      className={cn('group block h-full', className)}
+    >
+      <Card
+        className={cn(
+          'relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b from-[#0B0B12] via-[#040406] to-[#050507] text-white transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0px_35px_60px_-35px_rgba(0,0,0,0.85)]',
+          isActive &&
+            'ring-2 ring-primary/60 ring-offset-2 ring-offset-background border-primary/60 hover:border-primary/80',
+        )}
+      >
         <div className="relative aspect-[5/3] w-full overflow-hidden">
           <ToolCardMedia
             mediaUrl={image}

@@ -946,7 +946,7 @@ export const updateAgentPermissions = async (
           message: `You've been granted ${perm.level} access to the agent "${agent.name}".`,
           priority: 'normal',
           agent: agentId,
-          action_url: `/chat/${agent.username}`,
+          action_url: `/chat/?agent=${agent.username}`,
           channels: ['in_app'],
         })
       } else if (
@@ -963,7 +963,7 @@ export const updateAgentPermissions = async (
           message: `Your access to the agent "${agent.name}" has been changed to ${perm.level}.`,
           priority: 'normal',
           agent: agentId,
-          action_url: `/chat/${agent.username}`,
+          action_url: `/chat/?agent=${agent.username}`,
           channels: ['in_app'],
         })
       }
@@ -986,7 +986,7 @@ export const updateAgentPermissions = async (
             message: `Your access to the agent "${agent.name}" has been removed.`,
             priority: 'normal',
             agent: agentId,
-            action_url: `/chat/${agent.username}`,
+            action_url: `/chat/?agent=${agent.username}`,
             channels: ['in_app'],
           })
         }

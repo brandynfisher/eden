@@ -5,20 +5,23 @@ import { ConnectionStatus } from './connection-status'
 import { ConversationTranscript } from './conversation-transcript'
 import { DebugLogs } from './debug-logs'
 import { Button } from '@/components/ui/button'
-import { AgentContext } from '@/lib/voice/build-agent-prompt'
+import {
+  AgentContext,
+  DynamicVariables,
+} from '@/lib/voice/build-dynamic-variables'
 import { VoiceConversationState } from '@/lib/voice/types'
 import { FC, useState } from 'react'
 
 interface DevPanelProps {
   conversation: VoiceConversationState
   agentContext: AgentContext
-  agentPrompt: string
+  dynamicVariables: DynamicVariables
 }
 
 export const DevPanel: FC<DevPanelProps> = ({
   conversation,
   agentContext,
-  agentPrompt,
+  dynamicVariables,
 }) => {
   const [isMinimized, setIsMinimized] = useState(false)
 
@@ -50,7 +53,7 @@ export const DevPanel: FC<DevPanelProps> = ({
           />
           <AgentContextDisplay
             agentContext={agentContext}
-            agentPrompt={agentPrompt}
+            dynamicVariables={dynamicVariables}
           />
         </div>
       )}

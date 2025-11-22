@@ -76,7 +76,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
       <div className="flex items-center justify-center h-full w-full flex-grow">
         <div
           className={cn([
-            'grid gap-2 auto-cols-fr',
+            'grid gap-2 auto-cols-fr w-full',
             !num_samples || num_samples === 1
               ? 'grid-cols-1'
               : 'grid-cols-1 sm:grid-cols-2 justify-items-center',
