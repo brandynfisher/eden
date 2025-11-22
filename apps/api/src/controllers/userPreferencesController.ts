@@ -18,12 +18,12 @@ export const getUserPreferences = async (
     const preferences = await UserPreferences.findOne({ user: userId })
       .populate({
         path: 'last_agents',
-        select: 'username userImage name _id type owner',
+        select: 'username userImage name _id type owner description stats',
         match: { deleted: { $ne: true } },
       })
       .populate({
         path: 'pinned_agents',
-        select: 'username userImage name _id type owner',
+        select: 'username userImage name _id type owner description stats',
         match: { deleted: { $ne: true } },
       })
       .lean()
