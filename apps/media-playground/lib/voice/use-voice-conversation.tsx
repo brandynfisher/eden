@@ -1,6 +1,6 @@
 'use client'
 
-import { DEFAULT_AGENT_CONFIG } from './realtime-user-fields-config'
+import { validateDynamicVariables } from './build-dynamic-variables'
 import {
   ConnectionStatus,
   DebugLog,
@@ -79,7 +79,6 @@ export function useVoiceConversation(
         }
 
         updateVolume()
-        addDebugLog('Volume monitoring started', 'success')
       } catch (error) {
         addDebugLog('Failed to start volume monitoring', 'warning')
       }
@@ -99,17 +98,11 @@ export function useVoiceConversation(
     }
     analyserRef.current = null
     setInputVolume(0)
-    addDebugLog('Volume monitoring stopped', 'info')
-  }, [addDebugLog])
+  }, [])
 
   // Helper function to log messages to Eden session
   const logMessageToSession = useCallback(
     async (sessionId: string, role: 'user' | 'assistant', content: string) => {
-      const roleLabel = role === 'assistant' ? 'agent' : 'user'
-      addDebugLog(
-        `💾 Saving ${roleLabel} message to session ${sessionId}`,
-        'info',
-      )
       try {
         const response = await fetch('/api/realtime/session/message', {
           method: 'POST',
@@ -117,18 +110,16 @@ export function useVoiceConversation(
           body: JSON.stringify({ sessionId, role, content }),
         })
 
-        if (response.ok) {
-          addDebugLog(`✅ ${roleLabel} message saved to session`, 'success')
-        } else {
+        if (!response.ok) {
           const errorText = await response.text()
           addDebugLog(
-            `❌ Failed to save ${roleLabel} message: ${response.status} ${errorText}`,
+            `Failed to save message: ${response.status} ${errorText}`,
             'error',
           )
         }
       } catch (error) {
         addDebugLog(
-          `❌ Error saving ${roleLabel} message: ${
+          `Error saving message: ${
             error instanceof Error ? error.message : String(error)
           }`,
           'error',
@@ -156,87 +147,45 @@ export function useVoiceConversation(
     }
   }, [addDebugLog])
 
-  // Build conversation overrides with user context
-  // This is the recommended approach per ElevenLabs docs
-  const buildConversationOverrides = useCallback(() => {
-    // Start with base prompt
-    let systemPrompt = config.agentPrompt
+  // Prepare conversation config with dynamic variables
+  // This uses ElevenLabs' recommended dynamic variables approach
+  const prepareConversationConfig = useCallback(() => {
+    // Validate dynamic variables
+    const validation = validateDynamicVariables(config.dynamicVariables)
 
-    // Filter out empty values from userInfo
-    const filledUserInfo = config.userInfo
-      ? Object.fromEntries(
-          Object.entries(config.userInfo).filter(
-            ([, value]) => value.trim() !== '',
-          ),
-        )
-      : {}
-
-    // Add user context if provided
-    if (Object.keys(filledUserInfo).length > 0) {
-      const userContextParts = Object.entries(filledUserInfo).map(
-        ([key, value]) => `${key}: ${value}`,
-      )
-      systemPrompt += `\n\nUser Information:\n${userContextParts.join(
-        '\n',
-      )}\n\nUse this information to personalize your responses.`
-    }
-
-    // Build first message with precedence:
-    // 1. Explicit override from conversationConfig has highest priority
-    // 2. Fall back to DEFAULT_AGENT_CONFIG firstMessage
-    // 3. Prepend personalized greeting if user name is provided
-    let firstMessage =
-      config.conversationConfig?.agent?.firstMessage ||
-      DEFAULT_AGENT_CONFIG.agent.firstMessage
-
-    // Prepend personalized greeting if user name exists
-    const userName = filledUserInfo['name'] || filledUserInfo['Name']
-    if (userName && firstMessage) {
-      firstMessage = `Heey ${userName}! ${firstMessage}`
-    }
-
-    // Merge with base config and user overrides
-    const overrides = {
-      agent: {
-        prompt: {
-          prompt: systemPrompt,
-          llm:
-            config.conversationConfig?.agent?.prompt?.llm ||
-            DEFAULT_AGENT_CONFIG.agent.prompt.llm,
-          temperature:
-            config.conversationConfig?.agent?.prompt?.temperature ||
-            DEFAULT_AGENT_CONFIG.agent.prompt.temperature,
-          maxTokens:
-            config.conversationConfig?.agent?.prompt?.maxTokens ||
-            DEFAULT_AGENT_CONFIG.agent.prompt.maxTokens,
-        },
-        ...(firstMessage && { firstMessage }),
-        ...(config.conversationConfig?.agent?.language && {
-          language: config.conversationConfig.agent.language,
-        }),
-      },
-    }
-
-    addDebugLog('Built conversation overrides', 'info')
-    addDebugLog(`  Prompt: ${systemPrompt.length} chars`, 'debug')
-    if (firstMessage) {
-      addDebugLog(`  First message: "${firstMessage}"`, 'debug')
-    }
-    if (Object.keys(filledUserInfo).length > 0) {
+    if (!validation.valid) {
       addDebugLog(
-        `  User info fields: ${Object.keys(filledUserInfo).join(', ')}`,
-        'debug',
+        'Invalid dynamic variables: ' + validation.errors.join(', '),
+        'error',
       )
     }
 
-    return overrides
-  }, [
-    config.agentPrompt,
-    config.agentName,
-    config.userInfo,
-    config.conversationConfig,
-    addDebugLog,
-  ])
+    if (validation.warnings.length > 0) {
+      validation.warnings.forEach(warning => {
+        addDebugLog(warning, 'warning')
+      })
+    }
+
+    // Return config for ElevenLabs startSession
+    // We only pass dynamic variables now (agent_system_prompt and first_message)
+    const sessionConfig = {
+      dynamicVariables: config.dynamicVariables,
+      // Optional config overrides for non-prompt settings only
+      ...(config.conversationConfig?.agent?.language && {
+        overrides: {
+          agent: {
+            language: config.conversationConfig.agent.language,
+            // Include TTS settings if provided
+            ...(config.conversationConfig?.agent?.tts && {
+              tts: config.conversationConfig.agent.tts,
+            }),
+          },
+        },
+      }),
+    }
+
+    return sessionConfig
+  }, [config.dynamicVariables, config.conversationConfig, addDebugLog])
 
   // Initialize ElevenLabs conversation
   // Note: onMessage uses sessionId from the current closure
@@ -254,10 +203,6 @@ export function useVoiceConversation(
     onMessage: async (message: { source: string; message: string }) => {
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'
       if (message.source === 'ai') {
-        addDebugLog(
-          `📨 Agent message received (${message.message.length} chars)`,
-          'info',
-        )
         setTranscript(prev => [
           ...prev,
           {
@@ -276,14 +221,8 @@ export function useVoiceConversation(
             'assistant',
             message.message,
           )
-        } else {
-          addDebugLog('⚠️ No sessionId, skipping agent message save', 'warning')
         }
       } else if (message.source === 'user') {
-        addDebugLog(
-          `📨 User message received (${message.message.length} chars)`,
-          'info',
-        )
         setTranscript(prev => [
           ...prev,
           {
@@ -298,8 +237,6 @@ export function useVoiceConversation(
         const currentSessionId = sessionIdRef.current
         if (currentSessionId) {
           await logMessageToSession(currentSessionId, 'user', message.message)
-        } else {
-          addDebugLog('⚠️ No sessionId, skipping user message save', 'warning')
         }
       }
     },
@@ -312,8 +249,8 @@ export function useVoiceConversation(
           : JSON.stringify(error)
       addDebugLog(`Error: ${errorMessage}`, 'error')
     },
-    onStatusChange: (status: unknown) => {
-      addDebugLog(`Status changed to: ${JSON.stringify(status)}`, 'info')
+    onStatusChange: () => {
+      // Status changes are tracked via conversation.status
     },
   })
 
@@ -323,7 +260,6 @@ export function useVoiceConversation(
     let currentAgentId = agentId
 
     if (!currentApiKey || !currentAgentId) {
-      addDebugLog('Loading configuration...', 'info')
       const configData = await fetchConfig()
       if (!configData) {
         addDebugLog('Failed to load configuration', 'error')
@@ -334,19 +270,14 @@ export function useVoiceConversation(
     }
 
     try {
-      addDebugLog('Requesting microphone access...', 'info')
-
       // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      addDebugLog('Microphone access granted', 'success')
 
       // Start monitoring microphone volume
       startVolumeMonitoring(stream)
 
       // Create Eden session with user info
       try {
-        addDebugLog('Creating Eden session...', 'info')
-
         // Filter out empty values from userInfo
         const filledUserInfo = config.userInfo
           ? Object.fromEntries(
@@ -367,36 +298,33 @@ export function useVoiceConversation(
 
         if (sessionResponse.ok) {
           const sessionData = await sessionResponse.json()
-          // SDK returns { success, session: { _id, ... }, message }
           const newSessionId = sessionData.session?._id
           if (newSessionId) {
             sessionIdRef.current = newSessionId
-            addDebugLog(`Eden session created: ${newSessionId}`, 'success')
-          } else {
-            addDebugLog('No session ID in response', 'warning')
+            addDebugLog(`Session created: ${newSessionId}`, 'success')
           }
         } else {
           const errorText = await sessionResponse.text()
           addDebugLog(
-            `Failed to create Eden session: ${sessionResponse.status} ${errorText}`,
-            'warning',
+            `Failed to create session: ${sessionResponse.status} ${errorText}`,
+            'error',
           )
         }
       } catch (error) {
-        addDebugLog('Error creating Eden session', 'warning')
+        addDebugLog('Error creating session', 'error')
       }
 
-      // Build conversation overrides with user context
-      const overrides = buildConversationOverrides()
+      // Prepare conversation config with dynamic variables
+      const sessionConfig = prepareConversationConfig()
 
-      // Start the conversation with overrides
-      addDebugLog('Starting conversation session with overrides...', 'info')
+      // Start the conversation with dynamic variables
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (conversation.startSession as any)({
         agentId: currentAgentId,
-        overrides,
+        ...sessionConfig,
       })
-      addDebugLog('Session started successfully', 'success')
+
+      addDebugLog('Connected', 'success')
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
@@ -408,7 +336,7 @@ export function useVoiceConversation(
     conversation,
     config.edenAgentId,
     config.userInfo,
-    buildConversationOverrides,
+    prepareConversationConfig,
     addDebugLog,
     startVolumeMonitoring,
     fetchConfig,
@@ -416,10 +344,9 @@ export function useVoiceConversation(
 
   const endConversation = useCallback(async () => {
     try {
-      addDebugLog('Stopping conversation...', 'info')
       await conversation.endSession()
       stopVolumeMonitoring()
-      addDebugLog('Conversation stopped', 'success')
+      addDebugLog('Disconnected', 'info')
       sessionIdRef.current = null
     } catch (error: unknown) {
       const errorMessage =
