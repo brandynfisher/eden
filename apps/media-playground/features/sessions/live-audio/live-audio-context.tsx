@@ -91,13 +91,17 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
 
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
     try {
+      // Safe microphone configuration to prevent Android devices from switching to call mode
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
           channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true,
+          sampleRate: 48000,
+          sampleSize: 16,
         },
+        video: false,
       })
       mediaStreamRef.current = stream
       return true
