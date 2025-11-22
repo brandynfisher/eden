@@ -78,7 +78,7 @@ export const DEFAULT_AGENT_CONFIG: ConversationConfig = {
       maxTokens: 4096,
     },
     tts: {
-      stability: 0.4,
+      stability: 0.45,
       speed: 1.2,
       similarityBoost: 0.25,
     },
