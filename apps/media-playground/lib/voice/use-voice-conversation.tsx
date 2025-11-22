@@ -199,6 +199,10 @@ export function useVoiceConversation(
         `Disconnected from agent. Reason: ${JSON.stringify(reason)}`,
         'warning',
       )
+      // Clear transcript and reset state when conversation ends
+      setTranscript([])
+      stopVolumeMonitoring()
+      sessionIdRef.current = null
     },
     onMessage: async (message: { source: string; message: string }) => {
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'

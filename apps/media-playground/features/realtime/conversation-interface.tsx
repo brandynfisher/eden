@@ -133,11 +133,16 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
     }
   }, [conversation.status, onStatusChange])
 
+  // Reset user info when conversation disconnects (both user and agent-initiated)
+  useEffect(() => {
+    if (conversation.status === 'disconnected') {
+      setUserInfo(initialUserInfo)
+    }
+  }, [conversation.status, initialUserInfo])
+
   // Handle stopping conversation and resetting form
   const handleStopConversation = async () => {
     await conversation.endConversation()
-    // Reset user info fields for next session
-    setUserInfo(initialUserInfo)
   }
 
   // Minimal UI for production mode
