@@ -14,7 +14,7 @@ import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { RefObject, useMemo } from 'react'
+import React, { RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedAgentCursorArguments
@@ -29,6 +29,7 @@ type Props = {
   hideContextMenu?: boolean
   improvedLayout?: boolean
   customSort?: (agents: RowItem[]) => RowItem[]
+  renderCard?: (agent: Agent, queryKey: unknown[]) => React.JSX.Element
 }
 
 const AgentsFeed = ({
@@ -44,6 +45,7 @@ const AgentsFeed = ({
   hideContextMenu = false,
   improvedLayout = false,
   customSort,
+  renderCard,
 }: Props) => {
   const dispatch = useAppDispatch()
   const layoutScrollRef = useScrollContainer()
@@ -170,18 +172,22 @@ const AgentsFeed = ({
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
         customSort={customSort}
-        render={(item: RowItem) => (
-          <AgentCard
-            agent={item as Agent}
-            queryKey={queryKey}
-            onClick={isSelectable ? onClick : undefined}
-            isSelected={
-              isSelectable && selectedIds.includes((item as Agent)._id)
-            }
-            hideContextMenu={hideContextMenu}
-            improvedLayout={improvedLayout}
-          />
-        )}
+        render={(item: RowItem) =>
+          renderCard ? (
+            renderCard(item as Agent, queryKey)
+          ) : (
+            <AgentCard
+              agent={item as Agent}
+              queryKey={queryKey}
+              onClick={isSelectable ? onClick : undefined}
+              isSelected={
+                isSelectable && selectedIds.includes((item as Agent)._id)
+              }
+              hideContextMenu={hideContextMenu}
+              improvedLayout={improvedLayout}
+            />
+          )
+        }
       />
     </div>
   )

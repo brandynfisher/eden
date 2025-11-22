@@ -28,7 +28,6 @@ import {
   MenuIcon,
   MessageSquareIcon,
   SettingsIcon,
-  UserIcon,
   UserPlus,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -46,6 +45,7 @@ const AgentsPage = () => {
     verifyAuth,
   } = useAuthState()
 
+  const [searchInputValue, setSearchInputValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [scope, setScope] = useState<AgentScope>('public')
   const [didSetDefaultScope, setDidSetDefaultScope] = useState(false)
@@ -57,6 +57,7 @@ const AgentsPage = () => {
   const { lastAgents, isLoading: isPreferencesLoading } =
     useUserPreferencesQuery({
       enabled: !!isSignedIn,
+      populateOwner: true,
     })
   const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
     enabled: scope === 'shared' && isSignedIn,
@@ -130,10 +131,9 @@ const AgentsPage = () => {
     () => ({
       limit: 40,
       ...(user?._id ? { owner: user._id } : {}),
-      ...(searchQuery ? { search: searchQuery } : {}),
-      sort: ['createdAt;-1'],
+      sort: ['stats.messageCount;-1'],
     }),
-    [user?._id, searchQuery],
+    [user?._id],
   )
 
   const myAgentsQueryKey = useMemo(
@@ -170,49 +170,65 @@ const AgentsPage = () => {
     () => ({
       limit: 40,
       sort: ['stats.messageCount;-1'],
-      ...(searchQuery ? { search: searchQuery } : {}),
+      // Backend already applies public: true by default
+      ...(user?._id ? { excludeOwner: user._id } : {}),
+    }),
+    [user?._id],
+  )
+
+  // Unified search query - searches all eligible agents (mine + public)
+  const unifiedSearchQuery: FeedAgentCursorArguments = useMemo(
+    () => ({
+      limit: 40,
+      search: searchQuery,
+      sort: ['stats.messageCount;-1'],
     }),
     [searchQuery],
   )
 
+  const { data: unifiedSearchData, isLoading: isUnifiedSearchLoading } =
+    useQuery({
+      queryKey: ['feed', 'agents', 'unified-search', unifiedSearchQuery],
+      enabled: !!searchQuery,
+      queryFn: () =>
+        fetcher<{ docs: Agent[]; nextCursor?: string }>(
+          createCursorPaginationRoute('/api/feed/agents', {
+            ...unifiedSearchQuery,
+            cursor: '',
+            limit: 40,
+          }),
+        ),
+      staleTime: 30_000,
+    })
+
+  const unifiedSearchResults = useMemo(
+    () => unifiedSearchData?.docs || [],
+    [unifiedSearchData],
+  )
+
   const filteredSharedAgents = useMemo(() => {
-    const sorted = [...sharedAgents].sort((a, b) => {
+    return [...sharedAgents].sort((a, b) => {
       const aCount = a.agent?.stats?.messageCount || 0
       const bCount = b.agent?.stats?.messageCount || 0
       return bCount - aCount
     })
-
-    if (!searchQuery) return sorted
-    const query = searchQuery.toLowerCase()
-
-    return sorted.filter(({ agent }) => {
-      const haystack = [
-        agent.name,
-        agent.description,
-        agent.username,
-        agent.owner?.username,
-      ]
-      return haystack.some(
-        value => value && value.toLowerCase().includes(query),
-      )
-    })
-  }, [sharedAgents, searchQuery])
+  }, [sharedAgents])
 
   const renderRecentAgents = () => {
     if (!isSignedIn || recentAgents.length === 0) return null
 
     return (
-      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/10 via-purple-500/10 to-emerald-500/10 p-4 md:p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/15 via-violet-500/12 to-fuchsia-500/10 p-4 md:p-5 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold">Recent agents</h2>
-            <p className="text-sm text-muted-foreground">
-              The last few agents you've spoken with - jump back in.
-            </p>
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="relative mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {recentAgentsWithDescriptions.map(agent => (
             <RecentAgentTile
               key={agent._id}
@@ -252,9 +268,7 @@ const AgentsPage = () => {
       if (filteredSharedAgents.length === 0) {
         return (
           <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
-            {searchQuery
-              ? 'No shared agents match your search.'
-              : 'No one has shared agents with you yet.'}
+            No one has shared agents with you yet.
           </div>
         )
       }
@@ -281,17 +295,26 @@ const AgentsPage = () => {
         <AgentsFeed
           query={publicAgentsQuery}
           minCols={1}
-          maxCols={4}
+          maxCols={3}
           hideCreateButton={true}
           improvedLayout={true}
           hideContextMenu={true}
           breakpoints={[
-            { minWidth: 1536, columns: 5 },
-            { minWidth: 1280, columns: 4 },
-            { minWidth: 1024, columns: 3 },
+            { minWidth: 1280, columns: 3 },
             { minWidth: 768, columns: 2 },
             { minWidth: 0, columns: 1 },
           ]}
+          renderCard={agent => (
+            <LibraryAgentCard
+              key={agent._id}
+              agent={agent}
+              currentUserId={user?._id}
+              onSettings={() => {
+                setSettingsAgentId(agent.username || agent._id)
+                setIsSettingsModalOpen(true)
+              }}
+            />
+          )}
         />
       )
     }
@@ -310,9 +333,7 @@ const AgentsPage = () => {
     if (!myAgents.length) {
       return (
         <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
-          {searchQuery
-            ? 'No agents match your search.'
-            : 'You have not created any agents yet.'}
+          You have not created any agents yet.
         </div>
       )
     }
@@ -320,6 +341,42 @@ const AgentsPage = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {myAgents.map(agent => (
+          <LibraryAgentCard
+            key={agent._id}
+            agent={agent}
+            currentUserId={user?._id}
+            onSettings={() => {
+              setSettingsAgentId(agent.username || agent._id)
+              setIsSettingsModalOpen(true)
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const renderSearchResults = () => {
+    if (isUnifiedSearchLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-56 rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      )
+    }
+
+    if (unifiedSearchResults.length === 0) {
+      return (
+        <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+          No agents match your search.
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {unifiedSearchResults.map(agent => (
           <LibraryAgentCard
             key={agent._id}
             agent={agent}
@@ -367,7 +424,7 @@ const AgentsPage = () => {
           <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-6">
             <header className="space-y-3">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-1">
+                <div className="space-y-1 hidden md:block">
                   <h1 className="text-3xl font-bold tracking-tight">Agents</h1>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -439,6 +496,8 @@ const AgentsPage = () => {
 
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end w-full lg:w-auto">
                       <FeedSearchForm
+                        value={searchInputValue}
+                        onInputChange={setSearchInputValue}
                         handleSearch={setSearchQuery}
                         className="w-full sm:w-[260px] lg:w-[320px]"
                       />
@@ -447,11 +506,15 @@ const AgentsPage = () => {
 
                   <div className="space-y-2">
                     <p className="text-sm font-medium">
-                      {scope === 'mine' && 'Your agents'}
-                      {scope === 'shared' && 'Shared with you'}
-                      {scope === 'public' && 'Popular across Eden'}
+                      {searchQuery
+                        ? `Search results for "${searchQuery}"`
+                        : scope === 'mine'
+                        ? 'Your agents'
+                        : scope === 'shared'
+                        ? 'Shared with you'
+                        : 'Popular across Eden'}
                     </p>
-                    {renderScopeFeed()}
+                    {searchQuery ? renderSearchResults() : renderScopeFeed()}
                   </div>
                 </div>
               </>
@@ -485,7 +548,7 @@ const RecentAgentTile = ({
   onSettings,
   currentUserId,
 }: {
-  agent: MinimalAgent | Agent
+  agent: Agent | MinimalAgent
   onSettings?: () => void
   currentUserId?: string
 }) => {
@@ -508,74 +571,87 @@ const RecentAgentTile = ({
   return (
     <div
       className={cn(
-        'group flex flex-col gap-3 rounded-xl border bg-background/70 backdrop-blur-sm cursor-pointer',
+        'group flex flex-row rounded-xl border bg-background/70 backdrop-blur-sm cursor-pointer relative',
         'border-border/70 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-        'transition-all duration-200 p-4 h-full',
+        'transition-all duration-200 h-full overflow-hidden',
       )}
-      onClick={() => router.push(`/chat/${username}`)}
+      onClick={() => router.push(`/agents/${username}`)}
       role="button"
       tabIndex={0}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          router.push(`/chat/${username}`)
+          router.push(`/agents/${username}`)
         }
       }}
     >
-      <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={imageSrc} alt={agent.name || agent.username} />
-          <AvatarFallback>
+      {/* Square avatar on left */}
+      <div className="shrink-0 w-32 self-stretch flex items-center justify-center p-3">
+        <Avatar className="w-full aspect-square rounded-lg">
+          <AvatarImage
+            src={imageSrc}
+            alt={agent.name || agent.username}
+            className="object-cover"
+          />
+          <AvatarFallback className="text-3xl rounded-lg">
             {(agent.name || agent.username)?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0">
+      </div>
+
+      {/* Content on right */}
+      <div className="flex flex-col flex-1 min-w-0 p-3">
+        {/* Settings button - top right */}
+        {hasEditAccess && !isPermissionsLoading && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 absolute top-2 right-2"
+            onClick={e => {
+              e.stopPropagation()
+              onSettings?.()
+            }}
+            aria-label="Agent settings"
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </Button>
+        )}
+
+        <div className="min-w-0 pr-8">
           <p className="font-semibold truncate leading-tight">
             {agent.name || agent.username}
           </p>
           <p className="text-xs text-muted-foreground truncate">
-            @{agent.owner?.username || agent.username}
+            by @
+            {typeof (agent as Agent).owner === 'object'
+              ? (agent as Agent).owner?.username
+              : agent.username}
           </p>
         </div>
-        <div className="flex gap-1 ml-auto">
-          {hasEditAccess && !isPermissionsLoading && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8"
-              onClick={e => {
-                e.stopPropagation()
-                onSettings?.()
-              }}
-              aria-label="Agent settings"
-            >
-              <SettingsIcon className="h-4 w-4" />
-            </Button>
+
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+          {description}
+        </p>
+
+        <div className="flex items-center justify-between mt-auto pt-2">
+          {messageCount > 0 && (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <MessageSquareIcon className="h-3 w-3" />
+              {formatCompactNumber(messageCount)} messages
+            </span>
           )}
           <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8"
-            asChild
-            onClick={e => e.stopPropagation()}
-            aria-label="View agent profile"
+            size="sm"
+            variant="secondary"
+            className="h-7 text-xs ml-auto"
+            onClick={e => {
+              e.stopPropagation()
+              router.push(`/chat?agent=${username}`)
+            }}
           >
-            <Link href={`/agents/${username}`}>
-              <UserIcon className="h-4 w-4" />
-            </Link>
+            Start chat
           </Button>
         </div>
-      </div>
-      <p className="text-sm text-muted-foreground line-clamp-2 min-h-[42px]">
-        {description}
-      </p>
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-auto">
-        {messageCount > 0 && (
-          <span className="flex items-center gap-1">
-            <MessageSquareIcon className="h-3 w-3" />
-            {formatCompactNumber(messageCount)} messages
-          </span>
-        )}
       </div>
     </div>
   )
@@ -601,75 +677,82 @@ const LibraryAgentCard = ({
   return (
     <div
       className={cn(
-        'group flex flex-col gap-3 rounded-xl border bg-background/80 backdrop-blur-sm cursor-pointer',
+        'group flex flex-row rounded-xl border bg-background/80 backdrop-blur-sm cursor-pointer relative',
         'border-border/70 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-        'transition-all duration-200 p-4 h-full',
+        'transition-all duration-200 h-full overflow-hidden',
       )}
-      onClick={() => router.push(`/chat/${agent.username}`)}
+      onClick={() => router.push(`/agents/${agent.username}`)}
       role="button"
       tabIndex={0}
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          router.push(`/chat/${agent.username}`)
+          router.push(`/agents/${agent.username}`)
         }
       }}
     >
-      <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={imageSrc} alt={agent.name || agent.username} />
-          <AvatarFallback>
+      {/* Square avatar on left */}
+      <div className="shrink-0 w-32 self-stretch flex items-center justify-center p-3">
+        <Avatar className="w-full aspect-square rounded-lg">
+          <AvatarImage
+            src={imageSrc}
+            alt={agent.name || agent.username}
+            className="object-cover"
+          />
+          <AvatarFallback className="text-3xl rounded-lg">
             {(agent.name || agent.username)?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start gap-2">
-            <div className="min-w-0">
-              <p className="font-semibold truncate leading-tight">
-                {agent.name}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                By @{agent.owner?.username || 'unknown'}
-              </p>
-            </div>
-            <div className="flex gap-1 ml-auto">
-              {hasEditAccess && !isPermissionsLoading && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={e => {
-                    e.stopPropagation()
-                    onSettings?.()
-                  }}
-                  aria-label="Agent settings"
-                >
-                  <SettingsIcon className="h-4 w-4" />
-                </Button>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8"
-                asChild
-                onClick={e => e.stopPropagation()}
-                aria-label="View agent profile"
-              >
-                <Link href={`/agents/${agent.username}`}>
-                  <UserIcon className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground line-clamp-3 mt-1 min-h-[60px]">
-            {description}
-          </p>
-        </div>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
-        <MessageSquareIcon className="h-3.5 w-3.5" />
-        {formatCompactNumber(agent.stats?.messageCount || 0)} messages
+      {/* Content on right */}
+      <div className="flex flex-col flex-1 min-w-0 p-3">
+        {/* Settings button - top right */}
+        {hasEditAccess && !isPermissionsLoading && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 absolute top-2 right-2"
+            onClick={e => {
+              e.stopPropagation()
+              onSettings?.()
+            }}
+            aria-label="Agent settings"
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </Button>
+        )}
+
+        <div className="min-w-0 pr-8">
+          <p className="font-semibold truncate leading-tight">
+            {agent.name || agent.username}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">
+            by @{agent.owner?.username || agent.username}
+          </p>
+        </div>
+
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+          {description}
+        </p>
+
+        <div className="flex items-center justify-between mt-auto pt-2">
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <MessageSquareIcon className="h-3 w-3" />
+            {formatCompactNumber(agent.stats?.messageCount || 0)} messages
+          </span>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-7 text-xs ml-auto"
+            onClick={e => {
+              e.stopPropagation()
+              router.push(`/chat?agent=${agent.username}`)
+            }}
+          >
+            Start chat
+          </Button>
+        </div>
       </div>
     </div>
   )

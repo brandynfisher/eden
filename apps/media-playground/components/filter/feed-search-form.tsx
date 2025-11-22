@@ -4,31 +4,57 @@ import { cn } from '@/lib/utils'
 import debounce from 'lodash/debounce'
 import { XIcon } from 'lucide-react'
 import { SearchIcon } from 'lucide-react'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export default function FeedSearchForm({
   handleSearch,
   className,
+  value,
+  onInputChange,
 }: {
   handleSearch: (value: string) => void
   className?: string
+  value?: string
+  onInputChange?: (value: string) => void
 }) {
-  const [searchInput, setSearchInput] = useState('')
+  // Use controlled value if provided, otherwise use internal state
+  const [internalSearchInput, setInternalSearchInput] = useState('')
+  const isControlled = value !== undefined
+  const searchInput = isControlled ? value : internalSearchInput
+
+  // Use ref to store the latest handleSearch to avoid recreating debounced function
+  const handleSearchRef = useRef(handleSearch)
+  useEffect(() => {
+    handleSearchRef.current = handleSearch
+  }, [handleSearch])
 
   const debouncedSearch = useMemo(
-    () => debounce((value: string) => handleSearch(value), 500),
-    [handleSearch], // Recreate debounced function when tab changes
+    () => debounce((val: string) => handleSearchRef.current(val), 500),
+    [],
   )
 
-  const handleSearchInput = (value: string) => {
-    setSearchInput(value)
-    debouncedSearch(value)
-  }
+  const handleSearchInputChange = useCallback(
+    (val: string) => {
+      if (isControlled) {
+        // In controlled mode, notify parent of input change immediately
+        onInputChange?.(val)
+      } else {
+        setInternalSearchInput(val)
+      }
+      debouncedSearch(val)
+    },
+    [isControlled, debouncedSearch, onInputChange],
+  )
 
-  const handleSearchReset = () => {
-    setSearchInput('')
-    handleSearch('')
-  }
+  const handleSearchReset = useCallback(() => {
+    if (isControlled) {
+      onInputChange?.('')
+    } else {
+      setInternalSearchInput('')
+    }
+    debouncedSearch.cancel()
+    handleSearchRef.current('')
+  }, [isControlled, debouncedSearch, onInputChange])
 
   return (
     <div
@@ -44,7 +70,7 @@ export default function FeedSearchForm({
         className="rounded-none border-l-transparent border-r-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-purple-600/40"
         placeholder="Search"
         value={searchInput}
-        onChange={e => handleSearchInput(e.target.value)}
+        onChange={e => handleSearchInputChange(e.target.value)}
       />
       <Button
         variant="outline"

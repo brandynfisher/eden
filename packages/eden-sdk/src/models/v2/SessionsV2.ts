@@ -12,8 +12,8 @@ import { AxiosRequestConfig } from 'axios'
 
 // Session Types
 export enum SessionType {
-  CHAT = 'chat',
-  PASSIVE = 'passive',
+  NORMAL = 'normal',
+  NATURAL = 'natural',
   AUTOMATIC = 'automatic',
 }
 

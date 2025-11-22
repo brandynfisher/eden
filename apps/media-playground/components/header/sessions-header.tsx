@@ -42,6 +42,8 @@ import { useEffect, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -56,7 +58,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   const sessionId = params?.id as string
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
-    type: 'passive',
+    type: 'natural',
     context: '',
     conductor_prompt: '',
     delay_interval: 0,
@@ -64,6 +66,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
+    exclude_memory: false,
   })
 
   // Check if we're on a share route
@@ -79,7 +82,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   useEffect(() => {
     if (session) {
       setSessionSettings({
-        type: (session.session_type as 'passive' | 'automatic') || 'passive',
+        type: session.session_type === 'automatic' ? 'automatic' : 'natural',
         context: session.context || '',
         conductor_prompt: session.settings?.conductor_prompt || '',
         delay_interval: session.settings?.delay_interval || 0,
@@ -90,6 +93,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         token_budget: session.budget?.token_budget,
         turn_budget_unlimited: !session.budget?.turn_budget,
         turn_budget: session.budget?.turn_budget,
+        exclude_memory: session.extras?.exclude_memory || false,
       })
     }
   }, [session])
@@ -120,10 +124,13 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           token_budget?: number
           turn_budget?: number
         }
+        extras?: {
+          exclude_memory?: boolean
+        }
       } = {
         session_type:
-          settings.type === 'passive'
-            ? SessionType.PASSIVE
+          settings.type === 'natural'
+            ? SessionType.NATURAL
             : SessionType.AUTOMATIC,
         settings: {
           conductor_prompt: settings.conductor_prompt || '',
@@ -152,6 +159,13 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
       }
       if (Object.keys(budget).length > 0) {
         requestBody.budget = budget
+      }
+
+      // Add exclude_memory to extras
+      if (settings.exclude_memory) {
+        requestBody.extras = {
+          exclude_memory: true,
+        }
       }
 
       const response = await fetch(`/api/sessions/${sessionId}`, {

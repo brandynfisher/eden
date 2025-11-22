@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   try {
     const authToken = await getAuthToken(request)
+    const populateOwner = request.nextUrl.searchParams.get('populateOwner')
 
     if (!authToken) {
       return NextResponse.json(
@@ -19,7 +20,9 @@ export async function GET(request: NextRequest) {
       token: authToken,
     })
 
-    const response = await client.userPreferences.get({})
+    const response = await client.userPreferences.get({
+      populateOwner: populateOwner === 'true',
+    })
 
     if (response.error) {
       return NextResponse.json({ message: response.error }, { status: 400 })

@@ -148,10 +148,10 @@ export const createSession = async (
   if (sessionType !== undefined && sessionType !== null) {
     if (
       typeof sessionType !== 'string' ||
-      !['chat', 'passive', 'automatic'].includes(sessionType)
+      !['normal', 'natural', 'automatic'].includes(sessionType)
     ) {
       return reply.status(400).send({
-        message: 'type must be "chat", "passive", or "automatic"',
+        message: 'type must be "normal", "natural", or "automatic"',
       })
     }
   }
@@ -184,10 +184,10 @@ export const createSession = async (
       settingsObj.delay_interval !== undefined &&
       (typeof settingsObj.delay_interval !== 'number' ||
         settingsObj.delay_interval < 0 ||
-        settingsObj.delay_interval > 3600)
+        settingsObj.delay_interval > 86400)
     ) {
       return reply.status(400).send({
-        message: 'delay_interval must be a number between 0 and 3600',
+        message: 'delay_interval must be a number between 0 and 86400',
       })
     }
 
@@ -244,6 +244,9 @@ export const createSession = async (
 
     if (status) {
       sessionData.status = status
+    } else if (sessionType === 'automatic') {
+      // Default to 'paused' for automatic sessions
+      sessionData.status = 'paused'
     }
 
     if (budget) {
@@ -333,7 +336,7 @@ export const createSessionMessage = async (
         turn_budget?: number
       }
       title?: string
-      session_type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'normal' | 'natural' | 'automatic'
       status?: 'active' | 'paused' | 'stopped' | 'archived'
       settings?: {
         conductor_prompt?: string

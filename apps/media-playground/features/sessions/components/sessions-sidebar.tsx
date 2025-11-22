@@ -1035,13 +1035,13 @@ const SidebarUserProfile = ({
   }
 
   return (
-    <div className="border-t bg-background -ml-2 md:w-[calc(100%+0.5rem)] w-full flex-shrink-0">
-      <div className="flex items-center gap-2 px-3 pt-3">
+    <div className="border-t bg-background -ml-2 w-[calc(100%_+_0.5rem)] flex-shrink-0">
+      <div className="flex items-center gap-2 px-2 py-1.5">
         <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <button
               ref={dropdownTriggerRef}
-              className="flex items-center gap-3 flex-1 py-3 pr-3 pl-4 hover:bg-muted/20 transition-colors rounded-md text-left"
+              className="flex items-center gap-3 flex-1 py-2 pr-3 pl-3 hover:bg-muted/20 transition-colors rounded-md text-left"
             >
               <UserAvatar
                 image={user?.userImage}
@@ -1353,7 +1353,7 @@ export const SessionsSidebarContent = ({
 
   // Show regular chat sidebar for all other modes
   return (
-    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="flex flex-col h-full min-h-0">
       {/* Desktop: Eden logo + close button at the top */}
       <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
         <button
@@ -1768,6 +1768,7 @@ export const SessionsSidebarContent = ({
       {/* Content area based on mode */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         <div
+          id="sidebar-scroll-container"
           ref={sessionsScrollContainerRef}
           className="flex-1 min-h-0 flex flex-col overflow-y-auto"
         >
@@ -2016,7 +2017,7 @@ export const SessionsSidebar = React.memo(
     return (
       <div
         className={cn(
-          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out overflow-hidden',
+          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out',
           'max-w-[320px]',
           isSidebarCollapsed && 'p-0 border-none',
         )}

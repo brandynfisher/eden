@@ -77,8 +77,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),
@@ -94,7 +94,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           Type.Object({
             conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
             delay_interval: Type.Optional(
-              Type.Number({ minimum: 0, maximum: 3600 }),
+              Type.Number({ minimum: 0, maximum: 86400 }),
             ),
             mention_force_reply: Type.Optional(Type.Boolean()),
           }),
@@ -141,7 +141,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         turn_budget?: number
       }
       title?: string
-      session_type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'normal' | 'natural' | 'automatic'
       settings?: {
         conductor_prompt?: string
         delay_interval: number
@@ -187,8 +187,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),
@@ -196,7 +196,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           Type.Object({
             conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
             delay_interval: Type.Optional(
-              Type.Number({ minimum: 0, maximum: 3600 }),
+              Type.Number({ minimum: 0, maximum: 86400 }),
             ),
             mention_force_reply: Type.Optional(Type.Boolean()),
           }),
@@ -402,8 +402,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         agent_ids: Type.Optional(Type.Array(Type.String())),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),

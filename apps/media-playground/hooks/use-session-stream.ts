@@ -63,7 +63,7 @@ export const useSessionStream = ({
           turn_budget?: number
         }
         title?: string
-        type?: 'chat' | 'passive' | 'automatic'
+        type?: 'normal' | 'natural' | 'automatic'
         settings?: {
           conductor_prompt?: string
           delay_interval: number

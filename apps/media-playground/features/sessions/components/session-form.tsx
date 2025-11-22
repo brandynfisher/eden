@@ -55,7 +55,7 @@ const sessionFormSchema = z.object({
     )
     .min(1, 'Please select at least one agent')
     .max(MAX_AGENTS, `You can select a maximum of ${MAX_AGENTS} agents`),
-  type: z.enum(['passive', 'automatic']).default('passive'),
+  type: z.enum(['natural', 'automatic']).default('natural'),
   context: z
     .string()
     .max(5000, 'Context must not exceed 5000 characters')
@@ -134,7 +134,7 @@ export const SessionForm = ({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
       agents: [],
-      type: 'passive',
+      type: 'natural',
       context: '',
       conductor_prompt: '',
       delay_interval: 0,
@@ -315,16 +315,15 @@ export const SessionForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="passive">Passive</SelectItem>
+                  <SelectItem value="natural">Natural</SelectItem>
                   <SelectItem value="automatic">Automatic</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
-                <strong>Passive:</strong> Agents listen and decide when to
+                <strong>Natural:</strong> Agents listen and decide when to
                 speak.
                 <br />
-                <strong>Automatic:</strong> One agent always responds to a new
-                message, playing out the entire scenario.
+                <strong>Automatic:</strong> Agents play out entire scenario.
               </FormDescription>
               <FormMessage />
             </FormItem>
