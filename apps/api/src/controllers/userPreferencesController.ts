@@ -19,13 +19,12 @@ export const getUserPreferences = async (
       .populate({
         path: 'last_agents',
         select: 'username userImage name _id type owner',
-        match: { type: 'agent', deleted: { $ne: true } },
-        options: { limit: 5 },
+        match: { deleted: { $ne: true } },
       })
       .populate({
         path: 'pinned_agents',
         select: 'username userImage name _id type owner',
-        match: { type: 'agent', deleted: { $ne: true } },
+        match: { deleted: { $ne: true } },
       })
       .lean()
 

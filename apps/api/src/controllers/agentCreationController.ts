@@ -35,9 +35,6 @@ export const extractAgentPrompts = async (
     },
   }
 
-  server.log.info(
-    `[extract_prompts] Starting request to Modal for session ${session_id}`,
-  )
   const startTime = Date.now()
 
   try {
@@ -50,11 +47,6 @@ export const extractAgentPrompts = async (
         },
         timeout: 180000, // 3 minute timeout to match Next.js
       },
-    )
-
-    const duration = Date.now() - startTime
-    server.log.info(
-      `[extract_prompts] Modal request completed in ${duration}ms`,
     )
 
     return reply.send(modalResponse.data)

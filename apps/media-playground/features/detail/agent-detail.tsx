@@ -17,11 +17,12 @@ import {
 } from '@/components/ui/tooltip'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { canEditAgent } from '@/lib/utils'
 //import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -56,6 +57,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
   // Use standard useState again
   const [filterMode, setFilterMode] = useState<FilterMode>(() => {
@@ -158,6 +160,9 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+  const { hasEditAccess, isLoading: isPermissionsLoading } =
+    useAgentPermissions(agent, user?._id)
+  const canEditAgentSettings = hasEditAccess && !isPermissionsLoading
 
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
@@ -247,13 +252,15 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               </div>
 
               <div className="flex flex-wrap gap-2 mt-auto">
-                {canEditAgent(agent, user?._id) && (
+                {canEditAgentSettings && (
                   <>
-                    <Button className="gap-2" variant="outline" asChild>
-                      <Link href={`/edit/${agent.username}`}>
-                        <SettingsIcon className="w-4 h-4" />
-                        <span>Edit </span>
-                      </Link>
+                    <Button
+                      className="gap-2"
+                      variant="outline"
+                      onClick={() => setIsSettingsModalOpen(true)}
+                    >
+                      <SettingsIcon className="w-4 h-4" />
+                      <span>Edit </span>
                     </Button>
                     {/*isFeatureDeploymentsEnabled && (
                       <>
@@ -280,6 +287,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                       key={1}
                       agent={agent}
                       queryKey={['agents', id]}
+                      onEdit={() => setIsSettingsModalOpen(true)}
                       hiddenItems={['chat', 'view-details']}
                     />
                   </>
@@ -405,6 +413,13 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               query={recentCreationsQuery}
               initialScrollIndex={initialScrollIndex}
               onScrollRestored={clearScrollIndexState}
+            />
+
+            <AgentSettingsModal
+              agentId={agent.username || agent._id}
+              open={isSettingsModalOpen}
+              onOpenChange={setIsSettingsModalOpen}
+              initialTab="profile"
             />
           </div>
         </>

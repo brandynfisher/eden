@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,8 @@ const MyAgentCard = ({
   onDashboardClick,
 }: Props) => {
   const router = useRouter()
+  const { hasEditAccess, isLoading: isPermissionsLoading } =
+    useAgentPermissions(agent, userId)
 
   // Fetch recent sessions for this agent (backend expects username, not _id)
   const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
@@ -67,17 +70,19 @@ const MyAgentCard = ({
         </button>
 
         {/* Settings button */}
-        <button
-          className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
-          title="Settings"
-          onClick={e => {
-            e.preventDefault()
-            e.stopPropagation()
-            onSettingsClick?.()
-          }}
-        >
-          <SettingsIcon className="w-4 h-4 text-muted-foreground" />
-        </button>
+        {hasEditAccess && !isPermissionsLoading && (
+          <button
+            className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
+            title="Settings"
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              onSettingsClick?.()
+            }}
+          >
+            <SettingsIcon className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
 
       <Link

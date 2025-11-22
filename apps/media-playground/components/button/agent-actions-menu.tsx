@@ -11,8 +11,8 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { handleShareClick } from '@/features/detail/agent-share-util'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { canEditAgent, isAgentOwner } from '@/lib/utils'
 //import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
@@ -43,6 +43,7 @@ type Props = {
     | 'privacy'
     | 'delete'
   )[]
+  onEdit?: () => void
 }
 
 const AgentActionsMenu = ({
@@ -50,12 +51,18 @@ const AgentActionsMenu = ({
   queryKey,
   className,
   hiddenItems,
+  onEdit,
 }: Props) => {
   const { user } = useAuthState()
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const {
+    hasOwnerAccess,
+    hasEditAccess,
+    isLoading: isPermissionsLoading,
+  } = useAgentPermissions(agent, user?._id)
 
   // Include pathname in feedId to differentiate between same queries in different routes
   const feedId = useMemo(
@@ -177,7 +184,7 @@ const AgentActionsMenu = ({
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )} */}
-          {isAgentOwner(agent, user?._id) && (
+          {hasOwnerAccess && !isPermissionsLoading && (
             <>
               {/*isFeatureDeploymentsEnabled &&
                 !hiddenItems?.includes('deployments') && (
@@ -234,16 +241,32 @@ const AgentActionsMenu = ({
               )}
             </>
           )}
-          {canEditAgent(agent, user?._id) && (
+          {hasEditAccess && !isPermissionsLoading && (
             <>
               {!hiddenItems?.includes('edit') && (
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <button type="button" className="w-full">
-                    <Link href={`/edit/${agent.username}`} className="flex">
+                  {onEdit ? (
+                    <button
+                      type="button"
+                      className="w-full text-left flex"
+                      onClick={evt => {
+                        evt.preventDefault()
+                        setIsOpen(false)
+                        onEdit()
+                      }}
+                    >
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/edit/${agent.username}`}
+                      className="flex w-full"
+                    >
                       <SettingsIcon className="mr-2 h-4 w-4" />
                       <span>Edit</span>
                     </Link>
-                  </button>
+                  )}
                 </DropdownMenuItem>
               )}
             </>

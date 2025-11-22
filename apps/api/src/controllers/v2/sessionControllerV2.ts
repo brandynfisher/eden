@@ -2167,16 +2167,6 @@ export const addPassiveMessage = async (
     session.messages.push(message._id as any)
     await session.save()
 
-    server.log.info(
-      {
-        sessionId: session_id,
-        messageId: message._id,
-        role,
-        userId: user_id,
-      },
-      'Passive message added to session',
-    )
-
     return reply.status(200).send({
       success: true,
       message_id: message._id.toString(),

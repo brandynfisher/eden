@@ -1,0 +1,127 @@
+'use client'
+
+import { useAuthState } from '@/hooks/use-auth-state'
+import { updateSubscriptionGateModal } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+
+export enum GatedResource {
+  AddAgent = 'AddAgent',
+  SessionSettings = 'SessionSettings',
+  MakePrivate = 'MakePrivate',
+}
+
+type LockedBehavior = 'hide' | 'modal'
+
+type PreviewGateConfig = {
+  type: 'preview'
+  featureFlag: FeatureFlag
+  lockedBehavior?: LockedBehavior
+}
+
+type SubscriptionGateConfig = {
+  type: 'subscription'
+  featureName: string
+  minimumSubscriptionTier: SubscriptionTier
+  allowPreviewFlag?: FeatureFlag
+  lockedBehavior?: LockedBehavior
+}
+
+type GateConfig = PreviewGateConfig | SubscriptionGateConfig
+
+const gatedResourceConfig: Record<GatedResource, GateConfig> = {
+  [GatedResource.AddAgent]: {
+    type: 'preview',
+    featureFlag: FeatureFlag.Preview,
+    lockedBehavior: 'hide',
+  },
+  [GatedResource.SessionSettings]: {
+    type: 'preview',
+    featureFlag: FeatureFlag.Preview,
+    lockedBehavior: 'hide',
+  },
+  [GatedResource.MakePrivate]: {
+    type: 'subscription',
+    featureName: 'Making items private',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
+    allowPreviewFlag: FeatureFlag.Preview,
+    lockedBehavior: 'modal',
+  },
+}
+
+type UseGatedResourceOptions = {
+  lockedBehavior?: LockedBehavior
+  featureName?: string
+  minimumSubscriptionTier?: SubscriptionTier
+  allowPreviewFlag?: FeatureFlag
+}
+
+export const useGatedResource = (
+  resource: GatedResource,
+  options?: UseGatedResourceOptions,
+) => {
+  const dispatch = useAppDispatch()
+  const { user, hasMinimumSubscriptionTier } = useAuthState()
+  const baseConfig = gatedResourceConfig[resource]
+
+  const lockedBehavior: LockedBehavior =
+    options?.lockedBehavior ||
+    baseConfig.lockedBehavior ||
+    (baseConfig.type === 'preview' ? 'hide' : 'modal')
+
+  const previewFlag =
+    baseConfig.type === 'subscription'
+      ? baseConfig.allowPreviewFlag
+      : baseConfig.featureFlag
+  const isPreviewUser = previewFlag
+    ? !!user?.featureFlags?.includes(previewFlag)
+    : false
+
+  let isAllowed = false
+  let minimumSubscriptionTier: SubscriptionTier | undefined
+  let featureName: string | undefined
+
+  if (baseConfig.type === 'preview') {
+    const hasFlag = !!user?.featureFlags?.includes(baseConfig.featureFlag)
+    isAllowed = hasFlag
+  } else {
+    const resolvedMinimumTier =
+      options?.minimumSubscriptionTier ?? baseConfig.minimumSubscriptionTier
+    minimumSubscriptionTier = resolvedMinimumTier
+    featureName = options?.featureName || baseConfig.featureName
+    const allowPreviewFlag =
+      options?.allowPreviewFlag || baseConfig.allowPreviewFlag
+    const hasRequiredTier = hasMinimumSubscriptionTier(resolvedMinimumTier)
+    const hasAllowedPreview = allowPreviewFlag
+      ? !!user?.featureFlags?.includes(allowPreviewFlag)
+      : false
+    isAllowed = hasRequiredTier || hasAllowedPreview
+  }
+
+  const shouldRender = isAllowed || lockedBehavior !== 'hide'
+
+  const openGate = () => {
+    if (baseConfig.type !== 'subscription') return
+    if (lockedBehavior !== 'modal') return
+
+    dispatch(
+      updateSubscriptionGateModal({
+        isOpen: true,
+        featureName: featureName || baseConfig.featureName,
+        minimumSubscriptionTier:
+          minimumSubscriptionTier || baseConfig.minimumSubscriptionTier,
+      }),
+    )
+  }
+
+  return {
+    isAllowed,
+    shouldRender,
+    lockedBehavior,
+    gatingType: baseConfig.type,
+    featureName,
+    minimumSubscriptionTier,
+    isPreviewUser,
+    openGate,
+  }
+}

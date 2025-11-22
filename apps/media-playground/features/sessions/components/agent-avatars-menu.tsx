@@ -34,7 +34,7 @@ export const AgentAvatarsMenu = ({
   const singleAgent = isSingleAgent ? agents[0] : null
 
   const handleViewProfile = (agentUsername: string) => {
-    router.push(`/chat/${agentUsername}`)
+    router.push(`/agents/${agentUsername}`)
   }
 
   const handleEditAgent = (agentUsername: string) => {

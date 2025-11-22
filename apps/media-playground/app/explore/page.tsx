@@ -20,7 +20,7 @@ import ToolsFeed from '@/features/feed/tools-feed'
 import { ToolsFilter } from '@/features/feed/tools-filter'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
-import { Plus, SlidersHorizontal, Zap } from 'lucide-react'
+import { Plus, SlidersHorizontal, Wrench, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
@@ -171,7 +171,7 @@ const ExplorePage = () => {
             <Button asChild size="lg" className="gap-2">
               <Link href="/new/agent">
                 <Plus className="h-4 w-4" />
-                Create Agent
+                Create an Agent
               </Link>
             </Button>
           ),
@@ -185,7 +185,7 @@ const ExplorePage = () => {
             <Button asChild size="lg" className="gap-2">
               <Link href="/studio/lora/flux_trainer">
                 <Zap className="h-4 w-4" />
-                Train Model
+                Train a Model
               </Link>
             </Button>
           ),
@@ -197,8 +197,8 @@ const ExplorePage = () => {
           actionButton: (
             <Button asChild size="lg" className="gap-2">
               <Link href="/studio/image/flux_dev">
-                <Zap className="h-4 w-4" />
-                Use Tools
+                <Wrench className="h-4 w-4" />
+                Visit the Studio
               </Link>
             </Button>
           ),
@@ -210,7 +210,7 @@ const ExplorePage = () => {
           description: 'Discover what people are creating with Eden',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/studio/image/flux_dev">
+              <Link href="/studio/image/seedream4">
                 <Plus className="h-4 w-4" />
                 Create an Image
               </Link>
@@ -355,7 +355,7 @@ const ExplorePage = () => {
         </div>
 
         {/* Action button - desktop only */}
-        {pageInfo.actionButton && contentType !== 'creations' && (
+        {pageInfo.actionButton && (
           <div className="hidden md:block flex-shrink-0">
             {pageInfo.actionButton}
           </div>

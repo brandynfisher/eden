@@ -1,6 +1,6 @@
 'use client'
 
-import { ToolCardMedia } from '@/components/card/tool-card'
+import ToolCard from '@/components/card/tool-card'
 import { Badge } from '@/components/ui/badge'
 //import { Button } from '@/components/ui/button'
 import {
@@ -17,16 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { getMediaUrl } from '@/features/tools/tools-grid-section'
 import { useFilteredToolsQuery } from '@/hooks/use-filtered-tools-query'
 import { siteConfig } from '@/lib/config'
-import { cn } from '@/lib/utils'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 //import { X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
 type Props = {
@@ -39,7 +36,6 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
   const { tools } = useFilteredToolsQuery({
     output_type: ['image', 'video', 'audio', 'lora'],
   })
-  const router = useRouter()
   const [searchQuery, setSearchQuery] = React.useState('')
   const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -104,18 +100,6 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
     ].filter(category => category.tools.length > 0)
   }, [filteredTools])
 
-  const handleToolSelect = React.useCallback(
-    (tool: ToolV2) => {
-      // Navigate to the selected tool
-      const outputType = tool.key.includes('legacy')
-        ? 'legacy'
-        : tool.output_type
-      router.push(`/studio/${outputType}/${tool.key}`)
-      onOpenChange(false)
-    },
-    [router, onOpenChange],
-  )
-
   // Find current tool's category for default selection
   const currentToolKey = currentTool?.key
   const defaultCategoryId = React.useMemo(() => {
@@ -160,20 +144,32 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
     }
   }, [open])
 
+  const buildToolLink = React.useCallback((tool: ToolV2) => {
+    const outputType = tool.key.includes('legacy') ? 'legacy' : tool.output_type
+    return `/studio/${outputType}/${tool.key}`
+  }, [])
+
+  const selectedCategoryData = React.useMemo(
+    () => categories.find(category => category.id === selectedCategory),
+    [categories, selectedCategory],
+  )
+
+  const selectedTools = selectedCategoryData?.tools ?? []
+
   if (!tools) {
     return null
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[60vh] p-0 flex flex-col">
+      <DialogContent className="w-[min(1200px,95vw)] max-w-[1200px] h-[85vh] p-0 flex flex-col overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>Select Tool</DialogTitle>
           <DialogDescription>Choose a tool to work with</DialogDescription>
         </VisuallyHidden>
 
         {/* Header */}
-        <div className="p-4 border-b flex-shrink-0 space-y-3">
+        <div className="p-6 border-b flex-shrink-0 space-y-4 bg-background">
           <div className="flex items-center justify-between">
             <TypographyH4>Select Tool</TypographyH4>
             {/* <DialogClose asChild>
@@ -187,21 +183,21 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
             placeholder="Search tools..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full"
+            className="w-full h-11"
             autoFocus={false}
             tabIndex={-1}
           />
         </div>
 
         {/* Category selector */}
-        <div className="px-4 py-3 border-b flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="px-6 py-4 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-background">
           <p className="text-sm text-muted-foreground">Filter by category</p>
           <Select
             value={selectedCategory}
             onValueChange={setSelectedCategory}
             disabled={!categories.length}
           >
-            <SelectTrigger className="w-full sm:w-60">
+            <SelectTrigger className="w-full sm:w-64">
               <SelectValue placeholder="Choose a category" />
             </SelectTrigger>
             <SelectContent>
@@ -220,70 +216,33 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
         </div>
 
         {/* Category content */}
-        <div className="flex-1 min-h-0 p-4 overflow-y-auto">
-          <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-            {categories
-              .find(category => category.id === selectedCategory)
-              ?.tools.map(tool => (
-                <ToolItem
-                  key={tool.key}
-                  tool={tool}
-                  isActive={currentToolKey === tool.key}
-                  onClick={() => handleToolSelect(tool)}
-                />
-              ))}
+        <div className="flex-1 min-h-0 px-6 pb-6 pt-4 overflow-hidden bg-background">
+          <div className="h-full overflow-y-auto pr-1">
+            {selectedTools.length ? (
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                {selectedTools.map(tool => (
+                  <ToolCard
+                    key={tool.key}
+                    title={tool.name}
+                    description={tool.description}
+                    image={getMediaUrl(tool.thumbnail || '')}
+                    link={buildToolLink(tool)}
+                    outputType={tool.output_type}
+                    priority={selectedCategory === 'featured'}
+                    isActive={currentToolKey === tool.key}
+                    onClick={() => onOpenChange(false)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+                No tools found in this category.
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
-
-type ToolItemProps = {
-  tool: ToolV2
-  isActive: boolean
-  onClick: () => void
-}
-
-const ToolItem = ({ tool, isActive, onClick }: ToolItemProps) => {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'flex items-start gap-3 p-3 rounded-lg border text-left transition-all hover:bg-muted/50',
-        isActive && 'bg-primary/10 border-primary',
-      )}
-    >
-      {/* Thumbnail */}
-      <div className="relative w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-muted">
-        {tool.thumbnail ? (
-          <ToolCardMedia
-            variant="thumbnail"
-            mediaUrl={getMediaUrl(tool.thumbnail)}
-            title={tool.name}
-          />
-        ) : (
-          <Skeleton className="w-full h-full" />
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <h4 className="font-medium text-sm truncate">{tool.name}</h4>
-          {tool.base_model && (
-            <Badge variant="secondary" className="text-xs ml-2">
-              {tool.base_model}
-            </Badge>
-          )}
-        </div>
-        {tool.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {tool.description}
-          </p>
-        )}
-      </div>
-    </button>
   )
 }
 

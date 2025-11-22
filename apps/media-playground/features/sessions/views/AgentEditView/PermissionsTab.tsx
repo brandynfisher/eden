@@ -179,7 +179,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                     </div>
                     <div className="text-muted-foreground ml-6">
                       Full control: Edit profile, configure tools, manage
-                      integrations, and modify permissions
+                      integrations.
                     </div>
                   </div>
                   <div>
@@ -239,9 +239,6 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
             {owners.length > 0 && (
               <div>
                 <label className="text-sm font-medium block mb-2">Owners</label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Users with complete control over this agent
-                </p>
                 <div className="space-y-2">
                   {owners.map(permission => (
                     <div
@@ -277,9 +274,6 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                 <label className="text-sm font-medium block mb-2">
                   Editors
                 </label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Users with limited editing access
-                </p>
                 <div className="space-y-2">
                   {editors.map(permission => (
                     <div
