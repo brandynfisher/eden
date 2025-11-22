@@ -1,5 +1,6 @@
 'use client'
 
+import { SAFE_MICROPHONE_CONSTRAINTS } from './audio-config'
 import { validateDynamicVariables } from './build-dynamic-variables'
 import {
   ConnectionStatus,
@@ -277,18 +278,10 @@ export function useVoiceConversation(
 
     try {
       // Request microphone permission with safe configuration
-      // This prevents Android devices from switching to call mode (SCO/telephony mode)
       addDebugLog('Requesting microphone permission...', 'info')
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false,
-            channelCount: 1,
-            sampleRate: 48000,
-            sampleSize: 16,
-          },
+          audio: SAFE_MICROPHONE_CONSTRAINTS,
           video: false,
         })
         addDebugLog('Microphone permission granted', 'success')
