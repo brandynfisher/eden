@@ -4,7 +4,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 export const handleShareClick = (
-  evt: React.MouseEvent<HTMLButtonElement>,
+  evt: React.MouseEvent<HTMLElement>,
   agent: Agent,
   dispatch: AppDispatch,
 ) => {

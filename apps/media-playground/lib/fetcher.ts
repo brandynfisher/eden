@@ -96,6 +96,7 @@ export const createCursorPaginationRoute = (
   query: (FeedCursorRouteQueryParams['filter'] &
     CursorPaginatedRouteQueryParams) & {
     isLiked?: boolean | string
+    excludeOwner?: string
   },
 ) => {
   const basePath = baseUrl
@@ -141,6 +142,9 @@ export const createCursorPaginationRoute = (
   }
   if (query.owner) {
     filters.push({ owner: String(query.owner) })
+  }
+  if (query.excludeOwner) {
+    filters.push({ excludeOwner: String(query.excludeOwner) })
   }
   if (query.agent) {
     filters.push({ agent: String(query.agent) })

@@ -375,6 +375,11 @@ const handleArguments = async ({
             return []
           }
 
+          if (field === 'excludeOwner') {
+            // Filter for items where owner != value (exclude user's own items)
+            return ['owner', { $ne: new ObjectId(value) }]
+          }
+
           if (
             field === 'user' ||
             field === 'owner' ||

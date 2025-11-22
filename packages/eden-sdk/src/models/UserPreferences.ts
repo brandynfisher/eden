@@ -7,7 +7,7 @@ export interface MinimalAgent {
   username?: string
   userImage?: string
   name?: string
-  owner?: string
+  owner?: string | { _id: string; username?: string }
 }
 
 export interface UserPreferencesGetResponse extends WebAPICallResult {
@@ -16,15 +16,18 @@ export interface UserPreferencesGetResponse extends WebAPICallResult {
 }
 
 export interface UserPreferencesGetArguments {
+  populateOwner?: boolean
   [key: string]: unknown
 }
 
 export const userPreferencesGetRequestConfig = (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   args: UserPreferencesGetArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'user-preferences',
+    params: {
+      ...(args.populateOwner && { populateOwner: 'true' }),
+    },
   }
 }
