@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Copy } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -84,6 +84,14 @@ export const DiscordDeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  const wasDeployed = useRef(isDeployed)
+  useEffect(() => {
+    if (wasDeployed.current && !isDeployed) {
+      setIsOpen(false)
+    }
+    wasDeployed.current = isDeployed
+  }, [isDeployed])
 
   useEffect(() => {
     if (form.formState.submitCount > 0) {
@@ -174,13 +182,13 @@ export const DiscordDeploymentForm = ({
                     </p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <div className="p-3 bg-background/60 border border-border/50 rounded-md overflow-hidden">
-                      <code className="text-xs text-muted-foreground block truncate">
+                    <div className="p-3 bg-background/60 border border-border/50 rounded-md overflow-x-auto max-w-full">
+                      <code className="text-xs text-muted-foreground block break-all whitespace-pre-wrap">
                         {deployment?.config?.discord?.oauth_url ||
                           `https://discord.com/oauth2/authorize?client_id=${deployment?.secrets?.discord?.application_id}&permissions=274877958144&integration_type=0&scope=bot`}
                       </code>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-col sm:flex-row">
                       <Button
                         variant="secondary"
                         size="sm"

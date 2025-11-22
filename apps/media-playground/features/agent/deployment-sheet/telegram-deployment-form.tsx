@@ -9,7 +9,7 @@ import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -58,6 +58,14 @@ export const TelegramDeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  const wasDeployed = useRef(isDeployed)
+  useEffect(() => {
+    if (wasDeployed.current && !isDeployed) {
+      setIsOpen(false)
+    }
+    wasDeployed.current = isDeployed
+  }, [isDeployed])
 
   const allowedTopics = useFieldArray({
     control: form.control,

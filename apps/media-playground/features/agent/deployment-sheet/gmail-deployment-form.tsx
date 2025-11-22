@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertTriangle } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -41,6 +41,14 @@ export const GmailDeploymentForm = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const isDeployed = useMemo(() => deployment !== undefined, [deployment])
+
+  const wasDeployed = useRef(isDeployed)
+  useEffect(() => {
+    if (wasDeployed.current && !isDeployed) {
+      setIsOpen(false)
+    }
+    wasDeployed.current = isDeployed
+  }, [isDeployed])
 
   const form = useForm<GmailDeploymentFormSchema>({
     resolver: zodResolver(schema),

@@ -1,6 +1,5 @@
 'use client'
 
-import TaskStatusIndicator from '@/components/alert/task-status-indicator'
 import ErrorBoundary from '@/components/error-boundary'
 import Timeline from '@/components/timeline/timeline'
 import { Button } from '@/components/ui/button'
@@ -22,16 +21,7 @@ const CreateLanding = () => {
   return (
     <>
       <div className="flex flex-col lg:flex-row w-full h-full flex-1 min-h-0">
-        {/* Timeline column */}
         <div className="order-1 lg:order-2 px-2 sm:px-4 lg:px-2 lg:pt-4 flex flex-col gap-y-4 flex-1 min-h-0 overflow-y-auto pb-24 lg:pb-6">
-          <div className="sticky top-0 lg:-top-4 z-10 flex flex-wrap items-center justify-between gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/40 pb-2">
-            <p className="text-base font-semibold leading-tight md:text-lg">
-              Your Creations
-            </p>
-            <ErrorBoundary>
-              <TaskStatusIndicator />
-            </ErrorBoundary>
-          </div>
           <Suspense>
             <ErrorBoundary>
               <Timeline tool={PLACEHOLDER_TOOL} subscribeToAll />

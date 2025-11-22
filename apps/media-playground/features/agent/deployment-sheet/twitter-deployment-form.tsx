@@ -20,7 +20,7 @@ import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -54,6 +54,14 @@ export const TwitterDeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  const wasDeployed = useRef(isDeployed)
+  useEffect(() => {
+    if (wasDeployed.current && !isDeployed) {
+      setIsOpen(false)
+    }
+    wasDeployed.current = isDeployed
+  }, [isDeployed])
 
   // Reset form when deployment changes
   useEffect(() => {

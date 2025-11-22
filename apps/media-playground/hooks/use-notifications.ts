@@ -29,15 +29,37 @@ export const useNotifications = (
     setIsError(false)
 
     try {
-      // Fetch recent notifications (unarchived, limit 50)
+      // Fetch recent notifications (unarchived, limit <= 100)
       const url = new URL('/api/v2/notifications', window.location.origin)
       url.searchParams.set('include_archived', 'false')
-      url.searchParams.set('limit', '50')
+      url.searchParams.set('include_read', 'true')
+      url.searchParams.set('limit', '100')
       url.searchParams.set('offset', '0')
 
       const response = await fetcher<NotificationsListResponse>(url.toString())
 
-      setNotifications(response.notifications)
+      const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000
+      const recentNotifications = response.notifications
+        .filter(notification => {
+          const createdAt = new Date(notification.createdAt).getTime()
+          if (!notification.read) {
+            // Always show unread notifications regardless of age
+            return true
+          }
+          if (Number.isNaN(createdAt)) {
+            return false
+          }
+          return createdAt >= twentyFourHoursAgo
+        })
+        .sort((a, b) => {
+          const aTime = new Date(a.createdAt).getTime()
+          const bTime = new Date(b.createdAt).getTime()
+          const safeATime = Number.isNaN(aTime) ? 0 : aTime
+          const safeBTime = Number.isNaN(bTime) ? 0 : bTime
+          return safeBTime - safeATime
+        })
+
+      setNotifications(recentNotifications)
       setUnreadCount(response.unread_count)
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
