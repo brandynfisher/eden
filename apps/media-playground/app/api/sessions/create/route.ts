@@ -116,10 +116,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate type
-  if (type !== undefined && !['chat', 'passive', 'automatic'].includes(type)) {
+  if (
+    type !== undefined &&
+    !['normal', 'natural', 'automatic'].includes(type)
+  ) {
     return new NextResponse(
       JSON.stringify({
-        message: 'type must be "chat", "passive", or "automatic"',
+        message: 'type must be "normal", "natural", or "automatic"',
       }),
       {
         status: 400,

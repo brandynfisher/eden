@@ -10,7 +10,7 @@ interface SessionCardProps {
     title?: string
     createdAt: Date | string
     updatedAt?: Date | string
-    session_type?: 'chat' | 'passive' | 'automatic'
+    session_type?: 'normal' | 'natural' | 'automatic'
     agents?: Array<{
       _id: string
       username: string
@@ -52,9 +52,9 @@ const SessionCard = ({
   const sessionTypeLabel =
     session.session_type === 'automatic'
       ? 'Automatic'
-      : session.session_type === 'passive'
-      ? 'Passive'
-      : 'Chat'
+      : session.session_type === 'natural'
+      ? 'Natural'
+      : 'Normal'
 
   return (
     <Link href={href}>

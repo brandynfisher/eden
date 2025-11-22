@@ -15,7 +15,7 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon, Plus, Settings, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
@@ -33,7 +33,7 @@ const ChatLaunchpad = () => {
 
   // Session settings state
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
-    type: 'passive',
+    type: 'natural',
     context: '',
     conductor_prompt: '',
     delay_interval: 0,
@@ -41,6 +41,7 @@ const ChatLaunchpad = () => {
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
+    exclude_memory: false,
   })
 
   // Get user preferences for last agent
@@ -197,6 +198,9 @@ const ChatLaunchpad = () => {
             token_budget?: number
             turn_budget?: number
           }
+          extras?: {
+            exclude_memory?: boolean
+          }
         } = {
           content,
           attachments,
@@ -219,6 +223,14 @@ const ChatLaunchpad = () => {
             conductor_prompt: sessionSettings.conductor_prompt,
             delay_interval: sessionSettings.delay_interval,
             mention_force_reply: sessionSettings.mention_force_reply,
+          }
+        }
+
+        // Add exclude_memory to extras
+        if (sessionSettings.exclude_memory) {
+          payload.extras = {
+            ...payload.extras,
+            exclude_memory: true,
           }
         }
 
@@ -432,19 +444,21 @@ const ChatLaunchpad = () => {
                 )
               })}
 
-              {/* Add Agent Button - opens modal */}
-              <AgentSelectorModal
-                trigger={
-                  <button className="add-agent-card">
-                    <div className="add-agent-icon">
-                      <Plus className="w-5 h-5" />
-                    </div>
-                    <p className="add-agent-text">Add Agent</p>
-                  </button>
-                }
-                selectedAgents={selectedAgents}
-                onChange={handleAgentsChange}
-              />
+              {/* Add Agent Button - opens modal (only for preview users) */}
+              {user?.featureFlags?.includes(FeatureFlag.Preview) && (
+                <AgentSelectorModal
+                  trigger={
+                    <button className="add-agent-card">
+                      <div className="add-agent-icon">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <p className="add-agent-text">Add Agent</p>
+                    </button>
+                  }
+                  selectedAgents={selectedAgents}
+                  onChange={handleAgentsChange}
+                />
+              )}
             </div>
 
             {/* Session Settings Button */}

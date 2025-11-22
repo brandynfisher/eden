@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const res = await eden.sessions.v2.create({
       agent_ids: [agentId],
       title: 'Realtime Conversation',
-      session_type: SessionType.CHAT,
+      session_type: SessionType.NORMAL,
       status: 'active',
     })
 

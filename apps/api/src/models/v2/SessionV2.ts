@@ -28,7 +28,7 @@ export interface SessionSchema {
     manna_spent?: number
     turns_spent?: number
   }
-  session_type?: 'chat' | 'passive' | 'automatic'
+  session_type?: 'normal' | 'natural' | 'automatic'
   settings?: {
     conductor_prompt?: string
     delay_interval: number
@@ -115,8 +115,8 @@ export const sessionSchema = new Schema<SessionDocument>(
     },
     session_type: {
       type: Schema.Types.String,
-      enum: ['chat', 'passive', 'automatic'],
-      default: 'chat',
+      enum: ['normal', 'natural', 'automatic'],
+      default: 'normal',
     },
     settings: {
       type: {

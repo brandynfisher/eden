@@ -79,7 +79,7 @@ const Session = ({
     useState(false)
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
-    type: 'passive',
+    type: 'natural',
     context: '',
     conductor_prompt: '',
     delay_interval: 0,
@@ -87,6 +87,7 @@ const Session = ({
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
+    exclude_memory: false,
   })
 
   // Track session viewing for notifications
@@ -174,14 +175,12 @@ const Session = ({
     if (session) {
       // Loading session settings from session
 
-      // Map session_type, defaulting to 'passive' if undefined or 'chat'
-      let sessionType: 'passive' | 'automatic' = 'passive'
+      // Map session_type, defaulting to 'natural' if undefined or 'normal'
+      let sessionType: 'natural' | 'automatic' = 'natural'
       if (session.session_type === 'automatic') {
         sessionType = 'automatic'
-      } else if (session.session_type === 'passive') {
-        sessionType = 'passive'
       }
-      // Default to 'passive' for 'chat' or undefined
+      // 'normal' and undefined map to 'natural'
 
       setSessionSettings({
         type: sessionType,
@@ -195,6 +194,7 @@ const Session = ({
         token_budget: session.budget?.token_budget,
         turn_budget_unlimited: !session.budget?.turn_budget,
         turn_budget: session.budget?.turn_budget,
+        exclude_memory: session.extras?.exclude_memory || false,
       })
     }
   }, [session])
@@ -1277,10 +1277,13 @@ const Session = ({
           token_budget?: number
           turn_budget?: number
         }
+        extras?: {
+          exclude_memory?: boolean
+        }
       } = {
         session_type:
-          settings.type === 'passive'
-            ? SessionType.PASSIVE
+          settings.type === 'natural'
+            ? SessionType.NATURAL
             : SessionType.AUTOMATIC,
         settings: {
           conductor_prompt: settings.conductor_prompt || '',
@@ -1309,6 +1312,13 @@ const Session = ({
       }
       if (Object.keys(budget).length > 0) {
         requestBody.budget = budget
+      }
+
+      // Add exclude_memory to extras
+      if (settings.exclude_memory) {
+        requestBody.extras = {
+          exclude_memory: true,
+        }
       }
 
       // Saving session settings

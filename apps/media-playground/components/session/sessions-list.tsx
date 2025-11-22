@@ -21,10 +21,10 @@ export default function SessionsList() {
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
 
-        // Only include automatic and passive sessions
+        // Only include automatic and natural sessions
         return (
           session.session_type === 'automatic' ||
-          session.session_type === 'passive'
+          session.session_type === 'natural'
         )
       },
     )

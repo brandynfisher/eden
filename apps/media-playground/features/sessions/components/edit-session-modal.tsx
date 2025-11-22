@@ -68,7 +68,7 @@ export const EditSessionModal = ({
       const requestBody: Partial<SessionV2> & { agent_ids: string[] } = {
         agent_ids: data.agents.map(agent => agent._id),
         session_type:
-          data.type === 'passive' ? SessionType.PASSIVE : SessionType.AUTOMATIC,
+          data.type === 'natural' ? SessionType.NATURAL : SessionType.AUTOMATIC,
         settings: {
           conductor_prompt: data.conductor_prompt,
           delay_interval: data.delay_interval,
@@ -162,7 +162,7 @@ export const EditSessionModal = ({
       _id: agent._id,
       name: agent.name,
     })),
-    type: (session.session_type as 'passive' | 'automatic') || 'passive',
+    type: (session.session_type as 'natural' | 'automatic') || 'natural',
     context: session.context || '',
     conductor_prompt: session.settings?.conductor_prompt || '',
     delay_interval: session.settings?.delay_interval || 0,
