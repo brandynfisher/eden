@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
@@ -14,6 +15,7 @@ import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-d
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -155,12 +157,15 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const deploymentsGate = useGatedResource(GatedResource.Deployments, {
+    lockedBehavior: 'modal',
+  })
 
   // Always subscribe to the deployments query; seed it with any passed-in data
   const deploymentsQuery = useAgentDeploymentsQuery({
     key: agent._id,
     initialData: deployments ? { deployments } : undefined,
-    enabled: true,
+    enabled: deploymentsGate.isAllowed,
   })
   const effectiveDeployments = deploymentsQuery.deployments
   const loadingState = deploymentsQuery.isLoading || isLoading
@@ -196,6 +201,16 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   const emailDeployment = effectiveDeployments?.find(
     deployment => deployment.platform === 'email',
   )
+
+  if (!deploymentsGate.isAllowed) {
+    return (
+      <LockedFeatureBanner
+        gate={deploymentsGate}
+        title="Integrations are a Pro feature"
+        description="Connect your agents to Discord, Telegram, Farcaster, and more with a Pro plan."
+      />
+    )
+  }
 
   if (loadingState) {
     return (

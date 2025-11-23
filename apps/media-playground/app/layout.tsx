@@ -11,6 +11,7 @@ import ShareDialog from '@/components/dialog/share-dialog'
 import ConditionalHeader from '@/components/header/conditional-header'
 import AppShell from '@/components/layout/app-shell'
 import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
+import UserSettingsModalListener from '@/components/modals/user-settings-modal-listener'
 import { PreloadResources } from '@/components/preload-resources'
 import ScrollTopButton from '@/components/scroll-top-button'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
@@ -137,6 +138,7 @@ export default function RootLayout({
             <AgentFormSheet />
             <AgentDeploymentSheet />
             <SubscriptionGateModal />
+            <UserSettingsModalListener />
 
             <div id="modal-root" />
           </Providers>

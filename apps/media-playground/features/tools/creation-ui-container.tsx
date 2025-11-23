@@ -44,8 +44,6 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
-const SUBSCRIPTION_SETTINGS_URL = 'http://localhost:3000/settings/subscription'
-
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -544,7 +542,6 @@ const CreationUIContainer = ({ tool }: Props) => {
                               onCheckedChange={field.onChange}
                               disabled={isSubmitting}
                               entityLabel="creations"
-                              subscriptionUrl={SUBSCRIPTION_SETTINGS_URL}
                             />
                           </FormControl>
                           <FormMessage className="text-xs">
@@ -641,7 +638,6 @@ const CreationUIContainer = ({ tool }: Props) => {
                               onCheckedChange={field.onChange}
                               disabled={isSubmitting}
                               entityLabel="creations"
-                              subscriptionUrl={SUBSCRIPTION_SETTINGS_URL}
                             />
                           </FormControl>
                           <FormMessage className="text-xs">

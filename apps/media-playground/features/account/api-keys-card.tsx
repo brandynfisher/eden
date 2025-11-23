@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import CopyTextButton from '@/components/text/copy-text-button'
 import { Button } from '@/components/ui/button'
 import {
@@ -36,14 +37,13 @@ import {
 } from '@/components/ui/table'
 import TypographyH5 from '@/components/ui/typography/TypographyH5'
 import { useApiKeysQuery } from '@/hooks/query/use-api-keys-query'
-import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
+import { siteConfig } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { Trash2Icon } from 'lucide-react'
-import Link from 'next/link'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -55,13 +55,14 @@ const generateApiKeySchema = z.object({
 type GenerateApiKeyDto = z.infer<typeof generateApiKeySchema>
 
 const ApiKeysCard = () => {
-  const { hasMinimumSubscriptionTier } = useAuthState()
-  const hasApiAccessPermission = React.useMemo(
-    () => hasMinimumSubscriptionTier(SubscriptionTier.Pro),
-    [hasMinimumSubscriptionTier],
-  )
+  const apiKeysGate = useGatedResource(GatedResource.ApiKeys, {
+    lockedBehavior: 'modal',
+  })
+  const hasApiAccessPermission = apiKeysGate.isAllowed
 
-  const { apiKeys: apiKeysResponse, invalidate } = useApiKeysQuery()
+  const { apiKeys: apiKeysResponse, invalidate } = useApiKeysQuery({
+    enabled: hasApiAccessPermission,
+  })
   const [isGenerateApiKeyDialogOpen, setIsGenerateApiKeyDialogOpen] =
     React.useState(false)
 
@@ -77,6 +78,10 @@ const ApiKeysCard = () => {
   }
 
   const onSubmitGenerateApiKey = async (data: GenerateApiKeyDto) => {
+    if (!apiKeysGate.isAllowed) {
+      apiKeysGate.openGate()
+      return
+    }
     try {
       await axios.post(`/api/apikeys`, {
         note: data.note,
@@ -90,6 +95,10 @@ const ApiKeysCard = () => {
   }
 
   const onDeleteApiKey = async (apiKey: string) => {
+    if (!apiKeysGate.isAllowed) {
+      apiKeysGate.openGate()
+      return
+    }
     try {
       await axios.delete(`/api/apikeys`, {
         data: {
@@ -110,19 +119,13 @@ const ApiKeysCard = () => {
       </CardHeader>
       <CardContent>
         {!hasApiAccessPermission ? (
-          <div className="bg-accent text-gray-500 p-2 rounded-lg">
-            <div>Only pro+ subscribers can create API keys.</div>
-            <div>
-              Please upgrade your{' '}
-              <Link
-                href="/settings/subscription"
-                className="font-bold hover:text-gray-300 transition-colors"
-              >
-                subscription
-              </Link>
-              .
-            </div>
-          </div>
+          <LockedFeatureBanner
+            gate={apiKeysGate}
+            title="API keys & SDK are limited release"
+            description="API keys aren’t generally available yet. Join our Discord and reach out for access."
+            secondaryActionLabel="Join Discord"
+            secondaryActionHref={siteConfig.links.discord}
+          />
         ) : apiKeysResponse.length > 0 ? (
           <Table>
             <TableHeader>
@@ -180,8 +183,13 @@ const ApiKeysCard = () => {
         >
           <Button
             variant="secondary"
-            disabled={!hasApiAccessPermission}
-            onClick={() => setIsGenerateApiKeyDialogOpen(true)}
+            onClick={() => {
+              if (!hasApiAccessPermission) {
+                apiKeysGate.openGate()
+                return
+              }
+              setIsGenerateApiKeyDialogOpen(true)
+            }}
           >
             Generate new API key
           </Button>

@@ -47,6 +47,7 @@ import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import { Agent, FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
@@ -756,13 +757,28 @@ const SidebarUserProfile = ({
 }: {
   variant?: 'default' | 'collapsed'
 }) => {
-  const { isSignedIn } = useAuth()
-  const { user, balance } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
-  const { signOut } = useClerk()
-  const { verifyAuth } = useAuthState()
+  const { isSignedIn, isLoaded } = useAuth()
+  const { signOut, openSignIn } = useClerk()
+  const pathname = usePathname()
   const { unreadCount } = useNotificationContext()
+  const isAuthReady = isLoaded
+  const shouldFetchMe = isAuthReady && !!isSignedIn
+
+  const { user, balance, isLoading } = useMe({
+    isAuthenticated: shouldFetchMe,
+  })
+
+  const verifyAuth = useCallback(async () => {
+    if (isSignedIn) {
+      return true
+    }
+
+    openSignIn({
+      appearance: { baseTheme: dark },
+      forceRedirectUrl: pathname || '/',
+    })
+    return false
+  }, [isSignedIn, openSignIn, pathname])
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -776,6 +792,7 @@ const SidebarUserProfile = ({
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [settingsModalInitialTab] = useState('account')
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
 
@@ -788,6 +805,27 @@ const SidebarUserProfile = ({
     if (!open) {
       setDropdownOpen(false)
     }
+  }
+
+  // Avoid rendering auth controls until auth state and user data have settled
+  if (!isAuthReady || isLoading) {
+    return (
+      <div
+        className={cn(
+          'border-t bg-background flex-shrink-0',
+          variant === 'collapsed'
+            ? 'p-2 w-full flex justify-center'
+            : 'p-3 md:-ml-2 md:w-[calc(100%+0.5rem)]',
+        )}
+      >
+        <Skeleton
+          className={cn(
+            'h-10',
+            variant === 'collapsed' ? 'w-10 rounded-full' : 'w-full rounded-md',
+          )}
+        />
+      </div>
+    )
   }
 
   // Show sign-in button when not signed in
@@ -1070,6 +1108,7 @@ const SidebarUserProfile = ({
         <UserSettingsModal
           open={settingsModalOpen}
           onOpenChange={setSettingsModalOpen}
+          initialTab={settingsModalInitialTab}
         />
       )}
     </div>

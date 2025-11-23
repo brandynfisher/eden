@@ -8,7 +8,7 @@ const Header = () => {
     <>
       {/* Mobile: Single navbar */}
       <header className="md:hidden sticky z-40 top-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-3">
+        <div className="flex h-14 w-full items-center gap-3 px-3 sm:px-4 lg:px-5">
           {/* Left section - Eden logo and navigation */}
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <HeaderLogo className="flex-shrink-0" size="w-[28px]" />
@@ -25,7 +25,7 @@ const Header = () => {
 
       {/* Desktop: Single navbar with breathing room */}
       <header className="hidden md:block sticky z-40 top-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center px-5">
+        <div className="flex h-16 w-full items-center px-4 lg:px-6">
           {/* Left section - Logo and navigation */}
           <div className="flex min-w-0 items-center gap-5">
             <HeaderLogo />
