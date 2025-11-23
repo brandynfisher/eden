@@ -82,7 +82,7 @@ export const AssistantMessage = ({
   if (!isChatRoute) {
     // /sessions layout: compact on mobile, avatar on left on desktop
     return (
-      <div className="py-2 group relative">
+      <div className="py-2 group relative ml-0 pl-0">
         {/* Mobile: Avatar, name, and content */}
         <div className="sm:hidden">
           {showAvatar && (
@@ -291,214 +291,217 @@ export const AssistantMessage = ({
           </div>
         </div>
 
-        {/* Desktop: Avatar column - positioned to the left using negative margin */}
-        {showAvatar && (
-          <div className="hidden sm:block w-12 h-12 absolute -left-[calc(3rem+0.75rem)] top-2">
-            {shouldMakeClickable ? (
-              <Link
-                href={`/agents/${profileIdentifier}`}
-                className="block w-full h-full"
-              >
-                <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
-                  <AvatarImage src={finalImageUrl} />
+        {/* Desktop: Use flexbox layout for reliable avatar positioning */}
+        <div className="hidden sm:flex gap-3 items-start ml-0 pl-0">
+          {/* Avatar column - fixed width, explicit no margin */}
+          <div className="w-12 h-12 flex-shrink-0 ml-0 pl-0">
+            {showAvatar ? (
+              shouldMakeClickable ? (
+                <Link
+                  href={`/agents/${profileIdentifier}`}
+                  className="block w-full h-full"
+                >
+                  <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
+                    <AvatarImage src={finalImageUrl} />
+                    <AvatarFallback>
+                      {message.sender?.username ? (
+                        <svg className="w-full h-full" viewBox="0 0 40 40">
+                          <text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            className="fill-current text-sm font-medium"
+                            style={{ fontSize: '14px' }}
+                          >
+                            {`${message.sender?.username?.charAt(
+                              0,
+                            )}${message.sender?.username?.charAt(1)}`}
+                          </text>
+                        </svg>
+                      ) : (
+                        <UserIcon className="w-4 h-4" />
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              ) : (
+                <Avatar className="w-full h-full">
                   <AvatarFallback>
-                    {message.sender?.username ? (
-                      <svg className="w-full h-full" viewBox="0 0 40 40">
-                        <text
-                          x="50%"
-                          y="50%"
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          className="fill-current text-sm font-medium"
-                          style={{ fontSize: '14px' }}
-                        >
-                          {`${message.sender?.username?.charAt(
-                            0,
-                          )}${message.sender?.username?.charAt(1)}`}
-                        </text>
-                      </svg>
-                    ) : (
-                      <UserIcon className="w-4 h-4" />
-                    )}
+                    <UserIcon className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
-              </Link>
-            ) : (
-              <Avatar className="w-full h-full">
-                <AvatarFallback>
-                  <UserIcon className="w-4 h-4" />
-                </AvatarFallback>
-              </Avatar>
-            )}
+              )
+            ) : null}
           </div>
-        )}
 
-        {/* Desktop: Content - full width */}
-        <div className="hidden sm:block w-full">
-          {/* Agent name */}
-          {showAvatar && message.sender?.name && (
-            <div className="text-sm font-medium mb-2">
-              {message.sender.name}
-            </div>
-          )}
-
-          {/* Message content - desktop */}
-          <div>
-            {/* Show thought for assistant messages */}
-            {(() => {
-              const shouldShowThought =
-                message.role === 'assistant' &&
-                message.thought &&
-                message.thought.length > 0
-
-              if (shouldShowThought) {
-                return (
-                  <ThoughtBlock thought={message.thought!} className="mb-4" />
-                )
-              }
-              return null
-            })()}
-
-            {hasAttachments && (
-              <LightboxGallery galleryKey={message._id}>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {message.attachments?.map((attachment, index) => (
-                    <MessageAttachment
-                      key={attachment}
-                      url={attachment}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </LightboxGallery>
-            )}
-
-            {!isEmpty && (
-              <>
-                {!expanded && (
-                  <div className="relative">
-                    <AssistantContentRenderer>
-                      {preview!}
-                    </AssistantContentRenderer>
-                    {isHuge && (
-                      <div className="mt-2 flex">
-                        <button
-                          type="button"
-                          className="text-xs underline text-muted-foreground hover:text-foreground"
-                          onClick={() => setExpanded(true)}
-                        >
-                          Show full message ({contentLen.toLocaleString()}{' '}
-                          characters)
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {expanded && (
-                  <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
-                    <AssistantContentRenderer>
-                      {trimmedContent}
-                    </AssistantContentRenderer>
-                  </div>
-                )}
-              </>
-            )}
-
-            {message.tool_calls &&
-              message.tool_calls.length > 0 &&
-              message.tool_calls.map(toolCall => {
-                const optimisticToolCall = optimisticallyCancelled.has(
-                  toolCall.id,
-                )
-                  ? { ...toolCall, status: 'cancelled' as const }
-                  : toolCall
-
-                return (
-                  <TaskResultTool
-                    key={toolCall.id}
-                    toolCall={optimisticToolCall}
-                    onCancel={async () => {
-                      setOptimisticallyCancelled(prev =>
-                        new Set(prev).add(toolCall.id),
-                      )
-
-                      try {
-                        const response = await fetch(
-                          `/api/sessions/${sessionId}/cancel`,
-                          {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              tool_call_id: toolCall.id,
-                              tool_call_index:
-                                message.tool_calls?.indexOf(toolCall),
-                            }),
-                          },
-                        )
-                        if (!response.ok) {
-                          console.warn(
-                            'Cancel API call failed, but keeping UI cancelled state',
-                          )
-                        }
-                      } catch (error) {
-                        console.warn(
-                          'Cancel API call error, but keeping UI cancelled state:',
-                          error,
-                        )
-                      }
-                    }}
-                  />
-                )
-              })}
-
-            {isStreamingTokens && isEmpty && !message.tool_calls && (
-              <div className="py-2">
-                <TypingIndicator />
+          {/* Content column - flexible width */}
+          <div className="flex-1 min-w-0">
+            {/* Agent name */}
+            {showAvatar && message.sender?.name && (
+              <div className="text-sm font-medium mb-2">
+                {message.sender.name}
               </div>
             )}
 
-            {!isStreamingTokens && (
-              <div
-                className={`transition-opacity ${
-                  message.tool_calls?.some(
+            {/* Message content - desktop */}
+            <div>
+              {/* Show thought for assistant messages */}
+              {(() => {
+                const shouldShowThought =
+                  message.role === 'assistant' &&
+                  message.thought &&
+                  message.thought.length > 0
+
+                if (shouldShowThought) {
+                  return (
+                    <ThoughtBlock thought={message.thought!} className="mb-4" />
+                  )
+                }
+                return null
+              })()}
+
+              {hasAttachments && (
+                <LightboxGallery galleryKey={message._id}>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {message.attachments?.map((attachment, index) => (
+                      <MessageAttachment
+                        key={attachment}
+                        url={attachment}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </LightboxGallery>
+              )}
+
+              {!isEmpty && (
+                <>
+                  {!expanded && (
+                    <div className="relative">
+                      <AssistantContentRenderer>
+                        {preview!}
+                      </AssistantContentRenderer>
+                      {isHuge && (
+                        <div className="mt-2 flex">
+                          <button
+                            type="button"
+                            className="text-xs underline text-muted-foreground hover:text-foreground"
+                            onClick={() => setExpanded(true)}
+                          >
+                            Show full message ({contentLen.toLocaleString()}{' '}
+                            characters)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {expanded && (
+                    <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                      <AssistantContentRenderer>
+                        {trimmedContent}
+                      </AssistantContentRenderer>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {message.tool_calls &&
+                message.tool_calls.length > 0 &&
+                message.tool_calls.map(toolCall => {
+                  const optimisticToolCall = optimisticallyCancelled.has(
+                    toolCall.id,
+                  )
+                    ? { ...toolCall, status: 'cancelled' as const }
+                    : toolCall
+
+                  return (
+                    <TaskResultTool
+                      key={toolCall.id}
+                      toolCall={optimisticToolCall}
+                      onCancel={async () => {
+                        setOptimisticallyCancelled(prev =>
+                          new Set(prev).add(toolCall.id),
+                        )
+
+                        try {
+                          const response = await fetch(
+                            `/api/sessions/${sessionId}/cancel`,
+                            {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                tool_call_id: toolCall.id,
+                                tool_call_index:
+                                  message.tool_calls?.indexOf(toolCall),
+                              }),
+                            },
+                          )
+                          if (!response.ok) {
+                            console.warn(
+                              'Cancel API call failed, but keeping UI cancelled state',
+                            )
+                          }
+                        } catch (error) {
+                          console.warn(
+                            'Cancel API call error, but keeping UI cancelled state:',
+                            error,
+                          )
+                        }
+                      }}
+                    />
+                  )
+                })}
+
+              {isStreamingTokens && isEmpty && !message.tool_calls && (
+                <div className="py-2">
+                  <TypingIndicator />
+                </div>
+              )}
+
+              {!isStreamingTokens && (
+                <div
+                  className={`transition-opacity ${
+                    message.tool_calls?.some(
+                      toolCall =>
+                        toolCall.status === 'completed' &&
+                        toolCall.result &&
+                        (toolCall.result as TaskV2Result[]).length > 0 &&
+                        toolCall.result.some(
+                          (result: TaskV2Result) =>
+                            result &&
+                            (Array.isArray(result?.output) ||
+                              (typeof result?.output === 'string' &&
+                                (result?.output as string).length > 0)),
+                        ),
+                    )
+                      ? 'opacity-100'
+                      : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
+                  }`}
+                >
+                  {message.tool_calls?.some(
                     toolCall =>
                       toolCall.status === 'completed' &&
                       toolCall.result &&
-                      (toolCall.result as TaskV2Result[]).length > 0 &&
+                      toolCall.result.length > 0 &&
                       toolCall.result.some(
                         (result: TaskV2Result) =>
                           result &&
-                          (Array.isArray(result?.output) ||
-                            (typeof result?.output === 'string' &&
-                              (result?.output as string).length > 0)),
+                          Array.isArray(result?.output) &&
+                          result.output.some(
+                            (output: TasksV2ResultOutput) => output.creation,
+                          ),
                       ),
-                  )
-                    ? 'opacity-100'
-                    : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
-                }`}
-              >
-                {message.tool_calls?.some(
-                  toolCall =>
-                    toolCall.status === 'completed' &&
-                    toolCall.result &&
-                    toolCall.result.length > 0 &&
-                    toolCall.result.some(
-                      (result: TaskV2Result) =>
-                        result &&
-                        Array.isArray(result?.output) &&
-                        result.output.some(
-                          (output: TasksV2ResultOutput) => output.creation,
-                        ),
-                    ),
-                ) ? (
-                  <ToolResultActionBar message={message} />
-                ) : (
-                  <ActionBar sessionId={sessionId} message={message} />
-                )}
-              </div>
-            )}
+                  ) ? (
+                    <ToolResultActionBar message={message} />
+                  ) : (
+                    <ActionBar sessionId={sessionId} message={message} />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
