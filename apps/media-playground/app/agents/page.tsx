@@ -13,7 +13,11 @@ import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  AgentPermissionLevel,
+  FeedAgentCursorArguments,
+} from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { EditIcon, MenuIcon, UserPlus } from 'lucide-react'
 import Link from 'next/link'
@@ -44,8 +48,9 @@ const AgentsPage = () => {
       enabled: !!isSignedIn,
       populateOwner: true,
     })
+  // Always fetch shared agents when signed in (needed for permission checks in search)
   const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
-    enabled: scope === 'shared' && isSignedIn,
+    enabled: !!isSignedIn,
   })
 
   // Keep mobile shell controls aligned with the layout
@@ -119,6 +124,35 @@ const AgentsPage = () => {
       sort: ['stats.messageCount;-1'],
     }),
     [user?._id],
+  )
+
+  // Helper to check if the user has edit access to an agent
+  // Checks: 1) original owner, 2) co-owner/co-editor via shared agents
+  const hasAgentEditAccess = useCallback(
+    (
+      agent: Agent | { _id: string; owner?: string | { _id?: string } },
+    ): boolean => {
+      if (!user?._id) return false
+
+      // Check if user is the original owner
+      if (agent?.owner) {
+        const ownerId =
+          typeof agent.owner === 'string' ? agent.owner : agent.owner._id
+        if (ownerId === user._id) return true
+      }
+
+      // Check if user has edit access via sharing (co-owner or co-editor)
+      const sharedAgent = sharedAgents.find(sa => sa.agent._id === agent._id)
+      if (sharedAgent) {
+        return (
+          sharedAgent.permissionLevel === AgentPermissionLevel.Owner ||
+          sharedAgent.permissionLevel === AgentPermissionLevel.Editor
+        )
+      }
+
+      return false
+    },
+    [user?._id, sharedAgents],
   )
 
   const myAgentsQueryKey = useMemo(
@@ -267,7 +301,7 @@ const AgentsPage = () => {
               agent={agent as Agent}
               improvedLayout
               hideContextMenu
-              showSettings
+              showSettings={hasAgentEditAccess(agent)}
               onSettings={() => {
                 setSettingsAgentId(agent.username || agent._id)
                 setIsSettingsModalOpen(true)
@@ -312,19 +346,25 @@ const AgentsPage = () => {
 
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredSharedAgents.map(({ agent }) => (
-            <AgentCard
-              key={agent._id}
-              agent={agent as Agent}
-              improvedLayout
-              hideContextMenu
-              showSettings
-              onSettings={() => {
-                setSettingsAgentId(agent.username || agent._id)
-                setIsSettingsModalOpen(true)
-              }}
-            />
-          ))}
+          {filteredSharedAgents.map(({ agent, permissionLevel }) => {
+            // Show settings for shared agents if user has owner or editor access
+            const hasEditAccess =
+              permissionLevel === AgentPermissionLevel.Owner ||
+              permissionLevel === AgentPermissionLevel.Editor
+            return (
+              <AgentCard
+                key={agent._id}
+                agent={agent as Agent}
+                improvedLayout
+                hideContextMenu
+                showSettings={hasEditAccess}
+                onSettings={() => {
+                  setSettingsAgentId(agent.username || agent._id)
+                  setIsSettingsModalOpen(true)
+                }}
+              />
+            )
+          })}
         </div>
       )
     }
@@ -395,7 +435,7 @@ const AgentsPage = () => {
             agent={agent}
             improvedLayout
             hideContextMenu
-            showSettings
+            showSettings={hasAgentEditAccess(agent)}
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
@@ -436,7 +476,7 @@ const AgentsPage = () => {
             agent={agent}
             improvedLayout
             hideContextMenu
-            showSettings
+            showSettings={hasAgentEditAccess(agent)}
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
