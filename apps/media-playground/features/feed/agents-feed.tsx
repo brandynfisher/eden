@@ -30,6 +30,7 @@ type Props = {
   improvedLayout?: boolean
   customSort?: (agents: RowItem[]) => RowItem[]
   renderCard?: (agent: Agent, queryKey: unknown[]) => React.JSX.Element
+  itemHeight?: number
 }
 
 const AgentsFeed = ({
@@ -46,6 +47,7 @@ const AgentsFeed = ({
   improvedLayout = false,
   customSort,
   renderCard,
+  itemHeight,
 }: Props) => {
   const dispatch = useAppDispatch()
   const layoutScrollRef = useScrollContainer()
@@ -172,6 +174,7 @@ const AgentsFeed = ({
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
         customSort={customSort}
+        itemHeight={itemHeight}
         render={(item: RowItem) =>
           renderCard ? (
             renderCard(item as Agent, queryKey)

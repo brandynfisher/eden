@@ -1,19 +1,10 @@
 'use client'
 
 import { ProfileImageUploader } from '../../profile-image-uploader'
-import { AGENT_FIELD_GUIDANCE, AGENT_FIELD_LIMITS } from '../agent-constants'
+import { AGENT_FIELD_LIMITS } from '../agent-constants'
 import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
 import {
   FormControl,
   FormDescription,
@@ -24,17 +15,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
-import { useMediaQuery } from '@/hooks/use-media-query'
 import { Agent } from '@edenlabs/eden-sdk'
 import { Copy } from 'lucide-react'
-import { FC, useEffect, useState } from 'react'
+import { FC } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -55,15 +39,6 @@ interface ProfileTabProps {
 }
 
 export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
-  const isMobile = useMediaQuery('(max-width: 768px)')
-  const [isPersonaFullEditorOpen, setIsPersonaFullEditorOpen] = useState(false)
-  const personaValue = form.watch('persona') ?? ''
-  const [personaDraft, setPersonaDraft] = useState(personaValue)
-
-  useEffect(() => {
-    setPersonaDraft(personaValue)
-  }, [personaValue])
-
   const handleCopyId = () => {
     navigator.clipboard.writeText(agent._id)
     toast.success('Agent ID copied to clipboard')
@@ -176,7 +151,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           control={form.control}
           name="public"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
+            <FormItem className="flex flex-row items-center justify-between rounded-xl border p-6 bg-card mb-6">
               <div className="space-y-0.5">
                 <FormLabel className="text-base font-medium">
                   Make Agent Public
@@ -197,32 +172,23 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           )}
         />
 
-        {/* Description Field */}
+        {/* Tagline Field */}
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
               <FormLabel className="text-base font-medium">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-help">
-                        Description
-                        <span className="text-red-500 ml-1">*</span>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">
-                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                Tagline
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
+              <FormDescription className="mt-1 mb-3">
+                A short public description shown on your agent&apos;s profile
+                and cards. 100 characters max.
+              </FormDescription>
               <FormControl>
                 <AutosizeTextarea
-                  placeholder="Short description of the agent shown on profile and cards."
+                  placeholder="A creative AI assistant that helps with..."
                   {...field}
                   className="min-h-[80px]"
                 />
@@ -233,113 +199,6 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                   max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
                 />
               </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Persona Field */}
-        <FormField
-          control={form.control}
-          name="persona"
-          render={({ field }) => (
-            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-              <FormLabel className="text-base font-medium">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-help">
-                        Instructions
-                        <span className="text-red-500 ml-1">*</span>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs whitespace-pre-wrap">
-                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </FormLabel>
-              <FormControl>
-                <AutosizeTextarea
-                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                  {...field}
-                  className="min-h-[240px]"
-                  variant="xl"
-                  readOnly={isMobile}
-                  onFocus={event => {
-                    if (isMobile) {
-                      event.preventDefault()
-                      event.target.blur()
-                      setIsPersonaFullEditorOpen(true)
-                    }
-                  }}
-                  onClick={event => {
-                    if (isMobile) {
-                      event.preventDefault()
-                      setIsPersonaFullEditorOpen(true)
-                    }
-                  }}
-                />
-              </FormControl>
-              {isMobile && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Tap to open the full-screen editor for easier typing.
-                </p>
-              )}
-              <div className="flex justify-end mt-2">
-                <CharacterCount
-                  current={field.value?.length || 0}
-                  max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
-                />
-              </div>
-              {isMobile && (
-                <Drawer
-                  open={isPersonaFullEditorOpen}
-                  onOpenChange={setIsPersonaFullEditorOpen}
-                >
-                  <DrawerContent className="h-[90vh] rounded-t-3xl bg-background p-0 flex flex-col">
-                    <DrawerHeader className="px-6 pt-6 pb-2 text-left">
-                      <DrawerTitle>Instructions</DrawerTitle>
-                      <DrawerDescription>
-                        Full-screen editor for easier writing on small screens.
-                      </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="h-full overflow-auto px-6 pb-4">
-                        <AutosizeTextarea
-                          value={personaDraft}
-                          onChange={event => {
-                            const nextValue = event.target.value
-                            setPersonaDraft(nextValue)
-                            form.setValue('persona', nextValue, {
-                              shouldDirty: true,
-                              shouldTouch: true,
-                              shouldValidate: true,
-                            })
-                          }}
-                          placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                          className="min-h-[55vh]"
-                          variant="xl"
-                          autoFocus
-                        />
-                        <div className="flex justify-end mt-2">
-                          <CharacterCount
-                            current={personaDraft.length}
-                            max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <DrawerFooter className="border-t px-6 py-4">
-                      <DrawerClose asChild>
-                        <Button className="w-full">Done</Button>
-                      </DrawerClose>
-                    </DrawerFooter>
-                  </DrawerContent>
-                </Drawer>
-              )}
               <FormMessage />
             </FormItem>
           )}
@@ -366,6 +225,28 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
               <div className="flex justify-end mt-2">
                 <CharacterCount current={field.value?.length || 0} max={140} />
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Website Field */}
+        <FormField
+          control={form.control}
+          name="website"
+          render={({ field }) => (
+            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+              <FormLabel className="text-base font-medium">Website</FormLabel>
+              <FormDescription className="mt-1 mb-3">
+                A link to your agent&apos;s website or homepage.
+              </FormDescription>
+              <FormControl>
+                <Input
+                  type="url"
+                  placeholder="https://example.com"
+                  {...field}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

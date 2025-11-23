@@ -1,7 +1,8 @@
 'use client'
 
+import ToggleButton from '@/components/button/toggle-button'
+import AgentCardCompact from '@/components/card/agent-card-compact'
 import FeedSearchForm from '@/components/filter/feed-search-form'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
@@ -11,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ToggleGroup } from '@/components/ui/toggle-group'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
@@ -23,7 +24,8 @@ import {
 } from '@/lib/sort-agents-by-preference'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
-import { CheckIcon, XIcon } from 'lucide-react'
+import { CheckIcon, Plus } from 'lucide-react'
+import Link from 'next/link'
 import {
   PropsWithChildren,
   ReactNode,
@@ -62,7 +64,7 @@ const AgentSelectorModal = ({
   // Get user preferences for agent sorting
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
 
-  const handleAgentToggle = (agent: Agent) => {
+  const handleAgentToggle = useCallback((agent: Agent) => {
     setTempSelectedAgents(prev => {
       const existingIndex = prev.findIndex(a => a._id === agent._id)
       if (existingIndex !== -1) {
@@ -77,15 +79,10 @@ const AgentSelectorModal = ({
         return [...prev, agent]
       }
     })
-  }
+  }, [])
 
   const handleConfirm = () => {
     onChange(tempSelectedAgents)
-    setOpen(false)
-  }
-
-  const handleCancel = () => {
-    setTempSelectedAgents(selectedAgents)
     setOpen(false)
   }
 
@@ -99,18 +96,39 @@ const AgentSelectorModal = ({
     }
   }
 
+  // When searching, search across ALL agents (user's own + others' public) - truly universal
+  // When not searching:
+  //   - My Agents: show agents owned by current user
+  //   - Public Agents: show public agents by OTHER users (exclude current user)
   const baseQuery = queryProp || {}
   const currentQuery = {
     ...baseQuery,
-    ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
-    ...(searchQuery ? { search: searchQuery } : {}),
+    ...(searchQuery
+      ? {
+          // Universal search - no tab filtering, search everything
+          search: searchQuery,
+        }
+      : {
+          // No search - apply tab-specific filters
+          ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
+          ...(currentTab === 'public' && user?._id
+            ? { excludeOwner: user._id }
+            : {}),
+        }),
   }
 
   // Custom sort function based on current tab
+  // When searching, use universal sort (no filtering) since search results span all agents
   const customSort = useCallback(
     (items: RowItem[]): RowItem[] => {
       // Cast items to agents for sorting
       const agents = items as Agent[]
+
+      // When searching, don't filter - just sort by preference across all results
+      if (searchQuery) {
+        return sortAllAgentsByPreference(agents, lastAgents) as RowItem[]
+      }
+
       if (currentTab === 'user') {
         // For "My Agents", presort by last_agents (top 5, owned by user only)
         return sortMyAgentsByPreference(
@@ -123,12 +141,24 @@ const AgentSelectorModal = ({
         return sortAllAgentsByPreference(agents, lastAgents) as RowItem[]
       }
     },
-    [currentTab, lastAgents, user?._id],
+    [currentTab, lastAgents, user?._id, searchQuery],
   )
 
   // Get selected agent IDs for feed component
   const selectedAgentIds = tempSelectedAgents.map(agent => agent._id)
   const isAtLimit = tempSelectedAgents.length >= MAX_AGENTS
+
+  const renderCompactCard = useCallback(
+    (agent: Agent) => (
+      <AgentCardCompact
+        key={agent._id}
+        agent={agent}
+        onClick={handleAgentToggle}
+        isSelected={selectedAgentIds.includes(agent._id)}
+      />
+    ),
+    [handleAgentToggle, selectedAgentIds],
+  )
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -148,16 +178,7 @@ const AgentSelectorModal = ({
         ])}
       >
         <DialogHeader className="space-y-1 pb-2">
-          <div className="flex gap-4 items-center">
-            <DialogTitle className="py-2">
-              {title || 'Select Agents'}
-            </DialogTitle>
-            {tempSelectedAgents.length > 0 && (
-              <Badge variant="secondary">
-                {tempSelectedAgents.length}/{MAX_AGENTS} selected
-              </Badge>
-            )}
-          </div>
+          <DialogTitle className="py-2">{title || 'Select Agents'}</DialogTitle>
           <DialogDescription>
             {description}
             {isAtLimit && (
@@ -172,27 +193,35 @@ const AgentSelectorModal = ({
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:justify-between sm:items-center">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Tabs
+              <ToggleGroup
+                type="single"
                 value={currentTab}
-                onValueChange={value =>
-                  setCurrentTab(value as 'user' | 'public')
-                }
-                className="w-full sm:max-w-fit"
+                className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
               >
-                <TabsList className="w-full border border-muted rounded-lg p-1 bg-popover">
-                  <TabsTrigger value="user" className="w-full sm:w-32 h-8">
-                    My Agents
-                  </TabsTrigger>
-                  <TabsTrigger value="public" className="w-full sm:w-32 h-8">
-                    Public Agents
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <ToggleButton
+                  className="w-full sm:w-32 h-8"
+                  value={'user'}
+                  label={'My Agents'}
+                  onClick={() => setCurrentTab('user')}
+                />
+                <ToggleButton
+                  className="w-full sm:w-32 h-8"
+                  value={'public'}
+                  label={'All Agents'}
+                  onClick={() => setCurrentTab('public')}
+                />
+              </ToggleGroup>
               <FeedSearchForm handleSearch={setSearchQuery} />
             </div>
+            <Button asChild size="sm" className="gap-2 shrink-0">
+              <Link href="/new/agent">
+                <Plus className="h-4 w-4" />
+                Create Agent
+              </Link>
+            </Button>
           </div>
 
-          <div className="h-full overflow-auto pb-4">
+          <div className="h-full overflow-auto pb-4 sleek-scrollbar">
             <AgentsFeed
               query={currentQuery}
               minCols={1}
@@ -205,38 +234,30 @@ const AgentSelectorModal = ({
                 { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
                 { minWidth: 0, columns: 1 }, // Small mobile - 1 column
               ]}
-              onClick={handleAgentToggle}
-              isSelectable={true}
-              selectedIds={selectedAgentIds}
               scrollRef={scrollRef}
               hideCreateButton={true}
               hideContextMenu={true}
-              improvedLayout={true}
               customSort={customSort}
+              renderCard={renderCompactCard}
+              itemHeight={136}
             />
           </div>
         </div>
 
         {/* Sticky Footer - always visible at bottom */}
-        <div className="border-t bg-background p-4 flex items-center justify-between gap-4 mt-auto">
-          <div className="text-sm text-muted-foreground">
-            {tempSelectedAgents.length}/{MAX_AGENTS} agent
-            {tempSelectedAgents.length !== 1 ? 's' : ''} selected
+        <div className="border-t bg-background p-4 flex items-center justify-end gap-4 mt-auto">
+          <div className="text-base font-medium text-muted-foreground">
+            {tempSelectedAgents.length}/{MAX_AGENTS}{' '}
+            {tempSelectedAgents.length === 1 ? 'agent' : 'agents'} selected
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCancel} size="sm">
-              <XIcon className="w-4 h-4 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              size="sm"
-              disabled={tempSelectedAgents.length === 0}
-            >
-              <CheckIcon className="w-4 h-4 mr-1" />
-              Confirm Selection
-            </Button>
-          </div>
+          <Button
+            onClick={handleConfirm}
+            size="sm"
+            disabled={tempSelectedAgents.length === 0}
+          >
+            <CheckIcon className="w-4 h-4 mr-1" />
+            Confirm Selection
+          </Button>
         </div>
       </DialogContentScrollable>
     </Dialog>

@@ -21,6 +21,7 @@ import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/use-toast'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { AssistantMessage } from '@/features/sessions/components/assistant-message'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
@@ -28,6 +29,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { useSessionErrors } from '@/hooks/use-session-errors'
@@ -39,7 +41,7 @@ import { cn } from '@/lib/utils'
 import { Agent, Message, SessionType } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { EditIcon, MenuIcon, Settings } from 'lucide-react'
+import { BrainIcon, EditIcon, MenuIcon, Settings } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -53,7 +55,6 @@ const Session = ({
   pendingMessage,
   onSessionLoaded,
   onOpenSidebar,
-  onOpenAgentSettings,
 }: {
   optimisticSessionId?: string
   pendingMessage?: {
@@ -63,7 +64,6 @@ const Session = ({
   }
   onSessionLoaded?: () => void
   onOpenSidebar?: () => void
-  onOpenAgentSettings?: (agentId: string) => void
 } = {}) => {
   const params = useParams()
   const router = useRouter()
@@ -241,6 +241,18 @@ const Session = ({
   const isPublicSession = session?.extras?.is_public === true
   const isReadOnlySession = Boolean(
     session && sessionId && sessionId !== 'new' && isPublicSession && !isOwner,
+  )
+
+  // Agent settings modal state for navbar
+  const [isAgentSettingsOpen, setIsAgentSettingsOpen] = useState(false)
+  const [isAgentSettingsMemoriesOnly, setIsAgentSettingsMemoriesOnly] =
+    useState(false)
+
+  // Get the single agent for permission check (only when there's one agent)
+  const singleAgent = session?.agents?.length === 1 ? session.agents[0] : null
+  const { hasEditAccess: singleAgentHasEditAccess } = useAgentPermissions(
+    singleAgent,
+    user?._id,
   )
 
   useEffect(() => {
@@ -1486,22 +1498,29 @@ const Session = ({
 
           {/* Right section - Icon-only buttons */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* Settings button - only show for single agent in chat route */}
-            {ischatRoute &&
-              session.agents?.length === 1 &&
-              onOpenAgentSettings && (
-                <button
-                  onClick={() =>
-                    onOpenAgentSettings(
-                      session.agents[0].username || session.agents[0]._id,
-                    )
+            {/* Settings/Memories button - show for single agent in chat route */}
+            {ischatRoute && session.agents?.length === 1 && (
+              <button
+                onClick={() => {
+                  if (singleAgentHasEditAccess) {
+                    setIsAgentSettingsMemoriesOnly(false)
+                  } else {
+                    setIsAgentSettingsMemoriesOnly(true)
                   }
-                  className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
-                  title="Agent Settings"
-                >
+                  setIsAgentSettingsOpen(true)
+                }}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                title={
+                  singleAgentHasEditAccess ? 'Agent Settings' : 'View Memories'
+                }
+              >
+                {singleAgentHasEditAccess ? (
                   <Settings className="h-4 w-4" />
-                </button>
-              )}
+                ) : (
+                  <BrainIcon className="h-4 w-4" />
+                )}
+              </button>
+            )}
 
             {/* Share button - icon only */}
             {isOwner && (
@@ -1612,22 +1631,29 @@ const Session = ({
                 />
               )}
 
-            {/* Settings button - only show for single agent in chat route */}
-            {ischatRoute &&
-              session.agents?.length === 1 &&
-              onOpenAgentSettings && (
-                <button
-                  onClick={() =>
-                    onOpenAgentSettings(
-                      session.agents[0].username || session.agents[0]._id,
-                    )
+            {/* Settings/Memories button - show for single agent in chat route */}
+            {ischatRoute && session.agents?.length === 1 && (
+              <button
+                onClick={() => {
+                  if (singleAgentHasEditAccess) {
+                    setIsAgentSettingsMemoriesOnly(false)
+                  } else {
+                    setIsAgentSettingsMemoriesOnly(true)
                   }
-                  className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
-                  title="Agent Settings"
-                >
+                  setIsAgentSettingsOpen(true)
+                }}
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                title={
+                  singleAgentHasEditAccess ? 'Agent Settings' : 'View Memories'
+                }
+              >
+                {singleAgentHasEditAccess ? (
                   <Settings className="h-3.5 w-3.5" />
-                </button>
-              )}
+                ) : (
+                  <BrainIcon className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
 
             {/* Share button */}
             {isOwner && (
@@ -2270,6 +2296,22 @@ const Session = ({
           sessionId={sessionId}
           onSave={handleSaveSettings}
           minimal={true}
+        />
+      )}
+
+      {/* Agent Settings Modal - for navbar settings/memories button */}
+      {singleAgent && (
+        <AgentSettingsModal
+          agentId={singleAgent.username || singleAgent._id}
+          open={isAgentSettingsOpen}
+          onOpenChange={open => {
+            setIsAgentSettingsOpen(open)
+            if (!open) {
+              setIsAgentSettingsMemoriesOnly(false)
+            }
+          }}
+          initialTab={isAgentSettingsMemoriesOnly ? 'memories' : 'profile'}
+          memoriesOnly={isAgentSettingsMemoriesOnly}
         />
       )}
     </div>

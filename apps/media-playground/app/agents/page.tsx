@@ -1,37 +1,22 @@
 'use client'
 
+import AgentCard from '@/components/card/agent-card'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { useAppShell } from '@/components/layout/app-shell'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
-import AgentsFeed from '@/features/feed/agents-feed'
+import { FeaturedAgents } from '@/features/agent/featured-agents'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
-import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { formatCompactNumber } from '@/lib/strings'
-import { cn } from '@/lib/utils'
-import {
-  Agent,
-  FeedAgentCursorArguments,
-  MinimalAgent,
-} from '@edenlabs/eden-sdk'
+import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
-import {
-  EditIcon,
-  MenuIcon,
-  MessageSquareIcon,
-  SettingsIcon,
-  UserPlus,
-} from 'lucide-react'
+import { EditIcon, MenuIcon, UserPlus } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type AgentScope = 'mine' | 'shared' | 'public'
@@ -176,6 +161,32 @@ const AgentsPage = () => {
     [user?._id],
   )
 
+  const publicAgentsQueryKey = useMemo(
+    () => ['feed', 'agents', 'public', publicAgentsQuery],
+    [publicAgentsQuery],
+  )
+
+  const { data: publicAgentsData, isLoading: isPublicAgentsLoading } = useQuery(
+    {
+      queryKey: publicAgentsQueryKey,
+      enabled: scope === 'public',
+      queryFn: () =>
+        fetcher<{ docs: Agent[]; nextCursor?: string }>(
+          createCursorPaginationRoute('/api/feed/agents', {
+            ...publicAgentsQuery,
+            cursor: '',
+            limit: publicAgentsQuery.limit || 40,
+          }),
+        ),
+      staleTime: 30_000,
+    },
+  )
+
+  const publicAgents = useMemo(
+    () => publicAgentsData?.docs || [],
+    [publicAgentsData],
+  )
+
   // Unified search query - searches all eligible agents (mine + public)
   const unifiedSearchQuery: FeedAgentCursorArguments = useMemo(
     () => ({
@@ -214,6 +225,27 @@ const AgentsPage = () => {
     })
   }, [sharedAgents])
 
+  const renderFeaturedAgents = () => {
+    if (isSignedIn) return null
+
+    return (
+      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/15 via-violet-500/12 to-fuchsia-500/10 p-4 md:p-5 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Featured agents</h2>
+          </div>
+        </div>
+
+        <div className="relative mt-4">
+          <FeaturedAgents />
+        </div>
+      </Card>
+    )
+  }
+
   const renderRecentAgents = () => {
     if (!isSignedIn || recentAgents.length === 0) return null
 
@@ -228,12 +260,14 @@ const AgentsPage = () => {
           </div>
         </div>
 
-        <div className="relative mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="relative mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recentAgentsWithDescriptions.map(agent => (
-            <RecentAgentTile
+            <AgentCard
               key={agent._id}
-              agent={agent}
-              currentUserId={user?._id}
+              agent={agent as Agent}
+              improvedLayout
+              hideContextMenu
+              showSettings
               onSettings={() => {
                 setSettingsAgentId(agent.username || agent._id)
                 setIsSettingsModalOpen(true)
@@ -259,7 +293,10 @@ const AgentsPage = () => {
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-56 rounded-lg bg-muted animate-pulse" />
+              <div
+                key={i}
+                className="h-[200px] rounded-lg bg-muted animate-pulse"
+              />
             ))}
           </div>
         )
@@ -276,10 +313,12 @@ const AgentsPage = () => {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredSharedAgents.map(({ agent }) => (
-            <LibraryAgentCard
+            <AgentCard
               key={agent._id}
               agent={agent as Agent}
-              currentUserId={user?._id}
+              improvedLayout
+              hideContextMenu
+              showSettings
               onSettings={() => {
                 setSettingsAgentId(agent.username || agent._id)
                 setIsSettingsModalOpen(true)
@@ -291,31 +330,38 @@ const AgentsPage = () => {
     }
 
     if (scope === 'public') {
+      if (isPublicAgentsLoading) {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[200px] rounded-lg bg-muted animate-pulse"
+              />
+            ))}
+          </div>
+        )
+      }
+
+      if (!publicAgents.length) {
+        return (
+          <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+            No public agents available.
+          </div>
+        )
+      }
+
       return (
-        <AgentsFeed
-          query={publicAgentsQuery}
-          minCols={1}
-          maxCols={3}
-          hideCreateButton={true}
-          improvedLayout={true}
-          hideContextMenu={true}
-          breakpoints={[
-            { minWidth: 1280, columns: 3 },
-            { minWidth: 768, columns: 2 },
-            { minWidth: 0, columns: 1 },
-          ]}
-          renderCard={agent => (
-            <LibraryAgentCard
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {publicAgents.map(agent => (
+            <AgentCard
               key={agent._id}
               agent={agent}
-              currentUserId={user?._id}
-              onSettings={() => {
-                setSettingsAgentId(agent.username || agent._id)
-                setIsSettingsModalOpen(true)
-              }}
+              improvedLayout
+              hideContextMenu
             />
-          )}
-        />
+          ))}
+        </div>
       )
     }
 
@@ -324,7 +370,10 @@ const AgentsPage = () => {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-lg bg-muted animate-pulse" />
+            <div
+              key={i}
+              className="h-[200px] rounded-lg bg-muted animate-pulse"
+            />
           ))}
         </div>
       )
@@ -341,10 +390,12 @@ const AgentsPage = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {myAgents.map(agent => (
-          <LibraryAgentCard
+          <AgentCard
             key={agent._id}
             agent={agent}
-            currentUserId={user?._id}
+            improvedLayout
+            hideContextMenu
+            showSettings
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
@@ -360,7 +411,10 @@ const AgentsPage = () => {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-lg bg-muted animate-pulse" />
+            <div
+              key={i}
+              className="h-[200px] rounded-lg bg-muted animate-pulse"
+            />
           ))}
         </div>
       )
@@ -377,10 +431,12 @@ const AgentsPage = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {unifiedSearchResults.map(agent => (
-          <LibraryAgentCard
+          <AgentCard
             key={agent._id}
             agent={agent}
-            currentUserId={user?._id}
+            improvedLayout
+            hideContextMenu
+            showSettings
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
@@ -461,6 +517,7 @@ const AgentsPage = () => {
               </div>
             ) : (
               <>
+                {renderFeaturedAgents()}
                 {renderRecentAgents()}
 
                 <div className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm p-4 md:p-5 space-y-4">
@@ -540,221 +597,6 @@ const AgentsPage = () => {
         />
       )}
     </>
-  )
-}
-
-const RecentAgentTile = ({
-  agent,
-  onSettings,
-  currentUserId,
-}: {
-  agent: Agent | MinimalAgent
-  onSettings?: () => void
-  currentUserId?: string
-}) => {
-  const router = useRouter()
-  const messageCount =
-    (agent as Agent)?.stats?.messageCount ||
-    (agent as unknown as { messageCount?: number })?.messageCount ||
-    0
-  const imageSrc = agent.userImage
-    ? getCloudfrontOriginalUrl(agent.userImage)
-    : undefined
-  const description =
-    (agent as Agent)?.description ||
-    (agent as unknown as { description?: string })?.description ||
-    'Jump back into this conversation.'
-  const username = agent.username || (agent as Agent)?._id
-  const { hasEditAccess, isLoading: isPermissionsLoading } =
-    useAgentPermissions(agent, currentUserId)
-
-  return (
-    <div
-      className={cn(
-        'group flex flex-row rounded-xl border bg-background/70 backdrop-blur-sm cursor-pointer relative',
-        'border-border/70 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-        'transition-all duration-200 h-full overflow-hidden',
-      )}
-      onClick={() => router.push(`/agents/${username}`)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          router.push(`/agents/${username}`)
-        }
-      }}
-    >
-      {/* Square avatar on left */}
-      <div className="shrink-0 w-32 self-stretch flex items-center justify-center p-3">
-        <Avatar className="w-full aspect-square rounded-lg">
-          <AvatarImage
-            src={imageSrc}
-            alt={agent.name || agent.username}
-            className="object-cover"
-          />
-          <AvatarFallback className="text-3xl rounded-lg">
-            {(agent.name || agent.username)?.[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-
-      {/* Content on right */}
-      <div className="flex flex-col flex-1 min-w-0 p-3">
-        {/* Settings button - top right */}
-        {hasEditAccess && !isPermissionsLoading && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 absolute top-2 right-2"
-            onClick={e => {
-              e.stopPropagation()
-              onSettings?.()
-            }}
-            aria-label="Agent settings"
-          >
-            <SettingsIcon className="h-4 w-4" />
-          </Button>
-        )}
-
-        <div className="min-w-0 pr-8">
-          <p className="font-semibold truncate leading-tight">
-            {agent.name || agent.username}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">
-            by @
-            {typeof (agent as Agent).owner === 'object'
-              ? (agent as Agent).owner?.username
-              : agent.username}
-          </p>
-        </div>
-
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-          {description}
-        </p>
-
-        <div className="flex items-center justify-between mt-auto pt-2">
-          {messageCount > 0 && (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-              <MessageSquareIcon className="h-3 w-3" />
-              {formatCompactNumber(messageCount)} messages
-            </span>
-          )}
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-7 text-xs ml-auto"
-            onClick={e => {
-              e.stopPropagation()
-              router.push(`/chat?agent=${username}`)
-            }}
-          >
-            Start chat
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const LibraryAgentCard = ({
-  agent,
-  onSettings,
-  currentUserId,
-}: {
-  agent: Agent
-  onSettings?: () => void
-  currentUserId?: string
-}) => {
-  const router = useRouter()
-  const imageSrc = agent.userImage
-    ? getCloudfrontOriginalUrl(agent.userImage)
-    : undefined
-  const description = agent.description || 'No description provided yet.'
-  const { hasEditAccess, isLoading: isPermissionsLoading } =
-    useAgentPermissions(agent, currentUserId)
-
-  return (
-    <div
-      className={cn(
-        'group flex flex-row rounded-xl border bg-background/80 backdrop-blur-sm cursor-pointer relative',
-        'border-border/70 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-        'transition-all duration-200 h-full overflow-hidden',
-      )}
-      onClick={() => router.push(`/agents/${agent.username}`)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          router.push(`/agents/${agent.username}`)
-        }
-      }}
-    >
-      {/* Square avatar on left */}
-      <div className="shrink-0 w-32 self-stretch flex items-center justify-center p-3">
-        <Avatar className="w-full aspect-square rounded-lg">
-          <AvatarImage
-            src={imageSrc}
-            alt={agent.name || agent.username}
-            className="object-cover"
-          />
-          <AvatarFallback className="text-3xl rounded-lg">
-            {(agent.name || agent.username)?.[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-
-      {/* Content on right */}
-      <div className="flex flex-col flex-1 min-w-0 p-3">
-        {/* Settings button - top right */}
-        {hasEditAccess && !isPermissionsLoading && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7 absolute top-2 right-2"
-            onClick={e => {
-              e.stopPropagation()
-              onSettings?.()
-            }}
-            aria-label="Agent settings"
-          >
-            <SettingsIcon className="h-4 w-4" />
-          </Button>
-        )}
-
-        <div className="min-w-0 pr-8">
-          <p className="font-semibold truncate leading-tight">
-            {agent.name || agent.username}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">
-            by @{agent.owner?.username || agent.username}
-          </p>
-        </div>
-
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
-          {description}
-        </p>
-
-        <div className="flex items-center justify-between mt-auto pt-2">
-          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <MessageSquareIcon className="h-3 w-3" />
-            {formatCompactNumber(agent.stats?.messageCount || 0)} messages
-          </span>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-7 text-xs ml-auto"
-            onClick={e => {
-              e.stopPropagation()
-              router.push(`/chat?agent=${agent.username}`)
-            }}
-          >
-            Start chat
-          </Button>
-        </div>
-      </div>
-    </div>
   )
 }
 

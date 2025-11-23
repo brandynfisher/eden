@@ -341,6 +341,7 @@ const ChatLaunchpad = () => {
           agent_ids: string[]
           thinking?: boolean
           session_type: string
+          status?: string
           context?: string
           tools?: string[]
           settings?: {
@@ -361,7 +362,9 @@ const ChatLaunchpad = () => {
           attachments,
           agent_ids: selectedAgents.map(a => a._id),
           thinking,
-          session_type: sessionSettings.type, // Use session_type, not type
+          session_type: sessionSettings.type,
+          // Automatic sessions start paused
+          ...(sessionSettings.type === 'automatic' && { status: 'paused' }),
         }
 
         // Add session settings if configured

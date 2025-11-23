@@ -78,6 +78,11 @@ export const agentSchema = z.object({
     .optional(),
   persona: z.string().max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS).optional(),
   public: z.boolean().optional(),
+  website: z
+    .string()
+    .url({ message: 'Please enter a valid URL' })
+    .optional()
+    .or(z.literal('')),
   knowledge: z.string().max(100000).optional(),
   suggestions: z
     .array(

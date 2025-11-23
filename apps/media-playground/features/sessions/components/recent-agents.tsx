@@ -19,6 +19,7 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { MinimalAgent } from '@edenlabs/eden-sdk'
 import {
+  BrainIcon,
   ChevronRightIcon,
   MoreHorizontal,
   PinIcon,
@@ -39,6 +40,7 @@ interface AgentListItemProps {
   onPin?: () => void
   onUnpin?: () => void
   onSettingsOpen?: () => void
+  onMemoriesOpen?: () => void
   canPin?: boolean
 }
 
@@ -50,6 +52,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
   onPin,
   onUnpin,
   onSettingsOpen,
+  onMemoriesOpen,
   canPin = true,
 }) => {
   const router = useRouter()
@@ -105,14 +108,29 @@ const AgentListItem: FC<AgentListItemProps> = ({
       </button>
 
       <div className="flex items-center gap-1 shrink-0 opacity-100">
-        {hasEditAccess && !isPermissionsLoading && (
-          <button
-            onClick={handleSettingsClick}
-            className="p-1.5 hover:bg-muted/80 rounded transition-colors"
-            title="Agent settings"
-          >
-            <SettingsIcon className="h-3.5 w-3.5" />
-          </button>
+        {!isPermissionsLoading && (
+          <>
+            {hasEditAccess ? (
+              <button
+                onClick={handleSettingsClick}
+                className="p-1.5 hover:bg-muted/80 rounded transition-colors"
+                title="Agent settings"
+              >
+                <SettingsIcon className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <button
+                onClick={e => {
+                  e.stopPropagation()
+                  onMemoriesOpen?.()
+                }}
+                className="p-1.5 hover:bg-muted/80 rounded transition-colors"
+                title="View memories"
+              >
+                <BrainIcon className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </>
         )}
 
         <DropdownMenu>
@@ -165,6 +183,7 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
   const { mutate: unpinAgent } = useUnpinAgent()
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [isMemoriesOnly, setIsMemoriesOnly] = useState(false)
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
 
   const pinnedAgentIds = useMemo(
@@ -222,6 +241,12 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
                       onUnpin={() => unpinAgent(agent._id)}
                       onSettingsOpen={() => {
                         setSettingsAgentId(agent.username || agent._id)
+                        setIsMemoriesOnly(false)
+                        setIsSettingsModalOpen(true)
+                      }}
+                      onMemoriesOpen={() => {
+                        setSettingsAgentId(agent.username || agent._id)
+                        setIsMemoriesOnly(true)
                         setIsSettingsModalOpen(true)
                       }}
                     />
@@ -248,6 +273,12 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
                       onUnpin={() => unpinAgent(agent._id)}
                       onSettingsOpen={() => {
                         setSettingsAgentId(agent.username || agent._id)
+                        setIsMemoriesOnly(false)
+                        setIsSettingsModalOpen(true)
+                      }}
+                      onMemoriesOpen={() => {
+                        setSettingsAgentId(agent.username || agent._id)
+                        setIsMemoriesOnly(true)
                         setIsSettingsModalOpen(true)
                       }}
                     />
@@ -263,8 +294,14 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
         <AgentSettingsModal
           agentId={settingsAgentId}
           open={isSettingsModalOpen}
-          onOpenChange={setIsSettingsModalOpen}
-          initialTab="profile"
+          onOpenChange={open => {
+            setIsSettingsModalOpen(open)
+            if (!open) {
+              setIsMemoriesOnly(false)
+            }
+          }}
+          initialTab={isMemoriesOnly ? 'memories' : 'profile'}
+          memoriesOnly={isMemoriesOnly}
         />
       )}
     </>
