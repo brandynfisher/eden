@@ -358,15 +358,15 @@ const TasksPage = () => {
 
       <div className="flex flex-col flex-1 min-h-0">
         <div className="w-full max-w-4xl mx-auto px-4 py-6 flex-1 min-h-0">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          {/* Header (desktop only to avoid duplicate hero on mobile) */}
+          <div className="hidden md:flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-semibold hidden md:block">Tasks</h2>
+              <h2 className="text-2xl font-semibold">Tasks</h2>
               <p className="text-muted-foreground">
                 Schedule automated tasks for all your agents
               </p>
             </div>
-            <Button onClick={handleCreateNew} className="gap-2 hidden md:flex">
+            <Button onClick={handleCreateNew} className="gap-2">
               <PlusIcon className="w-4 h-4" />
               Create Task
             </Button>

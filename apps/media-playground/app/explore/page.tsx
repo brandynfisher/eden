@@ -1,6 +1,7 @@
 'use client'
 
 import FeedSearchForm from '@/components/filter/feed-search-form'
+import { useAppShell } from '@/components/layout/app-shell'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -20,7 +21,7 @@ import ToolsFeed from '@/features/feed/tools-feed'
 import { ToolsFilter } from '@/features/feed/tools-filter'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
-import { Plus, SlidersHorizontal, Wrench, Zap } from 'lucide-react'
+import { MenuIcon, Plus, SlidersHorizontal, Wrench, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
@@ -49,6 +50,7 @@ const FilterSection = ({
 
 const ExplorePage = () => {
   const { user } = useAuthState()
+  const { openMobileSidebar } = useAppShell()
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -146,6 +148,9 @@ const ExplorePage = () => {
     [agentsSort, creatorType, user?._id, searchQuery],
   )
 
+  const actionButtonClasses =
+    'gap-2 w-full justify-center md:w-auto md:justify-start h-12 text-lg'
+
   // Update URL when creator type changes
   const handleCreatorTypeChange = (value: string) => {
     const newCreatorType = value as CreatorType
@@ -164,11 +169,11 @@ const ExplorePage = () => {
     switch (contentType) {
       case 'agents':
         return {
-          title: 'Explore Agents',
+          title: 'Explore',
           description:
             'Discover and chat with AI agents created by the community',
           actionButton: (
-            <Button asChild size="lg" className="gap-2">
+            <Button asChild size="lg" className={actionButtonClasses}>
               <Link href="/new/agent">
                 <Plus className="h-4 w-4" />
                 Create an Agent
@@ -178,11 +183,11 @@ const ExplorePage = () => {
         }
       case 'models':
         return {
-          title: 'Explore Models',
+          title: 'Explore',
           description:
             'Browse through diverse models custom-trained by Eden creators',
           actionButton: (
-            <Button asChild size="lg" className="gap-2">
+            <Button asChild size="lg" className={actionButtonClasses}>
               <Link href="/studio/lora/flux_trainer">
                 <Zap className="h-4 w-4" />
                 Train a Model
@@ -192,10 +197,10 @@ const ExplorePage = () => {
         }
       case 'tools':
         return {
-          title: 'Explore Tools',
+          title: 'Explore',
           description: 'Create multimedia with AI tools',
           actionButton: (
-            <Button asChild size="lg" className="gap-2">
+            <Button asChild size="lg" className={actionButtonClasses}>
               <Link href="/studio/image/flux_dev">
                 <Wrench className="h-4 w-4" />
                 Visit the Studio
@@ -206,10 +211,10 @@ const ExplorePage = () => {
       case 'creations':
       default:
         return {
-          title: 'Explore Creations',
+          title: 'Explore',
           description: 'Discover what people are creating with Eden',
           actionButton: (
-            <Button asChild size="lg" className="gap-2">
+            <Button asChild size="lg" className={actionButtonClasses}>
               <Link href="/studio/image/seedream4">
                 <Plus className="h-4 w-4" />
                 Create an Image
@@ -345,126 +350,139 @@ const ExplorePage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      {/* Main Title with Action Button */}
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight hidden md:block">
-            {pageInfo.title}
-          </h1>
-        </div>
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Mobile navbar */}
+      <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-3 flex-shrink-0">
+        <button
+          onClick={openMobileSidebar}
+          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+          aria-label="Open sidebar"
+        >
+          <MenuIcon className="w-5 h-5 text-muted-foreground" />
+        </button>
+        <h1 className="text-xl font-bold">{pageInfo.title}</h1>
+      </div>
 
-        {/* Action button - desktop only */}
-        {pageInfo.actionButton && (
-          <div className="hidden md:block flex-shrink-0">
-            {pageInfo.actionButton}
+      <div className="p-4 md:p-6 lg:p-8">
+        {/* Main Title with Action Button (hide title/subtitle on mobile for consistency) */}
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1 hidden md:block">
+            <h1 className="text-3xl font-bold tracking-tight leading-tight md:text-4xl">
+              {pageInfo.title}
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              {pageInfo.description}
+            </p>
           </div>
-        )}
-      </div>
 
-      {/* Subtitle - hidden on mobile */}
-      <div className="mb-6 hidden md:block">
-        <p className="text-lg text-muted-foreground">{pageInfo.description}</p>
-      </div>
-
-      <div className="w-full space-y-4">
-        {/* Content Type Tabs */}
-        <Tabs value={contentType} onValueChange={handleContentTypeChange}>
-          <TabsList className="flex w-full flex-wrap gap-2 bg-muted p-1">
-            <TabsTrigger value="agents" className="flex-1 text-sm">
-              Agents
-            </TabsTrigger>
-            <TabsTrigger value="models" className="flex-1 text-sm">
-              Models
-            </TabsTrigger>
-            <TabsTrigger value="creations" className="flex-1 text-sm">
-              Creations
-            </TabsTrigger>
-            <TabsTrigger value="tools" className="flex-1 text-sm">
-              Tools
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Search (mobile only, desktop lives with filters) */}
-        <div className="md:hidden">
-          <FeedSearchForm handleSearch={setSearchQuery} className="w-full" />
+          {/* Action button */}
+          {pageInfo.actionButton && (
+            <div className="w-full md:w-auto md:flex-shrink-0">
+              {pageInfo.actionButton}
+            </div>
+          )}
         </div>
 
-        {/* Mobile filter access */}
-        <div className="md:hidden">
-          <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-between gap-2"
+        <div className="w-full space-y-4">
+          {/* Content Type Tabs */}
+          <Tabs value={contentType} onValueChange={handleContentTypeChange}>
+            <TabsList className="flex w-full flex-wrap gap-2 bg-muted p-1">
+              <TabsTrigger value="agents" className="flex-1 text-sm">
+                Agents
+              </TabsTrigger>
+              <TabsTrigger value="models" className="flex-1 text-sm">
+                Models
+              </TabsTrigger>
+              <TabsTrigger value="creations" className="flex-1 text-sm">
+                Creations
+              </TabsTrigger>
+              <TabsTrigger value="tools" className="flex-1 text-sm">
+                Tools
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Search (mobile only, desktop lives with filters) */}
+          <div className="md:hidden">
+            <FeedSearchForm handleSearch={setSearchQuery} className="w-full" />
+          </div>
+
+          {/* Mobile filter access */}
+          <div className="md:hidden">
+            <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between gap-2"
+                >
+                  <span className="font-medium">Filters</span>
+                  <SlidersHorizontal className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="bottom"
+                className="h-[80vh] overflow-y-auto px-4 sm:px-6"
               >
-                <span className="font-medium">Filters</span>
-                <SlidersHorizontal className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="h-[80vh] overflow-y-auto px-4 sm:px-6"
-            >
-              <SheetHeader>
-                <SheetTitle>Quick filters</SheetTitle>
-                <SheetDescription>
-                  Switch scope or dial in collections without leaving the feed.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-4 space-y-4">
-                {renderFilterSections('mobile')}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+                <SheetHeader>
+                  <SheetTitle>Quick filters</SheetTitle>
+                  <SheetDescription>
+                    Switch scope or dial in collections without leaving the
+                    feed.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-4 space-y-4">
+                  {renderFilterSections('mobile')}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-        {/* Desktop & tablet filter layout */}
-        <div className="hidden md:block">
-          <div className="rounded-2xl border border-border/40 bg-muted/5 p-4">
-            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-              {renderFilterSections('desktop', { includeSearch: true })}
+          {/* Desktop & tablet filter layout */}
+          <div className="hidden md:block">
+            <div className="rounded-2xl border border-border/40 bg-muted/5 p-4">
+              <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                {renderFilterSections('desktop', { includeSearch: true })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content - Render only the active content type */}
-      <div className="mt-6 min-h-[400px]">
-        {contentType === 'agents' && (
-          <AgentsFeed
-            query={agentsQuery}
-            minCols={1}
-            maxCols={4}
-            hideCreateButton={true}
-            improvedLayout={true}
-            hideContextMenu={true}
-            breakpoints={[
-              { minWidth: 1280, columns: 4 },
-              { minWidth: 1024, columns: 3 },
-              { minWidth: 768, columns: 2 },
-              { minWidth: 0, columns: 1 },
-            ]}
-          />
-        )}
+        {/* Content - Render only the active content type */}
+        <div className="mt-6 min-h-[400px]">
+          {contentType === 'agents' && (
+            <AgentsFeed
+              query={agentsQuery}
+              minCols={1}
+              maxCols={4}
+              hideCreateButton={true}
+              improvedLayout={true}
+              hideContextMenu={true}
+              breakpoints={[
+                { minWidth: 1280, columns: 4 },
+                { minWidth: 1024, columns: 3 },
+                { minWidth: 768, columns: 2 },
+                { minWidth: 0, columns: 1 },
+              ]}
+            />
+          )}
 
-        {contentType === 'creations' && (
-          <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
-        )}
+          {contentType === 'creations' && (
+            <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
+          )}
 
-        {contentType === 'models' && (
-          <ModelsFeed
-            query={modelsQuery}
-            minCols={1}
-            maxCols={5}
-            variant="creation-page"
-          />
-        )}
+          {contentType === 'models' && (
+            <ModelsFeed
+              query={modelsQuery}
+              minCols={1}
+              maxCols={5}
+              variant="creation-page"
+            />
+          )}
 
-        {contentType === 'tools' && (
-          <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
-        )}
+          {contentType === 'tools' && (
+            <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
+          )}
+        </div>
       </div>
     </div>
   )

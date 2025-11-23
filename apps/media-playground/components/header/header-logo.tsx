@@ -15,7 +15,7 @@ const HeaderLogo = ({
 }: HeaderLogoProps) => {
   return (
     <Link
-      href="/"
+      href="/agents"
       className={cn('flex items-center gap-2 text-lg font-semibold', className)}
       onClick={onClick}
     >
