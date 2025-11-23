@@ -13,7 +13,11 @@ import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  AgentPermissionLevel,
+  FeedAgentCursorArguments,
+} from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { EditIcon, MenuIcon, UserPlus } from 'lucide-react'
 import Link from 'next/link'
@@ -118,6 +122,17 @@ const AgentsPage = () => {
       ...(user?._id ? { owner: user._id } : {}),
       sort: ['stats.messageCount;-1'],
     }),
+    [user?._id],
+  )
+
+  // Helper to check if the user has edit access to an agent (owner check)
+  const hasAgentEditAccess = useCallback(
+    (agent: Agent | { owner?: string | { _id?: string } }): boolean => {
+      if (!user?._id || !agent?.owner) return false
+      const ownerId =
+        typeof agent.owner === 'string' ? agent.owner : agent.owner._id
+      return ownerId === user._id
+    },
     [user?._id],
   )
 
@@ -267,7 +282,7 @@ const AgentsPage = () => {
               agent={agent as Agent}
               improvedLayout
               hideContextMenu
-              showSettings
+              showSettings={hasAgentEditAccess(agent)}
               onSettings={() => {
                 setSettingsAgentId(agent.username || agent._id)
                 setIsSettingsModalOpen(true)
@@ -312,19 +327,25 @@ const AgentsPage = () => {
 
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredSharedAgents.map(({ agent }) => (
-            <AgentCard
-              key={agent._id}
-              agent={agent as Agent}
-              improvedLayout
-              hideContextMenu
-              showSettings
-              onSettings={() => {
-                setSettingsAgentId(agent.username || agent._id)
-                setIsSettingsModalOpen(true)
-              }}
-            />
-          ))}
+          {filteredSharedAgents.map(({ agent, permissionLevel }) => {
+            // Show settings for shared agents if user has owner or editor access
+            const hasEditAccess =
+              permissionLevel === AgentPermissionLevel.Owner ||
+              permissionLevel === AgentPermissionLevel.Editor
+            return (
+              <AgentCard
+                key={agent._id}
+                agent={agent as Agent}
+                improvedLayout
+                hideContextMenu
+                showSettings={hasEditAccess}
+                onSettings={() => {
+                  setSettingsAgentId(agent.username || agent._id)
+                  setIsSettingsModalOpen(true)
+                }}
+              />
+            )
+          })}
         </div>
       )
     }
@@ -395,7 +416,7 @@ const AgentsPage = () => {
             agent={agent}
             improvedLayout
             hideContextMenu
-            showSettings
+            showSettings={hasAgentEditAccess(agent)}
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
@@ -436,7 +457,7 @@ const AgentsPage = () => {
             agent={agent}
             improvedLayout
             hideContextMenu
-            showSettings
+            showSettings={hasAgentEditAccess(agent)}
             onSettings={() => {
               setSettingsAgentId(agent.username || agent._id)
               setIsSettingsModalOpen(true)
