@@ -59,6 +59,7 @@ interface AgentSettingsModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialTab?: string
+  memoriesOnly?: boolean // When true, only show the memories tab (for non-editors)
 }
 
 const getTabDescription = (tabKey: string, agentName: string) => {
@@ -93,6 +94,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   open,
   onOpenChange,
   initialTab = 'profile',
+  memoriesOnly = false,
 }) => {
   const router = useRouter()
   const pathname = usePathname()
@@ -106,15 +108,17 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   })
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
-  const [activeTab, setActiveTab] = useState(initialTab)
+  // When memoriesOnly mode, always use 'memories' tab
+  const effectiveInitialTab = memoriesOnly ? 'memories' : initialTab
+  const [activeTab, setActiveTab] = useState(effectiveInitialTab)
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Reset active tab when modal opens
   useEffect(() => {
     if (open) {
-      setActiveTab(initialTab)
+      setActiveTab(effectiveInitialTab)
     }
-  }, [open, initialTab])
+  }, [open, effectiveInitialTab])
 
   // Fetch deployments
   const deploymentsQuery = useAgentDeploymentsQuery({
@@ -277,6 +281,12 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       label: string
       icon: typeof UserIcon
     }> = []
+
+    // In memoriesOnly mode, only show the memories tab (for non-editors viewing memories)
+    if (memoriesOnly) {
+      tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
+      return tabs
+    }
 
     if (hasEditAccess) {
       tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
@@ -510,9 +520,10 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       />
                     )}
 
-                    {activeTab === 'memories' && hasEditAccess && (
-                      <AgentMemoryView agent={agent} variant="panel" />
-                    )}
+                    {activeTab === 'memories' &&
+                      (hasEditAccess || memoriesOnly) && (
+                        <AgentMemoryView agent={agent} variant="panel" />
+                      )}
 
                     {activeTab === 'tasks' && hasEditAccess && (
                       <AgentTasksView agent={agent} variant="panel" />

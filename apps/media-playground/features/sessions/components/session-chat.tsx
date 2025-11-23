@@ -14,8 +14,7 @@ import { FC, useCallback, useState } from 'react'
 
 const SessionChat: FC<{
   onOpenSidebar?: () => void
-  onOpenAgentSettings?: (agentId: string) => void
-}> = ({ onOpenSidebar, onOpenAgentSettings }) => {
+}> = ({ onOpenSidebar }) => {
   const params = useParams()
   const agentId = params?.agentId as string | undefined
   const sessionId = params?.id as string | undefined
@@ -96,12 +95,7 @@ const SessionChat: FC<{
 
   // If we have a sessionId in the URL, render normal session
   if (sessionId && agent) {
-    return (
-      <Session
-        onOpenSidebar={onOpenSidebar}
-        onOpenAgentSettings={onOpenAgentSettings}
-      />
-    )
+    return <Session onOpenSidebar={onOpenSidebar} />
   }
 
   const handleAgentSelect = (selectedAgent: {
