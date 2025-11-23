@@ -1720,7 +1720,7 @@ const Session = ({
             'flex flex-col justify-center items-center',
         )}
       >
-        <div className="p-4 pb-8 max-w-[calc(42rem+3.75rem)] mx-auto w-full">
+        <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full">
           {/* Load more button for older messages */}
           {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
             <div className="flex justify-center py-4">
@@ -2114,30 +2114,34 @@ const Session = ({
                     if (!agent) return null
 
                     return (
-                      <AssistantMessage
-                        key={`loader-${agentId}`}
-                        sessionId={sessionId as string}
-                        message={
-                          {
-                            _id: `loader-${agentId}`,
-                            content: '',
-                            sender: {
-                              _id: agent._id,
-                              username: agent.username,
-                              name: agent.name,
-                              userImage: agent.userImage?.startsWith('https://')
-                                ? agent.userImage
-                                : getCloudfrontUrl(agent.userImage),
-                            },
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            session: sessionId,
-                            role: 'assistant',
-                          } as Message
-                        }
-                        isStreamingTokens={true}
-                        isChatRoute={ischatRoute}
-                      />
+                      <div key={`loader-${agentId}`}>
+                        <AssistantMessage
+                          sessionId={sessionId as string}
+                          message={
+                            {
+                              _id: `loader-${agentId}`,
+                              content: '',
+                              sender: {
+                                _id: agent._id,
+                                username: agent.username,
+                                name: agent.name,
+                                userImage: agent.userImage?.startsWith(
+                                  'https://',
+                                )
+                                  ? agent.userImage
+                                  : getCloudfrontUrl(agent.userImage),
+                              },
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                              session: sessionId,
+                              role: 'assistant',
+                            } as Message
+                          }
+                          showAvatar={true}
+                          isStreamingTokens={true}
+                          isChatRoute={ischatRoute}
+                        />
+                      </div>
                     )
                   })}
                 </>
@@ -2184,11 +2188,7 @@ const Session = ({
 
       {!isReadOnlySession && (
         <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
-          <div
-            className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
-              ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
-            }`}
-          >
+          <div className="max-w-[51rem] mx-auto w-full">
             <MessageInput
               sessionId={currentSessionId as string}
               enableLiveAudio={true}

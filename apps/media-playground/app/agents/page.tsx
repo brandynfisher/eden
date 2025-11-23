@@ -48,8 +48,9 @@ const AgentsPage = () => {
       enabled: !!isSignedIn,
       populateOwner: true,
     })
+  // Always fetch shared agents when signed in (needed for permission checks in search)
   const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
-    enabled: scope === 'shared' && isSignedIn,
+    enabled: !!isSignedIn,
   })
 
   // Keep mobile shell controls aligned with the layout
@@ -125,15 +126,33 @@ const AgentsPage = () => {
     [user?._id],
   )
 
-  // Helper to check if the user has edit access to an agent (owner check)
+  // Helper to check if the user has edit access to an agent
+  // Checks: 1) original owner, 2) co-owner/co-editor via shared agents
   const hasAgentEditAccess = useCallback(
-    (agent: Agent | { owner?: string | { _id?: string } }): boolean => {
-      if (!user?._id || !agent?.owner) return false
-      const ownerId =
-        typeof agent.owner === 'string' ? agent.owner : agent.owner._id
-      return ownerId === user._id
+    (
+      agent: Agent | { _id: string; owner?: string | { _id?: string } },
+    ): boolean => {
+      if (!user?._id) return false
+
+      // Check if user is the original owner
+      if (agent?.owner) {
+        const ownerId =
+          typeof agent.owner === 'string' ? agent.owner : agent.owner._id
+        if (ownerId === user._id) return true
+      }
+
+      // Check if user has edit access via sharing (co-owner or co-editor)
+      const sharedAgent = sharedAgents.find(sa => sa.agent._id === agent._id)
+      if (sharedAgent) {
+        return (
+          sharedAgent.permissionLevel === AgentPermissionLevel.Owner ||
+          sharedAgent.permissionLevel === AgentPermissionLevel.Editor
+        )
+      }
+
+      return false
     },
-    [user?._id],
+    [user?._id, sharedAgents],
   )
 
   const myAgentsQueryKey = useMemo(

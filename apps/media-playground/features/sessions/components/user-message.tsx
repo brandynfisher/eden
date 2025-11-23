@@ -61,7 +61,7 @@ export const UserMessage = ({
         isChatRoute ? 'pt-2 pb-4 pl-[calc(3rem+0.75rem)]' : 'pt-2 pb-4 sm:pl-0'
       }
     >
-      <div className="max-w-[42rem] flex flex-col items-end">
+      <div className="max-w-[42rem] ml-auto flex flex-col items-end">
         <div className="flex flex-col items-end gap-2 max-w-[85%]">
           {hasAttachments && (
             <LightboxGallery galleryKey={message._id}>
