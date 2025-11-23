@@ -13,7 +13,7 @@ export function HomeFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
           {/* Logo and Description */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
+            <Link href="/agents" className="flex items-center gap-2 mb-4">
               <EdenLogoBw width={32} height={32} className="w-8 h-8" />
               <span className="font-semibold text-lg">Eden</span>
             </Link>

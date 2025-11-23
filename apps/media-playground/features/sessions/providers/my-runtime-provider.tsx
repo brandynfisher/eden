@@ -7,6 +7,7 @@ import {
 } from '../components/eden-message-converter'
 import edenFeedbackAdapter from '../eden-feedback-adapter'
 import edenImageAttachmentAdapter from '../eden-image-attachment-adapter'
+import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
@@ -66,6 +67,7 @@ export function MyRuntimeProvider({
   const currentThreadIdRef = useRef<string | undefined>()
   const { isSignedIn, user, isLoading: isAuthLoading } = useAuthState()
   const initialMessageProcessedRef = useRef(false)
+  const { mutate: updateUserPreferences } = useUpdateUserPreferences()
 
   // Add URL update tracking
   const lastUrlUpdateRef = useRef<string | null>(null)
@@ -131,6 +133,9 @@ export function MyRuntimeProvider({
           if (response.status !== 200) {
             throw new Error('Failed to send message')
           }
+
+          // Update user preferences with this agent
+          updateUserPreferences(agentId)
 
           // If we get a new threadId back, update the URL and current thread reference
           const threadId = response.data?.thread_id as string | undefined
@@ -540,6 +545,9 @@ export function MyRuntimeProvider({
       if (response.status !== 200) {
         throw new Error('Failed to send message')
       }
+
+      // Update user preferences with this agent
+      updateUserPreferences(agentId)
 
       // If we get a new threadId back, update the URL and current thread reference
       const threadId = response.data?.thread_id as string | undefined

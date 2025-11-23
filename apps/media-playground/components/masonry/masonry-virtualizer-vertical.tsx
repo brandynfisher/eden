@@ -25,6 +25,7 @@ import {
   useWindowVirtualizer,
 } from '@tanstack/react-virtual'
 import React, {
+  ReactNode,
   RefObject,
   forwardRef,
   useCallback,
@@ -68,6 +69,7 @@ type Props = {
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
   showSkeleton?: boolean
+  emptyState?: ReactNode
 }
 
 export const MasonrySkeleton = () => {
@@ -131,6 +133,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       initialScrollIndex,
       onScrollRestored,
       showSkeleton = false,
+      emptyState,
     },
     ref,
   ) => {
@@ -550,7 +553,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
                 {status === 'error' ? (
                   <div className="px-4 bg-warning">Error fetching data.</div>
                 ) : status !== 'pending' ? (
-                  <div className="px-4">Nothing found.</div>
+                  emptyState ?? <div className="px-4">Nothing found.</div>
                 ) : null}
               </div>
             ) : null}

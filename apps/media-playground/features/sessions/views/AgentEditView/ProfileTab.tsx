@@ -1,7 +1,8 @@
 'use client'
 
 import { ProfileImageUploader } from '../../profile-image-uploader'
-import { AGENT_FIELD_GUIDANCE, AGENT_FIELD_LIMITS } from '../agent-constants'
+import { AGENT_FIELD_LIMITS } from '../agent-constants'
+import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -14,13 +15,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
-import { Switch } from '@/components/ui/switch'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { Agent } from '@edenlabs/eden-sdk'
 import { Copy } from 'lucide-react'
@@ -135,8 +129,8 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
             </div>
           </div>
 
-          {/* Agent ID Display - responsive positioning */}
-          <div className="mt-4 lg:mt-0 lg:absolute lg:bottom-6 lg:right-6 flex items-center gap-2">
+          {/* Agent ID Display - keep it below fields to avoid overlap */}
+          <div className="mt-4 flex flex-wrap items-center gap-2 justify-start lg:justify-end">
             <span className="text-xs text-muted-foreground">
               ID: {agent._id}
             </span>
@@ -157,7 +151,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           control={form.control}
           name="public"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
+            <FormItem className="flex flex-row items-center justify-between rounded-xl border p-6 bg-card mb-6">
               <div className="space-y-0.5">
                 <FormLabel className="text-base font-medium">
                   Make Agent Public
@@ -168,41 +162,33 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch
-                  checked={field.value}
+                <GatedPrivacySwitch
+                  checked={field.value ?? false}
                   onCheckedChange={field.onChange}
+                  entityLabel="agents"
                 />
               </FormControl>
             </FormItem>
           )}
         />
 
-        {/* Description Field */}
+        {/* Tagline Field */}
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
               <FormLabel className="text-base font-medium">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-help">
-                        Description
-                        <span className="text-red-500 ml-1">*</span>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">
-                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                Tagline
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
+              <FormDescription className="mt-1 mb-3">
+                A short public description shown on your agent&apos;s profile
+                and cards. 100 characters max.
+              </FormDescription>
               <FormControl>
                 <AutosizeTextarea
-                  placeholder="Short description of the agent shown on profile and cards."
+                  placeholder="A creative AI assistant that helps with..."
                   {...field}
                   className="min-h-[80px]"
                 />
@@ -211,48 +197,6 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 <CharacterCount
                   current={field.value?.length || 0}
                   max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
-                />
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Persona Field */}
-        <FormField
-          control={form.control}
-          name="persona"
-          render={({ field }) => (
-            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-              <FormLabel className="text-base font-medium">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-help">
-                        Instructions
-                        <span className="text-red-500 ml-1">*</span>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs whitespace-pre-wrap">
-                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </FormLabel>
-              <FormControl>
-                <AutosizeTextarea
-                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                  {...field}
-                  className="min-h-[240px]"
-                  variant="xl"
-                />
-              </FormControl>
-              <div className="flex justify-end mt-2">
-                <CharacterCount
-                  current={field.value?.length || 0}
-                  max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
                 />
               </div>
               <FormMessage />
@@ -281,6 +225,28 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
               <div className="flex justify-end mt-2">
                 <CharacterCount current={field.value?.length || 0} max={140} />
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Website Field */}
+        <FormField
+          control={form.control}
+          name="website"
+          render={({ field }) => (
+            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+              <FormLabel className="text-base font-medium">Website</FormLabel>
+              <FormDescription className="mt-1 mb-3">
+                A link to your agent&apos;s website or homepage.
+              </FormDescription>
+              <FormControl>
+                <Input
+                  type="url"
+                  placeholder="https://example.com"
+                  {...field}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

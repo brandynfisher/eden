@@ -20,7 +20,7 @@ export const uploadMedia = async (
   }
 
   const buffer = await data.toBuffer()
-  const type = await fileTypeFromBuffer(buffer)
+  const type = await fileTypeFromBuffer(buffer as unknown as Uint8Array)
 
   // Allow images, video, audio, text, and .bin files
   if (
@@ -62,7 +62,7 @@ export const uploadMediaAdmin = async (
   }
 
   const buffer = await data.toBuffer()
-  const type = await fileTypeFromBuffer(buffer)
+  const type = await fileTypeFromBuffer(buffer as unknown as Uint8Array)
 
   // Allow images, video, audio, text, and .bin files
   if (

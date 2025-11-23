@@ -2,7 +2,7 @@ import { fetcher } from '@/lib/fetcher'
 import { ApiKey } from '@edenlabs/eden-sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-export const useApiKeysQuery = () => {
+export const useApiKeysQuery = (options?: { enabled?: boolean }) => {
   const queryKey = ['api-keys']
 
   const {
@@ -17,6 +17,7 @@ export const useApiKeysQuery = () => {
     status,
   } = useQuery({
     queryKey,
+    enabled: options?.enabled ?? true,
     queryFn: () =>
       fetcher<{
         apiKeys: ApiKey[]

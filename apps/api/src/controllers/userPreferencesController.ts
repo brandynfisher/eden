@@ -3,10 +3,11 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getUserPreferences = async (
   _server: FastifyInstance,
-  request: FastifyRequest,
+  request: FastifyRequest<{ Querystring: { populateOwner?: string } }>,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user || {}
+  const { populateOwner } = request.query
 
   if (!userId) {
     return reply.status(401).send({
@@ -15,18 +16,37 @@ export const getUserPreferences = async (
   }
 
   try {
+    const shouldPopulateOwner = populateOwner === 'true'
+
+    const basePopulateOptions = {
+      path: 'last_agents',
+      select:
+        'username userImage name _id type owner description stats website social_accounts',
+      match: { deleted: { $ne: true } },
+      ...(shouldPopulateOwner && {
+        populate: { path: 'owner', select: 'username' },
+      }),
+    }
+
+    const pinnedPopulateOptions = {
+      path: 'pinned_agents',
+      select:
+        'username userImage name _id type owner description stats website social_accounts',
+      match: { deleted: { $ne: true } },
+      ...(shouldPopulateOwner && {
+        populate: { path: 'owner', select: 'username' },
+      }),
+    }
+
     const preferences = await UserPreferences.findOne({ user: userId })
-      .populate({
-        path: 'last_agents',
-        select: 'username userImage _id type',
-        match: { type: 'agent', deleted: { $ne: true } }, // Only populate agents that aren't deleted
-        options: { limit: 3 }, // Only get top 3 agents
-      })
+      .populate(basePopulateOptions)
+      .populate(pinnedPopulateOptions)
       .lean()
 
     if (!preferences) {
       return reply.status(200).send({
         last_agents: [],
+        pinned_agents: [],
       })
     }
 
@@ -35,11 +55,16 @@ export const getUserPreferences = async (
       (agent: any) => agent !== null,
     )
 
-    // Only return the top 3 agents
-    const topAgents = validAgents.slice(0, 3)
+    const validPinnedAgents = (preferences.pinned_agents || []).filter(
+      (agent: any) => agent !== null,
+    )
+
+    // Only return the top 5 agents
+    const topAgents = validAgents.slice(0, 5)
 
     return reply.status(200).send({
       last_agents: topAgents,
+      pinned_agents: validPinnedAgents,
     })
   } catch (e) {
     console.error('Error fetching user preferences:', e)

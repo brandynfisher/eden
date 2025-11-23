@@ -175,7 +175,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
     const creation = item as CreationV2
     const fileType =
       getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
-    return `/create/${fileType}/${creation.tool}?creation=${creation._id}`
+    return `/studio/${fileType}/${creation.tool}?creation=${creation._id}`
   }
 
   const handleDelete = () => {
@@ -376,7 +376,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               </div>
               {item && (item as CreationV2).tool ? (
                 <Link
-                  href={`/create/${getFileTypeByMimeType(
+                  href={`/studio/${getFileTypeByMimeType(
                     (item as CreationV2).mediaAttributes?.mimeType,
                   )}/${(item as CreationV2).tool}`}
                 >
@@ -573,7 +573,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <ModelMiniCard modelId={currentLora} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/${
+                    href={`/studio/image/${
                       (item as CreationV2).tool
                     }?lora=${currentLora}`}
                     className="ml-auto mr-2"
@@ -596,7 +596,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <ModelMiniCard modelId={currentLora2} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/${
+                    href={`/studio/image/${
                       (item as CreationV2).tool
                     }?lora2=${currentLora2}`}
                     className="ml-auto mr-2"

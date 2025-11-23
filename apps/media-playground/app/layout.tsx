@@ -9,7 +9,9 @@ import QuickAnimateDialog from '@/components/dialog/quick-animate-dialog'
 import QuickUpscaleDialog from '@/components/dialog/quick-upscale-dialog'
 import ShareDialog from '@/components/dialog/share-dialog'
 import ConditionalHeader from '@/components/header/conditional-header'
+import AppShell from '@/components/layout/app-shell'
 import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
+import UserSettingsModalListener from '@/components/modals/user-settings-modal-listener'
 import { PreloadResources } from '@/components/preload-resources'
 import ScrollTopButton from '@/components/scroll-top-button'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
@@ -43,6 +45,7 @@ export const metadata: Metadata = {
   title: 'Eden',
   applicationName: 'Eden',
   description: 'Garden Of Artificial Delights',
+  manifest: '/manifest.webmanifest',
   openGraph: {
     title: 'Eden',
     siteName: 'Eden',
@@ -97,20 +100,26 @@ export default function RootLayout({
 }) {
   return (
     <StrictMode>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning className="h-full">
         <PreloadResources />
         <body
           className={cn(
-            'min-h-screen bg-background antialiased',
+            'min-h-screen h-screen bg-background antialiased overflow-hidden',
             fontSans.className,
           )}
         >
           <HolyLoader color="#9333ea" height="1px" />
           <Providers>
-            <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
               <ConditionalHeader />
-              {modal}
-              {children}
+              <div className="flex flex-1 min-h-0 overflow-hidden">
+                <AppShell>
+                  <>
+                    {modal}
+                    {children}
+                  </>
+                </AppShell>
+              </div>
               <ScrollTopButton />
             </div>
 
@@ -129,6 +138,7 @@ export default function RootLayout({
             <AgentFormSheet />
             <AgentDeploymentSheet />
             <SubscriptionGateModal />
+            <UserSettingsModalListener />
 
             <div id="modal-root" />
           </Providers>

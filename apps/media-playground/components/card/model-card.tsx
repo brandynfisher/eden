@@ -90,7 +90,7 @@ const ModelCard = ({
         <div className="absolute bottom-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
           <Link
             className="cursor-pointer"
-            href={`/create/image/${
+            href={`/studio/image/${
               model.base_model && model.base_model === 'flux-dev'
                 ? 'flux_dev'
                 : 'txt2img'
@@ -112,7 +112,7 @@ const ModelCard = ({
         <div className="bg-background p-2 rounded-b-lg border border-t-0 md:hidden flex justify-end">
           <Link
             className="cursor-pointer"
-            href={`/create/image/${
+            href={`/studio/image/${
               model.base_model && model.base_model === 'flux-dev'
                 ? 'flux_dev'
                 : 'txt2img'
@@ -200,7 +200,7 @@ const ModelCard = ({
                   <Link
                     key={2}
                     className="cursor-pointer"
-                    href={`/create/image/${
+                    href={`/studio/image/${
                       model.base_model && model.base_model === 'flux-dev'
                         ? 'flux_dev'
                         : 'txt2img'

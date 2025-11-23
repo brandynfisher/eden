@@ -24,7 +24,7 @@ const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
           <Link
-            href={`/create/${task.output_type}/${task.tool}?task=${task._id}`}
+            href={`/studio/${task.output_type}/${task.tool}?task=${task._id}`}
             scroll={false}
             shallow={true}
             prefetch={false}

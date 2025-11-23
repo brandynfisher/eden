@@ -48,9 +48,7 @@ export const threadSchema = new Schema<ThreadDocument>(
     active: {
       type: [Schema.Types.String],
     },
-    messages: {
-      type: [Schema.Types.Mixed],
-    },
+    messages: [Schema.Types.Mixed],
     deleted: {
       type: Boolean,
       default: false,

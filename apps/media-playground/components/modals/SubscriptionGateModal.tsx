@@ -10,12 +10,12 @@ import {
 } from '@/components/ui/dialog'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { subscriptionTierNameMap } from '@/lib/strings'
+import { openUserSettingsModal } from '@/lib/user-settings'
 import { useSubscriptionGateModal } from '@/stores/dialogs/dialogs.selector'
 import { updateSubscriptionGateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { CrownIcon } from 'lucide-react'
-import Link from 'next/link'
 
 function getSubscriptionTierName(tier: SubscriptionTier): string {
   return subscriptionTierNameMap[tier] || SubscriptionTier[tier]
@@ -33,18 +33,30 @@ export function SubscriptionGateModal() {
     ? getSubscriptionTierName(user.subscriptionTier)
     : 'Free'
 
-  const onOpenChange = (open: boolean) => {
+  const handleOpenSubscriptionSettings = () => {
     dispatch(
       updateSubscriptionGateModal({
-        isOpen: open,
+        isOpen: false,
         featureName: featureName,
         minimumSubscriptionTier: minimumSubscriptionTier,
       }),
     )
+    openUserSettingsModal('subscription')
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={open =>
+        dispatch(
+          updateSubscriptionGateModal({
+            isOpen: open,
+            featureName: featureName,
+            minimumSubscriptionTier: minimumSubscriptionTier,
+          }),
+        )
+      }
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -66,10 +78,8 @@ export function SubscriptionGateModal() {
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center">
-          <Button asChild>
-            <Link href="/settings/subscription">
-              Explore Subscription Plans
-            </Link>
+          <Button onClick={handleOpenSubscriptionSettings}>
+            Explore Subscription Plans
           </Button>
         </div>
       </DialogContent>

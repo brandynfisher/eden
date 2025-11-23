@@ -71,7 +71,7 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
 
   return (
     <>
-      <HomeNavLink href="/" inSheet={inSheet} />
+      <HomeNavLink href="/agents" inSheet={inSheet} />
       <NavLinkList
         items={navItemsMake}
         segments={segments || []}

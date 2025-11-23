@@ -117,7 +117,7 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
   return (
     <div className="space-y-6">
       {/* Concepts Section */}
-      <div className="p-4 bg-secondary rounded-lg">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base font-medium">Concepts</h3>

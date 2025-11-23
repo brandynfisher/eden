@@ -1,16 +1,16 @@
-// import { FeaturedAgents } from '@/features/agent/featured-agents'
-import ToolsAccordion from '@/features/tools/tools-accordion'
+'use client'
 
-const CreatePage = () => {
-  return (
-    <div className="flex flex-col gap-4 pt-4">
-      {/* <FeaturedAgents /> */}
-      <ToolsAccordion
-        output_type={['image', 'video', 'lora', 'audio']}
-        showFeatured={true}
-      />
-    </div>
-  )
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
+const CreateRedirect = () => {
+  const router = useRouter()
+
+  useEffect(() => {
+    router.replace('/studio')
+  }, [router])
+
+  return null
 }
 
-export default CreatePage
+export default CreateRedirect

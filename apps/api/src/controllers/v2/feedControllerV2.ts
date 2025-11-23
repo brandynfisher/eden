@@ -375,6 +375,11 @@ const handleArguments = async ({
             return []
           }
 
+          if (field === 'excludeOwner') {
+            // Filter for items where owner != value (exclude user's own items)
+            return ['owner', { $ne: new ObjectId(value) }]
+          }
+
           if (
             field === 'user' ||
             field === 'owner' ||
@@ -1367,6 +1372,8 @@ export const getAgentsFeedCursor = async (
       public: 1,
       deleted: 1,
       stats: 1,
+      website: 1,
+      social_accounts: 1,
     },
   })
 

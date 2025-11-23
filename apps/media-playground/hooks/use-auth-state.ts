@@ -4,6 +4,7 @@ import { useMe } from '@/hooks/use-me'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { usePathname } from 'next/navigation'
+import { useCallback } from 'react'
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
@@ -20,7 +21,7 @@ export function useAuthState() {
     isLoading,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
-  const verifyAuth = async () => {
+  const verifyAuth = useCallback(async () => {
     if (isSignedIn) {
       return true
     }
@@ -30,7 +31,7 @@ export function useAuthState() {
       forceRedirectUrl: pathname,
     })
     return false
-  }
+  }, [isSignedIn, openSignIn, pathname])
 
   return {
     verifyAuth,

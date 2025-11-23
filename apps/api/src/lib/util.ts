@@ -39,7 +39,7 @@ export async function downloadBuffer(url: string): Promise<Buffer> {
 export async function downloadFile(url: string, path: string) {
   try {
     const buffer = await downloadBuffer(url)
-    await writeFile(path, buffer)
+    await writeFile(path, buffer as unknown as Uint8Array)
   } catch (error) {
     console.error(`Error in downloadFile: ${error}`)
     throw error

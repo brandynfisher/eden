@@ -12,6 +12,7 @@ import {
   getAgentCreations,
   getAgentDeployments,
   getAgentMemory,
+  getAgentMemoryContext,
   getAgentPermissions,
   getAgentTriggers,
   getAllUserDeployments,
@@ -661,6 +662,30 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => saveAgentMemory(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/memory-context', {
+    schema: {
+      tags: ['Agents - Memory'],
+      summary: 'Get Agent Memory Context',
+      description:
+        'Retrieve fully formed memory context including user memory and collective memory shards for an agent.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: {
+          userMemory: Type.String(),
+          collectiveMemory: Type.Array(
+            Type.Object({
+              shard_name: Type.String(),
+              content: Type.String(),
+            }),
+          ),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentMemoryContext(server, request, reply),
   })
 
   // New routes for memory operations

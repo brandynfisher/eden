@@ -1,5 +1,6 @@
 'use client'
 
+import FeedbackForm from '@/components/form/feedback-form'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
@@ -20,8 +21,6 @@ import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
-import * as Sentry from '@sentry/nextjs'
-import { feedbackIntegration } from '@sentry/nextjs'
 import {
   ActivityIcon,
   BookmarkIcon,
@@ -37,7 +36,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import * as React from 'react'
 import { forwardRef, useRef, useState } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
@@ -69,10 +67,6 @@ const AccountDropdown = () => {
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
-  const [feedback, setFeedback] =
-    useState<ReturnType<typeof feedbackIntegration>>()
-  const feedbackButtonRef = useRef<HTMLDivElement>(null)
-
   function handleDialogItemSelect() {
     focusRef.current = dropdownTriggerRef.current
   }
@@ -83,22 +77,6 @@ const AccountDropdown = () => {
       setDropdownOpen(false)
     }
   }
-
-  React.useEffect(() => {
-    setFeedback(Sentry.getFeedback())
-  }, [])
-
-  React.useEffect(() => {
-    let unsubscribe: () => void
-
-    if (feedback && feedbackButtonRef && feedbackButtonRef.current) {
-      unsubscribe = feedback.attachTo(feedbackButtonRef.current)
-    }
-
-    return () => {
-      unsubscribe && unsubscribe()
-    }
-  }, [feedback])
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -240,6 +218,18 @@ const AccountDropdown = () => {
             <span>Subscription</span>
           </Link>
         </DropdownMenuItem>
+        <DialogMenuItem
+          onSelect={handleDialogItemSelect}
+          onOpenChange={handleDialogItemOpenChange}
+          triggerChildren={
+            <>
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              <span>Send Feedback</span>
+            </>
+          }
+        >
+          <FeedbackForm />
+        </DialogMenuItem>
         <DialogMenuItem
           onSelect={handleDialogItemSelect}
           onOpenChange={handleDialogItemOpenChange}

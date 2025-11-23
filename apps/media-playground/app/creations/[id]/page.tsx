@@ -51,7 +51,7 @@ export async function generateMetadata(
 
   const title = `${response.creation?.tool} by ${response.creation?.user.username} | Eden`
   const baseDescription = ``
-  const description = response.creation?.task.args.prompt || baseDescription
+  const description = response.creation?.task?.args?.prompt || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {

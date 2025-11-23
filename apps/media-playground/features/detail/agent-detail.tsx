@@ -1,39 +1,47 @@
 'use client'
 
-import AgentActionsMenu from '@/components/button/agent-actions-menu'
-// import LikeButton from '@/components/button/like-button'
-import ModelMiniCard from '@/components/card/model-mini-card'
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
+import { useAppShell } from '@/components/layout/app-shell'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import UserAvatarLink from '@/components/user/user-avatar-link'
-import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { handleShareClick } from '@/features/detail/agent-share-util'
+import {
+  usePinAgent,
+  useUnpinAgent,
+} from '@/hooks/mutation/use-agent-preferences'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { canEditAgent } from '@/lib/utils'
-//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { formatCompactNumber } from '@/lib/strings'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import {
+  EyeIcon,
   EyeOffIcon,
+  MenuIcon,
   MessageSquareIcon,
+  MoreHorizontalIcon,
+  PinIcon,
+  PinOffIcon,
   SettingsIcon,
   Share2Icon,
+  Trash2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, {
+import {
   RefObject,
   useCallback,
   useEffect,
@@ -41,6 +49,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   id: string
@@ -51,11 +60,22 @@ type Props = {
 // Define filter types within AgentDetail
 type FilterMode = 'all' | 'mine'
 
+const MAX_PINNED_AGENTS = 5
+
 const AgentDetail = ({ id, agentSSRData }: Props) => {
-  const { user, isSignedIn } = useAuthState()
+  const { user, isSignedIn, verifyAuth } = useAuthState()
+  const { openMobileSidebar } = useAppShell()
   const dispatch = useAppDispatch()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+
+  // Pinning functionality
+  const { pinnedAgents } = useUserPreferencesQuery({
+    enabled: !!isSignedIn,
+  })
+  const pinAgent = usePinAgent()
+  const unpinAgent = useUnpinAgent()
 
   // Use standard useState again
   const [filterMode, setFilterMode] = useState<FilterMode>(() => {
@@ -158,6 +178,78 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+  const {
+    hasOwnerAccess,
+    hasEditAccess,
+    isLoading: isPermissionsLoading,
+  } = useAgentPermissions(agent, user?._id)
+  const canEditAgentSettings = hasEditAccess && !isPermissionsLoading
+
+  // Check if agent is pinned
+  const isPinned = useMemo(() => {
+    if (!agent || !pinnedAgents) return false
+    return pinnedAgents.some(
+      (pinnedAgent: { _id?: string; agentId?: string }) =>
+        pinnedAgent._id === agent._id || pinnedAgent.agentId === agent._id,
+    )
+  }, [agent, pinnedAgents])
+
+  const canPin = !isPinned && (pinnedAgents?.length ?? 0) < MAX_PINNED_AGENTS
+
+  const handlePinAgent = () => {
+    if (!agent) return
+    pinAgent.mutate(agent._id, {
+      onSuccess: () => {
+        toast.success('Agent pinned', {
+          description: `${agent.name} has been pinned to your sidebar`,
+        })
+      },
+    })
+  }
+
+  const handleUnpinAgent = () => {
+    if (!agent) return
+    unpinAgent.mutate(agent._id, {
+      onSuccess: () => {
+        toast.success('Agent unpinned', {
+          description: `${agent.name} has been unpinned`,
+        })
+      },
+    })
+  }
+
+  const handleTogglePublic = async () => {
+    if (!agent) return
+    try {
+      await axios.patch(`/api/agents/${agent._id}`, {
+        public: !agent.public,
+      })
+      toast.success(
+        agent.public ? 'Agent is now private' : 'Agent is now public',
+      )
+      window.location.reload()
+    } catch {
+      toast.error('Failed to update visibility')
+    }
+  }
+
+  const handleDeleteAgent = async () => {
+    if (!agent) return
+    const confirmed = window.confirm(
+      'Delete this agent? This action cannot be undone.',
+    )
+    if (!confirmed) return
+
+    try {
+      await axios.delete(`/api/agents/${agent._id}`)
+      toast.success('Agent deleted', {
+        description: `"${agent.name}" has been deleted.`,
+      })
+      router.push('/agents')
+    } catch {
+      toast.error('Failed to delete agent')
+    }
+  }
 
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
@@ -169,247 +261,305 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     return baseAgentQuery
   }, [agent, filterMode, user?._id])
 
-  //const onUpdateAgent = async () => {
-  //  await invalidate()
-  //}
-
-  //const handleEditClick = () => {
-  //  dispatch(
-  //    updateAgentFormSheet({
-  //      isOpen: true,
-  //      mode: 'update',
-  //      agentId: agent?._id,
-  //      onAction: onUpdateAgent,
-  //    }),
-  //  )
-  //}
-
-  //const handleConfigureDeployments = () => {
-  //  dispatch(
-  //    updateAgentDeploymentFormSheet({
-  //      isOpen: true,
-  //      agentId: agent?._id,
-  //    }),
-  //  )
-  //}
-
-  //const handleConfigureTriggers = () => {
-  //  dispatch(
-  //    updateAgentTriggerFormSheet({
-  //      isOpen: true,
-  //      agentId: agent?._id,
-  //    }),
-  //  )
-  //}
-
   if (!agent) return null
 
   // Determine if the filter tabs should be shown
   const showFilterTabs = isSignedIn && !!user
+  const messageCount = agent.stats?.messageCount ?? 0
 
   return (
-    <>
-      <div className="relative flex flex-col gap-4 p-4 bg-muted-darker rounded-md mx-2 md:mx-4 mt-4">
-        <div className="relative lg:flex lg:justify-between lg:gap-x-4">
-          <div className="relative flex flex-col sm:flex-row">
-            <Avatar className="aspect-square h-40 md:h-52 rounded-lg flex-shrink-0">
-              {agent.userImage ? (
-                <AvatarImage
-                  className="object-cover rounded-lg shadow-md"
-                  src={agent.userImage}
-                />
-              ) : (
-                <AvatarFallback className="rounded-lg">
-                  {agent.name[0]}
-                </AvatarFallback>
-              )}
-            </Avatar>
-
-            <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col flex-grow max-w-2xl">
-              <div className="flex flex-wrap items-center justify-between">
-                <h1 className="text-2xl font-semibold mb-2 sm:mb-0">
-                  {agent?.name}
-                </h1>
-              </div>
-
-              <TextClampMore
-                lines={3}
-                text={agent?.description}
-                className="text-sm break-words sm:mt-4 text-muted-darker-foreground"
-              />
-
-              <div className="flex items-center mt-4 gap-x-1 text-sm text-muted-foreground mb-4">
-                <span className="mr-1">by</span>
-                <UserAvatarLink
-                  name={agent.owner.username}
-                  image={agent.owner.userImage}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {canEditAgent(agent, user?._id) && (
-                  <>
-                    <Button className="gap-2" variant="outline" asChild>
-                      <Link href={`/edit/${agent.username}`}>
-                        <SettingsIcon className="w-4 h-4" />
-                        <span>Edit </span>
-                      </Link>
-                    </Button>
-                    {/*isFeatureDeploymentsEnabled && (
-                      <>
-                        <Button
-                          className="gap-2"
-                          variant="outline"
-                          onClick={handleConfigureDeployments}
-                        >
-                          <RocketIcon size={18} />
-                          Deployments
-                        </Button>
-                        <Button
-                          className="gap-2"
-                          variant="outline"
-                          onClick={handleConfigureTriggers}
-                        >
-                          <ClockIcon size={18} />
-                          Tasks
-                        </Button>
-                      </>
-                    )*/}
-                    <AgentActionsMenu
-                      className="size-10"
-                      key={1}
-                      agent={agent}
-                      queryKey={['agents', id]}
-                      hiddenItems={['chat', 'view-details']}
-                    />
-                  </>
-                )}
-                <div className="flex items-center gap-2">
-                  {/* <LikeButton
-                    type="agent"
-                    id={agent._id}
-                    isLiked={agent.isLiked}
-                    likeCount={agent.likeCount}
-                    docQueryKeyId={id}
-                    disabled={!isSignedIn}
-                  /> */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <AgentUsageStats
-                            agent={agent}
-                            hiddenStats={[
-                              'toolCallCount',
-                              'assistantMessageCount',
-                              'threadCount',
-                              'userCount',
-                            ]}
-                            className="lg:mt-0 gap-2"
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <AgentUsageStats
-                          className="my-0 gap-2 !flex-col"
-                          agent={agent}
-                          showTooltipAsText={true}
-                        />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  {user?._id !== agent?.owner._id && (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={evt => handleShareClick(evt, agent, dispatch)}
-                    >
-                      <Share2Icon className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <Button variant="outline" asChild>
-                  <Link
-                    href={`/chat/${agent.username}`}
-                    className=" bg-purple-600/20 border-purple-600"
-                  >
-                    <MessageSquareIcon className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Chat</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col md:flex-row gap-4">
-          {(true || user?._id === agent?.owner._id) && (
-            <div className="flex flex-1 flex-col p-4 md:max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2 mb-2">
-                <TypographyH6 className="font-semibold">Persona</TypographyH6>
-              </div>
-              {!true && user?._id === agent?.owner._id && (
-                <>
-                  <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
-                    <EyeOffIcon className="w-4 h-4" />
-                    This persona is not public.
-                  </div>
-                  <Separator className="mb-2" />
-                </>
-              )}
-              <TextClampMore
-                lines={3}
-                text={agent?.persona}
-                className="text-sm italic text-accent-foreground"
-              />
-            </div>
-          )}
-          {agent?.models && agent.models.length > 0 && (
-            <div className="flex flex-1 flex-col h-fit md:max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
-              <TypographyH6 className="text-primary">Models</TypographyH6>
-              <div className="flex flex-col gap-2">
-                {agent.models.map((model: { lora: string }, index: number) => (
-                  <ModelMiniCard key={index} modelId={model.lora} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="flex flex-col min-h-0">
+      {/* Mobile navbar */}
+      <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 shrink-0">
+        <button
+          onClick={openMobileSidebar}
+          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+          aria-label="Open sidebar"
+        >
+          <MenuIcon className="w-5 h-5 text-muted-foreground" />
+        </button>
       </div>
 
-      {agent && (
-        <>
-          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
-            {`Creations with ${agent.name}`}
-          </div>
+      {/* Hero Header Section */}
+      <header className="relative px-4 sm:px-6 md:px-10 pt-4 sm:pt-6 pb-6 sm:pb-8">
+        <div className="flex gap-4 sm:gap-6">
+          {/* Avatar - fixed square size */}
+          <Avatar className="h-28 w-28 sm:h-40 sm:w-40 md:h-48 md:w-48 rounded-xl sm:rounded-2xl shrink-0 ring-1 ring-border/50 shadow-lg self-center">
+            {agent.userImage ? (
+              <AvatarImage
+                className="object-cover"
+                src={agent.userImage}
+                alt={agent.name}
+              />
+            ) : (
+              <AvatarFallback className="rounded-xl sm:rounded-2xl text-2xl sm:text-4xl font-medium bg-muted">
+                {agent.name?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            )}
+          </Avatar>
 
-          {/* Feed Section Start - Attach Ref Here */}
-          <div ref={feedSectionRef}>
-            {/* Filter Tabs */}
-            {showFilterTabs && (
-              <Tabs
-                value={filterMode}
-                onValueChange={value => {
-                  setFilterMode(value as FilterMode)
-                }}
-                className="w-full flex justify-center mb-4 px-4"
+          {/* Agent Info */}
+          <div className="flex flex-col flex-1 min-w-0 justify-center">
+            {/* Name & Username */}
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold tracking-tight truncate">
+                {agent.name}
+              </h1>
+              <p className="text-muted-foreground mt-0.5 sm:mt-1 text-xs sm:text-sm">
+                @{agent.username}
+              </p>
+            </div>
+
+            {/* Meta Row: Owner + Messages */}
+            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 mt-2 sm:mt-4 text-xs sm:text-sm">
+              {/* Owner */}
+              <Link
+                href={`/creators/${agent.owner.username}`}
+                className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                <TabsList>
-                  <TabsTrigger value="all">All Creations</TabsTrigger>
-                  <TabsTrigger value="mine">My Creations</TabsTrigger>
-                </TabsList>
-              </Tabs>
+                <Avatar className="h-4 w-4 sm:h-5 sm:w-5">
+                  {agent.owner.userImage ? (
+                    <AvatarImage
+                      src={agent.owner.userImage}
+                      alt={agent.owner.username}
+                    />
+                  ) : (
+                    <AvatarFallback className="text-[8px] sm:text-[10px]">
+                      {agent.owner.username?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span>by {agent.owner.username}</span>
+              </Link>
+
+              <span className="text-muted-foreground/40">·</span>
+
+              {/* Message Count */}
+              <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+                <MessageSquareIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span>{formatCompactNumber(messageCount)} messages</span>
+              </div>
+            </div>
+
+            {/* Description */}
+            {agent.description && (
+              <div className="mt-2 sm:mt-3 max-w-2xl">
+                <TextClampMore
+                  lines={2}
+                  text={agent.description}
+                  className="text-xs sm:text-sm text-muted-foreground leading-relaxed"
+                />
+              </div>
             )}
 
-            {/* Recent Creations Feed Component */}
-            <RecentCreationsFeed
-              query={recentCreationsQuery}
-              initialScrollIndex={initialScrollIndex}
-              onScrollRestored={clearScrollIndexState}
-            />
+            {/* Action Buttons - Hidden on mobile */}
+            <div className="hidden sm:flex flex-wrap items-center gap-3 mt-5">
+              <Button
+                size="lg"
+                className="gap-2 px-6"
+                onClick={async () => {
+                  if (await verifyAuth()) {
+                    router.push(`/chat?agent=${agent.username}`)
+                  }
+                }}
+              >
+                <MessageSquareIcon className="h-4 w-4" />
+                Chat with {agent.name}
+              </Button>
+              {canEditAgentSettings && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="gap-2 px-5"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                >
+                  <SettingsIcon className="h-4 w-4" />
+                  Edit agent
+                </Button>
+              )}
+              {/* Context Menu */}
+              {isSignedIn && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10">
+                      <MoreHorizontalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem
+                      onClick={evt => handleShareClick(evt, agent, dispatch)}
+                    >
+                      <Share2Icon className="mr-2 h-4 w-4" />
+                      Share
+                    </DropdownMenuItem>
+                    {isPinned ? (
+                      <DropdownMenuItem onClick={handleUnpinAgent}>
+                        <PinOffIcon className="mr-2 h-4 w-4" />
+                        Unpin from sidebar
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={handlePinAgent}
+                        disabled={!canPin}
+                      >
+                        <PinIcon className="mr-2 h-4 w-4" />
+                        {canPin ? 'Pin to sidebar' : 'Max 5 pins reached'}
+                      </DropdownMenuItem>
+                    )}
+                    {hasOwnerAccess && !isPermissionsLoading && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleTogglePublic}>
+                          {agent.public ? (
+                            <>
+                              <EyeOffIcon className="mr-2 h-4 w-4" />
+                              Set Private
+                            </>
+                          ) : (
+                            <>
+                              <EyeIcon className="mr-2 h-4 w-4" />
+                              Set Public
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={handleDeleteAgent}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2Icon className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
-        </>
-      )}
-    </>
+        </div>
+
+        {/* Mobile-only: Action Buttons */}
+        <div className="flex sm:hidden items-center gap-2 mt-4">
+          <Button
+            className="flex-1 gap-2"
+            onClick={async () => {
+              if (await verifyAuth()) {
+                router.push(`/chat?agent=${agent.username}`)
+              }
+            }}
+          >
+            <MessageSquareIcon className="h-4 w-4" />
+            Chat
+          </Button>
+          {canEditAgentSettings && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsSettingsModalOpen(true)}
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
+          )}
+          {isSignedIn && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreHorizontalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={evt => handleShareClick(evt, agent, dispatch)}
+                >
+                  <Share2Icon className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuItem>
+                {isPinned ? (
+                  <DropdownMenuItem onClick={handleUnpinAgent}>
+                    <PinOffIcon className="mr-2 h-4 w-4" />
+                    Unpin from sidebar
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handlePinAgent} disabled={!canPin}>
+                    <PinIcon className="mr-2 h-4 w-4" />
+                    {canPin ? 'Pin to sidebar' : 'Max 5 pins reached'}
+                  </DropdownMenuItem>
+                )}
+                {hasOwnerAccess && !isPermissionsLoading && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleTogglePublic}>
+                      {agent.public ? (
+                        <>
+                          <EyeOffIcon className="mr-2 h-4 w-4" />
+                          Set Private
+                        </>
+                      ) : (
+                        <>
+                          <EyeIcon className="mr-2 h-4 w-4" />
+                          Set Public
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDeleteAgent}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2Icon className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </header>
+
+      {/* Divider */}
+      <div className="border-t border-border/50" />
+
+      {/* Creations Section - Full Width */}
+      <section ref={feedSectionRef} className="flex-1">
+        {/* Section Header + Tabs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-6">
+          {showFilterTabs ? (
+            <Tabs
+              value={filterMode}
+              onValueChange={value => setFilterMode(value as FilterMode)}
+            >
+              <TabsList>
+                <TabsTrigger value="all">All Creations</TabsTrigger>
+                <TabsTrigger value="mine">My Creations</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          ) : (
+            <h2 className="text-sm text-muted-foreground">
+              Creations with {agent.name}
+            </h2>
+          )}
+        </div>
+
+        {/* Full-Width Creations Feed */}
+        <div className="w-full">
+          <RecentCreationsFeed
+            query={recentCreationsQuery}
+            initialScrollIndex={initialScrollIndex}
+            onScrollRestored={clearScrollIndexState}
+          />
+        </div>
+      </section>
+
+      {/* Settings Modal */}
+      <AgentSettingsModal
+        agentId={agent.username || agent._id}
+        open={isSettingsModalOpen}
+        onOpenChange={setIsSettingsModalOpen}
+        initialTab="profile"
+      />
+    </div>
   )
 }
 

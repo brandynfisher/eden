@@ -17,6 +17,7 @@ import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
   createMemoryAgent as _createMemoryAgent,
   getAgentMemory as _getAgentMemory,
+  getAgentMemoryContext as _getAgentMemoryContext,
   removeMemoryFromAgent as _removeMemoryFromAgent,
   removeUnabsorbedMemory as _removeUnabsorbedMemory,
   retrieveMemoryAgent as _retrieveMemoryAgent,
@@ -73,6 +74,7 @@ export {
 // Re-export functions from agentMemoryController
 export {
   _getAgentMemory as getAgentMemory,
+  _getAgentMemoryContext as getAgentMemoryContext,
   _saveAgentMemory as saveAgentMemory,
   _retrieveMemoryUser as retrieveMemoryUser,
   _retrieveMemoryAgent as retrieveMemoryAgent,
@@ -858,7 +860,7 @@ export const getAgentCreations = async (
       totalDocs,
     })
   } catch (error) {
-    server.log.error('Error fetching agent creations', error)
+    server.log.error({ err: error }, 'Error fetching agent creations')
     if ((error as any).name === 'CastError') {
       return reply.status(400).send({ message: 'Invalid parameter format' })
     }
@@ -944,7 +946,7 @@ export const updateAgentPermissions = async (
           message: `You've been granted ${perm.level} access to the agent "${agent.name}".`,
           priority: 'normal',
           agent: agentId,
-          action_url: `/chat/${agent.username}`,
+          action_url: `/chat/?agent=${agent.username}`,
           channels: ['in_app'],
         })
       } else if (
@@ -961,7 +963,7 @@ export const updateAgentPermissions = async (
           message: `Your access to the agent "${agent.name}" has been changed to ${perm.level}.`,
           priority: 'normal',
           agent: agentId,
-          action_url: `/chat/${agent.username}`,
+          action_url: `/chat/?agent=${agent.username}`,
           channels: ['in_app'],
         })
       }
@@ -984,7 +986,7 @@ export const updateAgentPermissions = async (
             message: `Your access to the agent "${agent.name}" has been removed.`,
             priority: 'normal',
             agent: agentId,
-            action_url: `/chat/${agent.username}`,
+            action_url: `/chat/?agent=${agent.username}`,
             channels: ['in_app'],
           })
         }

@@ -44,7 +44,7 @@ export const uploadCldBufferAsset = async (
   mediaType: MediaType,
   buffer: Buffer,
 ): Promise<Asset> => {
-  const fileType = await fileTypeFromBuffer(buffer)
+  const fileType = await fileTypeFromBuffer(buffer as unknown as Uint8Array)
 
   try {
     const uploadConfig: UploadApiOptions = {
@@ -215,7 +215,7 @@ export const registerCloudinary = async (fastify: FastifyInstance) => {
     fastify.decorate('generateCldUploadSignature', generateCldUploadSignature)
     fastify.log.info('Successfully registered plugin: Cloudinary')
   } catch (err) {
-    fastify.log.error('Plugin: Cloudinary, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Cloudinary, error on register')
     console.error(err)
   }
 }

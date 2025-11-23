@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose'
 export interface UserPreferencesSchema {
   user: Schema.Types.ObjectId
   last_agents: Schema.Types.ObjectId[]
+  pinned_agents: Schema.Types.ObjectId[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -31,6 +32,11 @@ const userPreferencesSchema = new Schema<UserPreferencesDocument>(
         message: 'last_agents can contain at most 10 agents',
       },
     },
+    pinned_agents: {
+      type: [Schema.Types.ObjectId],
+      ref: 'users3',
+      default: [],
+    },
   },
   {
     timestamps: true,
@@ -43,30 +49,79 @@ userPreferencesSchema.index({ user: 1 })
 
 // Static method to update last agents for a user
 userPreferencesSchema.statics.updateLastAgent = async function (
-  userId: Schema.Types.ObjectId,
-  agentId: Schema.Types.ObjectId,
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
+) {
+  // Step 1: ensure document exists
+  const upsertResult = await this.updateOne(
+    { user: userId },
+    { $setOnInsert: { user: userId } },
+    { upsert: true },
+  )
+
+  // Step 2: remove existing occurrence to avoid duplicates
+  const pullResult = await this.updateOne(
+    { user: userId },
+    { $pull: { last_agents: agentId } },
+  )
+
+  // Step 3: prepend and cap the list
+  const pushResult = await this.updateOne(
+    { user: userId },
+    {
+      $push: {
+        last_agents: { $each: [agentId], $position: 0, $slice: 10 },
+      },
+    },
+  )
+
+  const doc = await this.findOne({ user: userId })
+    .select('_id user last_agents pinned_agents updatedAt')
+    .lean()
+
+  return { upsertResult, pullResult, pushResult, doc }
+}
+
+// Static method to pin an agent
+userPreferencesSchema.statics.pinAgent = async function (
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
 ) {
   const userPrefs = await this.findOne({ user: userId })
 
   if (!userPrefs) {
-    // Create new preferences document
     await this.create({
       user: userId,
-      last_agents: [agentId],
+      pinned_agents: [agentId],
     })
     return
   }
 
-  // Remove agentId if it already exists (to avoid duplicates)
-  const filteredAgents = userPrefs.last_agents.filter(
-    (id: Schema.Types.ObjectId) => id.toString() !== agentId.toString(),
+  // Check if already pinned
+  const isPinned = userPrefs.pinned_agents.some(
+    (id: Schema.Types.ObjectId) => id.toString() === agentId.toString(),
   )
 
-  // Add agentId at the beginning
-  const updatedAgents = [agentId, ...filteredAgents]
+  if (!isPinned) {
+    userPrefs.pinned_agents.push(agentId)
+    await userPrefs.save()
+  }
+}
 
-  // Keep only the first 10
-  userPrefs.last_agents = updatedAgents.slice(0, 10)
+// Static method to unpin an agent
+userPreferencesSchema.statics.unpinAgent = async function (
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
+) {
+  const userPrefs = await this.findOne({ user: userId })
+
+  if (!userPrefs) {
+    return
+  }
+
+  userPrefs.pinned_agents = userPrefs.pinned_agents.filter(
+    (id: Schema.Types.ObjectId) => id.toString() !== agentId.toString(),
+  )
 
   await userPrefs.save()
 }
@@ -75,8 +130,16 @@ export const UserPreferences = mongoose.model<
   UserPreferencesDocument,
   mongoose.Model<UserPreferencesDocument> & {
     updateLastAgent: (
-      userId: Schema.Types.ObjectId,
-      agentId: Schema.Types.ObjectId,
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
+    ) => Promise<unknown>
+    pinAgent: (
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
+    ) => Promise<void>
+    unpinAgent: (
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
     ) => Promise<void>
   }
 >('UserPreferences', userPreferencesSchema)

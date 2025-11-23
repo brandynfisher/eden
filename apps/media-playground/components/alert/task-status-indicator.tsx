@@ -53,7 +53,8 @@ const TaskStatusIndicator = () => {
   const getFirstCreationId = (task: TaskV2) => {
     if (!task.result) return null
     for (const result of task.result) {
-      for (const output of result.output || []) {
+      const outputs = Array.isArray(result.output) ? result.output : []
+      for (const output of outputs) {
         const creationId = output?.creation?._id
         if (creationId) {
           return creationId
@@ -187,7 +188,7 @@ const TaskStatusIndicator = () => {
                                     className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
                                     loader={customImageLoader}
                                     src={output.filename || ''}
-                                    alt={task.args.prompt || ''}
+                                    alt={task.args?.prompt || ''}
                                     width={48}
                                     height={48}
                                   />

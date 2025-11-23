@@ -98,7 +98,7 @@ export async function PATCH(
     pinned,
     extras,
     agent_ids,
-    type,
+    session_type,
     settings,
     context,
     budget,
@@ -110,7 +110,7 @@ export async function PATCH(
     pinned === undefined &&
     extras === undefined &&
     agent_ids === undefined &&
-    type === undefined &&
+    session_type === undefined &&
     settings === undefined &&
     context === undefined &&
     budget === undefined &&
@@ -138,7 +138,7 @@ export async function PATCH(
       pinned?: boolean
       extras?: { exclude_memory?: boolean; is_public?: boolean }
       agent_ids?: string[]
-      type?: SessionType
+      session_type?: SessionType
       settings?: SessionSettings
       context?: string
       budget?: {
@@ -161,8 +161,8 @@ export async function PATCH(
     if (agent_ids !== undefined) {
       updateData.agent_ids = agent_ids
     }
-    if (type !== undefined) {
-      updateData.type = type as SessionType
+    if (session_type !== undefined) {
+      updateData.session_type = session_type as SessionType
     }
     if (settings !== undefined) {
       updateData.settings = settings

@@ -27,7 +27,7 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
 
       client.on('error', (err: Error) => {
         console.error('Redis connection error:', err)
-        fastify.log.error('Redis connection error:', err)
+        fastify.log.error({ err }, 'Redis connection error:')
       })
 
       client.on('ready', () => {})
@@ -40,7 +40,7 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
         await client.quit()
       })
     } catch (error) {
-      fastify.log.error('Failed to initialize Redis client:', error)
+      fastify.log.error({ err: error }, 'Failed to initialize Redis client:')
       fastify.decorate('redis', null)
     }
   } else {
@@ -57,7 +57,7 @@ export const registerRedis: FastifyPluginAsync = async (fastify, options) => {
     await fastify.register(fastifyPlugin(redisPlugin, options))
     fastify.log.info('Successfully registered plugin: Redis')
   } catch (err) {
-    fastify.log.error('Failed to register plugin: Redis', { err })
+    fastify.log.error({ err }, 'Failed to register plugin: Redis')
   }
 }
 

@@ -3,7 +3,7 @@ import { isAuth } from '../middleware/authMiddleware'
 import { FastifyInstance } from 'fastify'
 
 async function userPreferencesRoutes(server: FastifyInstance) {
-  server.get(
+  server.get<{ Querystring: { populateOwner?: string } }>(
     '/user-preferences',
     {
       preHandler: [(request, reply) => isAuth(server, request, reply)],

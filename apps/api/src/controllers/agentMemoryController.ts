@@ -1,6 +1,7 @@
 import { MEMORY_LIMITS } from '../lib/constants'
 import { Agent } from '../models/Agent'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 const validateAgentAccess = async (agentId: string) => {
@@ -20,69 +21,92 @@ const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
     : new mongoose.Types.ObjectId(agentDoc._id)
 }
 
-// Helper function to invalidate fully_formed_memory for related UserMemory/AgentMemory documents
-const invalidateFullyFormedMemories = async (
+// Helper function to call Eve API to regenerate agent memory
+const regenerateAgentMemory = async (
+  server: FastifyInstance,
+  shardId: string | { toString(): string },
+) => {
+  try {
+    const shardIdStr =
+      typeof shardId === 'string' ? shardId : shardId.toString()
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/memory/regenerate-agent-memory`,
+      { shard_id: shardIdStr },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+  } catch (error) {
+    server.log.error(
+      { err: error, shardId },
+      'Error calling regenerate agent memory API',
+    )
+  }
+}
+
+// Helper function to call Eve API to regenerate user memory
+const regenerateUserMemory = async (
+  server: FastifyInstance,
+  agentId: string | { toString(): string },
+  userId: string | { toString(): string },
+) => {
+  try {
+    const agentIdStr =
+      typeof agentId === 'string' ? agentId : agentId.toString()
+    const userIdStr = typeof userId === 'string' ? userId : userId.toString()
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/memory/regenerate-user-memory`,
+      { agent_id: agentIdStr, user_id: userIdStr },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+  } catch (error) {
+    server.log.error(
+      { err: error, agentId, userId },
+      'Error calling regenerate user memory API',
+    )
+  }
+}
+
+// Helper function to regenerate fully_formed_memory for related UserMemory/AgentMemory documents
+// This is fire-and-forget - it triggers regeneration but doesn't wait for completion
+const regenerateRelatedMemories = async (
   server: FastifyInstance,
   sessionMemoryId: string,
 ) => {
   try {
-    const sessionMemoryCollection =
-      server.mongoose.connection.db.collection('memory_sessions')
-    const sessionMemory = await sessionMemoryCollection.findOne({
-      _id: new server.mongoose.Types.ObjectId(sessionMemoryId),
-    })
+    const sessionMemory = await server.mongoose.connection.db
+      .collection('memory_sessions')
+      .findOne({ _id: new server.mongoose.Types.ObjectId(sessionMemoryId) })
 
-    if (!sessionMemory) {
-      return
-    }
+    if (!sessionMemory) return
 
-    const memoryUserCollection =
-      server.mongoose.connection.db.collection('memory_user')
-    const memoryAgentCollection =
-      server.mongoose.connection.db.collection('memory_agent')
+    const { memory_type, agent_id, related_users, shard_id } = sessionMemory
 
-    // Handle SessionMemory with memory_type = "directive" -> invalidate UserMemory
-    if (
-      sessionMemory.memory_type === 'directive' &&
-      sessionMemory.related_users
-    ) {
-      const relatedUsers = Array.isArray(sessionMemory.related_users)
-        ? sessionMemory.related_users
-        : [sessionMemory.related_users]
-
-      for (const userId of relatedUsers) {
-        await memoryUserCollection.updateMany(
-          {
-            agent_id: sessionMemory.agent_id,
-            user_id: userId,
-          },
-          {
-            $set: { fully_formed_memory: null },
-          },
-        )
+    // Handle directive -> regenerate UserMemory (fire-and-forget)
+    if (memory_type === 'directive' && related_users) {
+      const users = Array.isArray(related_users)
+        ? related_users
+        : [related_users]
+      for (const userId of users) {
+        regenerateUserMemory(server, agent_id.toString(), userId.toString())
       }
     }
 
-    // Handle SessionMemory with memory_type = "fact" or "suggestion" -> invalidate AgentMemory
-    if (
-      sessionMemory.memory_type === 'fact' ||
-      sessionMemory.memory_type === 'suggestion'
-    ) {
-      // If there's a direct shard relationship
-      if (sessionMemory.shard_id) {
-        await memoryAgentCollection.updateOne(
-          {
-            _id: sessionMemory.shard_id,
-          },
-          {
-            $set: { fully_formed_memory: null },
-          },
-        )
+    // Handle fact/suggestion -> regenerate AgentMemory (fire-and-forget)
+    if (memory_type === 'fact' || memory_type === 'suggestion') {
+      if (shard_id) {
+        regenerateAgentMemory(server, shard_id.toString())
       } else {
-        // Find by searching unabsorbed_memory_ids or facts arrays
-        await memoryAgentCollection.updateMany(
-          {
-            agent_id: sessionMemory.agent_id,
+        const shards = await server.mongoose.connection.db
+          .collection('memory_agent')
+          .find({
+            agent_id,
             $or: [
               {
                 unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(
@@ -91,15 +115,16 @@ const invalidateFullyFormedMemories = async (
               },
               { facts: new server.mongoose.Types.ObjectId(sessionMemoryId) },
             ],
-          },
-          {
-            $set: { fully_formed_memory: null },
-          },
-        )
+          })
+          .toArray()
+
+        for (const shard of shards) {
+          regenerateAgentMemory(server, shard._id.toString())
+        }
       }
     }
   } catch (error) {
-    server.log.error('Error invalidating fully formed memories:', error)
+    server.log.error({ err: error }, 'Error regenerating related memories')
   }
 }
 
@@ -161,7 +186,7 @@ export const getAgentMemory = async (
       unabsorbedDirectives,
     })
   } catch (error) {
-    server.log.error('Error fetching user memory:', error)
+    server.log.error({ err: error }, 'Error fetching user memory:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -189,7 +214,7 @@ export const saveAgentMemory = async (
       server.mongoose.connection.db.collection('memory_user')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
-    await memoryCollection.updateOne(
+    const result = await memoryCollection.updateOne(
       {
         agent_id: agentObjectId,
         user_id: new server.mongoose.Types.ObjectId(userId),
@@ -197,21 +222,32 @@ export const saveAgentMemory = async (
       {
         $set: {
           content: content || '',
-          fully_formed_memory: null,
         },
         $setOnInsert: {
           agent_id: agentObjectId,
           user_id: new server.mongoose.Types.ObjectId(userId),
           agent_owner: null,
           unabsorbed_memory_ids: [],
+          fully_formed_memory: null,
         },
       },
       { upsert: true },
     )
 
+    // Regenerate fully_formed_memory if:
+    // - This was an update (existing memory modified)
+    // - This was an insert with non-empty content (new memory with content)
+    const shouldRegenerate =
+      result.matchedCount > 0 || (result.upsertedCount > 0 && content?.trim())
+
+    if (shouldRegenerate) {
+      // Fire-and-forget: don't wait for regeneration to complete
+      regenerateUserMemory(server, agentObjectId, userId)
+    }
+
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error saving user memory:', error)
+    server.log.error({ err: error }, 'Error saving user memory:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -244,7 +280,7 @@ export const retrieveMemoryUser = async (
 
     return reply.status(200).send(memoryRecord || {})
   } catch (error) {
-    server.log.error('Error retrieving memory user:', error)
+    server.log.error({ err: error }, 'Error retrieving memory user:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -344,7 +380,7 @@ export const retrieveMemoryAgent = async (
       shards: processedRecords,
     })
   } catch (error) {
-    server.log.error('Error retrieving memory agent:', error)
+    server.log.error({ err: error }, 'Error retrieving memory agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -376,20 +412,16 @@ export const updateMemoryAgent = async (
       server.mongoose.connection.db.collection('memory_agent')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
-    // Check if we're updating fields that require invalidating fully_formed_memory
-    const invalidatingFields = [
+    // Check if we're updating fields that require regenerating fully_formed_memory
+    const regeneratingFields = [
       'content',
       'unabsorbed_memory_ids',
       'facts',
       'extraction_prompt',
     ]
-    const shouldInvalidate = Object.keys(updates).some(key =>
-      invalidatingFields.includes(key),
+    const shouldRegenerate = Object.keys(updates).some(key =>
+      regeneratingFields.includes(key),
     )
-
-    const finalUpdates = shouldInvalidate
-      ? { ...updates, fully_formed_memory: null }
-      : updates
 
     // Ensure we're only updating a memory_agent document that belongs to this agent
     const result = await memoryCollection.updateOne(
@@ -397,7 +429,7 @@ export const updateMemoryAgent = async (
         _id: new server.mongoose.Types.ObjectId(memoryAgentId),
         agent_id: agentObjectId,
       },
-      { $set: finalUpdates },
+      { $set: updates },
     )
 
     if (result.matchedCount === 0) {
@@ -406,9 +438,15 @@ export const updateMemoryAgent = async (
         .send({ error: 'Memory agent document not found or access denied' })
     }
 
+    // Regenerate fully_formed_memory if relevant fields were updated
+    if (shouldRegenerate) {
+      // Fire-and-forget: don't wait for regeneration to complete
+      regenerateAgentMemory(server, memoryAgentId)
+    }
+
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory agent:', error)
+    server.log.error({ err: error }, 'Error updating memory agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -452,9 +490,6 @@ export const removeMemoryFromAgent = async (
         $pull: {
           [arrayField]: new server.mongoose.Types.ObjectId(memoryId),
         },
-        $set: {
-          fully_formed_memory: null,
-        },
       },
     )
 
@@ -464,9 +499,12 @@ export const removeMemoryFromAgent = async (
         .send({ error: 'Memory agent document not found or access denied' })
     }
 
+    // Regenerate fully_formed_memory after removing the memory (fire-and-forget)
+    regenerateAgentMemory(server, memoryAgentId)
+
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error removing memory from agent:', error)
+    server.log.error({ err: error }, 'Error removing memory from agent:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -499,7 +537,7 @@ export const retrieveMemorySession = async (
 
     return reply.status(200).send(memoryRecord)
   } catch (error) {
-    server.log.error('Error retrieving memory session:', error)
+    server.log.error({ err: error }, 'Error retrieving memory session:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -528,28 +566,30 @@ export const updateMemoryUser = async (
       server.mongoose.connection.db.collection('memory_user')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
-    // Check if we're updating fields that require invalidating fully_formed_memory
-    const invalidatingFields = ['content', 'unabsorbed_memory_ids']
-    const shouldInvalidate = Object.keys(updates).some(key =>
-      invalidatingFields.includes(key),
+    // Check if we're updating fields that require regenerating fully_formed_memory
+    const regeneratingFields = ['content', 'unabsorbed_memory_ids']
+    const shouldRegenerate = Object.keys(updates).some(key =>
+      regeneratingFields.includes(key),
     )
-
-    const finalUpdates = shouldInvalidate
-      ? { ...updates, fully_formed_memory: null }
-      : updates
 
     await memoryCollection.updateOne(
       {
         agent_id: agentObjectId,
         user_id: new server.mongoose.Types.ObjectId(userId),
       },
-      { $set: finalUpdates },
+      { $set: updates },
       { upsert: true },
     )
 
+    // Regenerate fully_formed_memory if relevant fields were updated
+    if (shouldRegenerate) {
+      // Fire-and-forget: don't wait for regeneration to complete
+      regenerateUserMemory(server, agentObjectId, userId)
+    }
+
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory user:', error)
+    server.log.error({ err: error }, 'Error updating memory user:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -594,14 +634,14 @@ export const updateMemorySession = async (
       })
     }
 
-    // If we updated the content field, invalidate related memories
+    // If we updated the content field, regenerate related memories (fire-and-forget)
     if (updates.content !== undefined) {
-      await invalidateFullyFormedMemories(server, memoryId)
+      regenerateRelatedMemories(server, memoryId)
     }
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating memory session:', error)
+    server.log.error({ err: error }, 'Error updating memory session:')
 
     // Provide more specific error messages based on the error type
     if (error instanceof Error) {
@@ -661,15 +701,15 @@ export const removeUnabsorbedMemory = async (
         $pull: {
           unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(memoryId),
         },
-        $set: {
-          fully_formed_memory: null,
-        },
       },
     )
 
+    // Regenerate fully_formed_memory after removing the directive (fire-and-forget)
+    regenerateUserMemory(server, agentObjectId, userId)
+
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error removing unabsorbed directive:', error)
+    server.log.error({ err: error }, 'Error removing unabsorbed directive:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -755,7 +795,7 @@ export const createMemoryAgent = async (
       message: 'Collective Memory Shard created successfully',
     })
   } catch (error) {
-    server.log.error('Error creating memory agent shard:', error)
+    server.log.error({ err: error }, 'Error creating memory agent shard:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
@@ -797,7 +837,74 @@ export const updateUserMemoryEnabled = async (
 
     return reply.status(200).send({ success: true })
   } catch (error) {
-    server.log.error('Error updating user memory enabled status:', error)
+    server.log.error(
+      { err: error },
+      'Error updating user memory enabled status:',
+    )
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+export const getAgentMemoryContext = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    let userMemoryContent = ''
+    let collectiveMemoryShards: Array<{ shard_name: string; content: string }> =
+      []
+
+    // Query user memory only if user_memory_enabled is true
+    if (agent?.user_memory_enabled) {
+      const memoryUserCollection =
+        server.mongoose.connection.db.collection('memory_user')
+      const userMemory = await memoryUserCollection.findOne({
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      })
+
+      userMemoryContent = userMemory?.fully_formed_memory || ''
+    }
+
+    // Query collective memory (active shards)
+    const memoryAgentCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const activeShards = await memoryAgentCollection
+      .find({
+        agent_id: agentObjectId,
+        is_active: true,
+      })
+      .toArray()
+
+    collectiveMemoryShards = activeShards
+      .filter(
+        shard => shard.fully_formed_memory && shard.fully_formed_memory.trim(),
+      )
+      .map(shard => ({
+        shard_name: shard.shard_name || 'unnamed_shard',
+        content: shard.fully_formed_memory,
+      }))
+
+    return reply.status(200).send({
+      userMemory: userMemoryContent,
+      collectiveMemory: collectiveMemoryShards,
+    })
+  } catch (error) {
+    server.log.error({ err: error }, 'Error fetching agent memory context:')
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }

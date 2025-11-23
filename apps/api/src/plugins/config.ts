@@ -38,6 +38,7 @@ const ConfigSchema = Type.Strict(
     CHROMA_URI: Type.Optional(Type.String()),
     REPLICATE_API_TOKEN: Type.Optional(Type.String()),
     ELEVENLABS_API_KEY: Type.Optional(Type.String()),
+    ELEVENLABS_API_KEY_REALTIME: Type.Optional(Type.String()),
     WEBHOOK_URL: Type.Optional(Type.String()),
     WEBHOOK_SECRET: Type.Optional(Type.String()),
     AWS_ACCESS_KEY: Type.Optional(Type.String()),

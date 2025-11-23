@@ -96,7 +96,7 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
     })
     fastify.log.info('Successfully registered plugin: InternalMessages')
   } catch (err) {
-    fastify.log.error('Failed to register plugin: InternalMessages', { err })
+    fastify.log.error({ err }, 'Failed to register plugin: InternalMessages')
   }
 }
 

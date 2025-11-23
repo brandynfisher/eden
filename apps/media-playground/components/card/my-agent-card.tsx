@@ -3,16 +3,13 @@
 import PrivateIcon from '@/components/icons/private-icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { BarChart3Icon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import React from 'react'
 
 type Props = {
   agent: Agent
@@ -29,18 +26,8 @@ const MyAgentCard = ({
   onSettingsClick,
   onDashboardClick,
 }: Props) => {
-  const router = useRouter()
-
-  // Fetch recent sessions for this agent (backend expects username, not _id)
-  const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
-    enabled: !!userId,
-    agent_id: agent.username,
-  })
-
-  // Get the 3 most recent sessions (already sorted by updatedAt in the query)
-  const recentSessions = React.useMemo(() => {
-    return sessions.filter(session => session != null).slice(0, 3)
-  }, [sessions])
+  const { hasEditAccess, isLoading: isPermissionsLoading } =
+    useAgentPermissions(agent, userId)
 
   return (
     <Card
@@ -67,17 +54,19 @@ const MyAgentCard = ({
         </button>
 
         {/* Settings button */}
-        <button
-          className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
-          title="Settings"
-          onClick={e => {
-            e.preventDefault()
-            e.stopPropagation()
-            onSettingsClick?.()
-          }}
-        >
-          <SettingsIcon className="w-4 h-4 text-muted-foreground" />
-        </button>
+        {hasEditAccess && !isPermissionsLoading && (
+          <button
+            className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
+            title="Settings"
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              onSettingsClick?.()
+            }}
+          >
+            <SettingsIcon className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
 
       <Link
@@ -123,47 +112,6 @@ const MyAgentCard = ({
                   {formatCompactNumber(agent.stats?.messageCount || 0)} messages
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Recent sessions */}
-          <div className="flex-1 flex flex-col gap-2 min-h-0">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Recent Sessions
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              {isLoadingSessions ? (
-                <>
-                  {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-8 w-full" />
-                  ))}
-                </>
-              ) : recentSessions.length > 0 ? (
-                recentSessions.map(session => {
-                  if (!session) return null
-                  return (
-                    <button
-                      key={session._id}
-                      onClick={e => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        router.push(`/chat/${agent.username}/${session._id}`)
-                      }}
-                      className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors text-sm group/session"
-                    >
-                      <MessageSquareIcon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate text-muted-foreground group-hover/session:text-foreground transition-colors">
-                        {session.title || 'Untitled Session'}
-                      </span>
-                    </button>
-                  )
-                })
-              ) : (
-                <div className="text-sm text-muted-foreground italic py-2">
-                  No recent sessions
-                </div>
-              )}
             </div>
           </div>
         </div>

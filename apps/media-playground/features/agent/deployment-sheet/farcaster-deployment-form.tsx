@@ -1,6 +1,5 @@
 'use client'
 
-import { getQueryClient } from '@/app/get-query-client'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import {
@@ -18,6 +17,7 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -50,6 +50,16 @@ export const FarcasterDeploymentForm = ({
     typeof setInterval
   > | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const queryClient = useQueryClient()
+  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
+  const refreshDeployments = async () => {
+    try {
+      const latest = await axios.get(`/api/agents/${agentId}/deployments`)
+      queryClient.setQueryData(deploymentsQueryKey, latest.data)
+    } catch (err) {
+      console.error('Failed to refresh deployments cache', err)
+    }
+  }
 
   const hasExistingSignerUuid = deployment?.secrets?.farcaster?.signer_uuid
 
@@ -66,6 +76,14 @@ export const FarcasterDeploymentForm = ({
   }, [deployment])
 
   const showQRCode = localSignerUuid !== '' && !isDeployed
+
+  const wasDeployed = useRef(isDeployed)
+  useEffect(() => {
+    if (wasDeployed.current && !isDeployed) {
+      setIsOpen(false)
+    }
+    wasDeployed.current = isDeployed
+  }, [isDeployed])
 
   // Reset form when deployment changes
   useEffect(() => {
@@ -195,10 +213,16 @@ export const FarcasterDeploymentForm = ({
               setSignerApprovalUrl('')
 
               // Invalidate deployments query to refresh UI
-              const queryClient = getQueryClient()
-              queryClient.invalidateQueries({
-                queryKey: ['agents', agentId, 'deployments'],
+              await queryClient.invalidateQueries({
+                queryKey: deploymentsQueryKey,
+                exact: true,
+                refetchType: 'active',
               })
+              await queryClient.refetchQueries({
+                queryKey: deploymentsQueryKey,
+                exact: true,
+              })
+              await refreshDeployments()
             } catch (error) {
               console.error('Failed to create deployment:', error)
               toast.error('Failed to create deployment', {
@@ -209,10 +233,16 @@ export const FarcasterDeploymentForm = ({
             }
           } else {
             // Existing deployment's signer was approved, just refresh
-            const queryClient = getQueryClient()
             queryClient.invalidateQueries({
-              queryKey: ['agents', agentId, 'deployments'],
+              queryKey: deploymentsQueryKey,
+              exact: true,
+              refetchType: 'active',
             })
+            await queryClient.refetchQueries({
+              queryKey: deploymentsQueryKey,
+              exact: true,
+            })
+            await refreshDeployments()
           }
         }
       } catch (error) {

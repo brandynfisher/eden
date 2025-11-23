@@ -9,7 +9,10 @@ const apiKeyVerify = async (
   server: FastifyInstance,
   request: FastifyRequest,
 ) => {
-  server.log.info('API Key access detected:', request.headers['x-api-key'])
+  server.log.info(
+    { apiKey: request.headers['x-api-key'] },
+    'API Key access detected:',
+  )
   if (!request.headers['x-api-key']) {
     throw new Error('Missing API key')
   }
@@ -23,7 +26,10 @@ const apiKeyVerify = async (
   }
 
   const user = await User.findById(apiKey.user)
-  server.log.info('API Key access detected:', apiKey.apiKey, user?.username)
+  server.log.info(
+    { apiKey: apiKey.apiKey, username: user?.username },
+    'API Key access detected:',
+  )
 
   if (!user) {
     throw new Error('User not found')

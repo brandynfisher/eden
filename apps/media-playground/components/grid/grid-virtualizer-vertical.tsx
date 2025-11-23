@@ -69,6 +69,7 @@ type Props = {
   onScrollRestored?: () => void
   showSkeleton?: boolean
   itemHeight?: number
+  customSort?: (items: RowItem[]) => RowItem[]
 }
 
 export const GridSkeleton = () => {
@@ -131,6 +132,7 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
       onScrollRestored,
       showSkeleton = false,
       itemHeight = 156,
+      customSort,
     },
     ref,
   ) => {
@@ -296,8 +298,15 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
         }
       })
 
-      return Array.from(uniqueMap.values())
-    }, [data])
+      const uniqueItems = Array.from(uniqueMap.values())
+
+      // Apply custom sort if provided
+      if (customSort) {
+        return customSort(uniqueItems)
+      }
+
+      return uniqueItems
+    }, [data, customSort])
 
     // --- Calculations needed for virtualizer ---
     const previousRowCount = useRef(allRows.length)
@@ -489,7 +498,6 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
                   gridTemplateColumns: `repeat(${GRID_COLUMN_COUNT}, 1fr)`,
                   gap: `${GRID_GAP}px`,
                   height: `${itemHeight}px`,
-                  paddingBottom: `${GRID_GAP}px`,
                 }}
               >
                 {Array.from({ length: GRID_COLUMN_COUNT }, (_, colIndex) => {
@@ -500,7 +508,7 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
                   return (
                     <div
                       key={`slot_${rowIndex}_${colIndex}_${item?._id || ''}`}
-                      className="w-full min-w-0 overflow-hidden"
+                      className="w-full h-full min-w-0 overflow-hidden"
                     >
                       {item ? render(item, onUpdate, itemIndex) : null}
                     </div>

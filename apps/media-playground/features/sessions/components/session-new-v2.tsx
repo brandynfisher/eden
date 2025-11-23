@@ -10,7 +10,6 @@ import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-quer
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Settings } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
@@ -31,9 +30,6 @@ const SessionNewV2 = () => {
   const { agent } = useAgentQuery({
     key: lastAgentId || 'eve',
   })
-
-  // Get other recent agents (excluding the current one)
-  const otherAgents = lastAgents.filter(a => a._id !== agent?._id).slice(0, 3)
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[], thinking?: boolean) => {
@@ -87,9 +83,9 @@ const SessionNewV2 = () => {
       <div className="flex-1 overflow-y-auto p-4 max-w-7xl mx-auto w-full">
         <div className="aui-thread-welcome min-h-full flex items-center justify-center">
           <div className="aui-thread-welcome-center flex flex-col items-center justify-center min-h-full w-full">
-            {/* Main content area with avatar and switch section */}
+            {/* Main content area with avatar */}
             <div className="flex items-start gap-8 mb-8">
-              {/* Left side: Main agent */}
+              {/* Main agent */}
               <div className="relative flex flex-col items-center">
                 <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
                 <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
@@ -127,43 +123,6 @@ const SessionNewV2 = () => {
                   </Button>
                 </div>
               </div>
-
-              {/* Right side: Switch to section */}
-              {otherAgents.length > 0 && (
-                <div className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-muted/30">
-                  <div className="text-sm text-muted-foreground font-medium">
-                    Switch to
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {otherAgents.map(otherAgent => (
-                      <Link
-                        key={otherAgent._id}
-                        href={`/chat/${otherAgent.username || otherAgent._id}`}
-                        className="flex items-center gap-2 p-2 rounded-md hover:bg-background/80 transition-colors group"
-                      >
-                        <Avatar className="w-10 h-10 border-2 border-transparent group-hover:border-primary/50 transition-all">
-                          <AvatarImage
-                            src={
-                              otherAgent.userImage
-                                ? getCloudfrontOriginalUrl(otherAgent.userImage)
-                                : undefined
-                            }
-                            alt={otherAgent.username || 'Agent'}
-                            className="object-cover"
-                          />
-                          <AvatarFallback className="bg-muted text-xs font-medium">
-                            {otherAgent.username?.slice(0, 2).toUpperCase() ||
-                              'AG'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">
-                          {otherAgent.username || 'Agent'}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="w-full max-w-4xl px-4 mb-6">

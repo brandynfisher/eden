@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
@@ -12,7 +13,9 @@ import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
+import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'
@@ -78,7 +81,7 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-background border p-4 rounded-lg">
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
         <div className="flex flex-col gap-3">
           <label className="text-sm font-medium">Cover Usage Costs</label>
           <div className="space-y-2">
@@ -154,10 +157,62 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
-  const gmailDeployment = deployments?.find(
+  const deploymentsGate = useGatedResource(GatedResource.Deployments, {
+    lockedBehavior: 'modal',
+  })
+
+  // Always subscribe to the deployments query; seed it with any passed-in data
+  const deploymentsQuery = useAgentDeploymentsQuery({
+    key: agent._id,
+    initialData: deployments ? { deployments } : undefined,
+    enabled: deploymentsGate.isAllowed,
+  })
+  const effectiveDeployments = deploymentsQuery.deployments
+  const loadingState = deploymentsQuery.isLoading || isLoading
+  const errorState = deploymentsQuery.isError || isError
+
+  const gmailDeployment = effectiveDeployments?.find(
     deployment => deployment.platform === 'gmail',
   )
-  if (isLoading) {
+  const discordDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'discord',
+  )
+  const telegramDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'telegram',
+  )
+  const twitterDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'twitter',
+  )
+  const farcasterDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'farcaster',
+  )
+  const tiktokDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'tiktok',
+  )
+  const shopifyDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'shopify',
+  )
+  const printifyDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'printify',
+  )
+  const captionsDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'captions',
+  )
+  const emailDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'email',
+  )
+
+  if (!deploymentsGate.isAllowed) {
+    return (
+      <LockedFeatureBanner
+        gate={deploymentsGate}
+        title="Integrations are a Pro feature"
+        description="Connect your agents to Discord, Telegram, Farcaster, and more with a Pro plan."
+      />
+    )
+  }
+
+  if (loadingState) {
     return (
       <div className="flex items-center justify-center mt-10">
         <Loader2 className="size-4 animate-spin" />
@@ -165,7 +220,7 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
     )
   }
 
-  if (isError) {
+  if (errorState) {
     return (
       <div className="flex items-center justify-center gap-2 mt-10">
         <AlertCircle className="size-4 text-destructive" />
@@ -177,95 +232,79 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        {/* Social Platforms Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-foreground">
-            Social Platforms
-          </h2>
+    <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium text-foreground">
+          Social Platforms
+        </h2>
+        <div className="space-y-4">
+          <DiscordDeploymentForm
+            agentId={agent._id}
+            key={`discord-${discordDeployment?._id || 'new'}`}
+            deployment={discordDeployment}
+          />
+          <TelegramDeploymentForm
+            agentId={agent._id}
+            key={`telegram-${telegramDeployment?._id || 'new'}`}
+            deployment={telegramDeployment}
+          />
+          <TwitterDeploymentForm
+            agentId={agent._id}
+            key={`twitter-${twitterDeployment?._id || 'new'}`}
+            deployment={twitterDeployment}
+          />
+          <FarcasterDeploymentForm
+            agentId={agent._id}
+            key={`farcaster-${farcasterDeployment?._id || 'new'}`}
+            deployment={farcasterDeployment}
+          />
+          {isPreviewUser && (
+            <TiktokDeploymentForm
+              agentId={agent._id}
+              key={`tiktok-${tiktokDeployment?._id || 'new'}`}
+              deployment={tiktokDeployment}
+            />
+          )}
+        </div>
+      </div>
+
+      {isPreviewUser && (
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <h2 className="text-lg font-medium text-foreground">Utilities</h2>
           <div className="space-y-4">
-            <DiscordDeploymentForm
+            <ShopifyDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'discord',
-              )}
+              key={`shopify-${shopifyDeployment?._id || 'new'}`}
+              deployment={shopifyDeployment}
             />
-            <TelegramDeploymentForm
+            <PrintifyDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'telegram',
-              )}
+              key={`printify-${printifyDeployment?._id || 'new'}`}
+              deployment={printifyDeployment}
             />
-            <TwitterDeploymentForm
+            <CaptionsDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'twitter',
-              )}
+              key={`captions-${captionsDeployment?._id || 'new'}`}
+              deployment={captionsDeployment}
             />
-            <FarcasterDeploymentForm
+            <EmailDeploymentForm
               agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'farcaster',
-              )}
+              key={`email-${emailDeployment?._id || 'new'}`}
+              deployment={emailDeployment}
             />
-            {isPreviewUser && (
-              <TiktokDeploymentForm
+            {gmailDeployment && (
+              <GmailDeploymentForm
                 agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'tiktok',
-                )}
+                deployment={gmailDeployment}
               />
             )}
           </div>
         </div>
+      )}
 
-        {/* Utilities Section */}
-        {isPreviewUser && (
-          <div className="mb-8">
-            <h2 className="text-lg font-medium mb-4 text-foreground">
-              Utilities
-            </h2>
-            <div className="space-y-4">
-              <ShopifyDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'shopify',
-                )}
-              />
-              <PrintifyDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'printify',
-                )}
-              />
-              <CaptionsDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'captions',
-                )}
-              />
-              <EmailDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'email',
-                )}
-              />
-              {gmailDeployment && (
-                <GmailDeploymentForm
-                  agentId={agent._id}
-                  deployment={gmailDeployment}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Integration Settings - Inline version to avoid form nesting */}
-        <div className="mt-8 space-y-4 rounded-lg">
-          <h2 className="text-lg font-medium">Integration Settings</h2>
-          <DeploymentSettingsInline agent={agent} />
-        </div>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium">Integration Settings</h2>
+        <DeploymentSettingsInline agent={agent} />
       </div>
     </div>
   )

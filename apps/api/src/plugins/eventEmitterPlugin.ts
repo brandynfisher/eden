@@ -8,7 +8,7 @@ export const registerEventEmitter = async (fastify: FastifyInstance) => {
     fastify.decorate('eventEmitter', eventEmitter)
     fastify.log.info('Successfully registered plugin: EventEmitter')
   } catch (err) {
-    fastify.log.error('Plugin: EventEmitter, error on register', err)
+    fastify.log.error({ err }, 'Plugin: EventEmitter, error on register')
   }
 }
 

@@ -1,14 +1,17 @@
 'use client'
 
 import { AgentAvatars } from './agent-avatars'
+import { RecentAgents } from './recent-agents'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
+import FeedbackForm from '@/components/form/feedback-form'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import DialogMenuItem from '@/components/modal/dialog-menu-item'
+import NotificationDropdown from '@/components/notifications/notification-dropdown'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -42,21 +45,16 @@ import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
-import {
-  Agent,
-  FeatureFlag,
-  SessionType,
-  SubscriptionTier,
-} from '@edenlabs/eden-sdk'
+import { dark } from '@clerk/themes'
+import { Agent, FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   ActivityIcon,
   BookmarkIcon,
   BotIcon,
-  BrainIcon,
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
   ComponentIcon,
@@ -274,13 +272,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5 border',
+        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-[15px] relative p-0.5 border',
         isActive
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
           : 'hover:text-foreground hover:bg-muted/50 border-transparent',
       )}
     >
-      <div className="flex-grow min-w-0 px-2 py-1.5 flex items-stretch">
+      <div className="flex-grow min-w-0 px-1.5 py-1 flex items-stretch">
         {isEditing ? (
           <div className="flex items-center gap-1 flex-grow min-w-0 text-foreground">
             <Input
@@ -559,16 +557,12 @@ const MainLeft = ({
   onItemClick,
   agentId,
   isChat,
-  onViewModeChange,
-  agent,
-  pathname,
+  scrollContainerRef,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
-  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
-  agent?: Agent | null | undefined
-  pathname?: string | null
+  scrollContainerRef?: React.MutableRefObject<HTMLDivElement | null>
 }) => {
   const { isSignedIn, user } = useAuthState()
   const router = useRouter()
@@ -576,16 +570,8 @@ const MainLeft = ({
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
 
-  // Determine the label for the sessions section
-  const sessionsLabel = React.useMemo(() => {
-    if (pathname?.startsWith('/chat') || pathname === '/') {
-      if (agentId && agent) {
-        return `Chats with ${agent.name || agent.username}`
-      }
-      return 'Chats'
-    }
-    return 'Sessions'
-  }, [pathname, agentId, agent])
+  // Always show "Recent Chats" label
+  const sessionsLabel = 'Recent Chats'
   const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
   const {
     isLoading,
@@ -596,7 +582,7 @@ const MainLeft = ({
     updatePinStatus,
   } = useSessionListQuery({
     enabled: !!isSignedIn,
-    agent_id: agentId,
+    // Don't filter by agent - show all chats
   })
 
   // Get unread notification counts for sessions
@@ -627,63 +613,47 @@ const MainLeft = ({
 
   // Scroll-based pagination
   useEffect(() => {
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      const container = document.getElementById('sidebar-scroll-container')
-      if (!container) {
-        return
+    if (isSessionsCollapsed) {
+      return
+    }
+
+    const container = scrollContainerRef?.current
+    if (!container) {
+      return
+    }
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+
+      // Fetch when within 200px of bottom
+      if (
+        distanceFromBottom <= 200 &&
+        hasMoreRef.current &&
+        !isFetchingRef.current
+      ) {
+        fetchNextPage()
       }
+    }
 
-      const handleScroll = () => {
-        const scrollTop = container.scrollTop
-        const scrollHeight = container.scrollHeight
-        const clientHeight = container.clientHeight
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-
-        // Fetch when within 200px of bottom
-        if (
-          distanceFromBottom <= 200 &&
-          hasMoreRef.current &&
-          !isFetchingRef.current
-        ) {
-          fetchNextPage()
-        }
-      }
-
-      container.addEventListener('scroll', handleScroll)
-
-      // Cleanup function
-      return () => {
-        container.removeEventListener('scroll', handleScroll)
-      }
-    }, 100)
+    container.addEventListener('scroll', handleScroll)
+    // Run once in case we're already near the bottom on mount
+    handleScroll()
 
     return () => {
-      clearTimeout(timeoutId)
+      container.removeEventListener('scroll', handleScroll)
     }
-  }, [fetchNextPage])
+  }, [fetchNextPage, scrollContainerRef, isLoading, isSessionsCollapsed])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
+    // Show ALL chats for all routes (no session_type filtering)
     const filteredSessions = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
-
-        // For /chat route, show sessions that are NOT "passive" or "automatic"
-        // (includes chat, undefined, null - i.e., single-agent chats)
-        if (pathname?.startsWith('/chat') || pathname === '/') {
-          return (
-            session.session_type !== SessionType.PASSIVE &&
-            session.session_type !== SessionType.AUTOMATIC
-          )
-        }
-
-        // For /sessions route, show only "passive" or "automatic" sessions
-        // (multi-agent sessions)
-        return (
-          session.session_type === SessionType.PASSIVE ||
-          session.session_type === SessionType.AUTOMATIC
-        )
+        return true
       },
     )
 
@@ -703,10 +673,10 @@ const MainLeft = ({
 
     // Combine pinned and unpinned sessions with pinned first
     return [...pinnedSessions, ...unpinnedSessions]
-  }, [sessions, isChat, pathname])
+  }, [sessions])
 
   return (
-    <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
+    <div className="flex flex-col text-sm font-medium mr-2 min-h-0">
       {isLoading ? (
         <div className="flex flex-col items-stretch gap-1 pb-2">
           <Skeleton className="w-full h-9" />
@@ -733,7 +703,7 @@ const MainLeft = ({
 
               {/* Scrollable session list */}
               {!isSessionsCollapsed && (
-                <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1 pb-2">
+                <nav className="flex flex-col items-stretch gap-1 pb-2">
                   {allSessions.map(session => (
                     <SessionListItem
                       key={session._id}
@@ -751,37 +721,13 @@ const MainLeft = ({
                       onPinToggle={handlePinToggle}
                       unreadCount={unreadCounts?.get(session._id) || 0}
                       userId={user?._id}
-                      hideAvatars={
-                        (pathname?.startsWith('/chat') || pathname === '/') &&
-                        !!agentId
-                      }
+                      hideAvatars={false}
                       onItemClick={() => {
                         onItemClick?.()
-                        if (isChat) {
-                          // In chat mode, navigate to /chat/{agent}/{session}
-                          // Use the agent from the session or the current agentId
-                          const sessionAgent =
-                            session.agents?.[0]?.username || agentId
-                          if (sessionAgent) {
-                            onViewModeChange?.('chat')
-                            router.push(
-                              `/chat/${sessionAgent}/${session._id}`,
-                              {
-                                scroll: false,
-                              },
-                            )
-                          } else {
-                            // Fallback to sessions if no agent
-                            router.push(`/sessions/${session._id}`, {
-                              scroll: false,
-                            })
-                          }
-                        } else {
-                          // For regular sessions, go to /sessions/[sessionId]
-                          router.push(`/sessions/${session._id}`, {
-                            scroll: false,
-                          })
-                        }
+                        // Always navigate to /sessions/{session_id}
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
                       }}
                     />
                   ))}
@@ -791,85 +737,6 @@ const MainLeft = ({
           )}
         </>
       )}
-    </div>
-  )
-}
-
-// Current Agent Display for /chat/{agentId}
-const CurrentAgentDisplay: FC<{
-  agent: Agent
-  userId?: string
-  onAgentClick: () => void
-  onSettingsClick: () => void
-  onMemoriesClick: () => void
-}> = ({ agent, userId, onAgentClick, onSettingsClick, onMemoriesClick }) => {
-  // Check if user has edit permissions using the agent permissions hook
-  // This checks: original owner, co-owners, and co-editors in agent_permissions
-  const { hasEditAccess } = useAgentPermissions(agent, userId)
-
-  return (
-    <div className="mr-2 mb-2">
-      <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
-        <button
-          onClick={onAgentClick}
-          className="flex items-center gap-2 flex-1 min-w-0 px-2 py-2"
-        >
-          <Avatar className="w-8 h-8 flex-shrink-0">
-            <AvatarImage
-              src={
-                agent.userImage && agent.userImage.trim()
-                  ? getCloudfrontOriginalUrl(agent.userImage)
-                  : undefined
-              }
-              alt={agent.name}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-muted text-xs font-medium">
-              {agent.name?.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-base font-semibold truncate flex-1 text-left">
-            {agent.name}
-          </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="flex-shrink-0 text-muted-foreground"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
-        {hasEditAccess ? (
-          <button
-            onClick={e => {
-              e.stopPropagation()
-              onSettingsClick()
-            }}
-            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
-            title="Agent Settings"
-          >
-            <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-          </button>
-        ) : (
-          <button
-            onClick={e => {
-              e.stopPropagation()
-              onMemoriesClick()
-            }}
-            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
-            title="Memories"
-          >
-            <BrainIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-          </button>
-        )}
-      </div>
     </div>
   )
 }
@@ -885,13 +752,33 @@ const ThemeToggleForwardWrap = React.forwardRef<HTMLDivElement>(
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 // User Profile component for sidebar bottom
-const SidebarUserProfile = () => {
-  const { isSignedIn } = useAuth()
-  const { user, balance } = useMe({
-    isAuthenticated: !!isSignedIn,
+const SidebarUserProfile = ({
+  variant = 'default',
+}: {
+  variant?: 'default' | 'collapsed'
+}) => {
+  const { isSignedIn, isLoaded } = useAuth()
+  const { signOut, openSignIn } = useClerk()
+  const pathname = usePathname()
+  const { unreadCount } = useNotificationContext()
+  const isAuthReady = isLoaded
+  const shouldFetchMe = isAuthReady && !!isSignedIn
+
+  const { user, balance, isLoading } = useMe({
+    isAuthenticated: shouldFetchMe,
   })
-  const { signOut } = useClerk()
-  const { verifyAuth } = useAuthState()
+
+  const verifyAuth = useCallback(async () => {
+    if (isSignedIn) {
+      return true
+    }
+
+    openSignIn({
+      appearance: { baseTheme: dark },
+      forceRedirectUrl: pathname || '/',
+    })
+    return false
+  }, [isSignedIn, openSignIn, pathname])
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -905,6 +792,7 @@ const SidebarUserProfile = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [settingsModalInitialTab] = useState('account')
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
 
@@ -919,230 +807,308 @@ const SidebarUserProfile = () => {
     }
   }
 
+  // Avoid rendering auth controls until auth state and user data have settled
+  if (!isAuthReady || isLoading) {
+    return (
+      <div
+        className={cn(
+          'border-t bg-background flex-shrink-0',
+          variant === 'collapsed'
+            ? 'p-2 w-full flex justify-center'
+            : 'p-3 md:-ml-2 md:w-[calc(100%+0.5rem)]',
+        )}
+      >
+        <Skeleton
+          className={cn(
+            'h-10',
+            variant === 'collapsed' ? 'w-10 rounded-full' : 'w-full rounded-md',
+          )}
+        />
+      </div>
+    )
+  }
+
   // Show sign-in button when not signed in
   if (!isSignedIn || !user) {
     return (
-      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)]">
-        <Button onClick={verifyAuth} className="w-full" variant="default">
+      <div
+        className={cn(
+          'border-t bg-background flex-shrink-0',
+          variant === 'collapsed'
+            ? 'p-2 w-full flex justify-center'
+            : 'p-3 md:-ml-2 md:w-[calc(100%+0.5rem)]',
+        )}
+      >
+        <Button
+          onClick={verifyAuth}
+          className={variant === 'collapsed' ? 'w-10 h-10 p-0' : 'w-full'}
+          variant="default"
+        >
           Sign In
         </Button>
       </div>
     )
   }
 
-  return (
-    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full">
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <button
-            ref={dropdownTriggerRef}
-            className="flex items-center gap-3 w-full py-3 pr-3 pl-[18px] hover:bg-muted/20 transition-colors"
-          >
-            <UserAvatar
-              image={user?.userImage}
-              name={user?.username}
-              className="w-8 h-8"
-            />
-            <div className="flex flex-col flex-1 min-w-0 text-left">
-              <span className="text-sm font-medium truncate">
-                {user?.username}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {Number((balance || 0).toFixed(0)).toLocaleString()} manna
-              </span>
-            </div>
-            <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="top"
-          align="start"
-          className="w-60 mb-2"
-          hidden={hasOpenDialog}
-          onCloseAutoFocus={event => {
-            if (focusRef.current) {
-              (focusRef.current as HTMLButtonElement).focus()
-              focusRef.current = null
-              event.preventDefault()
-            }
-          }}
+  const dropdownContent = (
+    <DropdownMenuContent
+      side={variant === 'collapsed' ? 'right' : 'top'}
+      align={variant === 'collapsed' ? 'end' : 'start'}
+      className="w-60 mb-2"
+      hidden={hasOpenDialog}
+      onCloseAutoFocus={event => {
+        if (focusRef.current) {
+          (focusRef.current as HTMLButtonElement).focus()
+          focusRef.current = null
+          event.preventDefault()
+        }
+      }}
+    >
+      <DropdownMenuItem className="cursor-pointer group" asChild>
+        <Link
+          href={`/creators/${user?.username}`}
+          className="group flex gap-2 items-center cursor-pointer "
         >
-          <DropdownMenuItem className="cursor-pointer group" asChild>
-            <Link
-              href={`/creators/${user?.username}`}
-              className="group flex gap-2 items-center cursor-pointer "
+          <UserAvatar
+            image={user?.userImage}
+            name={user?.username}
+            className="h-8 w-8"
+          />
+          <div className="flex flex-col justify-center min-w-0">
+            <div className="group-hover:text-primary text-xs transition-colors">
+              {user?.username}
+            </div>
+            {user?.email ? (
+              <span className="text-xs text-muted-foreground/70 truncate">
+                {user?.email}
+              </span>
+            ) : null}
+          </div>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link
+          href={'/settings/subscription'}
+          className="flex items-center justify-between w-full"
+        >
+          <div className="capitalize text-xs">
+            <span>
+              {
+                subscriptionTierNameMap[
+                  user?.subscriptionTier || SubscriptionTier.Free
+                ]
+              }
+            </span>
+            <span className="ml-1 text-muted-foreground/70">plan</span>
+          </div>
+          <div className="text-xs">
+            <span>{Number((balance || 0).toFixed(0)).toLocaleString()}</span>
+            <span className="ml-1 text-muted-foreground/70">manna</span>
+          </div>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}`}>
+          <ImageIcon className="mr-2 h-4 w-4" />
+          <span>Creations</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=models`}>
+          <ComponentIcon className="mr-2 h-4 w-4" />
+          <span>Models</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=collections`}>
+          <BookmarkIcon className="mr-2 h-4 w-4" />
+          <span>Collections</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/creators/${user?.username}?tab=agents`}>
+          <BotIcon className="mr-2 h-4 w-4" />
+          <span>Agents</span>
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+
+      {isPreviewUser && (
+        <>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href="/sessions">
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              <span>Sessions</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/tasks`}>
+              <ClockIcon className="mr-2 h-4 w-4" />
+              <span>Tasks</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/integrations`}>
+              <ActivityIcon className="mr-2 h-4 w-4" />
+              <span>Integrations</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+        </>
+      )}
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <Link href={`/settings/subscription`}>
+          <CreditCardIcon className="mr-2 h-4 w-4" />
+          <span>Subscription</span>
+        </Link>
+      </DropdownMenuItem>
+      <DialogMenuItem
+        onSelect={handleDialogItemSelect}
+        onOpenChange={handleDialogItemOpenChange}
+        triggerChildren={
+          <>
+            <TicketIcon className="mr-2 h-4 w-4" />
+            <span>Redeem Voucher</span>
+          </>
+        }
+      >
+        <RedeemVoucherForm />
+      </DialogMenuItem>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        onSelect={() => {
+          setSettingsModalOpen(true)
+          setDropdownOpen(false)
+        }}
+      >
+        <SettingsIcon className="mr-2 h-4 w-4" />
+        <span>Settings</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" asChild>
+        <ThemeToggleForwardWrap />
+      </DropdownMenuItem>
+      <DialogMenuItem
+        onSelect={handleDialogItemSelect}
+        onOpenChange={handleDialogItemOpenChange}
+        triggerChildren={
+          <>
+            <MessageSquareIcon className="mr-2 h-4 w-4" />
+            <span>Send Feedback</span>
+          </>
+        }
+      >
+        <FeedbackForm />
+      </DialogMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+        <LogOutIcon className="mr-2 h-4 w-4" />
+        <span>Log out</span>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <div className="pl-2">
+        <div className="flex items-center w-full">
+          <Link
+            className="text-xs hover:underline text-muted-foreground"
+            href={`https://docs.eden.art/legal/tos`}
+            prefetch={false}
+          >
+            <span>Terms</span>
+          </Link>
+
+          <div className="ml-auto flex gap-1">
+            <Button variant="ghost" size={'icon'} asChild>
+              <Link
+                href={siteConfig.links.discord}
+                target="_blank"
+                className="filter grayscale hover:grayscale-0"
+              >
+                <DiscordIcon size={20} />
+              </Link>
+            </Button>
+            <Button variant="ghost" size={'icon'} asChild>
+              <Link
+                href={siteConfig.links.twitter}
+                target="_blank"
+                className="group grayscale hover:grayscale-0 hover:text-white"
+              >
+                <TwitterIcon
+                  size={18}
+                  className="brightness-50 group-hover:!brightness-100"
+                />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </DropdownMenuContent>
+  )
+
+  if (variant === 'collapsed') {
+    return (
+      <div className="border-t bg-background w-full flex justify-center py-2 flex-shrink-0">
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              ref={dropdownTriggerRef}
+              className="relative flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted/20 transition-colors"
             >
               <UserAvatar
                 image={user?.userImage}
                 name={user?.username}
-                className="h-8 w-8"
+                className="w-8 h-8"
               />
-              <div className="flex flex-col justify-center min-w-0">
-                <div className="group-hover:text-primary text-xs transition-colors">
-                  {user?.username}
-                </div>
-                {user?.email ? (
-                  <span className="text-xs text-muted-foreground/70 truncate">
-                    {user?.email}
-                  </span>
-                ) : null}
-              </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link
-              href={'/settings/subscription'}
-              className="flex items-center justify-between w-full"
+              {unreadCount > 0 ? (
+                <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white shadow">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              ) : null}
+            </button>
+          </DropdownMenuTrigger>
+          {dropdownContent}
+        </DropdownMenu>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-t bg-background -ml-2 w-[calc(100%_+_0.5rem)] flex-shrink-0">
+      <div className="flex items-center gap-2 px-2 py-1.5">
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <button
+              ref={dropdownTriggerRef}
+              className="flex items-center gap-3 flex-1 py-2 pr-3 pl-3 hover:bg-muted/20 transition-colors rounded-md text-left"
             >
-              <div className="capitalize text-xs">
-                <span>
-                  {
-                    subscriptionTierNameMap[
-                      user?.subscriptionTier || SubscriptionTier.Free
-                    ]
-                  }
+              <UserAvatar
+                image={user?.userImage}
+                name={user?.username}
+                className="w-8 h-8"
+              />
+              <div className="flex flex-col flex-1 min-w-0 text-left">
+                <span className="text-sm font-medium truncate">
+                  {user?.username}
                 </span>
-                <span className="ml-1 text-muted-foreground/70">plan</span>
-              </div>
-              <div className="text-xs">
-                <span>
-                  {Number((balance || 0).toFixed(0)).toLocaleString()}
+                <span className="text-xs text-muted-foreground">
+                  {Number((balance || 0).toFixed(0)).toLocaleString()} manna
                 </span>
-                <span className="ml-1 text-muted-foreground/70">manna</span>
               </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}`}>
-              <ImageIcon className="mr-2 h-4 w-4" />
-              <span>Creations</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=models`}>
-              <ComponentIcon className="mr-2 h-4 w-4" />
-              <span>Models</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=collections`}>
-              <BookmarkIcon className="mr-2 h-4 w-4" />
-              <span>Collections</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=agents`}>
-              <BotIcon className="mr-2 h-4 w-4" />
-              <span>Agents</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-
-          {isPreviewUser && (
-            <>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/sessions">
-                  <MessageSquareIcon className="mr-2 h-4 w-4" />
-                  <span>Sessions</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/settings/tasks`}>
-                  <ClockIcon className="mr-2 h-4 w-4" />
-                  <span>Tasks</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href={`/settings/integrations`}>
-                  <ActivityIcon className="mr-2 h-4 w-4" />
-                  <span>Integrations</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/settings/subscription`}>
-              <CreditCardIcon className="mr-2 h-4 w-4" />
-              <span>Subscription</span>
-            </Link>
-          </DropdownMenuItem>
-          <DialogMenuItem
-            onSelect={handleDialogItemSelect}
-            onOpenChange={handleDialogItemOpenChange}
-            triggerChildren={
-              <>
-                <TicketIcon className="mr-2 h-4 w-4" />
-                <span>Redeem Voucher</span>
-              </>
-            }
-          >
-            <RedeemVoucherForm />
-          </DialogMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => {
-              setSettingsModalOpen(true)
-              setDropdownOpen(false)
-            }}
-          >
-            <SettingsIcon className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <ThemeToggleForwardWrap />
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-            <LogOutIcon className="mr-2 h-4 w-4" />
-            <span>Log out</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <div className="pl-2">
-            <div className="flex items-center w-full">
-              <Link
-                className="text-xs hover:underline text-muted-foreground"
-                href={`https://docs.eden.art/legal/tos`}
-                prefetch={false}
-              >
-                <span>Terms</span>
-              </Link>
-
-              <div className="ml-auto flex gap-1">
-                <Button variant="ghost" size={'icon'} asChild>
-                  <Link
-                    href={siteConfig.links.discord}
-                    target="_blank"
-                    className="filter grayscale hover:grayscale-0"
-                  >
-                    <DiscordIcon size={20} />
-                  </Link>
-                </Button>
-                <Button variant="ghost" size={'icon'} asChild>
-                  <Link
-                    href={siteConfig.links.twitter}
-                    target="_blank"
-                    className="group grayscale hover:grayscale-0 hover:text-white"
-                  >
-                    <TwitterIcon
-                      size={18}
-                      className="brightness-50 group-hover:!brightness-100"
-                    />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </button>
+          </DropdownMenuTrigger>
+          {dropdownContent}
+        </DropdownMenu>
+        <div className="ml-auto">
+          <NotificationDropdown />
+        </div>
+      </div>
 
       {/* User Settings Modal */}
       {settingsModalOpen && (
         <UserSettingsModal
           open={settingsModalOpen}
           onOpenChange={setSettingsModalOpen}
+          initialTab={settingsModalInitialTab}
         />
       )}
     </div>
@@ -1155,12 +1121,10 @@ export const SessionsSidebarContent = ({
   isChat,
   agent,
   viewMode,
-  onViewModeChange,
+  onViewModeChange: _onViewModeChange, // eslint-disable-line @typescript-eslint/no-unused-vars, no-unused-vars
   onAgentSelect,
-  onSettingsClick,
   onSidebarToggle,
   isCollapsed = false,
-  mode = 'sessions',
   isMobileSidebar = false,
 }: {
   onItemClick?: () => void
@@ -1170,10 +1134,8 @@ export const SessionsSidebarContent = ({
   viewMode?: ViewMode
   onViewModeChange?: (mode: ViewMode) => void
   onAgentSelect?: () => void
-  onSettingsClick?: () => void
   onSidebarToggle?: () => void
   isCollapsed?: boolean
-  mode?: 'sessions' | 'explore' | 'create'
   isMobileSidebar?: boolean
 }) => {
   const { user, isSignedIn } = useAuthState()
@@ -1182,11 +1144,18 @@ export const SessionsSidebarContent = ({
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+  const sessionsScrollContainerRef = React.useRef<HTMLDivElement | null>(null)
 
   // Get user preferences for last agent
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
   const lastAgent =
     lastAgents.length > 0 ? lastAgents[0].username || lastAgents[0]._id : 'eve'
+  const agentUsername = agent?.username
+
+  const handleNewChatNavigation = useCallback(() => {
+    const targetAgentKey = agentUsername || agentId || lastAgent
+    router.push(`/chat?agent=${targetAgentKey}`)
+  }, [agentUsername, agentId, lastAgent, router])
 
   // Get permissions for settings sidebar
   const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
@@ -1205,10 +1174,102 @@ export const SessionsSidebarContent = ({
     router.replace(url.pathname + url.search, { scroll: false })
   }
 
+  const collapsedNavItems = React.useMemo(
+    () => [
+      {
+        title: 'Agents',
+        onClick: () => router.push('/agents'),
+        isActive: pathname === '/agents' || pathname?.startsWith('/agents/'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Tasks',
+        onClick: () => router.push('/tasks'),
+        isActive: pathname === '/tasks' || pathname?.startsWith('/tasks/'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Explore',
+        onClick: () => router.push('/explore?type=creations'),
+        isActive: pathname?.startsWith('/explore'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Studio',
+        onClick: () => router.push('/studio'),
+        isActive: pathname?.startsWith('/studio'),
+        isExternal: true,
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+        ),
+      },
+    ],
+    [pathname, router],
+  )
+
   // Show collapsed sidebar with icons only
   if (isCollapsed) {
     return (
-      <div className="flex flex-col items-center gap-2 h-full pt-2">
+      <div className="flex flex-col items-center gap-2 h-full min-h-0 pt-2">
         {/* Expand button */}
         {onSidebarToggle && (
           <Button
@@ -1233,7 +1294,7 @@ export const SessionsSidebarContent = ({
 
         {/* New Chat icon */}
         <button
-          onClick={() => router.push(`/chat/${lastAgent}`)}
+          onClick={handleNewChatNavigation}
           className={cn(
             'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
             'hover:bg-muted/20',
@@ -1255,78 +1316,29 @@ export const SessionsSidebarContent = ({
           </svg>
         </button>
 
-        {/* Agents icon */}
-        <button
-          onClick={() => router.push('/agents')}
-          className={cn(
-            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-            pathname === '/agents' || pathname?.startsWith('/agents/')
-              ? 'bg-primary/20 text-primary-foreground'
-              : 'hover:bg-muted/20',
-          )}
-          title="Agents"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {/* Navigation icons */}
+        {collapsedNavItems.map(item => (
+          <button
+            key={item.title}
+            onClick={item.onClick}
+            className={cn(
+              'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+              item.isActive
+                ? 'bg-primary/20 text-primary-foreground'
+                : 'hover:bg-muted/20',
+            )}
+            title={item.title}
           >
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-        </button>
-
-        {/* Sessions icon */}
-        <button
-          onClick={() => router.push('/sessions')}
-          className={cn(
-            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-            pathname?.startsWith('/sessions')
-              ? 'bg-primary/20 text-primary-foreground'
-              : 'hover:bg-muted/20',
-          )}
-          title="Sessions"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-          </svg>
-        </button>
+            {item.icon}
+          </button>
+        ))}
 
         {/* Spacer to push profile to bottom */}
         <div className="flex-1" />
 
-        {/* User Profile icon at bottom */}
-        {user && (
-          <button
-            onClick={() => router.push(`/creators/${user.username}`)}
-            className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors mb-2"
-            title={user.username}
-          >
-            <UserAvatar
-              image={user.userImage}
-              name={user.username}
-              className="w-7 h-7"
-            />
-          </button>
-        )}
+        <div className="w-full px-1">
+          <SidebarUserProfile variant="collapsed" />
+        </div>
       </div>
     )
   }
@@ -1336,10 +1348,10 @@ export const SessionsSidebarContent = ({
     return (
       <div className="flex flex-col h-full min-h-0">
         {/* Desktop: Eden logo + close button at the top */}
-        <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+        <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-2"
+            className="flex items-center pl-2"
           >
             <EdenLogoBw className="w-[28px]" />
           </button>
@@ -1380,12 +1392,12 @@ export const SessionsSidebarContent = ({
 
   // Show regular chat sidebar for all other modes
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Desktop: Eden logo + close button at the top */}
-      <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+      <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center gap-2"
+          className="flex items-center pl-2"
         >
           <EdenLogoBw className="w-[28px]" />
         </button>
@@ -1411,35 +1423,56 @@ export const SessionsSidebarContent = ({
 
       {/* Mobile: Navigation Buttons - scrollable when in sheet, shown outside scroll container when NOT in sheet */}
       {!isMobileSidebar && (
-        <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
-          {/* New Chat button */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onItemClick?.()
-              router.push(`/chat/${lastAgent}`)
-            }}
-            className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
+        <div className="mb-4 mr-2 flex-col md:hidden flex">
+          {/* New Chat button with selected agent avatar */}
+          <div className="flex w-full items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                handleNewChatNavigation()
+              }}
+              className={cn(
+                'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                'bg-transparent hover:bg-muted/50 text-foreground',
+              )}
             >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            <span>New Chat</span>
-          </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>New Chat</span>
+            </Button>
+            {agentId && agent && (
+              <button
+                onClick={() => {
+                  onItemClick?.()
+                  onAgentSelect?.()
+                }}
+                className="shrink-0"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={getCloudfrontOriginalUrl(agent.userImage)}
+                    alt={agent.name || agent.username}
+                  />
+                  <AvatarFallback>
+                    {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            )}
+          </div>
 
           {/* Agents button */}
           <Button
@@ -1449,23 +1482,23 @@ export const SessionsSidebarContent = ({
               router.push('/agents')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
               pathname === '/agents' || pathname?.startsWith('/agents/')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
@@ -1475,40 +1508,36 @@ export const SessionsSidebarContent = ({
             <span>Agents</span>
           </Button>
 
-          {/* Sessions button */}
+          {/* Tasks button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/sessions')
+              router.push('/tasks')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/sessions')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+              pathname === '/tasks' || pathname?.startsWith('/tasks/')
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
-              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span className="flex items-center gap-1.5">
-              Sessions
-              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                BETA
-              </span>
-            </span>
+            <span>Tasks</span>
           </Button>
 
           {/* Explore button */}
@@ -1519,23 +1548,23 @@ export const SessionsSidebarContent = ({
               router.push('/explore?type=creations')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
               pathname?.startsWith('/explore')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-5"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
@@ -1543,20 +1572,35 @@ export const SessionsSidebarContent = ({
             <span>Explore</span>
           </Button>
 
-          {/* Tools button */}
+          {/* Studio button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/create')
+              router.push('/studio')
             }}
             className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/create') || pathname?.startsWith('/tools')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+              pathname?.startsWith('/studio')
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
             )}
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5"
+            >
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+            <span className="flex-1 text-left">Studio</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -1567,44 +1611,57 @@ export const SessionsSidebarContent = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="size-4"
+              className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              <path d="M7 17L17 7" />
+              <path d="M7 7h10v10" />
             </svg>
-            <span>Tools</span>
           </Button>
         </div>
       )}
 
       {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
-      <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
-        {/* New Chat button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            router.push(`/chat/${lastAgent}`)
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
+      <div className="mb-4 mr-2 flex-shrink-0 flex-col hidden md:flex">
+        {/* New Chat button with selected agent avatar */}
+        <div className="flex w-full items-center gap-2">
+          <Button
+            variant="ghost"
+            onClick={handleNewChatNavigation}
+            className={cn(
+              'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+              'bg-transparent hover:bg-muted/50 text-foreground',
+            )}
           >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          <span>New Chat</span>
-        </Button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>New Chat</span>
+          </Button>
+          {agentId && agent && (
+            <button onClick={() => onAgentSelect?.()} className="shrink-0">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={getCloudfrontOriginalUrl(agent.userImage)}
+                  alt={agent.name || agent.username}
+                />
+                <AvatarFallback>
+                  {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          )}
+        </div>
 
         {/* Agents button */}
         <Button
@@ -1613,23 +1670,23 @@ export const SessionsSidebarContent = ({
             router.push('/agents')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
             pathname === '/agents' || pathname?.startsWith('/agents/')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -1639,39 +1696,35 @@ export const SessionsSidebarContent = ({
           <span>Agents</span>
         </Button>
 
-        {/* Sessions button */}
+        {/* Tasks button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/sessions')
+            router.push('/tasks')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/sessions')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+            pathname === '/tasks' || pathname?.startsWith('/tasks/')
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
-          <span className="flex items-center gap-1.5">
-            Sessions
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              BETA
-            </span>
-          </span>
+          <span>Tasks</span>
         </Button>
 
         {/* Explore button */}
@@ -1681,23 +1734,23 @@ export const SessionsSidebarContent = ({
             router.push('/explore?type=creations')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
             pathname?.startsWith('/explore')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
@@ -1705,19 +1758,34 @@ export const SessionsSidebarContent = ({
           <span>Explore</span>
         </Button>
 
-        {/* Tools button */}
+        {/* Studio button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/create')
+            router.push('/studio')
           }}
           className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+            pathname?.startsWith('/studio')
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
           )}
         >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span className="flex-1 text-left">Studio</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -1728,327 +1796,233 @@ export const SessionsSidebarContent = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            <path d="M7 17L17 7" />
+            <path d="M7 7h10v10" />
           </svg>
-          <span>Tools</span>
         </Button>
       </div>
 
       {/* Content area based on mode */}
-      <div
-        id="sidebar-scroll-container"
-        className="flex-1 min-h-0 overflow-y-auto"
-      >
-        {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
-        {isMobileSidebar && (
-          <div className="mb-4 mr-2 flex-col gap-2 flex pt-3">
-            {/* New Chat button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push(`/chat/${lastAgent}`)
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div
+          id="sidebar-scroll-container"
+          ref={sessionsScrollContainerRef}
+          className="flex-1 min-h-0 flex flex-col overflow-y-auto"
+        >
+          {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
+          {isMobileSidebar && (
+            <div className="mb-4 mr-2 flex-col flex pt-3">
+              {/* New Chat button with selected agent avatar */}
+              <div className="flex w-full items-center gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    onItemClick?.()
+                    handleNewChatNavigation()
+                  }}
+                  className={cn(
+                    'flex flex-1 justify-start items-center gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                    'bg-transparent hover:bg-muted/50 text-foreground',
+                  )}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-5"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>New Chat</span>
+                </Button>
+                {agentId && agent && (
+                  <button
+                    onClick={() => {
+                      onItemClick?.()
+                      onAgentSelect?.()
+                    }}
+                    className="shrink-0"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={getCloudfrontOriginalUrl(agent.userImage)}
+                        alt={agent.name || agent.username}
+                      />
+                      <AvatarFallback>
+                        {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                )}
+              </div>
+
+              {/* Agents button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/agents')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/agents' || pathname?.startsWith('/agents/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
               >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              <span>New Chat</span>
-            </Button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span>Agents</span>
+              </Button>
 
-            {/* Agents button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/agents')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname === '/agents' || pathname?.startsWith('/agents/')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
+              {/* Tasks button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/tasks')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/tasks' || pathname?.startsWith('/tasks/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
               >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              <span>Agents</span>
-            </Button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Tasks</span>
+              </Button>
 
-            {/* Sessions button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/sessions')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/sessions')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
+              {/* Explore button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/explore?type=creations')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname?.startsWith('/explore')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
               >
-                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-              </svg>
-              <span className="flex items-center gap-1.5">
-                Sessions
-                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                  BETA
-                </span>
-              </span>
-            </Button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <span>Explore</span>
+              </Button>
 
-            {/* Explore button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=creations')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/explore')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
+              {/* Studio button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/studio')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2 group',
+                  pathname?.startsWith('/studio')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
               >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <span>Explore</span>
-            </Button>
-
-            {/* Tools button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/create')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/create') ||
-                  pathname?.startsWith('/tools')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
-              >
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-              </svg>
-              <span>Tools</span>
-            </Button>
-          </div>
-        )}
-
-        {mode === 'sessions' && (
-          <>
-            {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
-            {(pathname?.startsWith('/chat') || pathname === '/') &&
-              agentId &&
-              agent && (
-                <>
-                  <CurrentAgentDisplay
-                    agent={agent}
-                    userId={user?._id}
-                    onAgentClick={() => onAgentSelect?.()}
-                    onSettingsClick={() => onSettingsClick?.()}
-                    onMemoriesClick={() => setIsMemoriesModalOpen(true)}
-                  />
-                  {/* Tasks and Creations buttons for /chat/{agent} */}
-                  <div className="mr-2 mb-4 flex flex-col gap-2">
-                    {/* Tasks button - only show if user has edit access */}
-                    {hasEditAccess && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          onItemClick?.()
-                          router.push(`/chat/${agentId}?page=tasks`)
-                        }}
-                        className={cn(
-                          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                          viewMode === 'tasks'
-                            ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                            : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                        )}
-                      >
-                        <ClockIcon className="size-4" />
-                        <span>Tasks</span>
-                      </Button>
-                    )}
-                    {/* Creations button */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onItemClick?.()
-                        router.push(`/chat/${agentId}?page=creations`)
-                      }}
-                      className={cn(
-                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                        viewMode === 'creations'
-                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                      )}
-                    >
-                      <ImageIcon className="size-4" />
-                      <span>Creations</span>
-                    </Button>
-                  </div>
-                </>
-              )}
-            <MainLeft
-              onItemClick={onItemClick}
-              agentId={agentId}
-              isChat={isChat}
-              onViewModeChange={onViewModeChange}
-              agent={agent}
-              pathname={pathname}
-            />
-          </>
-        )}
-
-        {mode === 'explore' && (
-          <div className="flex flex-col gap-2 mr-2">
-            <div className="text-xs font-medium text-muted-foreground mb-1">
-              Browse
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                </svg>
+                <span className="flex-1 text-left">Studio</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <path d="M7 17L17 7" />
+                  <path d="M7 7h10v10" />
+                </svg>
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=agents')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'agents'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Agents
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=models')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'models'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Models
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=creations')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'creations'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Creations
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=tools')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'tools'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Tools
-            </Button>
-          </div>
-        )}
+          )}
 
-        {/* User Profile Section - Inside scroll container when in mobile sheet */}
-        {isMobileSidebar && <SidebarUserProfile />}
+          <RecentAgents onItemClick={onItemClick} />
+
+          <MainLeft
+            onItemClick={onItemClick}
+            agentId={agentId}
+            isChat={isChat}
+            scrollContainerRef={sessionsScrollContainerRef}
+          />
+        </div>
       </div>
 
-      {/* User Profile Section - Outside scroll container when NOT in mobile sheet */}
-      {!isMobileSidebar && <SidebarUserProfile />}
+      {/* User Profile Section - Always outside scroll container to stay sticky at bottom */}
+      <SidebarUserProfile />
 
       {/* Memories Modal for non-editor users */}
       {agent && (
@@ -2082,7 +2056,7 @@ export const SessionsSidebar = React.memo(
     return (
       <div
         className={cn(
-          'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r pl-2 pr-0 py-3 transition-all duration-300 ease-in-out',
           'max-w-[320px]',
           isSidebarCollapsed && 'p-0 border-none',
         )}

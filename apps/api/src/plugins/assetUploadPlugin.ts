@@ -25,7 +25,7 @@ export const mediaTypeMap: Record<string, MediaType> = {
 const uploadUrlAsset = async (server: FastifyInstance, url: string) => {
   const asset = await axios.get(url, { responseType: 'arraybuffer' })
   const assetB64 = Buffer.from(asset.data, 'base64')
-  const fileType = await fileTypeFromBuffer(assetB64)
+  const fileType = await fileTypeFromBuffer(assetB64 as unknown as Uint8Array)
   const fileSize = assetB64.byteLength
 
   if (!fileType) {
@@ -76,7 +76,7 @@ export const registerAssetUpload = async (fastify: FastifyInstance) => {
     fastify.decorate('uploadUrlAsset', uploadUrlAsset)
     fastify.log.info('Successfully registered plugin: AssetUpload')
   } catch (err) {
-    fastify.log.error('Plugin: AssetUpload, error on register', err)
+    fastify.log.error({ err }, 'Plugin: AssetUpload, error on register')
     console.error(err)
   }
 }

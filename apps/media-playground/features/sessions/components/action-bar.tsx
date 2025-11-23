@@ -29,10 +29,22 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
     ? message.reactions?.[userId]?.includes('thumbs_down')
     : false
 
+  // Session post tools that render their own badge in SessionPostEmbed
+  const SESSION_POST_TOOLS = [
+    'session_post',
+    'abraham_publish',
+    'verdelis_story',
+    'abraham_daily',
+    'media_editor',
+  ]
+
   // Get completed tool calls with results
+  // Exclude session post tools and tools with child_session (they render their own badge)
   const completedToolCalls =
-    message.tool_calls?.filter(
-      toolCall =>
+    message.tool_calls?.filter(toolCall => {
+      const normalizedToolName = (toolCall.tool || '').trim().toLowerCase()
+
+      return (
         toolCall.status === 'completed' &&
         toolCall.result &&
         (toolCall.result as TaskV2Result[]).length > 0 &&
@@ -42,8 +54,11 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
             (Array.isArray(result?.output) ||
               (typeof result?.output === 'string' &&
                 (result?.output as string).length > 0)),
-        ),
-    ) || []
+        ) &&
+        !SESSION_POST_TOOLS.includes(normalizedToolName) &&
+        !toolCall.child_session
+      )
+    }) || []
 
   const handleCopy = async () => {
     if (message.content) {

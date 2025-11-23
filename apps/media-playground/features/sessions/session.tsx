@@ -1,9 +1,13 @@
 'use client'
 
-import { EditSessionModal } from './components/edit-session-modal'
+import { AgentAvatarsMenu } from './components/agent-avatars-menu'
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
+import {
+  SessionSettings,
+  SessionSettingsModal,
+} from './components/session-settings-modal'
 import { SessionShareButton } from './components/session-share-button'
 import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
@@ -16,22 +20,28 @@ import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/use-toast'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { AssistantMessage } from '@/features/sessions/components/assistant-message'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
+import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Agent, Message } from '@edenlabs/eden-sdk'
+import { Agent, Message, SessionType } from '@edenlabs/eden-sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { BrainIcon, EditIcon, MenuIcon, Settings } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -62,14 +72,32 @@ const Session = ({
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const { user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
+  const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
+    GatedResource.SessionSettings,
+  )
+  const { toast } = useToast()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
   const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
     useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
+  const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
+    type: 'natural',
+    context: '',
+    conductor_prompt: '',
+    delay_interval: 0,
+    mention_force_reply: false,
+    manna_budget_unlimited: true,
+    token_budget_unlimited: true,
+    turn_budget_unlimited: true,
+    exclude_memory: false,
+  })
+  const queryClient = useQueryClient()
+  const { mutateAsync: updateUserPreferences } = useUpdateUserPreferences()
+  const lastSyncedSessionIdRef = useRef<string | null>(null)
 
   // Track session viewing for notifications
   useSessionTracking(sessionId)
@@ -150,13 +178,81 @@ const Session = ({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
   })
+
+  useEffect(() => {
+    if (!session || !sessionId || sessionId === 'new') return
+    if (!isSignedIn) return
+    if (lastSyncedSessionIdRef.current === sessionId) return
+
+    const agentIds = Array.from(
+      new Set((session.agents || []).map(agent => agent._id).filter(Boolean)),
+    )
+
+    if (agentIds.length === 0) return
+
+    const syncPreferences = async () => {
+      try {
+        await Promise.all(agentIds.map(id => updateUserPreferences(id)))
+        lastSyncedSessionIdRef.current = sessionId
+      } catch (error) {
+        console.error('Failed to update recent agents from session view', error)
+      } finally {
+        void queryClient.refetchQueries({ queryKey: ['user-preferences'] })
+      }
+    }
+
+    syncPreferences()
+  }, [isSignedIn, queryClient, session, sessionId, updateUserPreferences])
+
+  // Update session settings when session data loads
+  useEffect(() => {
+    if (session) {
+      // Loading session settings from session
+
+      // Map session_type, defaulting to 'natural' if undefined or 'normal'
+      let sessionType: 'natural' | 'automatic' = 'natural'
+      if (session.session_type === 'automatic') {
+        sessionType = 'automatic'
+      }
+      // 'normal' and undefined map to 'natural'
+
+      setSessionSettings({
+        type: sessionType,
+        context: session.context || '',
+        conductor_prompt: session.settings?.conductor_prompt || '',
+        delay_interval: session.settings?.delay_interval || 0,
+        mention_force_reply: session.settings?.mention_force_reply || false,
+        manna_budget_unlimited: !session.budget?.manna_budget,
+        manna_budget: session.budget?.manna_budget,
+        token_budget_unlimited: !session.budget?.token_budget,
+        token_budget: session.budget?.token_budget,
+        turn_budget_unlimited: !session.budget?.turn_budget,
+        turn_budget: session.budget?.turn_budget,
+        exclude_memory: session.extras?.exclude_memory || false,
+      })
+    }
+  }, [session])
+
   const sessionsLayoutContext = useSessionsLayoutContext()
   const isOwner = useMemo(() => {
     return user?._id === session?.owner?._id
   }, [user, session])
+  const canOpenSessionSettings = isOwner && isSessionSettingsAllowed
   const isPublicSession = session?.extras?.is_public === true
   const isReadOnlySession = Boolean(
     session && sessionId && sessionId !== 'new' && isPublicSession && !isOwner,
+  )
+
+  // Agent settings modal state for navbar
+  const [isAgentSettingsOpen, setIsAgentSettingsOpen] = useState(false)
+  const [isAgentSettingsMemoriesOnly, setIsAgentSettingsMemoriesOnly] =
+    useState(false)
+
+  // Get the single agent for permission check (only when there's one agent)
+  const singleAgent = session?.agents?.length === 1 ? session.agents[0] : null
+  const { hasEditAccess: singleAgentHasEditAccess } = useAgentPermissions(
+    singleAgent,
+    user?._id,
   )
 
   useEffect(() => {
@@ -1212,6 +1308,107 @@ const Session = ({
     !isPendingTransition &&
     !pendingMessage
 
+  const handleSaveSettings = async (settings: SessionSettings) => {
+    try {
+      // Build request body exactly like EditSessionModal and /sessions/new
+      const requestBody: {
+        session_type: SessionType
+        settings: {
+          conductor_prompt: string
+          delay_interval: number
+          mention_force_reply: boolean
+        }
+        context?: string
+        budget?: {
+          manna_budget?: number
+          token_budget?: number
+          turn_budget?: number
+        }
+        extras?: {
+          exclude_memory?: boolean
+        }
+      } = {
+        session_type:
+          settings.type === 'natural'
+            ? SessionType.NATURAL
+            : SessionType.AUTOMATIC,
+        settings: {
+          conductor_prompt: settings.conductor_prompt || '',
+          delay_interval: settings.delay_interval,
+          mention_force_reply: settings.mention_force_reply,
+        },
+      }
+
+      if (settings.context && settings.context.trim()) {
+        requestBody.context = settings.context
+      }
+
+      const budget: {
+        manna_budget?: number
+        token_budget?: number
+        turn_budget?: number
+      } = {}
+      if (!settings.manna_budget_unlimited && settings.manna_budget) {
+        budget.manna_budget = settings.manna_budget
+      }
+      if (!settings.token_budget_unlimited && settings.token_budget) {
+        budget.token_budget = settings.token_budget
+      }
+      if (!settings.turn_budget_unlimited && settings.turn_budget) {
+        budget.turn_budget = settings.turn_budget
+      }
+      if (Object.keys(budget).length > 0) {
+        requestBody.budget = budget
+      }
+
+      // Add exclude_memory to extras
+      if (settings.exclude_memory) {
+        requestBody.extras = {
+          exclude_memory: true,
+        }
+      }
+
+      // Saving session settings
+
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Failed to update session:', errorData)
+        throw new Error(errorData.message || 'Failed to update session')
+      }
+
+      await response.json()
+      // Session updated
+
+      await refetchSession()
+
+      toast({
+        title: 'Session updated successfully!',
+        description: 'Your changes have been saved.',
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Session update error:', error)
+      toast({
+        title: 'Error updating session',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+        variant: 'destructive',
+      })
+      throw error
+    }
+  }
+
   if (shouldShowLoadingSpinner) {
     return (
       <div className="flex-1 flex justify-center items-center">
@@ -1242,62 +1439,89 @@ const Session = ({
           </button>
 
           {/* Left section - Agent avatars and session title */}
-          <button
-            onClick={() => isOwner && setIsEditModalOpen(true)}
-            className={cn(
-              'flex items-center gap-2 min-w-0 flex-1',
-              isOwner &&
-                'hover:bg-muted/50 rounded-md px-2 -mx-2 py-1 transition-colors cursor-pointer',
-            )}
-            disabled={!isOwner}
-          >
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {session.agents && session.agents.length > 0 && (
               <>
-                {/* Agent avatars */}
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {session.agents.slice(0, 3).map((agent, index) => (
-                      <div
-                        key={agent._id}
-                        className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
-                        style={{ zIndex: session.agents.length - index }}
-                      >
-                        {agent.userImage ? (
-                          <img
-                            src={getCloudfrontUrl(agent.userImage)}
-                            alt={agent.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
-                            {agent.name?.[0]?.toUpperCase() || 'A'}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {session.agents.length > 3 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{session.agents.length - 3}
-                    </span>
-                  )}
-                </div>
+                {/* Agent avatars - clickable menu */}
+                <AgentAvatarsMenu agents={session.agents}>
+                  <button className="flex items-center gap-2 hover:bg-muted/10 rounded-lg px-1 py-1 transition-colors shrink-0">
+                    <div className="flex -space-x-2">
+                      {session.agents.slice(0, 3).map((agent, index) => (
+                        <div
+                          key={agent._id}
+                          className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                          style={{ zIndex: session.agents.length - index }}
+                        >
+                          {agent.userImage ? (
+                            <img
+                              src={getCloudfrontUrl(agent.userImage)}
+                              alt={agent.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
+                              {agent.name?.[0]?.toUpperCase() || 'A'}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {session.agents.length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{session.agents.length - 3}
+                      </span>
+                    )}
+                  </button>
+                </AgentAvatarsMenu>
 
-                {/* Session title - truncated */}
+                {/* Session title - clickable for settings */}
                 {session.title && (
-                  <div
-                    className="text-sm text-muted-foreground truncate flex-1 text-left"
+                  <button
+                    onClick={() =>
+                      canOpenSessionSettings && setIsSessionSettingsOpen(true)
+                    }
+                    className={cn(
+                      'text-base font-semibold truncate flex-1 text-left',
+                      canOpenSessionSettings
+                        ? 'text-foreground hover:text-foreground transition-colors'
+                        : 'text-muted-foreground',
+                    )}
                     title={session.title}
+                    disabled={!canOpenSessionSettings}
                   >
                     {session.title}
-                  </div>
+                  </button>
                 )}
               </>
             )}
-          </button>
+          </div>
 
           {/* Right section - Icon-only buttons */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* Settings/Memories button - show for single agent in chat route */}
+            {ischatRoute && session.agents?.length === 1 && (
+              <button
+                onClick={() => {
+                  if (singleAgentHasEditAccess) {
+                    setIsAgentSettingsMemoriesOnly(false)
+                  } else {
+                    setIsAgentSettingsMemoriesOnly(true)
+                  }
+                  setIsAgentSettingsOpen(true)
+                }}
+                className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                title={
+                  singleAgentHasEditAccess ? 'Agent Settings' : 'View Memories'
+                }
+              >
+                {singleAgentHasEditAccess ? (
+                  <Settings className="h-4 w-4" />
+                ) : (
+                  <BrainIcon className="h-4 w-4" />
+                )}
+              </button>
+            )}
+
             {/* Share button - icon only */}
             {isOwner && (
               <SessionShareButton
@@ -1313,14 +1537,14 @@ const Session = ({
             {/* New Chat button - icon only */}
             <button
               onClick={() => {
-                if (ischatRoute && params?.agentId) {
-                  router.push(`/chat/${params.agentId}`)
-                } else {
-                  router.push('/sessions/new')
-                }
+                // Create URL with current session's agents
+                const agentKeys = session?.agents
+                  ?.map(a => a.username || a._id)
+                  .join(',')
+                router.push(agentKeys ? `/chat?agent=${agentKeys}` : '/chat')
               }}
               className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
-              title={ischatRoute ? 'New Chat' : 'New Session'}
+              title="New Chat"
             >
               <EditIcon className="h-4 w-4" />
             </button>
@@ -1331,75 +1555,104 @@ const Session = ({
       {/* Desktop navbar - Agent avatars + session title + buttons */}
       {sessionId && sessionId !== 'new' && session && (
         <div className="hidden md:flex h-12 items-center gap-4 border-b border-l-0 bg-background px-4 flex-shrink-0">
-          {/* Left section - Agent avatars and session title - clickable for edit */}
-          <button
-            onClick={() => isOwner && setIsEditModalOpen(true)}
-            className={cn(
-              'flex items-center gap-2 min-w-0 flex-1',
-              isOwner &&
-                'hover:bg-muted/50 rounded-md px-2 -mx-2 py-1 transition-colors cursor-pointer',
-            )}
-            disabled={!isOwner}
-          >
+          {/* Left section - Agent avatars and session title */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {session.agents && session.agents.length > 0 && (
               <>
-                {/* Agent avatars */}
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {session.agents.slice(0, 3).map((agent, index) => (
-                      <div
-                        key={agent._id}
-                        className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
-                        style={{ zIndex: session.agents.length - index }}
-                      >
-                        {agent.userImage ? (
-                          <img
-                            src={getCloudfrontUrl(agent.userImage)}
-                            alt={agent.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
-                            {agent.name?.[0]?.toUpperCase() || 'A'}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {session.agents.length > 3 && (
-                    <span className="text-xs text-muted-foreground">
-                      +{session.agents.length - 3}
-                    </span>
-                  )}
-                </div>
+                {/* Agent avatars - clickable menu */}
+                <AgentAvatarsMenu agents={session.agents}>
+                  <button className="flex items-center gap-2 hover:bg-muted/10 rounded-lg px-1 py-1 transition-colors shrink-0">
+                    <div className="flex -space-x-2">
+                      {session.agents.slice(0, 3).map((agent, index) => (
+                        <div
+                          key={agent._id}
+                          className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                          style={{ zIndex: session.agents.length - index }}
+                        >
+                          {agent.userImage ? (
+                            <img
+                              src={getCloudfrontUrl(agent.userImage)}
+                              alt={agent.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
+                              {agent.name?.[0]?.toUpperCase() || 'A'}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {session.agents.length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{session.agents.length - 3}
+                      </span>
+                    )}
+                  </button>
+                </AgentAvatarsMenu>
 
-                {/* Session title */}
+                {/* Session title - clickable for settings */}
                 {session.title && (
-                  <div
-                    className="text-sm text-muted-foreground truncate flex-1 max-w-[400px] text-left ml-2"
+                  <button
+                    onClick={() =>
+                      canOpenSessionSettings && setIsSessionSettingsOpen(true)
+                    }
+                    className={cn(
+                      'text-base font-semibold truncate flex-1 max-w-[400px] text-left ml-2',
+                      canOpenSessionSettings
+                        ? 'text-foreground hover:text-foreground transition-colors'
+                        : 'text-muted-foreground',
+                    )}
                     title={session.title}
+                    disabled={!canOpenSessionSettings}
                   >
                     {session.title}
-                  </div>
+                  </button>
                 )}
               </>
             )}
-          </button>
+          </div>
 
           {/* Right section - Share, New Chat/Session (no Status Toggle for chat) */}
           <div className="flex items-center gap-2">
-            {/* Status Toggle - only show for sessions, not chat */}
-            {!ischatRoute && isOwner && (
-              <SessionStatusToggle
-                sessionId={sessionId as string}
-                currentStatus={session.status}
-                onStatusChange={newStatus => {
-                  // Update session in cache
-                  if (session) {
-                    session.status = newStatus
+            {/* Status Toggle - only show for automatic sessions, not chat */}
+            {!ischatRoute &&
+              isOwner &&
+              session.session_type === 'automatic' && (
+                <SessionStatusToggle
+                  sessionId={sessionId as string}
+                  currentStatus={session.status}
+                  onStatusChange={newStatus => {
+                    // Update session in cache
+                    if (session) {
+                      session.status = newStatus
+                    }
+                  }}
+                />
+              )}
+
+            {/* Settings/Memories button - show for single agent in chat route */}
+            {ischatRoute && session.agents?.length === 1 && (
+              <button
+                onClick={() => {
+                  if (singleAgentHasEditAccess) {
+                    setIsAgentSettingsMemoriesOnly(false)
+                  } else {
+                    setIsAgentSettingsMemoriesOnly(true)
                   }
+                  setIsAgentSettingsOpen(true)
                 }}
-              />
+                className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                title={
+                  singleAgentHasEditAccess ? 'Agent Settings' : 'View Memories'
+                }
+              >
+                {singleAgentHasEditAccess ? (
+                  <Settings className="h-3.5 w-3.5" />
+                ) : (
+                  <BrainIcon className="h-3.5 w-3.5" />
+                )}
+              </button>
             )}
 
             {/* Share button */}
@@ -1413,20 +1666,20 @@ const Session = ({
               />
             )}
 
-            {/* New Chat button (for chat routes) or New Session button (for sessions routes) */}
+            {/* New Chat button */}
             <button
               onClick={() => {
-                if (ischatRoute && params?.agentId) {
-                  router.push(`/chat/${params.agentId}`)
-                } else {
-                  router.push('/sessions/new')
-                }
+                // Create URL with current session's agents
+                const agentKeys = session?.agents
+                  ?.map(a => a.username || a._id)
+                  .join(',')
+                router.push(agentKeys ? `/chat?agent=${agentKeys}` : '/chat')
               }}
               className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
-              title={ischatRoute ? 'New Chat' : 'New Session'}
+              title="New Chat"
             >
               <EditIcon className="h-3.5 w-3.5" />
-              {ischatRoute ? 'New Chat' : 'New Session'}
+              New Chat
             </button>
           </div>
         </div>
@@ -2032,12 +2285,33 @@ const Session = ({
         </div>
       )}
 
-      {/* Edit Session Modal */}
+      {/* Session Settings Modal */}
       {session && sessionId && sessionId !== 'new' && (
-        <EditSessionModal
+        <SessionSettingsModal
+          open={isSessionSettingsOpen}
+          onOpenChange={setIsSessionSettingsOpen}
+          settings={sessionSettings}
+          onSettingsChange={setSessionSettings}
+          agents={session.agents}
           sessionId={sessionId}
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
+          onSave={handleSaveSettings}
+          minimal={true}
+        />
+      )}
+
+      {/* Agent Settings Modal - for navbar settings/memories button */}
+      {singleAgent && (
+        <AgentSettingsModal
+          agentId={singleAgent.username || singleAgent._id}
+          open={isAgentSettingsOpen}
+          onOpenChange={open => {
+            setIsAgentSettingsOpen(open)
+            if (!open) {
+              setIsAgentSettingsMemoriesOnly(false)
+            }
+          }}
+          initialTab={isAgentSettingsMemoriesOnly ? 'memories' : 'profile'}
+          memoriesOnly={isAgentSettingsMemoriesOnly}
         />
       )}
     </div>

@@ -62,6 +62,8 @@ export type DeploymentSecretsFarcaster = {
 // Twitter Types
 export type DeploymentSettingsTwitter = {
   username?: string
+  enable_tweet?: boolean
+  instructions?: string
 }
 
 export type DeploymentSecretsTwitter = {

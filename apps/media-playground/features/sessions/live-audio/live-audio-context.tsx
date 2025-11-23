@@ -1,5 +1,6 @@
 'use client'
 
+import { SAFE_MICROPHONE_CONSTRAINTS } from '@/lib/voice/audio-config'
 import {
   ReactNode,
   createContext,
@@ -92,12 +93,8 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: 1,
-          sampleRate: 16000,
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
+        audio: SAFE_MICROPHONE_CONSTRAINTS,
+        video: false,
       })
       mediaStreamRef.current = stream
       return true

@@ -4,6 +4,7 @@ import {
   AgentPermission,
   AgentPermissionLevel,
   AgentsGetPermissionsResponse,
+  MinimalAgent,
 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
@@ -17,24 +18,30 @@ export interface UseAgentPermissionsResult {
 }
 
 export const useAgentPermissions = (
-  agent: Agent | null | undefined,
+  agent: (Pick<Agent, '_id' | 'owner'> | MinimalAgent) | null | undefined,
   userId: string | undefined,
 ): UseAgentPermissionsResult => {
+  const agentId = agent?._id
+
+  const ownerId = useMemo(() => {
+    if (!agent) return null
+    if (!agent.owner) return null
+    return typeof agent.owner === 'string'
+      ? agent.owner
+      : agent.owner._id || agent.owner.userId || null
+  }, [agent])
+
   // Check if user is the original owner
   const isOriginalOwner = useMemo(() => {
-    return !!(
-      agent &&
-      userId &&
-      (agent.owner._id === userId || agent.owner.userId === userId)
-    )
-  }, [agent, userId])
+    return !!(ownerId && userId && ownerId === userId)
+  }, [ownerId, userId])
 
   // Use react-query to fetch permissions with proper caching and invalidation
   const { data: permissionsData, isLoading: isPermissionsLoading } =
     useQuery<AgentsGetPermissionsResponse>({
-      queryKey: ['agents', agent?._id, 'permissions'],
-      queryFn: () => fetcher(`/api/agents/${agent!._id}/permissions`),
-      enabled: !!(agent && userId && !isOriginalOwner), // Only fetch if not original owner
+      queryKey: ['agents', agentId, 'permissions'],
+      queryFn: () => fetcher(`/api/agents/${agentId!}/permissions`),
+      enabled: !!(agentId && userId && !isOriginalOwner), // Only fetch if not original owner
       staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     })
 

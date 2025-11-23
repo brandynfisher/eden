@@ -17,9 +17,13 @@ import { DateRange } from 'react-day-picker'
 
 interface AgentDashboardViewProps {
   agent: Agent
+  variant?: 'standalone' | 'panel'
 }
 
-const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
+const AgentDashboardView: FC<AgentDashboardViewProps> = ({
+  agent,
+  variant = 'standalone',
+}) => {
   const [showPlatformColors, setShowPlatformColors] = useState(true)
   const [globalMetric, setGlobalMetric] = useState<'messages' | 'tokens'>(
     'messages',
@@ -131,6 +135,24 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
     return value.toString()
   }
 
+  const isPanelLayout = variant === 'panel'
+  const outerWrapperClass = isPanelLayout
+    ? 'space-y-6'
+    : 'flex-1 overflow-auto bg-accent p-3 md:p-4'
+  const innerWrapperClass = isPanelLayout
+    ? 'space-y-6'
+    : 'mx-auto max-w-5xl space-y-6'
+  const showInternalHeading = variant === 'standalone'
+  const headerContainerClasses = [
+    'flex flex-col md:flex-row gap-4',
+    showInternalHeading
+      ? 'md:items-center md:justify-between'
+      : 'md:items-end md:justify-end',
+    isPanelLayout ? 'rounded-xl border border-border bg-card p-6' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   // Chart data for bar chart (use messageActivity from backend)
   const chartData = useMemo(() => {
     if (!dashboardData) {
@@ -214,10 +236,28 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
 
   if (isError) {
     return (
-      <div className="flex-1 overflow-auto bg-accent p-3 md:p-4">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center py-16">
-            <div className="inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+      <div className={outerWrapperClass}>
+        <div
+          className={
+            isPanelLayout
+              ? 'rounded-xl border border-destructive/40 bg-card p-6'
+              : 'mx-auto max-w-5xl'
+          }
+        >
+          <div
+            className={
+              isPanelLayout
+                ? 'flex flex-col items-center justify-center text-center gap-3 text-sm text-destructive py-8'
+                : 'text-center py-16'
+            }
+          >
+            <div
+              className={
+                isPanelLayout
+                  ? 'inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive'
+                  : 'inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive'
+              }
+            >
               <span className="font-medium">
                 Error loading dashboard data:{' '}
                 {(error as Error)?.message || 'Unknown error'}
@@ -230,15 +270,17 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-accent p-3 md:p-4">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className={outerWrapperClass}>
+      <div className={innerWrapperClass}>
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {agent.name} Dashboard
-            </h1>
-          </div>
+        <div className={headerContainerClasses}>
+          {showInternalHeading && (
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {agent.name} Dashboard
+              </h1>
+            </div>
+          )}
 
           {/* Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -287,7 +329,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
         </div>
 
         {/* Message Activity Chart */}
-        <div className="bg-card rounded-lg border border-border p-6">
+        <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-semibold text-foreground">
@@ -370,7 +412,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
 
         {/* User Message Distribution */}
         {dashboardData?.userStats && (
-          <div className="bg-card rounded-lg border border-border p-6">
+          <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">

@@ -68,8 +68,9 @@ export const AssistantMessage = ({
     return null
 
   const isEmpty = trimmedContent.length === 0
-  const hasUsername = !!message.sender?.username
-  const shouldMakeClickable = hasUsername
+  const profileIdentifier =
+    message.sender?.username || message.sender?._id || ''
+  const shouldMakeClickable = !!profileIdentifier
 
   const finalImageUrl = message.sender?.userImage
     ? message.sender.userImage.startsWith('https://')
@@ -88,7 +89,7 @@ export const AssistantMessage = ({
             <div className="flex items-center gap-2 mb-2">
               {shouldMakeClickable ? (
                 <Link
-                  href={`/chat/${message.sender.username}`}
+                  href={`/agents/${profileIdentifier}`}
                   className="inline-block"
                 >
                   <Avatar className="w-6 h-6 cursor-pointer hover:opacity-80 transition-opacity">
@@ -295,7 +296,7 @@ export const AssistantMessage = ({
           <div className="hidden sm:block w-12 h-12 absolute -left-[calc(3rem+0.75rem)] top-2">
             {shouldMakeClickable ? (
               <Link
-                href={`/chat/${message.sender.username}`}
+                href={`/agents/${profileIdentifier}`}
                 className="block w-full h-full"
               >
                 <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
@@ -512,7 +513,7 @@ export const AssistantMessage = ({
         {showAvatar ? (
           shouldMakeClickable ? (
             <Link
-              href={`/chat/${message.sender.username}`}
+              href={`/agents/${profileIdentifier}`}
               className="block w-full h-full"
             >
               <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">

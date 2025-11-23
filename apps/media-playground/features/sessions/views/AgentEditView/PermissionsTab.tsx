@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import {
   Agent,
   AgentPermission,
@@ -22,12 +25,20 @@ import { toast } from 'sonner'
 type AgentPermissionLevelType = 'editor' | 'owner'
 
 export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
+  const { user } = useAuthState()
   const [permissions, setPermissions] = useState<AgentPermission[]>([])
   const [newUsername, setNewUsername] = useState('')
   const [permissionLevel, setPermissionLevel] =
     useState<AgentPermissionLevelType>('editor')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const permissionsGate = useGatedResource(GatedResource.AgentPermissions, {
+    lockedBehavior: 'modal',
+  })
+  const hasOwnerAccess = !!agent?.owner?._id && agent.owner._id === user?._id
+  const isSubscriptionAllowed = permissionsGate.isAllowed
+  const isFormDisabled =
+    isSubmitting || !isSubscriptionAllowed || !hasOwnerAccess
 
   // Fetch current permissions
   useEffect(() => {
@@ -46,6 +57,11 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
   }, [agent._id])
 
   const handleAddUser = async () => {
+    if (!hasOwnerAccess) return
+    if (!permissionsGate.isAllowed) {
+      permissionsGate.openGate()
+      return
+    }
     if (!newUsername.trim()) return
 
     // Check if user already has permission
@@ -105,6 +121,11 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
   }
 
   const handleRemoveUser = async (permissionToRemove: AgentPermission) => {
+    if (!hasOwnerAccess) return
+    if (!permissionsGate.isAllowed) {
+      permissionsGate.openGate()
+      return
+    }
     setIsSubmitting(true)
     try {
       // Prepare the permissions list without the removed user
@@ -170,6 +191,19 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                 Grant users permission to edit or manage this agent. Owners have
                 full control, while editors can only modify the profile.
               </p>
+              {!hasOwnerAccess ? (
+                <LockedFeatureBanner
+                  gate={permissionsGate}
+                  title="Only owners can manage permissions"
+                  description="You need to own this agent to invite editors or owners."
+                />
+              ) : !permissionsGate.isAllowed ? (
+                <LockedFeatureBanner
+                  gate={permissionsGate}
+                  title="Sharing is a subscriber feature"
+                  description="Invite owners and editors with a Basic plan or higher."
+                />
+              ) : null}
               <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
                 <div className="space-y-3 text-sm">
                   <div>
@@ -179,7 +213,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                     </div>
                     <div className="text-muted-foreground ml-6">
                       Full control: Edit profile, configure tools, manage
-                      integrations, and modify permissions
+                      integrations.
                     </div>
                   </div>
                   <div>
@@ -204,7 +238,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                       handleAddUser()
                     }
                   }}
-                  disabled={isSubmitting}
+                  disabled={isFormDisabled}
                   className="flex-1"
                 />
                 <Select
@@ -212,7 +246,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                   onValueChange={value =>
                     setPermissionLevel(value as AgentPermissionLevelType)
                   }
-                  disabled={isSubmitting}
+                  disabled={isFormDisabled}
                 >
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
@@ -224,7 +258,9 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                 </Select>
                 <Button
                   onClick={handleAddUser}
-                  disabled={isSubmitting || !newUsername.trim()}
+                  disabled={
+                    isSubmitting || !newUsername.trim() || isFormDisabled
+                  }
                   type="button"
                 >
                   {isSubmitting ? (
@@ -239,9 +275,6 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
             {owners.length > 0 && (
               <div>
                 <label className="text-sm font-medium block mb-2">Owners</label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Users with complete control over this agent
-                </p>
                 <div className="space-y-2">
                   {owners.map(permission => (
                     <div
@@ -261,7 +294,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(permission)}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !permissionsGate.isAllowed}
                         className="hover:bg-destructive hover:text-destructive-foreground"
                       >
                         <XIcon className="w-4 h-4" />
@@ -277,9 +310,6 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                 <label className="text-sm font-medium block mb-2">
                   Editors
                 </label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Users with limited editing access
-                </p>
                 <div className="space-y-2">
                   {editors.map(permission => (
                     <div
@@ -299,7 +329,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(permission)}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !permissionsGate.isAllowed}
                         className="hover:bg-destructive hover:text-destructive-foreground"
                       >
                         <XIcon className="w-4 h-4" />

@@ -105,7 +105,7 @@ const TimelineItemResultTools = ({ output, queryKey, className }: Props) => {
     if (!creation) return '#'
     const fileType =
       getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
-    return `/create/${fileType}/${creation.tool}?creation=${creation._id}`
+    return `/studio/${fileType}/${creation.tool}?creation=${creation._id}`
   }
 
   const handleDelete = () => {

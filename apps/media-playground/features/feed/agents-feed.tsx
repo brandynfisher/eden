@@ -14,7 +14,7 @@ import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { RefObject, useMemo } from 'react'
+import React, { RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedAgentCursorArguments
@@ -28,6 +28,9 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
   hideContextMenu?: boolean
   improvedLayout?: boolean
+  customSort?: (agents: RowItem[]) => RowItem[]
+  renderCard?: (agent: Agent, queryKey: unknown[]) => React.JSX.Element
+  itemHeight?: number
 }
 
 const AgentsFeed = ({
@@ -42,6 +45,9 @@ const AgentsFeed = ({
   scrollRef,
   hideContextMenu = false,
   improvedLayout = false,
+  customSort,
+  renderCard,
+  itemHeight,
 }: Props) => {
   const dispatch = useAppDispatch()
   const layoutScrollRef = useScrollContainer()
@@ -129,11 +135,6 @@ const AgentsFeed = ({
                 queryKey={queryKey}
                 onClick={isSelectable ? onClick : undefined}
                 isSelected={isSelectable && selectedIds.includes(agent._id)}
-                className={
-                  isSelectable && selectedIds.includes(agent._id)
-                    ? 'ring-2 ring-primary ring-offset-2'
-                    : undefined
-                }
                 hideContextMenu={hideContextMenu}
                 improvedLayout={improvedLayout}
               />
@@ -172,23 +173,24 @@ const AgentsFeed = ({
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
-        render={(item: RowItem) => (
-          <AgentCard
-            agent={item as Agent}
-            queryKey={queryKey}
-            onClick={isSelectable ? onClick : undefined}
-            isSelected={
-              isSelectable && selectedIds.includes((item as Agent)._id)
-            }
-            className={
-              isSelectable && selectedIds.includes((item as Agent)._id)
-                ? 'ring-2 ring-primary ring-offset-2'
-                : undefined
-            }
-            hideContextMenu={hideContextMenu}
-            improvedLayout={improvedLayout}
-          />
-        )}
+        customSort={customSort}
+        itemHeight={itemHeight}
+        render={(item: RowItem) =>
+          renderCard ? (
+            renderCard(item as Agent, queryKey)
+          ) : (
+            <AgentCard
+              agent={item as Agent}
+              queryKey={queryKey}
+              onClick={isSelectable ? onClick : undefined}
+              isSelected={
+                isSelectable && selectedIds.includes((item as Agent)._id)
+              }
+              hideContextMenu={hideContextMenu}
+              improvedLayout={improvedLayout}
+            />
+          )
+        }
       />
     </div>
   )

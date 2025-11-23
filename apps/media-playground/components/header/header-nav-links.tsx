@@ -1,3 +1,5 @@
+'use client'
+
 import { Separator } from '@/components/ui/separator'
 import { useLastAgent } from '@/hooks/use-last-agent'
 import { cn } from '@/lib/utils'
@@ -30,7 +32,7 @@ const HeaderNavLinks = ({
       return (
         (pathname?.startsWith('/explore') &&
           searchParams?.get('type') === 'tools') ||
-        pathname?.startsWith('/create')
+        pathname?.startsWith('/studio')
       )
     }
     if (path === 'explore') {
@@ -59,10 +61,15 @@ const HeaderNavLinks = ({
     onLinkClick?.()
   }
 
+  // Special links for /studio page
+  const isStudioPage = pathname?.startsWith('/studio')
+
   return (
     <nav className={cn(baseClassName, className)}>
       <Link
-        href={isHydrated ? getChatUrl() : '/chat/eve'}
+        href={
+          isStudioPage ? '/chat' : isHydrated ? getChatUrl() : '/chat?agent=eve'
+        }
         className={getLinkClassName('chat')}
         onClick={handleLinkClick}
       >
@@ -75,43 +82,29 @@ const HeaderNavLinks = ({
         />
       )}
       <Link
-        href="/sessions"
-        className={getLinkClassName('sessions')}
-        onClick={handleLinkClick}
-      >
-        <span className="flex items-center gap-1.5">
-          Sessions
-          <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-            BETA
-          </span>
-        </span>
-      </Link>
-      {orientation === 'horizontal' && (
-        <Separator
-          orientation="vertical"
-          className="h-3 sm:h-4 flex-shrink-0"
-        />
-      )}
-      <Link
-        href="/explore?type=agents"
+        href={isStudioPage ? '/explore?type=creations' : '/explore?type=agents'}
         className={getLinkClassName('explore')}
         onClick={handleLinkClick}
       >
         Explore
       </Link>
-      {orientation === 'horizontal' && (
-        <Separator
-          orientation="vertical"
-          className="h-3 sm:h-4 flex-shrink-0"
-        />
+      {!isStudioPage && (
+        <>
+          {orientation === 'horizontal' && (
+            <Separator
+              orientation="vertical"
+              className="h-3 sm:h-4 flex-shrink-0"
+            />
+          )}
+          <Link
+            href="/explore?type=tools"
+            className={getLinkClassName('tools')}
+            onClick={handleLinkClick}
+          >
+            Tools
+          </Link>
+        </>
       )}
-      <Link
-        href="/explore?type=tools"
-        className={getLinkClassName('tools')}
-        onClick={handleLinkClick}
-      >
-        Tools
-      </Link>
     </nav>
   )
 }

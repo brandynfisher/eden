@@ -72,7 +72,7 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-80 max-w-[90vw] max-h-[60vh] md:max-h-[80vh]"
+        className="w-[460px] max-w-[90vw] max-h-[60vh] md:max-h-[80vh]"
         align="end"
         sideOffset={5}
         forceMount

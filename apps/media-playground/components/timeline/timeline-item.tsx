@@ -62,7 +62,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     }
   }, [])
 
-  const num_samples = (item.args.n_samples ?? item.args.num_outputs) || false
+  const num_samples = (item.args?.n_samples ?? item.args?.num_outputs) || false
 
   return (
     <div
@@ -76,7 +76,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
       <div className="flex items-center justify-center h-full w-full flex-grow">
         <div
           className={cn([
-            'grid gap-2 auto-cols-fr',
+            'grid gap-2 auto-cols-fr w-full',
             !num_samples || num_samples === 1
               ? 'grid-cols-1'
               : 'grid-cols-1 sm:grid-cols-2 justify-items-center',
@@ -123,19 +123,21 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   ])}
                   style={{
                     aspectRatio:
-                      (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
+                      (item.args?.width ?? 1024) /
+                        (item.args?.height ?? 1024) ||
                       (item.output_type === 'audio' ? 3 : 1),
                   }}
                 >
                   <div
                     className={cn([
                       'max-h-[calc(60vh_-_72.4px)]',
-                      (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
+                      (item.args?.width ?? 1024) /
+                        (item.args?.height ?? 1024) ||
                       ((item.output_type === 'audio' ? 3 : 1) < 1 &&
                         (num_samples || 1) === 1)
                         ? 'h-[calc(60dvh_-_72.4px)] max-h-full flex justify-center max-w-full'
-                        : (item.args.width ?? 1024) /
-                            (item.args.height ?? 1024) >
+                        : (item.args?.width ?? 1024) /
+                            (item.args?.height ?? 1024) >
                             1 && (num_samples || 1) === 1
                         ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
                         : '',
@@ -145,12 +147,12 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       className="relative bg-accent z-10 rounded-md max-w-full max-h-full"
                       style={{
                         aspectRatio:
-                          (item.args.width ?? 1024) /
-                            (item.args.height ?? 1024) ||
+                          (item.args?.width ?? 1024) /
+                            (item.args?.height ?? 1024) ||
                           (item.output_type === 'audio' ? 3 : 1),
                         height:
-                          (item.args.width ?? 1024) /
-                            (item.args.height ?? 1024) <
+                          (item.args?.width ?? 1024) /
+                            (item.args?.height ?? 1024) <
                           1
                             ? '-webkit-fill-available'
                             : undefined,
@@ -173,7 +175,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                           item.status === 'running' && (
                             <LoraTrainingProgress
                               task={item}
-                              maxTrainSteps={item.args.max_train_steps || 200}
+                              maxTrainSteps={item.args?.max_train_steps || 200}
                             />
                           )}
                       </div>

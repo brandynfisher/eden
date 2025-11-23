@@ -1,113 +1,463 @@
 'use client'
 
-import MyAgentCard from '@/components/card/my-agent-card'
-import { ExploreAgentsGrid } from '@/components/explore-agents-grid'
+import AgentCard from '@/components/card/agent-card'
 import FeedSearchForm from '@/components/filter/feed-search-form'
-import { HomeFooter } from '@/components/footer/home-footer'
+import { useAppShell } from '@/components/layout/app-shell'
 import { Button } from '@/components/ui/button'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import { AgentDashboardModal } from '@/features/agent/agent-dashboard-modal'
+import { Card } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { FeaturedAgents } from '@/features/agent/featured-agents'
-import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
-import {
-  useRenderCount,
-  useRenderTime,
-  useUpdateThrottle,
-  useWhyDidYouUpdate,
-} from '@/lib/performance-debug'
-import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { EditIcon, MenuIcon, UserPlus } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+type AgentScope = 'mine' | 'shared' | 'public'
 
 const AgentsPage = () => {
-  const { user } = useAuthState()
+  const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
+  const {
+    user,
+    isLoading: isAuthLoading,
+    isSignedIn,
+    verifyAuth,
+  } = useAuthState()
+
+  const [searchInputValue, setSearchInputValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
-  const [dashboardAgentId, setDashboardAgentId] = useState<string | null>(null)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [scope, setScope] = useState<AgentScope>('public')
+  const [didSetDefaultScope, setDidSetDefaultScope] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
-  // Performance debugging - remove after diagnosing
-  useRenderCount('AgentsPage')
-  useRenderTime('AgentsPage')
+  const { lastAgents, isLoading: isPreferencesLoading } =
+    useUserPreferencesQuery({
+      enabled: !!isSignedIn,
+      populateOwner: true,
+    })
+  const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
+    enabled: scope === 'shared' && isSignedIn,
+  })
 
-  // Query for user's agents - filter by owner, sort by message count
-  const query: FeedAgentCursorArguments = useMemo(
-    () => ({
-      limit: 6,
-      ...(user?._id ? { owner: user._id } : {}),
-      ...(searchQuery ? { search: searchQuery } : {}),
-      sort: ['stats.messageCount;-1'],
-    }),
-    [user?._id, searchQuery],
+  // Keep mobile shell controls aligned with the layout
+  useEffect(() => {
+    setConfig({
+      sidebarVariant: 'chat',
+      mobileSidebarHeader: ({ close }) => (
+        <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+          <button onClick={() => close()} className="flex items-center gap-2">
+            <span className="text-lg font-semibold">Agents</span>
+          </button>
+          <button
+            onClick={async () => {
+              if (!(await verifyAuth())) return
+              close()
+              setIsAgentSelectorOpen(true)
+            }}
+            className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+            aria-label="New Chat"
+          >
+            <EditIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+      ),
+    })
+
+    return () => resetConfig()
+  }, [resetConfig, setConfig, verifyAuth])
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  // If user logs out, force public scope
+  useEffect(() => {
+    if (!isSignedIn && scope !== 'public') {
+      setScope('public')
+      setDidSetDefaultScope(false)
+    }
+  }, [isSignedIn, scope])
+
+  // Default to Mine once authenticated (but allow switching after)
+  useEffect(() => {
+    if (isSignedIn && !didSetDefaultScope) {
+      setScope('mine')
+      setDidSetDefaultScope(true)
+    }
+  }, [didSetDefaultScope, isSignedIn])
+
+  // Clear agentId after modal closes to prevent re-render issues during exit animation
+  useEffect(() => {
+    if (!isSettingsModalOpen && settingsAgentId) {
+      const timer = setTimeout(() => {
+        setSettingsAgentId(null)
+      }, 200) // Wait for exit animation to complete
+      return () => clearTimeout(timer)
+    }
+  }, [isSettingsModalOpen, settingsAgentId])
+
+  const recentAgents = useMemo(
+    () => (lastAgents || []).slice(0, 3),
+    [lastAgents],
   )
 
-  interface AgentPage {
-    docs: Agent[]
-    nextCursor?: string
+  const recentAgentsWithDescriptions = recentAgents
+
+  const myAgentsQuery: FeedAgentCursorArguments = useMemo(
+    () => ({
+      limit: 40,
+      ...(user?._id ? { owner: user._id } : {}),
+      sort: ['stats.messageCount;-1'],
+    }),
+    [user?._id],
+  )
+
+  const myAgentsQueryKey = useMemo(
+    () => ['feed', 'agents', 'mine', myAgentsQuery],
+    [myAgentsQuery],
+  )
+
+  const { data: myAgentsData, isLoading: isMyAgentsLoading } = useQuery({
+    queryKey: myAgentsQueryKey,
+    enabled: scope === 'mine' && isSignedIn,
+    queryFn: () =>
+      fetcher<{ docs: Agent[]; nextCursor?: string }>(
+        createCursorPaginationRoute('/api/feed/agents', {
+          ...myAgentsQuery,
+          cursor: '',
+          limit: myAgentsQuery.limit || 40,
+        }),
+      ),
+    staleTime: 30_000,
+  })
+
+  const myAgents = useMemo(() => myAgentsData?.docs || [], [myAgentsData])
+
+  const isRecentLoading = isSignedIn && isPreferencesLoading
+  const isScopeLoading =
+    (scope === 'mine' && isMyAgentsLoading) ||
+    (scope === 'shared' && isSharedLoading)
+  const isPageLoading =
+    !hasMounted ||
+    isAuthLoading ||
+    (isSignedIn && (isRecentLoading || isScopeLoading))
+
+  const publicAgentsQuery: FeedAgentCursorArguments = useMemo(
+    () => ({
+      limit: 40,
+      sort: ['stats.messageCount;-1'],
+      // Backend already applies public: true by default
+      ...(user?._id ? { excludeOwner: user._id } : {}),
+    }),
+    [user?._id],
+  )
+
+  const publicAgentsQueryKey = useMemo(
+    () => ['feed', 'agents', 'public', publicAgentsQuery],
+    [publicAgentsQuery],
+  )
+
+  const { data: publicAgentsData, isLoading: isPublicAgentsLoading } = useQuery(
+    {
+      queryKey: publicAgentsQueryKey,
+      enabled: scope === 'public',
+      queryFn: () =>
+        fetcher<{ docs: Agent[]; nextCursor?: string }>(
+          createCursorPaginationRoute('/api/feed/agents', {
+            ...publicAgentsQuery,
+            cursor: '',
+            limit: publicAgentsQuery.limit || 40,
+          }),
+        ),
+      staleTime: 30_000,
+    },
+  )
+
+  const publicAgents = useMemo(
+    () => publicAgentsData?.docs || [],
+    [publicAgentsData],
+  )
+
+  // Unified search query - searches all eligible agents (mine + public)
+  const unifiedSearchQuery: FeedAgentCursorArguments = useMemo(
+    () => ({
+      limit: 40,
+      search: searchQuery,
+      sort: ['stats.messageCount;-1'],
+    }),
+    [searchQuery],
+  )
+
+  const { data: unifiedSearchData, isLoading: isUnifiedSearchLoading } =
+    useQuery({
+      queryKey: ['feed', 'agents', 'unified-search', unifiedSearchQuery],
+      enabled: !!searchQuery,
+      queryFn: () =>
+        fetcher<{ docs: Agent[]; nextCursor?: string }>(
+          createCursorPaginationRoute('/api/feed/agents', {
+            ...unifiedSearchQuery,
+            cursor: '',
+            limit: 40,
+          }),
+        ),
+      staleTime: 30_000,
+    })
+
+  const unifiedSearchResults = useMemo(
+    () => unifiedSearchData?.docs || [],
+    [unifiedSearchData],
+  )
+
+  const filteredSharedAgents = useMemo(() => {
+    return [...sharedAgents].sort((a, b) => {
+      const aCount = a.agent?.stats?.messageCount || 0
+      const bCount = b.agent?.stats?.messageCount || 0
+      return bCount - aCount
+    })
+  }, [sharedAgents])
+
+  const renderFeaturedAgents = () => {
+    if (isSignedIn) return null
+
+    return (
+      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/15 via-violet-500/12 to-fuchsia-500/10 p-4 md:p-5 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Featured agents</h2>
+          </div>
+        </div>
+
+        <div className="relative mt-4">
+          <FeaturedAgents />
+        </div>
+      </Card>
+    )
   }
 
-  const { data, isLoading } = useInfiniteQuery<AgentPage>({
-    queryKey: ['feed', 'agents', 'my-agents', query],
-    queryFn: ({ pageParam }): Promise<AgentPage> => {
-      const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
-        ...query,
-        cursor: (pageParam as string) || '',
-        limit: 6,
-      })
-      return fetcher(paginationRoute)
-    },
-    getNextPageParam: lastPage => lastPage.nextCursor,
-    initialPageParam: '',
-    enabled: !!user?._id,
-  })
+  const renderRecentAgents = () => {
+    if (!isSignedIn || recentAgents.length === 0) return null
 
-  // Get agents from pages
-  const myAgents = useMemo(() => {
-    if (!data?.pages) return []
-    return data.pages.flatMap(page => page.docs || []).slice(0, 6) as Agent[]
-  }, [data])
+    return (
+      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/15 via-violet-500/12 to-fuchsia-500/10 p-4 md:p-5 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Recent agents</h2>
+          </div>
+        </div>
 
-  // More performance debugging
-  useWhyDidYouUpdate('AgentsPage', {
-    user,
-    searchQuery,
-    settingsAgentId,
-    dashboardAgentId,
-    isSidebarCollapsed,
-    isSheetOpen,
-    myAgentsLength: myAgents.length,
-  })
-  useUpdateThrottle('AgentsPage-data', data)
+        <div className="relative mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {recentAgentsWithDescriptions.map(agent => (
+            <AgentCard
+              key={agent._id}
+              agent={agent as Agent}
+              improvedLayout
+              hideContextMenu
+              showSettings
+              onSettings={() => {
+                setSettingsAgentId(agent.username || agent._id)
+                setIsSettingsModalOpen(true)
+              }}
+            />
+          ))}
+        </div>
+      </Card>
+    )
+  }
 
-  // Query for public agents - user's own agents will be filtered out in the component
-  const exploreAgentsQuery: FeedAgentCursorArguments = useMemo(
-    () => ({
-      limit: user ? 15 : 30, // 30 when not logged in, 15 when logged in
-      sort: ['stats.messageCount;-1'],
-    }),
-    [user],
-  )
+  const renderScopeFeed = () => {
+    if (scope === 'shared') {
+      if (!isSignedIn) {
+        return (
+          <div className="rounded-xl border border-dashed p-6 text-center text-muted-foreground">
+            Sign in to see agents shared with you.
+          </div>
+        )
+      }
+
+      if (isSharedLoading) {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[200px] rounded-lg bg-muted animate-pulse"
+              />
+            ))}
+          </div>
+        )
+      }
+
+      if (filteredSharedAgents.length === 0) {
+        return (
+          <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+            No one has shared agents with you yet.
+          </div>
+        )
+      }
+
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredSharedAgents.map(({ agent }) => (
+            <AgentCard
+              key={agent._id}
+              agent={agent as Agent}
+              improvedLayout
+              hideContextMenu
+              showSettings
+              onSettings={() => {
+                setSettingsAgentId(agent.username || agent._id)
+                setIsSettingsModalOpen(true)
+              }}
+            />
+          ))}
+        </div>
+      )
+    }
+
+    if (scope === 'public') {
+      if (isPublicAgentsLoading) {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[200px] rounded-lg bg-muted animate-pulse"
+              />
+            ))}
+          </div>
+        )
+      }
+
+      if (!publicAgents.length) {
+        return (
+          <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+            No public agents available.
+          </div>
+        )
+      }
+
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {publicAgents.map(agent => (
+            <AgentCard
+              key={agent._id}
+              agent={agent}
+              improvedLayout
+              hideContextMenu
+            />
+          ))}
+        </div>
+      )
+    }
+
+    // Mine (default)
+    if (isMyAgentsLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[200px] rounded-lg bg-muted animate-pulse"
+            />
+          ))}
+        </div>
+      )
+    }
+
+    if (!myAgents.length) {
+      return (
+        <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+          You have not created any agents yet.
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {myAgents.map(agent => (
+          <AgentCard
+            key={agent._id}
+            agent={agent}
+            improvedLayout
+            hideContextMenu
+            showSettings
+            onSettings={() => {
+              setSettingsAgentId(agent.username || agent._id)
+              setIsSettingsModalOpen(true)
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const renderSearchResults = () => {
+    if (isUnifiedSearchLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[200px] rounded-lg bg-muted animate-pulse"
+            />
+          ))}
+        </div>
+      )
+    }
+
+    if (unifiedSearchResults.length === 0) {
+      return (
+        <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+          No agents match your search.
+        </div>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {unifiedSearchResults.map(agent => (
+          <AgentCard
+            key={agent._id}
+            agent={agent}
+            improvedLayout
+            hideContextMenu
+            showSettings
+            onSettings={() => {
+              setSettingsAgentId(agent.username || agent._id)
+              setIsSettingsModalOpen(true)
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const handleStartChat = useCallback(async () => {
+    if (!(await verifyAuth())) return
+    setIsAgentSelectorOpen(true)
+  }, [verifyAuth])
 
   return (
     <>
       {/* Mobile navbar */}
       <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
         <button
-          onClick={() => setIsSheetOpen(true)}
+          onClick={openMobileSidebar}
           className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
           aria-label="Open sidebar"
         >
@@ -116,7 +466,7 @@ const AgentsPage = () => {
         <h1 className="text-xl font-bold">Agents</h1>
         <div className="ml-auto">
           <button
-            onClick={() => setIsAgentSelectorOpen(true)}
+            onClick={handleStartChat}
             className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
             aria-label="New chat"
           >
@@ -125,209 +475,127 @@ const AgentsPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-12 md:top-0">
-        {/* MOBILE LEFT BAR SHEET */}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetContent
-            side="left"
-            className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
-          >
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            {/* Mobile sticky header with logo and new chat button */}
-            <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
-              <button
-                onClick={() => {
-                  setIsSheetOpen(false)
-                }}
-                className="flex items-center gap-2"
-              >
-                <span className="text-lg font-semibold">Agents</span>
-              </button>
-              <button
-                onClick={() => {
-                  setIsSheetOpen(false)
-                  setIsAgentSelectorOpen(true)
-                }}
-                className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
-                aria-label="New Chat"
-              >
-                <EditIcon className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-            {/* Scrollable sidebar content */}
-            <div className="flex-1 overflow-y-auto pl-3">
-              <SessionsSidebarContent
-                onItemClick={() => setIsSheetOpen(false)}
-                isChat={true}
-                isMobileSidebar={true}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-        >
-          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-          <ResizablePanel
-            defaultSize={20}
-            minSize={isSidebarCollapsed ? 0 : 15}
-            maxSize={30}
-            collapsible={false}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-              isSidebarCollapsed
-                ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-                : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-            )}
-          >
-            {isSidebarCollapsed ? (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(false)}
-                isCollapsed={true}
-                isChat={true}
-              />
-            ) : (
-              <SessionsSidebarContent
-                onSidebarToggle={() => setIsSidebarCollapsed(true)}
-                isChat={true}
-              />
-            )}
-          </ResizablePanel>
-
-          {/* Separator Handle - hidden, keeping for resizing functionality */}
-          <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-          {/* MAIN CONTENT PANEL */}
-          <ResizablePanel
-            defaultSize={80}
-            className="relative flex flex-col bg-background -ml-px"
-          >
-            <div className="flex flex-col h-full overflow-hidden">
-              <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
-                <div className="p-4 md:p-6 lg:p-8">
-                  {/* My Agents Section - Only shown when logged in */}
-                  {user && (
-                    <>
-                      {/* My Agents Section Title */}
-                      <div className="mb-4">
-                        <h2 className="text-2xl font-semibold">My Agents</h2>
-                      </div>
-
-                      {/* Search bar and New Agent button */}
-                      <div className="mb-6 flex gap-3">
-                        <FeedSearchForm
-                          handleSearch={setSearchQuery}
-                          className="flex-1 md:flex-initial md:w-[420px]"
-                        />
-                        <Button asChild size="default" className="gap-2">
-                          <Link href="/new/agent">
-                            <UserPlus className="w-4 h-4" />
-                            New Agent
-                          </Link>
-                        </Button>
-                      </div>
-
-                      {/* Agents grid - 2 rows, 3 columns */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-                        {isLoading ? (
-                          <>
-                            {[...Array(6)].map((_, i) => (
-                              <div
-                                key={i}
-                                className="h-64 bg-muted animate-pulse rounded-lg"
-                              />
-                            ))}
-                          </>
-                        ) : myAgents.length > 0 ? (
-                          myAgents.map(agent => (
-                            <MyAgentCard
-                              key={agent._id}
-                              agent={agent}
-                              userId={user._id}
-                              onSettingsClick={() =>
-                                setSettingsAgentId(agent.username)
-                              }
-                              onDashboardClick={() =>
-                                setDashboardAgentId(agent.username)
-                              }
-                            />
-                          ))
-                        ) : (
-                          <div className="col-span-full text-center py-12">
-                            <p className="text-muted-foreground">
-                              {searchQuery
-                                ? 'No agents found matching your search'
-                                : 'You have no agents yet'}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Featured Agents Section */}
-                  <div className="mb-8">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight">
-                        Featured Agents
-                      </h2>
-                    </div>
-                    <FeaturedAgents />
-                  </div>
-
-                  {/* Explore Agents Section */}
-                  <div className="mb-8">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight">
-                        Explore Agents
-                      </h2>
-                      <p className="text-muted-foreground mt-1">
-                        Discover and chat with AI agents created by the
-                        community
-                      </p>
-                    </div>
-
-                    <ExploreAgentsGrid query={exploreAgentsQuery} />
-                  </div>
-
-                  {/* Agent Selector Modal */}
-                  <SingleAgentSelectorModal
-                    open={isAgentSelectorOpen}
-                    onOpenChange={setIsAgentSelectorOpen}
-                    onSelect={agent => {
-                      setIsAgentSelectorOpen(false)
-                      window.location.href = `/chat/${agent.username}`
-                    }}
-                  />
-
-                  {/* Agent Settings Modal */}
-                  {settingsAgentId && (
-                    <AgentSettingsModal
-                      agentId={settingsAgentId}
-                      open={!!settingsAgentId}
-                      onOpenChange={open => !open && setSettingsAgentId(null)}
-                    />
-                  )}
-
-                  {/* Agent Dashboard Modal */}
-                  {dashboardAgentId && (
-                    <AgentDashboardModal
-                      agentId={dashboardAgentId}
-                      open={!!dashboardAgentId}
-                      onOpenChange={open => !open && setDashboardAgentId(null)}
-                    />
-                  )}
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="mx-auto flex flex-col flex-1 min-h-0 w-full">
+          <div className="p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+            <header className="space-y-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="space-y-1 hidden md:block">
+                  <h1 className="text-3xl font-bold tracking-tight">Agents</h1>
                 </div>
-
-                {/* Footer */}
-                <HomeFooter />
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={handleStartChat}
+                  >
+                    <EditIcon className="h-4 w-4" />
+                    Start a chat
+                  </Button>
+                  <Button asChild className="gap-2">
+                    <Link
+                      href="/new/agent"
+                      onClick={async event => {
+                        if (!(await verifyAuth())) {
+                          event.preventDefault()
+                          event.stopPropagation()
+                        }
+                      }}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      New agent
+                    </Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            </header>
+
+            {isPageLoading ? (
+              <div className="space-y-4">
+                <Card className="h-[200px] bg-muted/60 border-border/50 animate-pulse" />
+                <Card className="h-[420px] bg-muted/60 border-border/50 animate-pulse" />
+              </div>
+            ) : (
+              <>
+                {renderFeaturedAgents()}
+                {renderRecentAgents()}
+
+                <div className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm p-4 md:p-5 space-y-4">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-semibold">Browse agents</h2>
+                  </div>
+
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <Tabs
+                      value={scope}
+                      onValueChange={value => setScope(value as AgentScope)}
+                    >
+                      <TabsList className="flex flex-wrap gap-2 bg-muted/50 p-1">
+                        <TabsTrigger
+                          value="mine"
+                          disabled={!isSignedIn}
+                          className="text-sm"
+                        >
+                          Mine
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="shared"
+                          disabled={!isSignedIn}
+                          className="text-sm"
+                        >
+                          Shared
+                        </TabsTrigger>
+                        <TabsTrigger value="public" className="text-sm">
+                          Public
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end w-full lg:w-auto">
+                      <FeedSearchForm
+                        value={searchInputValue}
+                        onInputChange={setSearchInputValue}
+                        handleSearch={setSearchQuery}
+                        className="w-full sm:w-[260px] lg:w-[320px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">
+                      {searchQuery
+                        ? `Search results for "${searchQuery}"`
+                        : scope === 'mine'
+                        ? 'Your agents'
+                        : scope === 'shared'
+                        ? 'Shared with you'
+                        : 'Popular across Eden'}
+                    </p>
+                    {searchQuery ? renderSearchResults() : renderScopeFeed()}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
+
+      <SingleAgentSelectorModal
+        open={isAgentSelectorOpen}
+        onOpenChange={setIsAgentSelectorOpen}
+        onSelect={agent => {
+          setIsAgentSelectorOpen(false)
+          window.location.href = `/chat/${agent.username}`
+        }}
+      />
+
+      {settingsAgentId && (
+        <AgentSettingsModal
+          agentId={settingsAgentId}
+          open={isSettingsModalOpen}
+          onOpenChange={setIsSettingsModalOpen}
+        />
+      )}
     </>
   )
 }

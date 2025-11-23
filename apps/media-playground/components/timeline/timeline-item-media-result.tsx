@@ -13,7 +13,7 @@ import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 type Props = {
   task: TaskV2
@@ -31,27 +31,57 @@ export const MediaResultOutput = ({
   output: TasksV2ResultOutput
   index?: number
 }) => {
-  const num_samples = task.args.n_samples || task.args.num_outputs || false
+  const width = output.mediaAttributes?.width ?? task.args?.width ?? 1024
+  const height = output.mediaAttributes?.height ?? task.args?.height ?? 1024
+  const aspectRatio =
+    (width && height ? width / height : undefined) ||
+    output?.mediaAttributes?.aspectRatio ||
+    (task.output_type === 'audio' ? 3 : 1)
+
+  const computeFitSize = (ratio: number) => {
+    if (typeof window === 'undefined') {
+      return { width: '100%', height: 'auto' }
+    }
+    const maxWidth = Math.min(window.innerWidth * 0.9, 1200)
+    const maxHeight = window.innerHeight * 0.7
+
+    let computedWidth = maxWidth
+    let computedHeight = computedWidth / ratio
+
+    if (computedHeight > maxHeight) {
+      computedHeight = maxHeight
+      computedWidth = computedHeight * ratio
+    }
+
+    return { width: computedWidth, height: computedHeight }
+  }
+
+  const [fitSize, setFitSize] = useState(() => computeFitSize(aspectRatio))
+
+  useEffect(() => {
+    const handleResize = () => setFitSize(computeFitSize(aspectRatio))
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [aspectRatio])
 
   return (
     <div
-      // className="relative bg-accent z-10 rounded-md"
       className={cn([
-        'relative bg-accent z-10 rounded-md',
-        'max-h-[calc(60vh_-_72.4px)]',
-        (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
-        ((task.output_type === 'audio' ? 3 : 1) < 1 && (num_samples || 1) === 1)
-          ? 'h-full max-w-full flex justify-center '
-          : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
-            (num_samples || 1) === 1
-          ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
-          : '',
+        'relative bg-accent z-10 rounded-md w-full max-w-full',
+        'overflow-hidden flex items-center justify-center mx-auto',
+        'min-h-[260px] md:min-h-[320px] max-h-[70vh]',
       ])}
       style={{
-        aspectRatio:
-          output?.mediaAttributes?.aspectRatio ||
-          (task.output_type === 'audio' ? 3 : 1),
-        // height: '-webkit-fill-available',
+        aspectRatio,
+        width:
+          typeof fitSize.width === 'number'
+            ? `${fitSize.width}px`
+            : fitSize.width,
+        height:
+          typeof fitSize.height === 'number'
+            ? `${fitSize.height}px`
+            : fitSize.height,
       }}
     >
       {!output.creation?.public ? <PrivateIcon /> : null}
@@ -89,14 +119,15 @@ export const MediaResultOutput = ({
         </div>
       ) : (
         <LightboxTrigger
+          className="w-full h-full"
           slide={{
             url: output.url || output.filename,
             thumbnail: output.thumbnail || output.filename,
-            width: output.mediaAttributes?.width,
-            height: output.mediaAttributes?.height,
+            width,
+            height,
             duration: output.mediaAttributes?.duration || undefined,
             title: task.tool || undefined,
-            description: task.args.prompt || undefined,
+            description: task.args?.prompt || undefined,
           }}
           startIndex={index}
           videoProps={{
@@ -113,7 +144,7 @@ export const MediaResultOutput = ({
 }
 
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
-  const num_samples = task.args.n_samples || task.args.num_outputs || false
+  const num_samples = task.args?.n_samples || task.args?.num_outputs || false
 
   return (
     <>

@@ -43,12 +43,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { cn } from '@/lib/utils'
-import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, CronSchedule, Trigger } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import axios from 'axios'
@@ -258,19 +259,33 @@ export const taskSchema = z
 type TaskFormDto = z.infer<typeof taskSchema>
 
 const TaskFormModal: FC<{
-  agent: Agent
+  agent?: Agent
   editingTask?: Trigger | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: () => void
-}> = ({ agent, editingTask, open, onOpenChange, onSave }) => {
+}> = ({ agent: agentProp, editingTask, open, onOpenChange, onSave }) => {
   const [isDeleting, setIsDeleting] = React.useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] =
     React.useState(false)
+  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = React.useState(false)
+  const [selectedAgentId, setSelectedAgentId] = React.useState<string | null>(
+    agentProp?._id || editingTask?.agent?._id || null,
+  )
+
+  // Fetch selected agent if we have an ID but no prop agent
+  const { agent: selectedAgent } = useAgentQuery({
+    key: selectedAgentId || '',
+    enabled: !!selectedAgentId && !agentProp,
+  })
+
+  // Use agent from prop, or selected agent, or editing task
+  const agent = agentProp || selectedAgent || editingTask?.agent
+
   // Fetch deployments separately since agent.deployments is empty
   const deploymentsQuery = useAgentDeploymentsQuery({
-    key: agent._id,
-    enabled: open, // Only fetch when modal is open
+    key: agent?._id || '',
+    enabled: open && !!agent?._id, // Only fetch when modal is open and we have an agent
   })
 
   // Get available social platforms based on agent deployments
@@ -312,21 +327,21 @@ const TaskFormModal: FC<{
     })
 
     // Fallback to agent's direct allowlists
-    if (discordChannels.length === 0 && agent.discordChannelAllowlist) {
+    if (discordChannels.length === 0 && agent?.discordChannelAllowlist) {
       discordChannels.push(...agent.discordChannelAllowlist)
     }
-    if (telegramChannels.length === 0 && agent.telegramTopicAllowlist) {
+    if (telegramChannels.length === 0 && agent?.telegramTopicAllowlist) {
       telegramChannels.push(...agent.telegramTopicAllowlist)
     }
 
     return { discordChannels, telegramChannels }
   }, [
     deploymentsQuery.deployments,
-    agent.discordChannelAllowlist,
-    agent.telegramTopicAllowlist,
+    agent?.discordChannelAllowlist,
+    agent?.telegramTopicAllowlist,
   ])
   const { invalidate } = useAgentTriggersQuery({
-    key: agent._id,
+    key: agent?._id || '',
     enabled: false,
   })
 
@@ -785,6 +800,33 @@ const TaskFormModal: FC<{
               {editingTask ? 'Edit Task' : 'Create New Task'}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Agent Selector - shown when no agent prop is provided */}
+          {!agentProp && (
+            <div className="mb-6 pb-6 border-b">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Agent
+                  <span className="text-destructive ml-1">*</span>
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-start h-12"
+                  onClick={() => setIsAgentSelectorOpen(true)}
+                >
+                  {agent ? (
+                    <span>{agent.name || agent.username}</span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Select an agent...
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit, () => {
@@ -1719,6 +1761,18 @@ const TaskFormModal: FC<{
           </DialogPrimitive.Content>
         </DialogPortal>
       </Dialog>
+
+      {/* Agent Selector Modal */}
+      {!agentProp && (
+        <SingleAgentSelectorModal
+          open={isAgentSelectorOpen}
+          onOpenChange={setIsAgentSelectorOpen}
+          onSelect={selectedAgent => {
+            setSelectedAgentId(selectedAgent._id)
+            setIsAgentSelectorOpen(false)
+          }}
+        />
+      )}
     </>
   )
 }

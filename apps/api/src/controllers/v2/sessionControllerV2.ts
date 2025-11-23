@@ -27,7 +27,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { Schema } from 'mongoose'
+import mongoose from 'mongoose'
 
 // Helper function to create eden messages for agent operations
 const createEdenMessage = async (
@@ -148,10 +148,10 @@ export const createSession = async (
   if (sessionType !== undefined && sessionType !== null) {
     if (
       typeof sessionType !== 'string' ||
-      !['chat', 'passive', 'automatic'].includes(sessionType)
+      !['normal', 'natural', 'automatic'].includes(sessionType)
     ) {
       return reply.status(400).send({
-        message: 'type must be "chat", "passive", or "automatic"',
+        message: 'type must be "normal", "natural", or "automatic"',
       })
     }
   }
@@ -184,10 +184,10 @@ export const createSession = async (
       settingsObj.delay_interval !== undefined &&
       (typeof settingsObj.delay_interval !== 'number' ||
         settingsObj.delay_interval < 0 ||
-        settingsObj.delay_interval > 3600)
+        settingsObj.delay_interval > 86400)
     ) {
       return reply.status(400).send({
-        message: 'delay_interval must be a number between 0 and 3600',
+        message: 'delay_interval must be a number between 0 and 86400',
       })
     }
 
@@ -244,6 +244,9 @@ export const createSession = async (
 
     if (status) {
       sessionData.status = status
+    } else if (sessionType === 'automatic') {
+      // Default to 'paused' for automatic sessions
+      sessionData.status = 'paused'
     }
 
     if (budget) {
@@ -333,7 +336,7 @@ export const createSessionMessage = async (
         turn_budget?: number
       }
       title?: string
-      session_type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'normal' | 'natural' | 'automatic'
       status?: 'active' | 'paused' | 'stopped' | 'archived'
       settings?: {
         conductor_prompt?: string
@@ -348,12 +351,19 @@ export const createSessionMessage = async (
   }>,
   reply: FastifyReply,
 ) => {
+  console.log('=====================================')
+  console.log('[SESSION] createSessionMessage called!')
+  console.log('[SESSION] Body:', JSON.stringify(request.body, null, 2))
+  console.log('=====================================')
+
   const { userId } = request.user || {}
   if (!userId) {
     return reply.status(400).send({
       message: 'User missing from request',
     })
   }
+
+  console.log('[SESSION] userId:', userId.toString())
 
   const {
     session_id,
@@ -566,16 +576,45 @@ export const createSessionMessage = async (
 
       // Update user preferences with last agents (don't await to avoid blocking the stream)
       if (session.agents && session.agents.length > 0) {
-        const userObjectId = new Schema.Types.ObjectId(userId.toString())
+        console.log(
+          '[UserPreferences] Updating preferences for user:',
+          userId.toString(),
+        )
+        console.log('[UserPreferences] Session agents:', session.agents)
+
+        const userOid =
+          userId instanceof mongoose.Types.ObjectId
+            ? userId
+            : new mongoose.Types.ObjectId(userId.toString())
+
         for (const agent of session.agents) {
-          const agentId =
-            typeof agent === 'object' && '_id' in agent
-              ? new Schema.Types.ObjectId(agent._id.toString())
-              : new Schema.Types.ObjectId(agent as string)
-          UserPreferences.updateLastAgent(userObjectId, agentId).catch(err => {
-            console.error('Error updating user preferences:', err)
-          })
+          const agentOid =
+            agent instanceof mongoose.Types.ObjectId
+              ? agent
+              : new mongoose.Types.ObjectId(agent.toString())
+
+          console.log(
+            '[UserPreferences] Updating with agent:',
+            agentOid.toString(),
+          )
+          UserPreferences.updateLastAgent(userOid, agentOid)
+            .then(() => {
+              console.log(
+                '[UserPreferences] Successfully updated with agent:',
+                agentOid.toString(),
+              )
+            })
+            .catch(err => {
+              console.error(
+                '[UserPreferences] Error updating user preferences:',
+                err,
+              )
+            })
         }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
       }
     } else {
       // Non-streaming response
@@ -601,18 +640,44 @@ export const createSessionMessage = async (
       // Update user preferences with last agents
       if (session.agents && session.agents.length > 0) {
         try {
-          const userObjectId = new Schema.Types.ObjectId(userId.toString())
+          console.log(
+            '[UserPreferences] Updating preferences for user:',
+            userId.toString(),
+          )
+          console.log('[UserPreferences] Session agents:', session.agents)
+
+          const userOid =
+            userId instanceof mongoose.Types.ObjectId
+              ? userId
+              : new mongoose.Types.ObjectId(userId.toString())
+
           for (const agent of session.agents) {
-            const agentId =
-              typeof agent === 'object' && '_id' in agent
-                ? new Schema.Types.ObjectId(agent._id.toString())
-                : new Schema.Types.ObjectId(agent as string)
-            await UserPreferences.updateLastAgent(userObjectId, agentId)
+            const agentOid =
+              agent instanceof mongoose.Types.ObjectId
+                ? agent
+                : new mongoose.Types.ObjectId(agent.toString())
+
+            console.log(
+              '[UserPreferences] Updating with agent:',
+              agentOid.toString(),
+            )
+            await UserPreferences.updateLastAgent(userOid, agentOid)
+            console.log(
+              '[UserPreferences] Successfully updated with agent:',
+              agentOid.toString(),
+            )
           }
         } catch (err) {
-          console.error('Error updating user preferences:', err)
+          console.error(
+            '[UserPreferences] Error updating user preferences:',
+            err,
+          )
           // Continue even if preference update fails
         }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
       }
 
       return reply.status(200).send({
@@ -1991,7 +2056,7 @@ export const updateSessionStatus = async (
 
     return reply.status(200).send(response)
   } catch (error) {
-    server.log.error('Error updating session status:', error)
+    server.log.error({ err: error }, 'Error updating session status:')
 
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500
@@ -2002,6 +2067,115 @@ export const updateSessionStatus = async (
         message,
       })
     }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}
+
+/**
+ * Add a message to a session passively (without triggering agent responses)
+ * This is used for realtime voice conversations where messages are recorded
+ * but should not trigger the async prompt flow
+ */
+export const addPassiveMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Body: {
+      session_id: string
+      user_id: string
+      role: 'user' | 'assistant'
+      content: string
+    }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { session_id, user_id, role, content } = request.body
+
+  // Validation
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'session_id is required',
+    })
+  }
+
+  if (!user_id) {
+    return reply.status(400).send({
+      message: 'user_id is required',
+    })
+  }
+
+  if (!role || !['user', 'assistant'].includes(role)) {
+    return reply.status(400).send({
+      message: 'role must be either "user" or "assistant"',
+    })
+  }
+
+  if (!content || typeof content !== 'string') {
+    return reply.status(400).send({
+      message: 'content is required and must be a string',
+    })
+  }
+
+  try {
+    // Verify session exists
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Verify user exists
+    const user = await User.findById(user_id)
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    // For assistant role, we need to find the agent
+    let senderId: ObjectId
+    if (role === 'assistant') {
+      // Get the first agent in the session as the sender
+      // (or you could pass agent_id in the request body if needed)
+      if (!session.agents || session.agents.length === 0) {
+        return reply.status(400).send({
+          message: 'Session has no agents for assistant message',
+        })
+      }
+      const firstAgent = session.agents[0]
+      // Handle both ObjectId and populated AgentDocument
+      senderId =
+        firstAgent instanceof ObjectId
+          ? firstAgent
+          : new ObjectId((firstAgent as any)._id || firstAgent)
+    } else {
+      senderId = new ObjectId(user_id)
+    }
+
+    // Create and save the message directly to MongoDB
+    const message = new Message({
+      session: new ObjectId(session_id),
+      sender: senderId,
+      eden_user_id: new ObjectId(user_id),
+      role: role,
+      content: content,
+    })
+
+    await message.save()
+
+    // Add message to session's messages array
+    session.messages.push(message._id as any)
+    await session.save()
+
+    return reply.status(200).send({
+      success: true,
+      message_id: message._id.toString(),
+    })
+  } catch (error) {
+    server.log.error({ err: error }, 'Error adding passive message:')
 
     return reply.status(500).send({
       message: 'Internal server error',

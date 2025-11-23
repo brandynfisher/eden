@@ -4,6 +4,7 @@ import {
   untrackSessionView,
 } from '../../controllers/sessionTrackingController'
 import {
+  addPassiveMessage,
   addSessionMessageReaction,
   cancelSession,
   createSession,
@@ -76,8 +77,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),
@@ -93,7 +94,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           Type.Object({
             conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
             delay_interval: Type.Optional(
-              Type.Number({ minimum: 0, maximum: 3600 }),
+              Type.Number({ minimum: 0, maximum: 86400 }),
             ),
             mention_force_reply: Type.Optional(Type.Boolean()),
           }),
@@ -140,7 +141,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         turn_budget?: number
       }
       title?: string
-      session_type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'normal' | 'natural' | 'automatic'
       settings?: {
         conductor_prompt?: string
         delay_interval: number
@@ -186,8 +187,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),
@@ -195,7 +196,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           Type.Object({
             conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
             delay_interval: Type.Optional(
-              Type.Number({ minimum: 0, maximum: 3600 }),
+              Type.Number({ minimum: 0, maximum: 86400 }),
             ),
             mention_force_reply: Type.Optional(Type.Boolean()),
           }),
@@ -401,8 +402,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         agent_ids: Type.Optional(Type.Array(Type.String())),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('chat'),
-            Type.Literal('passive'),
+            Type.Literal('normal'),
+            Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
         ),
@@ -977,6 +978,51 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
     handler: (request, reply) => isSessionActive(server, request, reply),
+  })
+
+  // Add passive message endpoint (for realtime voice conversations)
+  server.post<{
+    Body: {
+      session_id: string
+      user_id: string
+      role: 'user' | 'assistant'
+      content: string
+    }
+  }>('/v2/sessions/add-message', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Add Passive Message',
+      description:
+        'Add a message to a session without triggering agent responses. Used for realtime voice conversations where messages are recorded but should not trigger the async prompt flow.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+        user_id: Type.String(),
+        role: Type.Union([Type.Literal('user'), Type.Literal('assistant')]),
+        content: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          message_id: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => addPassiveMessage(server, request, reply),
   })
 }
 

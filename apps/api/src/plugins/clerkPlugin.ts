@@ -44,7 +44,7 @@ export const registerClerk = async (fastify: FastifyInstance) => {
     })
     fastify.log.info('Successfully registered plugin: Clerk')
   } catch (err) {
-    fastify.log.error('Plugin: Clerk, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Clerk, error on register')
   }
 }
 
