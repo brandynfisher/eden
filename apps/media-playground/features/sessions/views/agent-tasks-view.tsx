@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -8,6 +9,7 @@ import {
 } from '@/components/ui/collapsible'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { Agent, Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -212,10 +214,13 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
     null,
   )
   const [showFinished, setShowFinished] = useState(false)
+  const tasksGate = useGatedResource(GatedResource.Tasks, {
+    lockedBehavior: 'modal',
+  })
 
   const triggersQuery = useAgentTriggersQuery({
     key: agent._id,
-    enabled: !isModalOpen, // Disable refetching while modal is open
+    enabled: tasksGate.isAllowed && !isModalOpen, // Disable refetching while modal is open or gated
   })
 
   const { activeTriggers, finishedTriggers } = useMemo(() => {
@@ -280,6 +285,10 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
   }, [triggersQuery.triggers])
 
   const handleCreateNew = () => {
+    if (!tasksGate.isAllowed) {
+      tasksGate.openGate()
+      return
+    }
     setEditingTask(null)
     setIsModalOpen(true)
   }
@@ -334,106 +343,124 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
           </div>
         )}
 
-        {/* Task Modal */}
-        <TaskFormModal
-          agent={agent}
-          editingTask={editingTask}
-          open={isModalOpen}
-          onOpenChange={handleModalClose}
-          onSave={handleSave}
-        />
+        {!tasksGate.isAllowed ? (
+          <LockedFeatureBanner
+            gate={tasksGate}
+            title="Tasks are available on Basic and above"
+            description="Automate your agents with scheduled tasks by upgrading your plan."
+          />
+        ) : (
+          <>
+            {/* Task Modal */}
+            <TaskFormModal
+              agent={agent}
+              editingTask={editingTask}
+              open={isModalOpen}
+              onOpenChange={handleModalClose}
+              onSave={handleSave}
+            />
 
-        {/* Tasks List */}
-        <div className="space-y-6">
-          {/* Active Tasks */}
-          <div className="rounded-xl border border-border bg-card">
-            <div className="p-4 border-b flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="font-semibold">Active Tasks</h3>
-              <Button
-                onClick={handleCreateNew}
-                className="gap-2 w-full sm:w-auto"
-              >
-                <PlusIcon className="w-4 h-4" />
-                Create Task
-              </Button>
-            </div>
-            {triggersQuery.isPending ? (
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin" />
-              </div>
-            ) : triggersQuery.isError ? (
-              <div className="flex items-center justify-center gap-2 p-8 text-destructive">
-                <AlertCircle className="w-5 h-5" />
-                <p>Failed to load tasks. Please try again later.</p>
-              </div>
-            ) : activeTriggers.length === 0 && finishedTriggers.length === 0 ? (
-              <div className="text-center p-8 text-muted-foreground">
-                <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No scheduled tasks</p>
-                <p className="text-sm">
-                  Create your first automated task to get started.
-                </p>
-              </div>
-            ) : activeTriggers.length === 0 ? (
-              <div className="text-center p-8 text-muted-foreground">
-                <p className="text-sm">No active tasks</p>
-              </div>
-            ) : (
-              <div className="divide-y">
-                {activeTriggers.map(trigger => (
-                  <TaskItem
-                    key={trigger._id}
-                    trigger={trigger}
-                    agentId={agent._id}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    isFinished={false}
-                    timezone={userTimezone}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Finished Tasks - Collapsible Section */}
-          {!triggersQuery.isPending &&
-            !triggersQuery.isError &&
-            finishedTriggers.length > 0 && (
+            {/* Tasks List */}
+            <div className="space-y-6">
+              {/* Active Tasks */}
               <div className="rounded-xl border border-border bg-card">
-                <Collapsible open={showFinished} onOpenChange={setShowFinished}>
-                  <CollapsibleTrigger asChild>
-                    <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">
-                          Finished Tasks ({finishedTriggers.length})
-                        </h3>
-                        <ChevronDownIcon
-                          className={`h-4 w-4 transition-transform ${
-                            showFinished ? 'rotate-180' : ''
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="divide-y">
-                      {finishedTriggers.map(trigger => (
-                        <TaskItem
-                          key={trigger._id}
-                          trigger={trigger}
-                          agentId={agent._id}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          isFinished={true}
-                          timezone={userTimezone}
-                        />
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                <div className="p-4 border-b flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="font-semibold">Active Tasks</h3>
+                  {tasksGate.isAllowed && (
+                    <Button
+                      onClick={handleCreateNew}
+                      className="gap-2 w-full sm:w-auto"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      Create Task
+                    </Button>
+                  )}
+                </div>
+                {triggersQuery.isPending ? (
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                ) : triggersQuery.isError ? (
+                  <div className="flex items-center justify-center gap-2 p-8 text-destructive">
+                    <AlertCircle className="w-5 h-5" />
+                    <p>Failed to load tasks. Please try again later.</p>
+                  </div>
+                ) : activeTriggers.length === 0 &&
+                  finishedTriggers.length === 0 ? (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">
+                      No scheduled tasks
+                    </p>
+                    <p className="text-sm">
+                      Create your first automated task to get started.
+                    </p>
+                  </div>
+                ) : activeTriggers.length === 0 ? (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <p className="text-sm">No active tasks</p>
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {activeTriggers.map(trigger => (
+                      <TaskItem
+                        key={trigger._id}
+                        trigger={trigger}
+                        agentId={agent._id}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        isFinished={false}
+                        timezone={userTimezone}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-        </div>
+
+              {/* Finished Tasks - Collapsible Section */}
+              {!triggersQuery.isPending &&
+                !triggersQuery.isError &&
+                finishedTriggers.length > 0 && (
+                  <div className="rounded-xl border border-border bg-card">
+                    <Collapsible
+                      open={showFinished}
+                      onOpenChange={setShowFinished}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">
+                              Finished Tasks ({finishedTriggers.length})
+                            </h3>
+                            <ChevronDownIcon
+                              className={`h-4 w-4 transition-transform ${
+                                showFinished ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="divide-y">
+                          {finishedTriggers.map(trigger => (
+                            <TaskItem
+                              key={trigger._id}
+                              trigger={trigger}
+                              agentId={agent._id}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                              isFinished={true}
+                              timezone={userTimezone}
+                            />
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

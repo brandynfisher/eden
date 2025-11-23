@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils'
 import { updateDeleteDialog } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useAuth } from '@clerk/nextjs'
-import { FeatureFlag, SessionShare } from '@edenlabs/eden-sdk'
+import { SessionShare } from '@edenlabs/eden-sdk'
 import {
   CircleUserIcon,
   CreditCardIcon,
@@ -290,7 +290,6 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
   const { user, isLoading: isUserLoading } = useMe({
     isAuthenticated: !!isSignedIn,
   })
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const [activeTab, setActiveTab] = useState(initialTab)
 
@@ -335,26 +334,24 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
       },
     ]
 
-    if (isPreviewUser) {
-      tabs.push({
-        key: 'api',
-        label: 'API Keys',
-        icon: KeyIcon,
-        section: 'Developers',
-      })
-      tabs.push({
-        key: 'tasks',
-        label: 'Tasks',
-        icon: ListIcon,
-        section: 'Agents',
-      })
-      tabs.push({
-        key: 'integrations',
-        label: 'Integrations',
-        icon: RadioIcon,
-        section: 'Agents',
-      })
-    }
+    tabs.push({
+      key: 'api',
+      label: 'API Keys',
+      icon: KeyIcon,
+      section: 'Developers',
+    })
+    tabs.push({
+      key: 'tasks',
+      label: 'Tasks',
+      icon: ListIcon,
+      section: 'Agents',
+    })
+    tabs.push({
+      key: 'integrations',
+      label: 'Integrations',
+      icon: RadioIcon,
+      section: 'Agents',
+    })
 
     return tabs
   }
@@ -529,18 +526,16 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'api' && isPreviewUser && (
+                {activeTab === 'api' && (
                   <div>
                     <h3 className="text-lg font-semibold mb-4">API Keys</h3>
                     <ApiKeysCard />
                   </div>
                 )}
 
-                {activeTab === 'tasks' && isPreviewUser && <TasksPage />}
+                {activeTab === 'tasks' && <TasksPage />}
 
-                {activeTab === 'integrations' && isPreviewUser && (
-                  <IntegrationsPage />
-                )}
+                {activeTab === 'integrations' && <IntegrationsPage />}
               </div>
             </ScrollArea>
           </div>
