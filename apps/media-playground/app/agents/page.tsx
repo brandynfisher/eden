@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
+import { FeaturedAgents } from '@/features/agent/featured-agents'
 import AgentsFeed from '@/features/feed/agents-feed'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
@@ -213,6 +214,27 @@ const AgentsPage = () => {
       return bCount - aCount
     })
   }, [sharedAgents])
+
+  const renderFeaturedAgents = () => {
+    if (isSignedIn) return null
+
+    return (
+      <Card className="mb-6 border-primary/30 bg-gradient-to-br from-primary/15 via-violet-500/12 to-fuchsia-500/10 p-4 md:p-5 relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute -top-20 -right-20 w-56 h-56 bg-violet-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-fuchsia-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Featured agents</h2>
+          </div>
+        </div>
+
+        <div className="relative mt-4">
+          <FeaturedAgents />
+        </div>
+      </Card>
+    )
+  }
 
   const renderRecentAgents = () => {
     if (!isSignedIn || recentAgents.length === 0) return null
@@ -461,6 +483,7 @@ const AgentsPage = () => {
               </div>
             ) : (
               <>
+                {renderFeaturedAgents()}
                 {renderRecentAgents()}
 
                 <div className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm p-4 md:p-5 space-y-4">

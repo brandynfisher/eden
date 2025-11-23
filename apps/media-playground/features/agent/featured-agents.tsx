@@ -12,14 +12,14 @@ import Link from 'next/link'
 
 const featuredAgentIds =
   env.NEXT_PUBLIC_APP_ENV === 'production'
-    ? ['abraham', 'solienne', 'verdelis']
+    ? ['abraham', 'solienne', 'verdelis', 'eve', 'vjmaster', 'mechanical_duck']
     : [
         'eve',
-        'abraham',
         'eden_gigabrain',
-        'verdelis',
-        'mechanical_duck',
+        'abraham',
+        'mycos',
         'hypotheticards',
+        'invention-peddler',
       ]
 
 export const FeaturedAgents = () => {
