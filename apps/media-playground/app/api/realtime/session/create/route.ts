@@ -1,7 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient, SessionType } from '@edenlabs/eden-sdk'
+import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -31,14 +31,15 @@ export async function POST(request: NextRequest) {
     })
 
     // Create session using Eden SDK
+    // Note: session_type defaults to 'chat' if not provided, so we omit it
+    // status defaults to 'active' if not provided, so we omit it
     const res = await eden.sessions.v2.create({
       agent_ids: [agentId],
       title: 'Realtime Conversation',
-      session_type: SessionType.NORMAL,
-      status: 'active',
     })
 
     if (!res.success) {
+      console.error('Session creation failed:', res.message, res)
       return new NextResponse(
         JSON.stringify({
           message: res.message || 'Session creation failed',
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(res)
   } catch (error) {
+    console.error('Error in session create endpoint:', error)
     const errorMessage = handleAxiosServerError(error)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,

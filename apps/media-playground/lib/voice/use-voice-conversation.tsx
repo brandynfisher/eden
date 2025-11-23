@@ -1,5 +1,6 @@
 'use client'
 
+import { SAFE_MICROPHONE_CONSTRAINTS } from './audio-config'
 import { validateDynamicVariables } from './build-dynamic-variables'
 import {
   ConnectionStatus,
@@ -199,6 +200,10 @@ export function useVoiceConversation(
         `Disconnected from agent. Reason: ${JSON.stringify(reason)}`,
         'warning',
       )
+      // Clear transcript and reset state when conversation ends
+      setTranscript([])
+      stopVolumeMonitoring()
+      sessionIdRef.current = null
     },
     onMessage: async (message: { source: string; message: string }) => {
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'
@@ -269,14 +274,32 @@ export function useVoiceConversation(
       currentAgentId = configData.agentId
     }
 
+    let stream: MediaStream | null = null
+
     try {
-      // Request microphone permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      // Request microphone permission with safe configuration
+      addDebugLog('Requesting microphone permission...', 'info')
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: SAFE_MICROPHONE_CONSTRAINTS,
+          video: false,
+        })
+        addDebugLog('Microphone permission granted', 'success')
+      } catch (micError) {
+        const micErrorMessage =
+          micError instanceof Error ? micError.message : 'Unknown error'
+        addDebugLog(
+          `Failed to get microphone permission: ${micErrorMessage}. Please allow microphone access in your browser settings.`,
+          'error',
+        )
+        throw micError
+      }
 
       // Start monitoring microphone volume
       startVolumeMonitoring(stream)
 
       // Create Eden session with user info
+      addDebugLog('Creating Eden session...', 'info')
       try {
         // Filter out empty values from userInfo
         const filledUserInfo = config.userInfo
@@ -311,24 +334,52 @@ export function useVoiceConversation(
           )
         }
       } catch (error) {
-        addDebugLog('Error creating session', 'error')
+        const sessionErrorMessage =
+          error instanceof Error ? error.message : 'Unknown error'
+        addDebugLog(
+          `Error creating Eden session: ${sessionErrorMessage}`,
+          'error',
+        )
       }
 
       // Prepare conversation config with dynamic variables
       const sessionConfig = prepareConversationConfig()
 
       // Start the conversation with dynamic variables
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (conversation.startSession as any)({
-        agentId: currentAgentId,
-        ...sessionConfig,
-      })
+      addDebugLog('Starting ElevenLabs conversation...', 'info')
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (conversation.startSession as any)({
+          agentId: currentAgentId,
+          ...sessionConfig,
+        })
+        addDebugLog('ElevenLabs conversation started successfully', 'success')
+      } catch (elevenLabsError) {
+        const elevenLabsErrorMessage =
+          elevenLabsError instanceof Error
+            ? elevenLabsError.message
+            : 'Unknown error'
+        addDebugLog(
+          `Failed to start ElevenLabs conversation: ${elevenLabsErrorMessage}`,
+          'error',
+        )
+        throw elevenLabsError
+      }
 
       addDebugLog('Connected', 'success')
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
-      addDebugLog(`Failed to start: ${errorMessage}`, 'error')
+      addDebugLog(`Failed to start conversation: ${errorMessage}`, 'error')
+
+      // Cleanup: Stop all tracks on the stream if it was obtained
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+        addDebugLog('Microphone stream cleaned up after error', 'info')
+      }
+
+      // Cleanup: Stop volume monitoring if it was started
+      stopVolumeMonitoring()
     }
   }, [
     apiKey,
@@ -339,6 +390,7 @@ export function useVoiceConversation(
     prepareConversationConfig,
     addDebugLog,
     startVolumeMonitoring,
+    stopVolumeMonitoring,
     fetchConfig,
   ])
 
