@@ -1,6 +1,8 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
 // import LikeButton from '@/components/button/like-button'
+import { FarcasterIcon } from '@/components/icons/farcaster'
 import PrivateIcon from '@/components/icons/private-icon'
+import TwitterIcon from '@/components/icons/twitter'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -20,137 +22,193 @@ import {
   CheckIcon,
   GlobeIcon,
   MessageSquareIcon,
+  SettingsIcon,
   SquareMousePointerIcon,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 type Props = {
   agent: Agent
-  queryKey: QueryKey
+  queryKey?: QueryKey
   onClick?: (item: Agent) => void
+  onSettings?: () => void
   className?: string
   isSelected?: boolean
   hideContextMenu?: boolean
   improvedLayout?: boolean
+  showSettings?: boolean
 }
 
 const AgentCard = ({
   agent,
   queryKey,
   onClick,
+  onSettings,
   className,
   isSelected,
   hideContextMenu = false,
   improvedLayout = false,
+  showSettings = false,
 }: Props) => {
+  const router = useRouter()
+  const imageSrc =
+    agent.userImage && agent.userImage.trim()
+      ? getCloudfrontOriginalUrl(agent.userImage)
+      : undefined
+  const description = agent.description || 'No description provided yet.'
+  const messageCount = agent.stats?.messageCount || 0
+
   if (improvedLayout) {
     return (
-      <Card
-        className={cn([
-          'relative overflow-hidden border-2 z-10 transition-all duration-300 group cursor-pointer h-full w-full max-w-full',
-          // Base state
-          !isSelected && 'border-border/60 bg-card/80',
-          // Hover states
-          onClick &&
-            !isSelected &&
-            'hover:bg-muted/80 hover:shadow-md hover:border-primary/60',
-          !onClick &&
-            !isSelected &&
-            'hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
-          // Selected state - bold border with glow and background tint
+      <div
+        className={cn(
+          'group flex flex-row rounded-xl border bg-background/80 backdrop-blur-sm cursor-pointer relative',
+          'border-border/70 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/8',
+          'transition-all duration-200 h-full min-h-[200px] overflow-hidden',
+          // Selected state
           isSelected && [
             'border-primary bg-primary/5',
             'shadow-lg shadow-primary/25',
             'hover:shadow-xl hover:shadow-primary/30',
           ],
           className,
-        ])}
-        onClick={onClick ? () => onClick(agent) : undefined}
+        )}
+        onClick={() => {
+          if (onClick) {
+            onClick(agent)
+          } else {
+            router.push(`/agents/${agent.username}`)
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (onClick) {
+              onClick(agent)
+            } else {
+              router.push(`/agents/${agent.username}`)
+            }
+          }
+        }}
       >
-        {!agent.public ? <PrivateIcon className="" /> : null}
         {isSelected && (
           <div className="absolute top-3 right-3 z-50 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg shadow-primary/50 ring-2 ring-background">
             <CheckIcon className="h-4 w-4" />
           </div>
         )}
 
-        <Link
-          href={`/chat/${agent.username}`}
-          prefetch={false}
-          className={cn('block w-full', onClick && 'pointer-events-none')}
-        >
-          <div className="flex items-start p-4 gap-3 h-full min-h-[160px] w-full max-w-full overflow-hidden">
-            {/* Avatar and message count column on the left */}
-            <div className="flex-shrink-0 w-20 flex flex-col items-center gap-2">
-              <Avatar className="w-20 h-20">
-                <AvatarImage
-                  src={
-                    agent.userImage && agent.userImage.trim()
-                      ? getCloudfrontOriginalUrl(agent.userImage)
-                      : undefined
-                  }
-                  alt={agent.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-lg font-medium">
-                  {agent.name?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-
-              {/* Message count under avatar */}
-              <div className="flex items-center gap-1">
-                <MessageSquareIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs text-muted-foreground">
-                  {formatCompactNumber(agent.stats?.messageCount || 0)}
-                </span>
-              </div>
-            </div>
-
-            {/* Metadata on the right - strict width control */}
-            <div className="flex-1 min-w-0 flex flex-col space-y-1 overflow-hidden">
-              {/* Name - strictly truncated */}
-              <h3 className="font-semibold text-base leading-tight truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                {agent.name}
-              </h3>
-
-              {/* Owner - strictly truncated */}
-              <p className="text-xs text-muted-foreground truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                By <span className="font-medium">@{agent.owner.username}</span>
-              </p>
-
-              {/* Description - limited to 3 lines */}
-              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed overflow-hidden">
-                {agent.description}
-              </p>
-
-              {/* Website link if available */}
-              {agent.website && (
-                <div className="pt-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    asChild
-                    aria-label="Visit website"
-                    className="h-7 gap-1.5 text-xs pointer-events-auto"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <Link
-                      href={agent.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Visit website"
-                    >
-                      <GlobeIcon className="w-3 h-3" />
-                      Website
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </div>
+        {/* Left column: Avatar + Website */}
+        <div className="shrink-0 w-36 flex flex-col items-center justify-center p-4 gap-2">
+          <Avatar className="w-full aspect-square rounded-lg">
+            <AvatarImage
+              src={imageSrc}
+              alt={agent.name}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-muted text-3xl font-semibold rounded-lg">
+              {agent.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex items-center justify-center gap-3 h-8">
+            {agent.website && (
+              <Link
+                href={agent.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <GlobeIcon className="w-5 h-5" />
+              </Link>
+            )}
+            {agent.social_accounts?.twitter && (
+              <Link
+                href={`https://twitter.com/${agent.social_accounts.twitter}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="hover:opacity-80 transition-opacity"
+              >
+                <TwitterIcon size={18} />
+              </Link>
+            )}
+            {agent.social_accounts?.farcaster && (
+              <Link
+                href={`https://warpcast.com/${agent.social_accounts.farcaster}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="text-[#855DCD] hover:opacity-80 transition-opacity"
+              >
+                <FarcasterIcon size={18} />
+              </Link>
+            )}
           </div>
-        </Link>
-      </Card>
+        </div>
+
+        {/* Right column: Content */}
+        <div className="flex flex-col flex-1 min-w-0 py-4 pr-4">
+          {/* Settings button - top right */}
+          {showSettings && onSettings && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 absolute top-3 right-3"
+              onClick={e => {
+                e.stopPropagation()
+                onSettings()
+              }}
+              aria-label="Agent settings"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
+          )}
+
+          {/* Name and Owner */}
+          <div className="min-w-0 pr-8">
+            <h3 className="font-semibold text-lg leading-tight truncate">
+              {agent.name}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              by{' '}
+              <span className="font-medium">
+                @{agent.owner?.username || agent.username}
+              </span>
+            </p>
+          </div>
+
+          {/* Description - fixed 3 lines height */}
+          <p className="text-[15px] text-muted-foreground line-clamp-3 mt-2 leading-snug min-h-[3.6em]">
+            {description}
+          </p>
+
+          {/* Bottom row: Message count + Chat button */}
+          <div className="flex items-center justify-between mt-auto pt-3 gap-2">
+            {/* Message count */}
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+              <MessageSquareIcon className="h-3.5 w-3.5" />
+              {formatCompactNumber(messageCount)} messages
+            </span>
+
+            {/* Chat Button */}
+            <Button
+              size="sm"
+              variant="secondary"
+              className="h-8 px-4 text-sm"
+              onClick={e => {
+                e.stopPropagation()
+                router.push(`/chat?agent=${agent.username}`)
+              }}
+            >
+              Chat
+            </Button>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -293,7 +351,7 @@ const AgentCard = ({
               </Tooltip>
             </TooltipProvider>
           </div>
-          {!hideContextMenu && (
+          {!hideContextMenu && queryKey && (
             <AgentActionsMenu
               agent={agent}
               queryKey={queryKey}

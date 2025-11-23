@@ -1372,6 +1372,8 @@ export const getAgentsFeedCursor = async (
       public: 1,
       deleted: 1,
       stats: 1,
+      website: 1,
+      social_accounts: 1,
     },
   })
 

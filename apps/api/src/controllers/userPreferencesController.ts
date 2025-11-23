@@ -20,7 +20,8 @@ export const getUserPreferences = async (
 
     const basePopulateOptions = {
       path: 'last_agents',
-      select: 'username userImage name _id type owner description stats',
+      select:
+        'username userImage name _id type owner description stats website social_accounts',
       match: { deleted: { $ne: true } },
       ...(shouldPopulateOwner && {
         populate: { path: 'owner', select: 'username' },
@@ -29,7 +30,8 @@ export const getUserPreferences = async (
 
     const pinnedPopulateOptions = {
       path: 'pinned_agents',
-      select: 'username userImage name _id type owner description stats',
+      select:
+        'username userImage name _id type owner description stats website social_accounts',
       match: { deleted: { $ne: true } },
       ...(shouldPopulateOwner && {
         populate: { path: 'owner', select: 'username' },

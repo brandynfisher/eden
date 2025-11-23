@@ -79,6 +79,10 @@ export type Agent = Omit<
   discordId?: string
   voice?: string
   website?: string
+  social_accounts?: {
+    twitter?: string
+    farcaster?: string
+  }
   model?: {
     lora: ModelV2
     use_when?: string
@@ -144,6 +148,10 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   discordId?: string
   voice?: string
   website?: string
+  social_accounts?: {
+    twitter?: string
+    farcaster?: string
+  }
   models?: Array<{
     lora: string
     use_when?: string
@@ -168,6 +176,10 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   public?: boolean
   voice?: string
   website?: string
+  social_accounts?: {
+    twitter?: string
+    farcaster?: string
+  }
   models?: Array<{
     lora: string
     use_when?: string
