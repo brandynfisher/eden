@@ -50,7 +50,6 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 
 const CreateAgentView = () => {
   const router = useRouter()
-  const subscriptionUrl = 'http://localhost:3000/settings/subscription'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -90,13 +89,19 @@ const CreateAgentView = () => {
 
   const handleSubmit = async (data: AgentFormDto) => {
     try {
-      await axios.post('/api/agents', data)
-      router.push(`/chat/${data.key}`)
+      const response = await axios.post('/api/agents', data)
+      const createdAgent = response.data?.agent || data
+
       toast.success('Agent created successfully', {
         description: `"${data.name}" has been created successfully`,
         richColors: true,
         dismissible: true,
       })
+
+      const chatTarget = createdAgent.username || createdAgent.key
+      if (chatTarget) {
+        router.push(`/chat/${chatTarget}`)
+      }
     } catch (error) {
       const errorMessage =
         (error as AxiosError<{ message?: string }>).response?.data?.message ||
@@ -230,7 +235,6 @@ const CreateAgentView = () => {
                       checked={field.value || false}
                       onCheckedChange={field.onChange}
                       disabled={form.formState.isSubmitting}
-                      subscriptionUrl={subscriptionUrl}
                       entityLabel="agents"
                     />
                   </FormControl>

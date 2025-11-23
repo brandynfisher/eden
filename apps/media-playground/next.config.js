@@ -149,6 +149,15 @@ let nextConfig = {
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/agents',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 // Injected content via Sentry wizard below

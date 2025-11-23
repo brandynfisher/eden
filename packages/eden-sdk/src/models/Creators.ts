@@ -264,6 +264,7 @@ export enum FeatureFlag {
   AssistantAccess = 'assistant_access',
   FreeTools = 'free_tools',
   FeatureDeployments = 'feature_Deployments',
+  ApiKeyAccess = 'api_key_access',
   TestAgentRateLimit = 'test_agent_rate_limit',
   SessionsV2 = 'sessions_v2',
   ToolAccessVeo3 = 'tool_access_veo3',

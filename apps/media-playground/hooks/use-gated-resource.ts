@@ -9,6 +9,12 @@ export enum GatedResource {
   AddAgent = 'AddAgent',
   SessionSettings = 'SessionSettings',
   MakePrivate = 'MakePrivate',
+  Tasks = 'Tasks',
+  UserMemory = 'UserMemory',
+  CollectiveMemory = 'CollectiveMemory',
+  AgentPermissions = 'AgentPermissions',
+  Deployments = 'Deployments',
+  ApiKeys = 'ApiKeys',
 }
 
 type LockedBehavior = 'hide' | 'modal'
@@ -16,6 +22,7 @@ type LockedBehavior = 'hide' | 'modal'
 type PreviewGateConfig = {
   type: 'preview'
   featureFlag: FeatureFlag
+  additionalFeatureFlags?: FeatureFlag[]
   lockedBehavior?: LockedBehavior
 }
 
@@ -47,6 +54,43 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
     allowPreviewFlag: FeatureFlag.Preview,
     lockedBehavior: 'modal',
   },
+  [GatedResource.Tasks]: {
+    type: 'subscription',
+    featureName: 'Automated tasks',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.UserMemory]: {
+    type: 'subscription',
+    featureName: 'User memory',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.CollectiveMemory]: {
+    type: 'subscription',
+    featureName: 'Collective memory',
+    minimumSubscriptionTier: SubscriptionTier.Pro,
+    allowPreviewFlag: FeatureFlag.Preview,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.AgentPermissions]: {
+    type: 'subscription',
+    featureName: 'Agent permissions and sharing',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.Deployments]: {
+    type: 'subscription',
+    featureName: 'Agent deployments',
+    minimumSubscriptionTier: SubscriptionTier.Pro,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.ApiKeys]: {
+    type: 'preview',
+    featureFlag: FeatureFlag.ApiKeyAccess,
+    additionalFeatureFlags: [FeatureFlag.EdenAdmin],
+    lockedBehavior: 'modal',
+  },
 }
 
 type UseGatedResourceOptions = {
@@ -73,17 +117,30 @@ export const useGatedResource = (
     baseConfig.type === 'subscription'
       ? baseConfig.allowPreviewFlag
       : baseConfig.featureFlag
-  const isPreviewUser = previewFlag
-    ? !!user?.featureFlags?.includes(previewFlag)
-    : false
+  const hasGlobalPreviewFlag = !!user?.featureFlags?.includes(
+    FeatureFlag.Preview,
+  )
+  const isPreviewUser =
+    hasGlobalPreviewFlag ||
+    (previewFlag ? !!user?.featureFlags?.includes(previewFlag) : false)
 
   let isAllowed = false
   let minimumSubscriptionTier: SubscriptionTier | undefined
   let featureName: string | undefined
 
   if (baseConfig.type === 'preview') {
-    const hasFlag = !!user?.featureFlags?.includes(baseConfig.featureFlag)
+    const hasFlag =
+      hasGlobalPreviewFlag ||
+      !!user?.featureFlags?.includes(baseConfig.featureFlag)
+    const hasAdditionalFlag = baseConfig.additionalFeatureFlags
+      ? baseConfig.additionalFeatureFlags.some(flag =>
+          user?.featureFlags?.includes(flag),
+        )
+      : false
     isAllowed = hasFlag
+    if (!isAllowed && hasAdditionalFlag) {
+      isAllowed = true
+    }
   } else {
     const resolvedMinimumTier =
       options?.minimumSubscriptionTier ?? baseConfig.minimumSubscriptionTier
@@ -95,7 +152,7 @@ export const useGatedResource = (
     const hasAllowedPreview = allowPreviewFlag
       ? !!user?.featureFlags?.includes(allowPreviewFlag)
       : false
-    isAllowed = hasRequiredTier || hasAllowedPreview
+    isAllowed = hasRequiredTier || hasAllowedPreview || hasGlobalPreviewFlag
   }
 
   const shouldRender = isAllowed || lockedBehavior !== 'hide'
@@ -125,3 +182,5 @@ export const useGatedResource = (
     openGate,
   }
 }
+
+export type GatedResourceState = ReturnType<typeof useGatedResource>

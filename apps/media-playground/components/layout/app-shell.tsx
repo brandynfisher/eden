@@ -84,7 +84,7 @@ const defaultMobileHeader: MobileSidebarHeaderRenderer = ({ close }) => {
   return (
     <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
       <Link
-        href="/"
+        href="/agents"
         className="flex items-center gap-2"
         onClick={() => close()}
       >

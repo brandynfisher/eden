@@ -1,5 +1,6 @@
 'use client'
 
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { useAppShell } from '@/components/layout/app-shell'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,8 @@ import {
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Trigger } from '@edenlabs/eden-sdk'
@@ -211,6 +214,7 @@ const TaskItem: FC<{
 
 const TasksPage = () => {
   const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
+  const { isLoading: isAuthLoading } = useAuthState()
   const userTimezone = useMemo(() => {
     if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
@@ -221,9 +225,12 @@ const TasksPage = () => {
   const [editingTask, setEditingTask] = useState<TriggerWithAgent | null>(null)
   const [showFinished, setShowFinished] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+  const tasksGate = useGatedResource(GatedResource.Tasks, {
+    lockedBehavior: 'modal',
+  })
 
   const triggersQuery = useUserTriggersQuery({
-    enabled: !isModalOpen, // Disable refetching while modal is open
+    enabled: tasksGate.isAllowed && !isModalOpen, // Disable refetching while modal is open or gated
   })
 
   const { activeTriggers, finishedTriggers } = useMemo(() => {
@@ -279,9 +286,13 @@ const TasksPage = () => {
   }, [triggersQuery.triggers])
 
   const handleCreateNew = useCallback(() => {
+    if (!tasksGate.isAllowed) {
+      tasksGate.openGate()
+      return
+    }
     setEditingTask(null)
     setIsModalOpen(true)
-  }, [])
+  }, [tasksGate])
 
   const handleEdit = (trigger: TriggerWithAgent) => {
     setEditingTask(trigger)
@@ -331,7 +342,15 @@ const TasksPage = () => {
     })
 
     return () => resetConfig()
-  }, [handleCreateNew, resetConfig, setConfig])
+  }, [resetConfig, setConfig])
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <>
@@ -345,143 +364,160 @@ const TasksPage = () => {
           <MenuIcon className="w-5 h-5 text-muted-foreground" />
         </button>
         <h1 className="text-xl font-bold">Tasks</h1>
-        <div className="ml-auto">
-          <button
-            onClick={handleCreateNew}
-            className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
-            aria-label="New task"
-          >
-            <PlusIcon className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+        {tasksGate.isAllowed && (
+          <div className="ml-auto">
+            <button
+              onClick={handleCreateNew}
+              className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
+              aria-label="New task"
+            >
+              <PlusIcon className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
         <div className="w-full max-w-4xl mx-auto px-4 py-6 flex-1 min-h-0">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          {/* Header (desktop only to avoid duplicate hero on mobile) */}
+          <div className="hidden md:flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-semibold hidden md:block">Tasks</h2>
+              <h2 className="text-2xl font-semibold">Tasks</h2>
               <p className="text-muted-foreground">
                 Schedule automated tasks for all your agents
               </p>
             </div>
-            <Button onClick={handleCreateNew} className="gap-2 hidden md:flex">
-              <PlusIcon className="w-4 h-4" />
-              Create Task
-            </Button>
+            {tasksGate.isAllowed && (
+              <Button onClick={handleCreateNew} className="gap-2">
+                <PlusIcon className="w-4 h-4" />
+                Create Task
+              </Button>
+            )}
           </div>
 
-          {/* Tasks List */}
-          <div className="space-y-6">
-            {triggersQuery.isPending ? (
-              <div className="bg-background rounded-lg border">
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
-              </div>
-            ) : triggersQuery.isError ? (
-              <div className="bg-background rounded-lg border">
-                <div className="flex items-center justify-center gap-2 p-8 text-destructive">
-                  <AlertCircle className="w-5 h-5" />
-                  <p>Failed to load tasks. Please try again later.</p>
-                </div>
-              </div>
-            ) : activeTriggers.length === 0 && finishedTriggers.length === 0 ? (
-              <div className="bg-background rounded-lg border">
-                <div className="text-center p-8 text-muted-foreground">
-                  <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">No scheduled tasks</p>
-                  <p className="text-sm">
-                    Create your first automated task to get started.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Active Tasks */}
-                <div className="bg-background rounded-lg border">
-                  <div className="p-4 border-b">
-                    <h3 className="font-semibold">Active Tasks</h3>
-                  </div>
-                  {activeTriggers.length === 0 ? (
-                    <div className="text-center p-8 text-muted-foreground">
-                      <p className="text-sm">No active tasks</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y">
-                      {activeTriggers.map(trigger => (
-                        <TaskItem
-                          key={trigger._id}
-                          trigger={trigger}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          isFinished={false}
-                          timezone={userTimezone}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Finished Tasks - Collapsible Section */}
-                {finishedTriggers.length > 0 && (
+          {!tasksGate.isAllowed ? (
+            <LockedFeatureBanner
+              gate={tasksGate}
+              title="Tasks are available on Basic and above"
+              description="Automate your agents with scheduled tasks by upgrading your plan."
+            />
+          ) : (
+            <>
+              {/* Tasks List */}
+              <div className="space-y-6">
+                {triggersQuery.isPending ? (
                   <div className="bg-background rounded-lg border">
-                    <Collapsible
-                      open={showFinished}
-                      onOpenChange={setShowFinished}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold">
-                              Finished Tasks ({finishedTriggers.length})
-                            </h3>
-                            <ChevronDownIcon
-                              className={`h-4 w-4 transition-transform ${
-                                showFinished ? 'rotate-180' : ''
-                              }`}
-                            />
-                          </div>
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  </div>
+                ) : triggersQuery.isError ? (
+                  <div className="bg-background rounded-lg border">
+                    <div className="flex items-center justify-center gap-2 p-8 text-destructive">
+                      <AlertCircle className="w-5 h-5" />
+                      <p>Failed to load tasks. Please try again later.</p>
+                    </div>
+                  </div>
+                ) : activeTriggers.length === 0 &&
+                  finishedTriggers.length === 0 ? (
+                  <div className="bg-background rounded-lg border">
+                    <div className="text-center p-8 text-muted-foreground">
+                      <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">
+                        No scheduled tasks
+                      </p>
+                      <p className="text-sm">
+                        Create your first automated task to get started.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Active Tasks */}
+                    <div className="bg-background rounded-lg border">
+                      <div className="p-4 border-b">
+                        <h3 className="font-semibold">Active Tasks</h3>
+                      </div>
+                      {activeTriggers.length === 0 ? (
+                        <div className="text-center p-8 text-muted-foreground">
+                          <p className="text-sm">No active tasks</p>
                         </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
+                      ) : (
                         <div className="divide-y">
-                          {finishedTriggers.map(trigger => (
+                          {activeTriggers.map(trigger => (
                             <TaskItem
                               key={trigger._id}
                               trigger={trigger}
                               onEdit={handleEdit}
                               onDelete={handleDelete}
-                              isFinished={true}
+                              isFinished={false}
                               timezone={userTimezone}
                             />
                           ))}
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
+                      )}
+                    </div>
+
+                    {/* Finished Tasks - Collapsible Section */}
+                    {finishedTriggers.length > 0 && (
+                      <div className="bg-background rounded-lg border">
+                        <Collapsible
+                          open={showFinished}
+                          onOpenChange={setShowFinished}
+                        >
+                          <CollapsibleTrigger asChild>
+                            <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <h3 className="font-semibold">
+                                  Finished Tasks ({finishedTriggers.length})
+                                </h3>
+                                <ChevronDownIcon
+                                  className={`h-4 w-4 transition-transform ${
+                                    showFinished ? 'rotate-180' : ''
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="divide-y">
+                              {finishedTriggers.map(trigger => (
+                                <TaskItem
+                                  key={trigger._id}
+                                  trigger={trigger}
+                                  onEdit={handleEdit}
+                                  onDelete={handleDelete}
+                                  isFinished={true}
+                                  timezone={userTimezone}
+                                />
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          </div>
+              </div>
 
-          {/* Task Modal */}
-          <TaskFormModal
-            editingTask={editingTask}
-            open={isModalOpen}
-            onOpenChange={handleModalClose}
-            onSave={handleSave}
-          />
+              {/* Task Modal */}
+              <TaskFormModal
+                editingTask={editingTask}
+                open={isModalOpen}
+                onOpenChange={handleModalClose}
+                onSave={handleSave}
+              />
 
-          {/* Agent Selector Modal */}
-          <SingleAgentSelectorModal
-            open={isAgentSelectorOpen}
-            onOpenChange={setIsAgentSelectorOpen}
-            onSelect={() => {
-              setIsAgentSelectorOpen(false)
-            }}
-          />
+              {/* Agent Selector Modal */}
+              <SingleAgentSelectorModal
+                open={isAgentSelectorOpen}
+                onOpenChange={setIsAgentSelectorOpen}
+                onSelect={() => {
+                  setIsAgentSelectorOpen(false)
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
     </>

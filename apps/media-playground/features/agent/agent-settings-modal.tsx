@@ -30,7 +30,6 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -106,7 +105,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   } = useAgentQuery({
     key: agentId,
   })
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   // When memoriesOnly mode, always use 'memories' tab
   const effectiveInitialTab = memoriesOnly ? 'memories' : initialTab
@@ -290,43 +288,25 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
     if (hasEditAccess) {
       tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
-    }
-    if (hasEditAccess) {
       tabs.push({ key: 'persona', label: 'Persona', icon: ScrollTextIcon })
-    }
-    if (hasEditAccess) {
       tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
-    }
-    // Concepts - accessible to editors
-    if (hasEditAccess) {
       tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
-    }
-    // Tools - accessible to editors
-    if (hasEditAccess) {
       tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
-    }
-    // Memories - accessible to editors (preview only)
-    if (hasEditAccess) {
       tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
+      tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
     }
-    // Integrations - restricted to owners only
-    if (hasOwnerAccess && isPreviewUser) {
+
+    if (hasOwnerAccess) {
       tabs.push({
         key: 'integrations',
         label: 'Integrations',
         icon: SettingsIcon,
       })
-    }
-    // Tasks - accessible to editors (preview only)
-    if (hasEditAccess && isPreviewUser) {
-      tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
-    }
-    // Permissions - restricted to original owner only
-    if (isOriginalOwner && isPreviewUser) {
-      tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
-    }
-    if (hasOwnerAccess) {
       tabs.push({ key: 'manage', label: 'Manage', icon: Trash2Icon })
+    }
+
+    if (isOriginalOwner) {
+      tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
     }
 
     return tabs

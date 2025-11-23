@@ -3,6 +3,7 @@
 import CollectiveMemory from './collective-memory'
 import { MEMORY_ERROR_MESSAGES, MEMORY_LIMITS } from './memory-constants'
 import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
+import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -30,7 +31,8 @@ import {
 } from '@/components/ui/tooltip'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
+import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
@@ -69,6 +71,15 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
 }) => {
   const { user: authUser } = useAuthState()
   const { hasEditAccess } = useAgentPermissions(agent, authUser?._id)
+  const userMemoryGate = useGatedResource(GatedResource.UserMemory, {
+    lockedBehavior: 'modal',
+  })
+  const collectiveMemoryGate = useGatedResource(
+    GatedResource.CollectiveMemory,
+    {
+      lockedBehavior: 'modal',
+    },
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [unabsorbedDirectives, setUnabsorbedDirectives] = useState<
     UnabsorbedDirective[]
@@ -88,40 +99,19 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
     useState(false)
   const [pendingDirectiveData, setPendingDirectiveData] =
     useState<MemoryFormDto | null>(null)
-  const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
+  const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(false)
   const [isLoadingMemory, setIsLoadingMemory] = useState<boolean>(false)
 
-  // Collective Memory Access Logic - Three Scenarios:
-  // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
-  // 2. Editor/owner with Preview flag: full functionality (bypasses subscription checks)
-  // 3. Editor/owner with Pro+ tier: full functionality
-  // 4. Editor/owner with lower tier: show upgrade prompt
   const collectiveMemoryAccess = useMemo(() => {
     if (!hasEditAccess) {
-      return { showTab: false, hasAccess: false, needsPreview: false }
+      return { showTab: false, hasAccess: false }
     }
 
-    // User has edit access - always show tab
-    if (!authUser) {
-      return { showTab: true, hasAccess: false, needsPreview: false }
+    return {
+      showTab: true,
+      hasAccess: collectiveMemoryGate.isAllowed,
     }
-
-    const hasPreviewFlag = authUser?.featureFlags?.includes(FeatureFlag.Preview)
-    const hasProTier = (authUser?.subscriptionTier ?? 0) >= 2 // Pro tier or higher
-
-    // Preview feature flag gives access regardless of subscription tier
-    if (hasPreviewFlag) {
-      return { showTab: true, hasAccess: true, needsPreview: false }
-    }
-
-    // Pro tier users get access
-    if (hasProTier) {
-      return { showTab: true, hasAccess: true, needsPreview: false }
-    }
-
-    // Lower tier users see upgrade prompt
-    return { showTab: true, hasAccess: false, needsPreview: false }
-  }, [hasEditAccess, authUser])
+  }, [collectiveMemoryGate.isAllowed, hasEditAccess])
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -150,42 +140,51 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
   // Initialize and load data on component mount
   useEffect(() => {
     const loadData = async () => {
-      if (agent && authUser) {
-        // 1. Set toggle state from agent prop
-        const isUserMemoryEnabled =
-          agent.user_memory_enabled !== undefined
-            ? agent.user_memory_enabled
-            : false
-        setUserMemoryEnabled(isUserMemoryEnabled)
+      if (!agent || !authUser) return
 
-        // 2. If enabled, fetch memory data; if disabled, clear display
-        if (isUserMemoryEnabled) {
-          setIsLoadingMemory(true)
-          try {
-            const response = await axios.get(`/api/agents/${agent._id}/memory`)
-            const content = response.data.content || ''
-            form.setValue('content', content)
-            setDisplayContent(content)
-            setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
-          } catch (error) {
-            console.error('Error loading memory data:', error)
-            form.setValue('content', '')
-            setDisplayContent('')
-            setUnabsorbedDirectives([])
-          } finally {
-            setIsLoadingMemory(false)
-          }
-        } else {
+      if (!userMemoryGate.isAllowed) {
+        setUserMemoryEnabled(false)
+        form.setValue('content', '')
+        setDisplayContent('')
+        setUnabsorbedDirectives([])
+        setIsLoadingMemory(false)
+        return
+      }
+
+      // 1. Set toggle state from agent prop
+      const isUserMemoryEnabled =
+        agent.user_memory_enabled !== undefined
+          ? agent.user_memory_enabled
+          : false
+      setUserMemoryEnabled(isUserMemoryEnabled)
+
+      // 2. If enabled, fetch memory data; if disabled, clear display
+      if (isUserMemoryEnabled) {
+        setIsLoadingMemory(true)
+        try {
+          const response = await axios.get(`/api/agents/${agent._id}/memory`)
+          const content = response.data.content || ''
+          form.setValue('content', content)
+          setDisplayContent(content)
+          setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
+        } catch (error) {
+          console.error('Error loading memory data:', error)
           form.setValue('content', '')
           setDisplayContent('')
           setUnabsorbedDirectives([])
+        } finally {
           setIsLoadingMemory(false)
         }
+      } else {
+        form.setValue('content', '')
+        setDisplayContent('')
+        setUnabsorbedDirectives([])
+        setIsLoadingMemory(false)
       }
     }
 
     loadData()
-  }, [agent, authUser, form])
+  }, [agent, authUser, form, userMemoryGate.isAllowed])
 
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
@@ -197,6 +196,7 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
 
   const handleConfirmedSubmit = async () => {
     if (!agent || !authUser || !pendingUserMemoryData) return
+    if (!userMemoryGate.isAllowed) return
 
     try {
       setIsSubmitting(true)
@@ -234,11 +234,19 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
   }
 
   const handleEditClick = () => {
+    if (!userMemoryGate.isAllowed) {
+      userMemoryGate.openGate()
+      return
+    }
     form.setValue('content', displayContent)
     setIsEditModalOpen(true)
   }
 
   const handleDirectiveEdit = (directive: UnabsorbedDirective) => {
+    if (!userMemoryGate.isAllowed) {
+      userMemoryGate.openGate()
+      return
+    }
     setEditingDirective(directive)
     directiveForm.setValue('content', directive.content)
     setIsDirectiveEditModalOpen(true)
@@ -255,6 +263,10 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
   const handleConfirmedDirectiveUpdate = async () => {
     if (!editingDirective || !agent || !authUser || !pendingDirectiveData)
       return
+    if (!userMemoryGate.isAllowed) {
+      userMemoryGate.openGate()
+      return
+    }
 
     try {
       setIsSubmitting(true)
@@ -285,6 +297,10 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
 
   const handleToggleUserMemoryEnabled = async () => {
     if (!agent || !authUser) return
+    if (!userMemoryGate.isAllowed && !userMemoryEnabled) {
+      userMemoryGate.openGate()
+      return
+    }
 
     try {
       setIsSubmitting(true)
@@ -358,6 +374,10 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
 
   const handleDirectiveDelete = async (directiveId: string) => {
     if (!agent || !authUser) return
+    if (!userMemoryGate.isAllowed) {
+      userMemoryGate.openGate()
+      return
+    }
 
     // Store the directive being deleted in case we need to revert
     const directiveToDelete = unabsorbedDirectives.find(
@@ -509,123 +529,145 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
 
           {/* Tab Content */}
           {memoryTab === 'user' ? (
-            <div className="space-y-8">
-              <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-                {isLoadingMemory ? (
-                  <div className="flex items-center justify-center px-4 py-12 min-h-[170px]">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                          Personal Memory
-                        </p>
-                        <p className="text-sm text-muted-foreground/90">
-                          Context {agent.name} keeps about you
-                        </p>
+            userMemoryGate.isAllowed ? (
+              <div className="space-y-8">
+                <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+                  {isLoadingMemory ? (
+                    <div className="flex items-center justify-center px-4 py-12 min-h-[170px]">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                            Personal Memory
+                          </p>
+                          <p className="text-sm text-muted-foreground/90">
+                            Context {agent.name} keeps about you
+                          </p>
+                        </div>
+                        {hasEditAccess && (
+                          <Button
+                            onClick={handleEditClick}
+                            size="sm"
+                            variant="secondary"
+                            className="h-8 px-3 rounded-full shadow-sm"
+                          >
+                            <Edit className="w-4 h-4 mr-1.5" />
+                            Edit
+                          </Button>
+                        )}
                       </div>
-                      {hasEditAccess && (
-                        <Button
-                          onClick={handleEditClick}
-                          size="sm"
-                          variant="secondary"
-                          className="h-8 px-3 rounded-full shadow-sm"
-                        >
-                          <Edit className="w-4 h-4 mr-1.5" />
-                          Edit
-                        </Button>
-                      )}
-                    </div>
-                    <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
-                      {displayContent || (
-                        <span className="block text-sm text-muted-foreground italic">
-                          {!userMemoryEnabled
-                            ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
-                            : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here. You can also manually add memories here.`}
-                        </span>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
+                      <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
+                        {displayContent || (
+                          <span className="block text-sm text-muted-foreground italic">
+                            {!userMemoryEnabled
+                              ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
+                              : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here. You can also manually add memories here.`}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
 
-              {/* Unabsorbed Directives Display - Only show if there are directives and user memory is enabled */}
-              {unabsorbedDirectives.length > 0 && userMemoryEnabled && (
-                <div className="rounded-xl border border-border bg-card p-6 space-y-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-1 h-6 bg-border rounded-full"></div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <h2 className="text-lg font-semibold text-foreground cursor-help">
-                          Recent Memory Context
-                        </h2>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-md">
-                        <p>
-                          These are new directives picked up from recent
-                          conversations that will be integrated into User Memory
-                          soon.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <div className="flex-1 h-px bg-border"></div>
-                    <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
-                      Will be integrated soon
-                    </span>
-                  </div>
-                  <div className="grid gap-2">
-                    {unabsorbedDirectives.map(directive => (
-                      <div key={directive._id} className="relative group">
-                        <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
-                          <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                            <div className="text-foreground">
-                              {directive.content}
+                {/* Unabsorbed Directives Display - Only show if there are directives and user memory is enabled */}
+                {unabsorbedDirectives.length > 0 && userMemoryEnabled && (
+                  <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-1 h-6 bg-border rounded-full"></div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <h2 className="text-lg font-semibold text-foreground cursor-help">
+                            Recent Memory Context
+                          </h2>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-md">
+                          <p>
+                            These are new directives picked up from recent
+                            conversations that will be integrated into User
+                            Memory soon.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <div className="flex-1 h-px bg-border"></div>
+                      <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+                        Will be integrated soon
+                      </span>
+                    </div>
+                    <div className="grid gap-2">
+                      {unabsorbedDirectives.map(directive => (
+                        <div key={directive._id} className="relative group">
+                          <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+                            <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
+                              <div className="text-foreground">
+                                {directive.content}
+                              </div>
+                            </div>
+                            <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              <Button
+                                onClick={() => handleDirectiveEdit(directive)}
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  handleDirectiveDelete(directive._id)
+                                }
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
-                          <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <Button
-                              onClick={() => handleDirectiveEdit(directive)}
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                handleDirectiveDelete(directive._id)
-                              }
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <LockedFeatureBanner
+                gate={userMemoryGate}
+                title="User memory is for subscribers"
+                description="Store and reuse personal context with Basic and above."
+              />
+            )
           ) : isPanelLayout ? (
             <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-              <CollectiveMemory
-                agent={agent}
-                hasAccess={collectiveMemoryAccess.hasAccess}
-                onTabChange={setMemoryTab}
-                showTabToggle={false}
-              />
+              {collectiveMemoryGate.isAllowed ? (
+                <CollectiveMemory
+                  agent={agent}
+                  hasAccess={collectiveMemoryAccess.hasAccess}
+                  onTabChange={setMemoryTab}
+                  showTabToggle={false}
+                />
+              ) : (
+                <LockedFeatureBanner
+                  gate={collectiveMemoryGate}
+                  title="Collective memory is a Pro feature"
+                  description="Upgrade to Pro or use a preview-eligible account to unlock collective memory."
+                />
+              )}
             </div>
-          ) : (
+          ) : collectiveMemoryGate.isAllowed ? (
             <CollectiveMemory
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
               onTabChange={setMemoryTab}
               showTabToggle={false}
+            />
+          ) : (
+            <LockedFeatureBanner
+              gate={collectiveMemoryGate}
+              title="Collective memory is a Pro feature"
+              description="Upgrade to Pro or use a preview-eligible account to unlock collective memory."
             />
           )}
         </div>
