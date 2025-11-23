@@ -4,6 +4,7 @@ import {
   ConceptsTab,
   IntegrationsTab,
   PermissionsTab,
+  PersonaTab,
   ProfileTab,
   ToolsTab,
 } from '../sessions/views/AgentEditView'
@@ -39,6 +40,7 @@ import {
   ImageIcon,
   KeyIcon,
   Loader2,
+  ScrollTextIcon,
   SettingsIcon,
   Trash2Icon,
   UserIcon,
@@ -62,7 +64,9 @@ interface AgentSettingsModalProps {
 const getTabDescription = (tabKey: string, agentName: string) => {
   switch (tabKey) {
     case 'profile':
-      return `Update ${agentName}'s identity, bio, and instructions.`
+      return `Update ${agentName}'s identity and bio.`
+    case 'persona':
+      return `Define ${agentName}'s personality, behavior, and rules.`
     case 'dashboard':
       return `Explore ${agentName}'s stats across Eden.`
     case 'concepts':
@@ -130,6 +134,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       knowledge: '',
       greeting: '',
       voice: '',
+      website: '',
       models: [],
       tools: {},
       llm_settings: {
@@ -157,6 +162,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         knowledge: agent.knowledge ?? '',
         greeting: agent.greeting || '',
         voice: agent.voice || '',
+        website: agent.website || '',
         models: agent.models || [],
         tools: agent.tools || {},
         llm_settings: {
@@ -274,6 +280,9 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
     if (hasEditAccess) {
       tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
+    }
+    if (hasEditAccess) {
+      tabs.push({ key: 'persona', label: 'Persona', icon: ScrollTextIcon })
     }
     if (hasEditAccess) {
       tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
@@ -471,6 +480,10 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                   >
                     {activeTab === 'profile' && (
                       <ProfileTab form={form} agent={agent} />
+                    )}
+
+                    {activeTab === 'persona' && hasEditAccess && (
+                      <PersonaTab form={form} />
                     )}
 
                     {activeTab === 'tools' && hasEditAccess && (
