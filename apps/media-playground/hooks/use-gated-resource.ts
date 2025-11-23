@@ -117,16 +117,21 @@ export const useGatedResource = (
     baseConfig.type === 'subscription'
       ? baseConfig.allowPreviewFlag
       : baseConfig.featureFlag
-  const isPreviewUser = previewFlag
-    ? !!user?.featureFlags?.includes(previewFlag)
-    : false
+  const hasGlobalPreviewFlag = !!user?.featureFlags?.includes(
+    FeatureFlag.Preview,
+  )
+  const isPreviewUser =
+    hasGlobalPreviewFlag ||
+    (previewFlag ? !!user?.featureFlags?.includes(previewFlag) : false)
 
   let isAllowed = false
   let minimumSubscriptionTier: SubscriptionTier | undefined
   let featureName: string | undefined
 
   if (baseConfig.type === 'preview') {
-    const hasFlag = !!user?.featureFlags?.includes(baseConfig.featureFlag)
+    const hasFlag =
+      hasGlobalPreviewFlag ||
+      !!user?.featureFlags?.includes(baseConfig.featureFlag)
     const hasAdditionalFlag = baseConfig.additionalFeatureFlags
       ? baseConfig.additionalFeatureFlags.some(flag =>
           user?.featureFlags?.includes(flag),
@@ -147,7 +152,7 @@ export const useGatedResource = (
     const hasAllowedPreview = allowPreviewFlag
       ? !!user?.featureFlags?.includes(allowPreviewFlag)
       : false
-    isAllowed = hasRequiredTier || hasAllowedPreview
+    isAllowed = hasRequiredTier || hasAllowedPreview || hasGlobalPreviewFlag
   }
 
   const shouldRender = isAllowed || lockedBehavior !== 'hide'
