@@ -227,12 +227,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   // Get agent IDs from current session to hide them in the posted session card
   const currentAgentIds = currentSession?.agents?.map(agent => agent._id) || []
 
-  // Construct chat link path: /chat/{agent_username}/{session_id}
-  // Use the first agent's username if available
-  const firstAgent = session.agents?.[0]
-  const chatLinkPath = firstAgent?.username
-    ? `/chat/${firstAgent.username}/${session._id}`
-    : `/sessions/${session._id}` // fallback to sessions if no agent
+  // Link to the session
+  const chatLinkPath = `/sessions/${session._id}`
 
   // Check if tool is running
   const isRunning =
