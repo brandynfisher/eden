@@ -51,10 +51,10 @@ const InlineSessionCard = ({
 
   return (
     <Link href={href}>
-      <div className="group flex items-center gap-3 bg-card hover:bg-card/80 border border-border hover:border-primary/40 rounded-lg p-3 transition-all duration-200 hover:shadow-sm cursor-pointer">
+      <div className="group flex items-center gap-4 bg-card hover:bg-card/80 border border-border hover:border-primary/40 rounded-lg px-4 py-3 transition-all duration-200 hover:shadow-sm cursor-pointer">
         {/* Single agent avatar or generic chat icon */}
         {firstAgent ? (
-          <Avatar className="w-8 h-8 border border-border shrink-0">
+          <Avatar className="w-10 h-10 border border-border shrink-0">
             <AvatarImage
               src={
                 firstAgent.userImage && firstAgent.userImage.trim()
@@ -64,24 +64,24 @@ const InlineSessionCard = ({
               alt={firstAgent.name || firstAgent.username}
               className="object-cover"
             />
-            <AvatarFallback className="text-xs">
+            <AvatarFallback className="text-sm">
               {(firstAgent.name || firstAgent.username)
                 ?.slice(0, 2)
                 .toUpperCase()}
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-            <MessageCircleIcon className="w-4 h-4 text-muted-foreground" />
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <MessageCircleIcon className="w-5 h-5 text-muted-foreground" />
           </div>
         )}
 
         {/* Title and time */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">
+        <div className="flex-1 min-w-0 py-0.5">
+          <h3 className="font-medium text-base line-clamp-1 group-hover:text-primary transition-colors">
             {displayTitle}
           </h3>
-          <p className="text-xs text-muted-foreground">{timeAgo}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{timeAgo}</p>
         </div>
       </div>
     </Link>

@@ -650,9 +650,11 @@ const MainLeft = ({
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
     // Show ALL chats for all routes (no session_type filtering)
+    // Exclude sessions that have a parent_session (child sessions)
     const filteredSessions = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
+        if (session.parent_session) return false
         return true
       },
     )
