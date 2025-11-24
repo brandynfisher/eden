@@ -86,7 +86,7 @@ export const AssistantMessage = ({
         {/* Mobile: Avatar, name, and content */}
         <div className="sm:hidden">
           {showAvatar && (
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 mt-3">
               {shouldMakeClickable ? (
                 <Link
                   href={`/agents/${profileIdentifier}`}
@@ -123,9 +123,9 @@ export const AssistantMessage = ({
                   </AvatarFallback>
                 </Avatar>
               )}
-              {message.sender?.name && (
-                <span className="text-sm font-medium">
-                  {message.sender.name}
+              {(message.sender?.name || message.sender?.username) && (
+                <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+                  {message.sender?.name || message.sender?.username}
                 </span>
               )}
             </div>
@@ -337,13 +337,6 @@ export const AssistantMessage = ({
 
           {/* Content column - flexible width */}
           <div className="flex-1 min-w-0">
-            {/* Agent name */}
-            {showAvatar && message.sender?.name && (
-              <div className="text-sm font-medium mb-2">
-                {message.sender.name}
-              </div>
-            )}
-
             {/* Message content - desktop */}
             <div>
               {/* Show thought for assistant messages */}
