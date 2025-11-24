@@ -170,10 +170,10 @@ const AgentCard = ({
 
           {/* Name and Owner */}
           <div className="min-w-0 pr-8">
-            <h3 className="font-semibold text-lg leading-tight truncate">
+            <h3 className="font-semibold text-lg leading-tight truncate break-words">
               {agent.name}
             </h3>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5 truncate">
               by{' '}
               <span className="font-medium">
                 @{agent.owner?.username || agent.username}
@@ -182,7 +182,7 @@ const AgentCard = ({
           </div>
 
           {/* Description - fixed 3 lines height */}
-          <p className="text-[15px] text-muted-foreground line-clamp-3 mt-2 leading-snug min-h-[3.6em]">
+          <p className="text-sm text-muted-foreground line-clamp-3 mt-2 leading-snug min-h-[3.6em] break-words overflow-hidden">
             {description}
           </p>
 
@@ -191,7 +191,7 @@ const AgentCard = ({
             {/* Message count */}
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
               <MessageSquareIcon className="h-3.5 w-3.5" />
-              {formatCompactNumber(messageCount)} messages
+              {formatCompactNumber(messageCount)}
             </span>
 
             {/* Chat Button */}
