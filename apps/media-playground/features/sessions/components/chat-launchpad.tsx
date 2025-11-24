@@ -624,54 +624,91 @@ const ChatLaunchpad = () => {
                     display: selectedAgents.length > 1 ? 'flex' : 'none',
                   }}
                 >
-                  <div className="session-mode-header">
-                    <label className="session-mode-label">Session Mode</label>
+                  {/* Compact header with inline help */}
+                  <div className="session-mode-compact-header">
+                    <span className="session-mode-label-compact">
+                      Session Mode
+                    </span>
                     <button
-                      className="session-mode-help-btn"
+                      className="session-mode-help-btn-compact"
                       onClick={() => setIsSessionModeHelpOpen(true)}
                       aria-label="Help"
                     >
-                      <HelpCircle className="w-4 h-4" />
+                      <HelpCircle className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <Select
-                    value={sessionSettings.type}
-                    onValueChange={(
-                      value: 'passive' | 'natural' | 'automatic',
-                    ) =>
-                      setSessionSettings({ ...sessionSettings, type: value })
-                    }
-                  >
-                    <SelectTrigger className="session-mode-select">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="passive">Passive</SelectItem>
-                      <SelectItem value="natural">Natural</SelectItem>
-                      <SelectItem value="automatic">Automatic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="session-mode-description">
-                    {sessionSettings.type === 'passive' &&
-                      'Agents respond only when mentioned'}
-                    {sessionSettings.type === 'natural' &&
-                      'Agents listen and decide when to speak'}
-                    {sessionSettings.type === 'automatic' &&
-                      'Agents play out entire scenario'}
-                  </p>
 
-                  {/* Warning for automatic mode */}
-                  {sessionSettings.type === 'automatic' && (
-                    <div className="session-mode-warning">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>Warning: this might cost a lot of Manna!</span>
-                    </div>
-                  )}
+                  {/* Segmented control for mode selection */}
+                  <div className="session-mode-segmented">
+                    <button
+                      type="button"
+                      className={`session-mode-segment ${
+                        sessionSettings.type === 'passive' ? 'active' : ''
+                      }`}
+                      onClick={() =>
+                        setSessionSettings({
+                          ...sessionSettings,
+                          type: 'passive',
+                        })
+                      }
+                    >
+                      Passive
+                    </button>
+                    <button
+                      type="button"
+                      className={`session-mode-segment ${
+                        sessionSettings.type === 'natural' ? 'active' : ''
+                      }`}
+                      onClick={() =>
+                        setSessionSettings({
+                          ...sessionSettings,
+                          type: 'natural',
+                        })
+                      }
+                    >
+                      Natural
+                    </button>
+                    <button
+                      type="button"
+                      className={`session-mode-segment ${
+                        sessionSettings.type === 'automatic' ? 'active' : ''
+                      }`}
+                      onClick={() =>
+                        setSessionSettings({
+                          ...sessionSettings,
+                          type: 'automatic',
+                        })
+                      }
+                    >
+                      Automatic
+                    </button>
+                  </div>
 
-                  {/* Reply delay - only for automatic mode */}
+                  {/* Description and warning inline */}
+                  <div className="session-mode-meta">
+                    <span className="session-mode-description-compact">
+                      {sessionSettings.type === 'passive' &&
+                        'Agents respond only when mentioned'}
+                      {sessionSettings.type === 'natural' &&
+                        'Agents listen and decide when to speak'}
+                      {sessionSettings.type === 'automatic' &&
+                        'Agents play out entire scenario'}
+                    </span>
+                    {sessionSettings.type === 'automatic' && (
+                      <>
+                        <span className="session-mode-divider">•</span>
+                        <span className="session-mode-warning-compact">
+                          <AlertTriangle className="w-3 h-3" />
+                          High Manna cost
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Response time - only for automatic mode */}
                   {sessionSettings.type === 'automatic' && (
-                    <div className="reply-delay-selector">
-                      <label className="reply-delay-label">Reply Delay</label>
+                    <div className="session-mode-delay-row">
+                      <span className="delay-label">Response time:</span>
                       <Select
                         value={sessionSettings.delay_interval.toString()}
                         onValueChange={value =>
@@ -681,15 +718,15 @@ const ChatLaunchpad = () => {
                           })
                         }
                       >
-                        <SelectTrigger className="reply-delay-select">
+                        <SelectTrigger className="session-mode-delay-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="0">Instant</SelectItem>
-                          <SelectItem value="60">1 minute</SelectItem>
-                          <SelectItem value="300">5 minutes</SelectItem>
-                          <SelectItem value="1800">30 minutes</SelectItem>
-                          <SelectItem value="10800">3 hours</SelectItem>
+                          <SelectItem value="60">1 min</SelectItem>
+                          <SelectItem value="300">5 min</SelectItem>
+                          <SelectItem value="1800">30 min</SelectItem>
+                          <SelectItem value="10800">3 hrs</SelectItem>
                           <SelectItem value="86400">1 day</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1086,91 +1123,160 @@ const ChatLaunchpad = () => {
           .session-mode-selector {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: hsl(var(--muted) / 0.2);
-            border: 1px solid hsl(var(--border));
-            border-radius: 0.75rem;
+            gap: 0.625rem;
+            padding: 0.875rem 1rem;
+            background: linear-gradient(
+              135deg,
+              hsl(var(--muted) / 0.15) 0%,
+              hsl(var(--muted) / 0.08) 100%
+            );
+            backdrop-filter: blur(8px);
+            border: 1px solid hsl(var(--border) / 0.4);
+            border-radius: 0.625rem;
             opacity: 1;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            width: 100%;
+            max-width: 520px;
           }
 
-          .session-mode-header {
+          .session-mode-compact-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
+            gap: 0.375rem;
+            margin-bottom: 0.125rem;
           }
 
-          .session-mode-label {
-            font-size: 0.875rem;
+          .session-mode-label-compact {
+            font-size: 0.688rem;
             font-weight: 600;
-            color: hsl(var(--foreground));
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: hsl(var(--muted-foreground) / 0.8);
           }
 
-          .session-mode-help-btn {
+          .session-mode-help-btn-compact {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 1.5rem;
-            height: 1.5rem;
             padding: 0;
             background: transparent;
             border: none;
-            color: hsl(var(--muted-foreground) / 0.7);
+            color: hsl(var(--muted-foreground) / 0.5);
             cursor: pointer;
             transition: all 0.2s ease;
             border-radius: 0.25rem;
           }
 
-          .session-mode-help-btn:hover {
-            color: hsl(var(--foreground));
-            background: hsl(var(--muted) / 0.3);
+          .session-mode-help-btn-compact:hover {
+            color: hsl(var(--primary));
+            transform: scale(1.1);
           }
 
-          .session-mode-select {
+          .session-mode-segmented {
+            display: flex;
+            gap: 0;
+            background: hsl(var(--background) / 0.5);
+            border: 1px solid hsl(var(--border) / 0.3);
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            position: relative;
             width: 100%;
+            max-width: 420px;
           }
 
-          .session-mode-description {
+          .session-mode-segment {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
             font-size: 0.813rem;
-            color: hsl(var(--muted-foreground));
-            line-height: 1.4;
-            margin: 0;
+            font-weight: 500;
+            color: hsl(var(--muted-foreground) / 0.7);
+            background: transparent;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
           }
 
-          .session-mode-warning {
+          .session-mode-segment:hover {
+            color: hsl(var(--foreground) / 0.9);
+            background: hsl(var(--muted) / 0.15);
+          }
+
+          .session-mode-segment.active {
+            color: hsl(var(--foreground));
+            background: hsl(var(--primary) / 0.15);
+            box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3),
+              0 0 12px hsl(var(--primary) / 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+          }
+
+          .session-mode-meta {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.625rem 0.75rem;
-            background: hsl(var(--destructive) / 0.1);
-            border: 1px solid hsl(var(--destructive) / 0.3);
-            border-radius: 0.5rem;
-            color: hsl(var(--destructive));
-            font-size: 0.813rem;
-            font-weight: 500;
+            flex-wrap: wrap;
+            font-size: 0.75rem;
+            line-height: 1.4;
           }
 
-          .session-mode-warning svg {
+          .session-mode-description-compact {
+            color: hsl(var(--muted-foreground) / 0.75);
+            font-size: 0.75rem;
+          }
+
+          .session-mode-divider {
+            color: hsl(var(--muted-foreground) / 0.3);
+            font-size: 0.625rem;
+            user-select: none;
+          }
+
+          .session-mode-warning-compact {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: hsl(45 100% 51% / 0.15);
+            border: 1px solid hsl(45 100% 51% / 0.3);
+            border-radius: 0.375rem;
+            color: hsl(45 100% 60%);
+            font-size: 0.688rem;
+            font-weight: 600;
+            white-space: nowrap;
+          }
+
+          .session-mode-warning-compact svg {
             flex-shrink: 0;
           }
 
-          .reply-delay-selector {
+          .session-mode-delay-row {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid hsl(var(--border));
+            align-items: center;
+            gap: 0.625rem;
+            padding-top: 0.375rem;
+            border-top: 1px solid hsl(var(--border) / 0.2);
           }
 
-          .reply-delay-label {
-            font-size: 0.813rem;
+          .session-mode-delay-row .delay-label {
+            font-size: 0.75rem;
             font-weight: 500;
-            color: hsl(var(--foreground) / 0.9);
+            color: hsl(var(--muted-foreground) / 0.8);
+            white-space: nowrap;
           }
 
-          .reply-delay-select {
-            width: 100%;
+          .session-mode-delay-select {
+            height: 1.875rem;
+            font-size: 0.813rem;
+            border-color: hsl(var(--border) / 0.4);
+            background: hsl(var(--background) / 0.8);
+            flex: 1;
+            max-width: 140px;
+          }
+
+          .session-mode-delay-select:hover {
+            border-color: hsl(var(--border));
+            background: hsl(var(--background));
           }
 
           .message-input-section {
