@@ -64,7 +64,7 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
             // Populate the message sender
             await Message.populate(messageDoc, {
               path: 'sender',
-              select: '_id username userImage',
+              select: '_id username userImage name',
             })
 
             await handleSessionUpdateStreamEvent(fastify, session, [messageDoc])
@@ -101,7 +101,7 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
             // Populate the message sender
             await Message.populate(messageDoc, {
               path: 'sender',
-              select: '_id username userImage',
+              select: '_id username userImage name',
             })
 
             // Populate any nested tool call creations if they exist
@@ -113,7 +113,7 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
                 populate: {
                   path: 'user',
                   model: 'users3',
-                  select: '_id username userImage',
+                  select: '_id username userImage name',
                 },
               })
             }
