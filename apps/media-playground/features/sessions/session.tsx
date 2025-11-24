@@ -1783,9 +1783,16 @@ const Session = ({
             </div>
           ) : (
             (() => {
-              // Check if session has exactly one agent - if so, hide avatars on messages
-              const isSingleAgentSession =
-                displaySession?.agents && displaySession.agents.length === 1
+              // Count unique senders (besides the current user) to determine if we should show avatars
+              // If there's only 1 unique sender besides me, hide avatars
+              // If there are 2+ unique senders besides me, show avatars to distinguish who's talking
+              const uniqueOtherSenders = new Set<string>()
+              session?.messages?.forEach((m: Message) => {
+                if (m.sender?._id && m.sender._id !== user?._id) {
+                  uniqueOtherSenders.add(m.sender._id)
+                }
+              })
+              const isSingleAgentSession = uniqueOtherSenders.size <= 1
 
               // Check if this is a newly created session waiting for first response
               const isNewSession =
