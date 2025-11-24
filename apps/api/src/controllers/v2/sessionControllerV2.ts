@@ -148,10 +148,10 @@ export const createSession = async (
   if (sessionType !== undefined && sessionType !== null) {
     if (
       typeof sessionType !== 'string' ||
-      !['normal', 'natural', 'automatic'].includes(sessionType)
+      !['passive', 'natural', 'automatic'].includes(sessionType)
     ) {
       return reply.status(400).send({
-        message: 'type must be "normal", "natural", or "automatic"',
+        message: 'type must be "passive", "natural", or "automatic"',
       })
     }
   }
@@ -336,7 +336,7 @@ export const createSessionMessage = async (
         turn_budget?: number
       }
       title?: string
-      session_type?: 'normal' | 'natural' | 'automatic'
+      session_type?: 'passive' | 'natural' | 'automatic'
       status?: 'active' | 'paused' | 'stopped' | 'archived'
       settings?: {
         conductor_prompt?: string

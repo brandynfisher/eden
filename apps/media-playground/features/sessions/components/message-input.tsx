@@ -57,6 +57,7 @@ type MessageInputProps = {
   ) => void
   enableLiveAudio?: boolean
   agent?: Agent // Optional agent prop for welcome screen
+  placeholder?: string // Custom placeholder text
 }
 
 type AttachmentDropzoneProps = {
@@ -94,6 +95,7 @@ export const MessageInput = ({
   onStreamingMessage,
   enableLiveAudio = false,
   agent: propAgent,
+  placeholder = 'Write a message...',
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
   const [isMultiline, setIsMultiline] = useState(false)
@@ -608,7 +610,7 @@ export const MessageInput = ({
                               <AutosizeTextarea
                                 {...field}
                                 ref={textareaRef}
-                                placeholder="Write a message..."
+                                placeholder={placeholder}
                                 className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-0 resize-none min-h-[2rem] max-h-[200px] w-full"
                                 disabled={isSubmitting}
                                 onKeyDown={e => {
@@ -852,7 +854,7 @@ export const MessageInput = ({
                               <AutosizeTextarea
                                 {...field}
                                 ref={textareaRef}
-                                placeholder="Write a message..."
+                                placeholder={placeholder}
                                 className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-2 resize-none min-h-[2rem] max-h-[2rem]"
                                 disabled={isSubmitting}
                                 onKeyDown={e => {
