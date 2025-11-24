@@ -1783,6 +1783,10 @@ const Session = ({
             </div>
           ) : (
             (() => {
+              // Check if session has exactly one agent - if so, hide avatars on messages
+              const isSingleAgentSession =
+                displaySession?.agents && displaySession.agents.length === 1
+
               // Check if this is a newly created session waiting for first response
               const isNewSession =
                 session &&
@@ -1848,7 +1852,7 @@ const Session = ({
                                   sessionId={sessionId as string}
                                   key={message._id}
                                   message={message}
-                                  showAvatar={true}
+                                  showAvatar={!isSingleAgentSession}
                                   isStreamingTokens={false}
                                   isChatRoute={ischatRoute}
                                 />
@@ -1887,7 +1891,7 @@ const Session = ({
                                 role: 'assistant',
                               } as Message
                             }
-                            showAvatar={true}
+                            showAvatar={!isSingleAgentSession}
                             isStreamingTokens={true}
                             isChatRoute={ischatRoute}
                           />
@@ -1918,7 +1922,7 @@ const Session = ({
                                 role: 'assistant',
                               } as Message
                             }
-                            showAvatar={true}
+                            showAvatar={!isSingleAgentSession}
                             isStreamingTokens={true}
                             isChatRoute={ischatRoute}
                           />
@@ -1952,7 +1956,7 @@ const Session = ({
                             role: 'assistant',
                           } as Message
                         }
-                        showAvatar={true}
+                        showAvatar={!isSingleAgentSession}
                         isStreamingTokens={true}
                         isChatRoute={ischatRoute}
                       />
@@ -1982,7 +1986,7 @@ const Session = ({
                             role: 'assistant',
                           } as Message
                         }
-                        showAvatar={true}
+                        showAvatar={!isSingleAgentSession}
                         isStreamingTokens={
                           streamingState.isStreamingTokens &&
                           !streamingState.hasReceivedTokens
@@ -2099,7 +2103,9 @@ const Session = ({
                                 key={message._id}
                                 message={message}
                                 isStreamingTokens={false}
-                                showAvatar={index === 0}
+                                showAvatar={
+                                  !isSingleAgentSession && index === 0
+                                }
                                 isChatRoute={ischatRoute}
                               />
                             ))}
@@ -2137,7 +2143,7 @@ const Session = ({
                               role: 'assistant',
                             } as Message
                           }
-                          showAvatar={true}
+                          showAvatar={!isSingleAgentSession}
                           isStreamingTokens={true}
                           isChatRoute={ischatRoute}
                         />

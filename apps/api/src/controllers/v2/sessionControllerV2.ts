@@ -888,7 +888,7 @@ export const getSession = async (
     })
       .populate({
         path: 'sender',
-        select: '_id username userImage',
+        select: '_id username userImage name',
       })
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
@@ -1061,7 +1061,7 @@ export const getSessionMessages = async (
     const messages = await Message.find(messageQuery)
       .populate({
         path: 'sender',
-        select: '_id username userImage',
+        select: '_id username userImage name',
       })
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
