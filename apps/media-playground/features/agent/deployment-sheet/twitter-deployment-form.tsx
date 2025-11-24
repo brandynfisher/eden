@@ -99,7 +99,7 @@ export const TwitterDeploymentForm = ({
     authUrl.searchParams.append('redirect_uri', redirectUri)
     authUrl.searchParams.append(
       'scope',
-      'tweet.read tweet.write users.read offline.access',
+      'tweet.read tweet.write users.read offline.access media.write',
     )
     authUrl.searchParams.append('state', state)
     authUrl.searchParams.append('code_challenge', 'challenge')
