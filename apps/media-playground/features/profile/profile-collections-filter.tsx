@@ -9,17 +9,20 @@ const profileCollectionsFilterSections: FilterSection[] = [
 interface ProfileCollectionsFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  excludeFromCount?: string[]
 }
 
 export function ProfileCollectionsFilter({
   onChange,
   initialFilter,
+  excludeFromCount,
 }: ProfileCollectionsFilterProps) {
   return (
     <BaseFilter
       sections={profileCollectionsFilterSections}
       onChange={onChange}
       initialFilter={initialFilter}
+      excludeFromCount={excludeFromCount}
     />
   )
 }

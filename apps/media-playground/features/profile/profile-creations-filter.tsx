@@ -19,17 +19,20 @@ const profileCreationSections = [
 interface ProfileCreationsFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  excludeFromCount?: string[]
 }
 
 export function ProfileCreationsFilter({
   onChange,
   initialFilter,
+  excludeFromCount,
 }: ProfileCreationsFilterProps) {
   return (
     <BaseFilter
       sections={profileCreationSections}
       onChange={onChange}
       initialFilter={initialFilter}
+      excludeFromCount={excludeFromCount}
     />
   )
 }

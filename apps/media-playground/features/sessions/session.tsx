@@ -209,12 +209,12 @@ const Session = ({
     if (session) {
       // Loading session settings from session
 
-      // Map session_type, defaulting to 'natural' if undefined or 'normal'
+      // Map session_type, defaulting to 'natural' if undefined or 'passive'
       let sessionType: 'natural' | 'automatic' = 'natural'
       if (session.session_type === 'automatic') {
         sessionType = 'automatic'
       }
-      // 'normal' and undefined map to 'natural'
+      // 'passive' and undefined map to 'natural'
 
       setSessionSettings({
         type: sessionType,

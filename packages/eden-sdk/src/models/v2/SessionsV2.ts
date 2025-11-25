@@ -12,7 +12,7 @@ import { AxiosRequestConfig } from 'axios'
 
 // Session Types
 export enum SessionType {
-  NORMAL = 'normal',
+  PASSIVE = 'passive',
   NATURAL = 'natural',
   AUTOMATIC = 'automatic',
 }

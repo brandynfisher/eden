@@ -22,7 +22,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { useState } from 'react'
 
 export type SessionSettings = {
-  type: 'natural' | 'automatic'
+  type: 'passive' | 'natural' | 'automatic'
   context: string
   conductor_prompt: string
   delay_interval: number
@@ -81,10 +81,14 @@ export const SessionSettingsModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Session Settings</DialogTitle>
+          <DialogTitle>
+            {isMultiAgent ? 'Session Settings' : 'Add Context'}
+          </DialogTitle>
           {!minimal && (
             <DialogDescription>
-              Configure advanced settings for this session
+              {isMultiAgent
+                ? 'Configure advanced settings for this session'
+                : 'Session context is important information about this session which remains in context at all times, including things like multi-step workflows, special rules, etc.'}
             </DialogDescription>
           )}
         </DialogHeader>
@@ -102,6 +106,13 @@ export const SessionSettingsModal = ({
               className={minimal ? 'min-h-[240px]' : 'min-h-[80px]'}
               maxLength={5000}
             />
+            {!isMultiAgent && minimal && (
+              <p className="text-sm text-muted-foreground">
+                This information will remain in context at all times, including
+                things like multi-step workflows, special rules, or important
+                background information.
+              </p>
+            )}
           </div>
 
           {/* Exclude Memory */}
@@ -133,7 +144,7 @@ export const SessionSettingsModal = ({
                 <Label>Session Mode</Label>
                 <Select
                   value={settings.type || 'natural'}
-                  onValueChange={(value: 'natural' | 'automatic') =>
+                  onValueChange={(value: 'passive' | 'natural' | 'automatic') =>
                     onSettingsChange({ ...settings, type: value })
                   }
                 >
@@ -141,11 +152,14 @@ export const SessionSettingsModal = ({
                     <SelectValue placeholder="Select mode" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="passive">Passive</SelectItem>
                     <SelectItem value="natural">Natural</SelectItem>
                     <SelectItem value="automatic">Automatic</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
+                  <strong>Passive:</strong> Agents respond only when mentioned.
+                  <br />
                   <strong>Natural:</strong> Agents listen and decide when to
                   speak.
                   <br />
@@ -153,34 +167,36 @@ export const SessionSettingsModal = ({
                 </p>
               </div>
 
-              {/* Reply Delay */}
-              <div className="space-y-2">
-                <Label>Reply Delay</Label>
-                <Select
-                  value={settings.delay_interval.toString()}
-                  onValueChange={value =>
-                    onSettingsChange({
-                      ...settings,
-                      delay_interval: parseInt(value),
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Instant</SelectItem>
-                    <SelectItem value="60">1 minute</SelectItem>
-                    <SelectItem value="300">5 minutes</SelectItem>
-                    <SelectItem value="1800">30 minutes</SelectItem>
-                    <SelectItem value="10800">3 hours</SelectItem>
-                    <SelectItem value="86400">1 day</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                  Time delay between agent responses
-                </p>
-              </div>
+              {/* Reply Delay - only show for automatic mode */}
+              {settings.type === 'automatic' && (
+                <div className="space-y-2">
+                  <Label>Reply Delay</Label>
+                  <Select
+                    value={settings.delay_interval.toString()}
+                    onValueChange={value =>
+                      onSettingsChange({
+                        ...settings,
+                        delay_interval: parseInt(value),
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Instant</SelectItem>
+                      <SelectItem value="60">1 minute</SelectItem>
+                      <SelectItem value="300">5 minutes</SelectItem>
+                      <SelectItem value="1800">30 minutes</SelectItem>
+                      <SelectItem value="10800">3 hours</SelectItem>
+                      <SelectItem value="86400">1 day</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Time delay between agent responses
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

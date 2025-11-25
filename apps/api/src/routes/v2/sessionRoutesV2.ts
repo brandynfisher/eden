@@ -77,7 +77,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('normal'),
+            Type.Literal('passive'),
             Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
@@ -141,7 +141,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         turn_budget?: number
       }
       title?: string
-      session_type?: 'normal' | 'natural' | 'automatic'
+      session_type?: 'passive' | 'natural' | 'automatic'
       settings?: {
         conductor_prompt?: string
         delay_interval: number
@@ -187,7 +187,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         title: Type.Optional(Type.String({ maxLength: 1000 })),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('normal'),
+            Type.Literal('passive'),
             Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),
@@ -402,7 +402,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         agent_ids: Type.Optional(Type.Array(Type.String())),
         session_type: Type.Optional(
           Type.Union([
-            Type.Literal('normal'),
+            Type.Literal('passive'),
             Type.Literal('natural'),
             Type.Literal('automatic'),
           ]),

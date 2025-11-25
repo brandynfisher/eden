@@ -2,43 +2,86 @@
 
 import AgentCard from '@/components/card/agent-card'
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
-import { Loader2 } from 'lucide-react'
-import { FC } from 'react'
+import {
+  AgentPermissionLevel,
+  FeedAgentCursorArguments,
+} from '@edenlabs/eden-sdk'
+import { FC, useMemo } from 'react'
 
-export const SharedAgentsSection: FC = () => {
+type Props = {
+  query?: FeedAgentCursorArguments
+}
+
+export const SharedAgentsSection: FC<Props> = ({ query: queryProp }) => {
   const { sharedAgents, isLoading } = useSharedAgentsQuery({})
+
+  // Filter and sort shared agents
+  const filteredAndSortedAgents = useMemo(() => {
+    let result = [...sharedAgents]
+
+    // Apply search filter if present
+    if (queryProp?.search) {
+      const searchLower = queryProp.search.toLowerCase()
+      result = result.filter(
+        ({ agent }) =>
+          agent.name?.toLowerCase().includes(searchLower) ||
+          agent.description?.toLowerCase().includes(searchLower) ||
+          agent.username?.toLowerCase().includes(searchLower),
+      )
+    }
+
+    // Sort by message count (default) or by specified sort
+    result.sort((a, b) => {
+      const aCount = a.agent?.stats?.messageCount || 0
+      const bCount = b.agent?.stats?.messageCount || 0
+      return bCount - aCount
+    })
+
+    return result
+  }, [sharedAgents, queryProp?.search])
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[200px] rounded-lg bg-muted animate-pulse"
+          />
+        ))}
       </div>
     )
   }
 
-  if (sharedAgents.length === 0) {
-    return null
+  if (filteredAndSortedAgents.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+        {queryProp?.search
+          ? 'No agents match your search.'
+          : 'No one has shared agents with you yet.'}
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold mb-1">Shared with Me</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Agents you have permission to edit or manage
-        </p>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {filteredAndSortedAgents.map(({ agent, permissionLevel }) => {
+        // Show settings for shared agents if user has owner or editor access
+        const hasEditAccess =
+          permissionLevel === AgentPermissionLevel.Owner ||
+          permissionLevel === AgentPermissionLevel.Editor
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {sharedAgents.map(({ agent }) => (
+        return (
           <AgentCard
             key={agent._id}
             agent={agent}
             queryKey={['agents', agent._id]}
             improvedLayout={true}
+            hideContextMenu={true}
+            showSettings={hasEditAccess}
           />
-        ))}
-      </div>
+        )
+      })}
     </div>
   )
 }
