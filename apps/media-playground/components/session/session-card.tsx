@@ -10,7 +10,7 @@ interface SessionCardProps {
     title?: string
     createdAt: Date | string
     updatedAt?: Date | string
-    session_type?: 'normal' | 'natural' | 'automatic'
+    session_type?: 'passive' | 'natural' | 'automatic'
     agents?: Array<{
       _id: string
       username: string
@@ -54,7 +54,7 @@ const SessionCard = ({
       ? 'Automatic'
       : session.session_type === 'natural'
       ? 'Natural'
-      : 'Normal'
+      : 'Passive'
 
   return (
     <Link href={href}>
