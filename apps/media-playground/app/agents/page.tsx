@@ -221,34 +221,36 @@ const AgentsPage = () => {
     [publicAgentsData],
   )
 
-  // Unified search query - searches all eligible agents (mine + public)
-  const unifiedSearchQuery: FeedAgentCursorArguments = useMemo(
+  // Search query - respects current scope (mine/shared/public)
+  const searchQueryArgs: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 40,
       search: searchQuery,
       sort: ['stats.messageCount;-1'],
+      // Apply scope-specific filters
+      ...(scope === 'mine' && user?._id ? { owner: user._id } : {}),
+      ...(scope === 'public' && user?._id ? { excludeOwner: user._id } : {}),
     }),
-    [searchQuery],
+    [searchQuery, scope, user?._id],
   )
 
-  const { data: unifiedSearchData, isLoading: isUnifiedSearchLoading } =
-    useQuery({
-      queryKey: ['feed', 'agents', 'unified-search', unifiedSearchQuery],
-      enabled: !!searchQuery,
-      queryFn: () =>
-        fetcher<{ docs: Agent[]; nextCursor?: string }>(
-          createCursorPaginationRoute('/api/feed/agents', {
-            ...unifiedSearchQuery,
-            cursor: '',
-            limit: 40,
-          }),
-        ),
-      staleTime: 30_000,
-    })
+  const { data: searchResultsData, isLoading: isSearchLoading } = useQuery({
+    queryKey: ['feed', 'agents', 'search', scope, searchQueryArgs],
+    enabled: !!searchQuery && scope !== 'shared',
+    queryFn: () =>
+      fetcher<{ docs: Agent[]; nextCursor?: string }>(
+        createCursorPaginationRoute('/api/feed/agents', {
+          ...searchQueryArgs,
+          cursor: '',
+          limit: 40,
+        }),
+      ),
+    staleTime: 30_000,
+  })
 
-  const unifiedSearchResults = useMemo(
-    () => unifiedSearchData?.docs || [],
-    [unifiedSearchData],
+  const searchResults = useMemo(
+    () => searchResultsData?.docs || [],
+    [searchResultsData],
   )
 
   const filteredSharedAgents = useMemo(() => {
@@ -258,6 +260,19 @@ const AgentsPage = () => {
       return bCount - aCount
     })
   }, [sharedAgents])
+
+  // Client-side search for shared agents
+  const searchedSharedAgents = useMemo(() => {
+    if (!searchQuery || scope !== 'shared') return []
+
+    const searchLower = searchQuery.toLowerCase()
+    return filteredSharedAgents.filter(
+      ({ agent }) =>
+        agent.name?.toLowerCase().includes(searchLower) ||
+        agent.description?.toLowerCase().includes(searchLower) ||
+        agent.username?.toLowerCase().includes(searchLower),
+    )
+  }, [searchQuery, scope, filteredSharedAgents])
 
   const renderFeaturedAgents = () => {
     if (isSignedIn) return null
@@ -447,7 +462,42 @@ const AgentsPage = () => {
   }
 
   const renderSearchResults = () => {
-    if (isUnifiedSearchLoading) {
+    // For shared agents, use client-side filtered results
+    if (scope === 'shared') {
+      if (searchedSharedAgents.length === 0) {
+        return (
+          <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+            No agents match your search.
+          </div>
+        )
+      }
+
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {searchedSharedAgents.map(({ agent, permissionLevel }) => {
+            const hasEditAccess =
+              permissionLevel === AgentPermissionLevel.Owner ||
+              permissionLevel === AgentPermissionLevel.Editor
+            return (
+              <AgentCard
+                key={agent._id}
+                agent={agent as Agent}
+                improvedLayout
+                hideContextMenu
+                showSettings={hasEditAccess}
+                onSettings={() => {
+                  setSettingsAgentId(agent.username || agent._id)
+                  setIsSettingsModalOpen(true)
+                }}
+              />
+            )
+          })}
+        </div>
+      )
+    }
+
+    // For mine and public, use API search results
+    if (isSearchLoading) {
       return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -460,7 +510,7 @@ const AgentsPage = () => {
       )
     }
 
-    if (unifiedSearchResults.length === 0) {
+    if (searchResults.length === 0) {
       return (
         <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
           No agents match your search.
@@ -470,7 +520,7 @@ const AgentsPage = () => {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {unifiedSearchResults.map(agent => (
+        {searchResults.map(agent => (
           <AgentCard
             key={agent._id}
             agent={agent}

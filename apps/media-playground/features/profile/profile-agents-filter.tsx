@@ -11,17 +11,20 @@ const profileAgentsFilterSections: FilterSection[] = [
 interface ProfileAgentsFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  excludeFromCount?: string[]
 }
 
 export function ProfileAgentsFilter({
   onChange,
   initialFilter,
+  excludeFromCount,
 }: ProfileAgentsFilterProps) {
   return (
     <BaseFilter
       sections={profileAgentsFilterSections}
       onChange={onChange}
       initialFilter={initialFilter}
+      excludeFromCount={excludeFromCount}
     />
   )
 }

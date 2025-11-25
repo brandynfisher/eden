@@ -24,6 +24,7 @@ import {
 export type FilterMenuProps = {
   initialFilter?: FeedCursorRouteQueryParams['filter']
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
+  excludeFromCount?: string[]
 }
 
 export type SortMenuProps = {
@@ -284,6 +285,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
                 tabCaches[activeTab]?.filterQuery
               }
               onChange={handleTabFilterChange}
+              excludeFromCount={baseQuery ? Object.keys(baseQuery) : []}
             />
           ) : null}
 
