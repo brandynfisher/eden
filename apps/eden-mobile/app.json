@@ -8,13 +8,13 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "scheme": "edenmobile",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#000"
-    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.eden.art",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Eden app needs access to your camera to capture photos and videos.",
+        "NSPhotoLibraryUsageDescription": "Eden app needs access to your photo library to select images and videos."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,15 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.eden.art",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -36,8 +44,28 @@
             "./assets/fonts/SpaceGrotesk-Medium.ttf",
             "./assets/fonts/SpaceGrotesk-SemiBold.ttf",
             "./assets/fonts/SpaceGrotesk-Bold.ttf",
-            "./assets/fonts/SpaceGrotesk-Italic.ttf"
+            "./assets/fonts/SpaceGrotesk-Light.ttf"
           ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Eden app needs access to your camera to capture photos and videos.",
+          "cameraPermission": "Eden app needs access to your photo library to select images and videos."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "borderRadius": 100,
+          "resizeMode": "contain",
+          "backgroundColor": "#000",
+          "dark": {
+            "backgroundColor": "#000"
+          }
         }
       ]
     ]

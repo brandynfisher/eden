@@ -1,4 +1,3 @@
-import { MobileAuthHandler } from '@/components/mobile-auth-handler'
 import CreationDetailModalContainer from '@/components/modal/creation-detail-modal-container'
 import { env } from '@/lib/config'
 import { DailyLoginProvider } from '@/providers/daily-login-provider'
@@ -35,7 +34,6 @@ export default function Providers({ children }: PropsWithChildren) {
         }}
       >
         <ReactQueryProvider>
-          <MobileAuthHandler />
           <WebSocketProvider
             endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
           >

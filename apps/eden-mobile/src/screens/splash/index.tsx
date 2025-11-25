@@ -1,12 +1,11 @@
-import LoginButton from '@/components/auth/login-button'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { RootStackParamList } from '@/navigator'
 import createStyles from '@/styles/splash.styles'
-import { useAuth } from '@clerk/clerk-expo'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { useEffect } from 'react'
+import * as SecureStore from 'expo-secure-store'
+import { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -18,31 +17,57 @@ import {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
+const ONBOARDING_COMPLETE_KEY = 'onboarding_complete'
+
 export default function Splash() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const styles = createStyles(theme)
 
-  const { isSignedIn, isLoaded } = useAuth()
-
   const navigation = useNavigation<NavigationProp>()
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true)
 
   useEffect(() => {
-    if (isSignedIn) {
-      navigation.navigate('Webview')
-    }
-  }, [isSignedIn, navigation])
+    const checkOnboardingAndNavigate = async () => {
+      try {
+        const onboardingComplete = await SecureStore.getItemAsync(
+          ONBOARDING_COMPLETE_KEY,
+        )
 
-  if (!isLoaded) {
+        if (!onboardingComplete) {
+          // Onboarding not complete, navigate to Welcome
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Welcome' }],
+          })
+        } else {
+          // Onboarding complete, navigate to BottomTabs
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'BottomTabs' }],
+          })
+    }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error)
+        // On error, show onboarding to be safe
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Welcome' }],
+        })
+      } finally {
+        setIsCheckingOnboarding(false)
+      }
+    }
+
+    checkOnboardingAndNavigate()
+  }, [navigation])
+
+  if (isCheckingOnboarding) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color={Colors[theme].iconSecondary} />
       </View>
     )
-  }
-
-  const renderData = () => {
-    return <LoginButton />
   }
 
   return (
@@ -53,7 +78,6 @@ export default function Splash() {
         Eden is creating a world of autonomous generative spirits that create
         with people and with each other.
       </Text>
-      {!isSignedIn && renderData()}
       <View style={styles.footerSeparator} />
       <View style={styles.footer}>
         <Text style={styles.subtitle}>

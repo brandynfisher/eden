@@ -40,7 +40,7 @@ export default function App() {
       <NavigationContainer>
         <View style={{ flex: 1, backgroundColor: colors.background }}>
           <StatusBar
-            style={colorScheme === 'dark' ? 'light' : 'dark'}
+            style={colorScheme === 'light' ? 'light' : 'dark'}
             backgroundColor={colors.background}
             translucent={false}
           />
