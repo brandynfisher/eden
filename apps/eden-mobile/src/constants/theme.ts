@@ -5,7 +5,7 @@
 import { wp } from '@/utils/responsive'
 
 export const Colors = {
-  light: {
+  dark: {
     primary: '#7C3AED',
     background: '#FFFFFF',
     iconPrimary: '#7C3AED',
@@ -26,7 +26,7 @@ export const Colors = {
     shadowMedium: 'rgba(0, 0, 0, 0.12)',
     shadowStrong: 'rgba(0, 0, 0, 0.2)',
   },
-  dark: {
+  light: {
     primary: '#7C3AED',
     background: '#1A1A1A',
     iconPrimary: '#8B5CF6',

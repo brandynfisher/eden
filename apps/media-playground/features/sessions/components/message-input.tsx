@@ -91,6 +91,20 @@ const AttachmentDropzone = ({
   )
 }
 
+type NativeWebViewBridge = {
+  postMessage: (message: string) => void
+}
+
+const getNativeWebViewBridge = () => {
+  if (typeof window === 'undefined') return undefined
+
+  return (
+    window as Window & {
+      ReactNativeWebView?: NativeWebViewBridge
+    }
+  ).ReactNativeWebView
+}
+
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
@@ -125,6 +139,8 @@ export const MessageInput = ({
   const [isThinkingEnabled, setIsThinkingEnabled] = useState(false)
   const accept = 'image/*,video/*,/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const awaitingNativePermissionRef = useRef(false)
+  const isNativeWebViewRef = useRef(false)
   const [showMention, setShowMention] = useState(false)
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
@@ -265,6 +281,66 @@ export const MessageInput = ({
     },
     [handleFilesDropped],
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    isNativeWebViewRef.current = !!getNativeWebViewBridge()
+
+    const handleNativeMessage = (event: MessageEvent) => {
+      if (!event.data) return
+
+      let payload = event.data
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload)
+        } catch {
+          return
+        }
+      }
+
+      if (
+        payload?.type === 'PERMISSIONS_RESULT' &&
+        awaitingNativePermissionRef.current
+      ) {
+        awaitingNativePermissionRef.current = false
+
+        if (payload.cameraGranted && payload.storageGranted) {
+          fileInputRef.current?.click()
+        } else {
+          alert(
+            'Camera or storage permission was denied in the mobile app settings.',
+          )
+        }
+      }
+    }
+
+    const handleDocumentMessage = (event: Event) => {
+      handleNativeMessage(event as MessageEvent)
+    }
+
+    window.addEventListener('message', handleNativeMessage)
+    document.addEventListener('message', handleDocumentMessage)
+
+    return () => {
+      window.removeEventListener('message', handleNativeMessage)
+      document.removeEventListener('message', handleDocumentMessage)
+    }
+  }, [])
+
+  const handleAttachmentTrigger = useCallback(() => {
+    if (isSubmitting) return
+
+    const bridge = getNativeWebViewBridge()
+
+    if (bridge && isNativeWebViewRef.current) {
+      awaitingNativePermissionRef.current = true
+      bridge.postMessage(JSON.stringify({ type: 'CHECK_NATIVE_PERMISSIONS' }))
+      return
+    }
+
+    fileInputRef.current?.click()
+  }, [isSubmitting])
 
   useEffect(() => {
     const handleDragEnter = (e: DragEvent) => {
@@ -682,7 +758,7 @@ export const MessageInput = ({
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8"
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={handleAttachmentTrigger}
                                 disabled={isSubmitting}
                               >
                                 <PaperclipIcon className="w-4 h-4" />
@@ -807,7 +883,7 @@ export const MessageInput = ({
                               size="icon"
                               variant="ghost"
                               className="h-8 w-8"
-                              onClick={() => fileInputRef.current?.click()}
+                              onClick={handleAttachmentTrigger}
                               disabled={isSubmitting}
                             >
                               <PaperclipIcon className="w-4 h-4" />

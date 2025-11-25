@@ -40,7 +40,10 @@ export default function LoginButton() {
         onClose={() => setModalVisible(false)}
         onSuccess={() => {
           setTimeout(() => {
-            navigation.navigate('Webview')
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'BottomTabs' }],
+            })
           }, 500)
         }}
       />
