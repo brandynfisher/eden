@@ -1,5 +1,6 @@
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Message } from '@edenlabs/eden-sdk'
-import { UserMinus, UserPlus, Users } from 'lucide-react'
+import { AlertTriangle, UserMinus, UserPlus, Users } from 'lucide-react'
 
 interface EdenMessageProps {
   message: Message
@@ -8,7 +9,24 @@ interface EdenMessageProps {
 export const EdenMessage = ({ message }: EdenMessageProps) => {
   if (!message.eden_message_data) return null
 
-  const { message_type, agents } = message.eden_message_data
+  const { message_type, agents, error } = message.eden_message_data
+
+  if (message_type === 'rate_limit') {
+    const errorText =
+      error || message.content || "You're sending messages too quickly."
+
+    return (
+      <div className="flex justify-center py-2">
+        <Alert
+          variant="destructive"
+          className="max-w-[42rem] w-full items-start"
+        >
+          <AlertTriangle className="h-4 w-4 mt-0.5" />
+          <AlertDescription className="text-sm">{errorText}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const isAgentAdd = message_type === 'agent_add'
   const isAgentRemove = message_type === 'agent_remove'

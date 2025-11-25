@@ -44,7 +44,7 @@ export function useNonStreamingState({
   useEffect(() => {
     if (enabled && waitingForResponse && session?.messages) {
       const lastMessage = session.messages[session.messages.length - 1]
-      if (lastMessage && lastMessage.role === 'assistant') {
+      if (lastMessage && lastMessage.role !== 'user') {
         setWaitingForResponse(false)
         setOptimisticMessages([])
         setRespondingAgentIds([])
