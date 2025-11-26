@@ -327,16 +327,23 @@ export const claimDailyLoginBonus = async (
     })
   }
 
-  const now = Date.now()
+  const now = new Date()
   const lastDailyLogin = user.lastDailyLoginBonus
 
-  const oneDayInMs = 24 * 60 * 60 * 1000
   const claimAmount = server.config.MANNA_BONUS_DAILY_LOGIN
 
-  if (!lastDailyLogin || now - lastDailyLogin.getTime() >= oneDayInMs) {
+  const isSameUtcDay = (a: Date, b: Date) =>
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+
+  const hasClaimedToday =
+    lastDailyLogin instanceof Date && isSameUtcDay(lastDailyLogin, now)
+
+  if (!hasClaimedToday) {
     await User.updateOne(
       { _id: user._id },
-      { $set: { lastDailyLoginBonus: new Date() } },
+      { $set: { lastDailyLoginBonus: now } },
     )
 
     userManna.balance += claimAmount

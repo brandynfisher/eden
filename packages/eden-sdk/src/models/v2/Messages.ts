@@ -14,7 +14,7 @@ export type Channel = {
 
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool' | 'eden'
 
-export type EdenMessageType = 'agent_add' | 'agent_remove'
+export type EdenMessageType = 'agent_add' | 'agent_remove' | 'rate_limit'
 
 export type EdenMessageAgentData = {
   id: string
@@ -25,6 +25,7 @@ export type EdenMessageAgentData = {
 export type EdenMessageData = {
   message_type: EdenMessageType
   agents?: EdenMessageAgentData[]
+  error?: string
 }
 
 export type Thought = {

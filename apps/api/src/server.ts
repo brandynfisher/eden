@@ -49,9 +49,27 @@ const createServer = async (opts: CreateServerOpts) => {
     },
     disableRequestLogging: true,
     pluginTimeout: 0,
-    connectionTimeout: 60000, // 60 seconds
-    keepAliveTimeout: 30000, // 30 seconds
-    maxRequestsPerSocket: 0, // Disable max requests per socket limit
+    connectionTimeout: 60000,
+    keepAliveTimeout: 30000,
+    maxRequestsPerSocket: 0,
+  })
+
+  server.addHook('onResponse', async (request, reply) => {
+    const statusCode = reply.statusCode
+
+    if (statusCode >= 400) {
+      if (statusCode >= 500) {
+        request.log.error(
+          { method: request.method, url: request.url, statusCode },
+          'request completed with error status',
+        )
+      } else {
+        request.log.warn(
+          { method: request.method, url: request.url, statusCode },
+          'request completed with client error status',
+        )
+      }
+    }
   })
 
   await server.register(config)

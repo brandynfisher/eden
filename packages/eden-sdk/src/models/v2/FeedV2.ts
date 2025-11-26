@@ -65,6 +65,7 @@ export interface FeedCollectionsV2CursorArguments
   name?: string
   orderBy?: string
   direction?: 1 | -1
+  search?: string
 }
 
 export interface FeedAgentCursorArguments extends CursorPaginatedFeedQuery {
@@ -72,6 +73,7 @@ export interface FeedAgentCursorArguments extends CursorPaginatedFeedQuery {
   name?: string
   orderBy?: string
   direction?: 1 | -1
+  search?: string
 }
 
 // export interface FeedConceptsCursorArguments

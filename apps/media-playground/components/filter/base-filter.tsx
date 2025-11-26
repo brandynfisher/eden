@@ -30,6 +30,7 @@ interface BaseFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
   className?: string
+  excludeFromCount?: string[]
 }
 
 export function BaseFilter({
@@ -37,6 +38,7 @@ export function BaseFilter({
   onChange,
   initialFilter,
   className,
+  excludeFromCount = [],
 }: BaseFilterProps) {
   const [baseFilter, setBaseFilter] = useState<
     FeedCursorRouteQueryParams['filter']
@@ -48,12 +50,18 @@ export function BaseFilter({
   }, [])
 
   const numberOfFilters = useMemo(() => {
-    return Object.values(baseFilter || {}).reduce((acc: number, val) => {
-      if (Array.isArray(val)) return acc + val.length
-      if (val) return acc + 1
-      return acc
-    }, 0)
-  }, [baseFilter])
+    return Object.entries(baseFilter || {}).reduce(
+      (acc: number, [key, val]) => {
+        // Skip keys that should be excluded from count
+        if (excludeFromCount.includes(key)) return acc
+
+        if (Array.isArray(val)) return acc + val.length
+        if (val) return acc + 1
+        return acc
+      },
+      0,
+    )
+  }, [baseFilter, excludeFromCount])
 
   const handleItemChange = (
     sectionId: string,

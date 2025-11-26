@@ -506,22 +506,37 @@ const Session = ({
               const runId = data.session_run_id
               const streamState = streamingMessages.get(runId)
 
+              if (streamState && streamState.agent?._id) {
+                setAgentsWaitingToRespond(prev => {
+                  const next = new Set(prev)
+                  next.delete(streamState.agent._id)
+                  return next
+                })
+              }
+
+              const isRateLimitEden =
+                message.role === 'eden' &&
+                message.eden_message_data?.message_type === 'rate_limit'
+              if (isRateLimitEden) {
+                setAgentsWaitingToRespond(new Set())
+                if (runId) {
+                  streamingMessages.delete(runId)
+                }
+                streamingState.clearStreamingState()
+              }
+
+              // If we get any eden message (including rate limit), clear loaders defensively
+              if (message.role === 'eden') {
+                setAgentsWaitingToRespond(new Set())
+                streamingMessages.clear()
+              }
+
               // If we have a streaming state and this message has tool calls, merge them
               if (
                 streamState &&
                 message.tool_calls &&
                 message.tool_calls.length > 0
               ) {
-                // Remove loader for this agent since we got a tool call message
-                const agentId = streamState.agent._id
-                if (agentId) {
-                  setAgentsWaitingToRespond(prev => {
-                    const next = new Set(prev)
-                    next.delete(agentId)
-                    return next
-                  })
-                }
-
                 const mergedMessage: Message = {
                   ...message,
                   _id: streamState.messageId,
@@ -551,17 +566,22 @@ const Session = ({
                 } else {
                   addOrUpdateMessage(message)
                 }
-              } else if (!streamState) {
-                // If we didn't create a streaming message (shouldn't happen in streaming mode)
-                // This should never happen in streaming mode
+              } else {
+                // Normal assistant message (including errors like rate limits)
                 if (pendingMessage) {
                   setStreamingMessages(prev => [...prev, message])
                 } else {
                   addOrUpdateMessage(message)
                 }
+                // If no streaming state exists, also clear loaders based on sender
+                if (!streamState && message.sender?._id) {
+                  setAgentsWaitingToRespond(prev => {
+                    const next = new Set(prev)
+                    next.delete(message.sender._id)
+                    return next
+                  })
+                }
               }
-              // If we have streamState but no tool calls, ignore this message
-              // because it should have been streamed already
             } else if (data.type === 'user_message' && data.message) {
               // Handle user messages from other users in multi-user sessions
               const userMessage = data.message as Message
@@ -594,6 +614,10 @@ const Session = ({
               // Clear streaming state for this specific run
               if (runId) {
                 streamingMessages.delete(runId)
+              }
+              // Defensive: clear any loaders if no more active streams
+              if (streamingMessages.size === 0) {
+                setAgentsWaitingToRespond(new Set())
               }
             } else if (
               data.type === 'tool_complete' ||
@@ -761,6 +785,7 @@ const Session = ({
       } else {
         nonStreamingState.clearNonStreamingState()
       }
+      setAgentsWaitingToRespond(new Set())
 
       // Determine error type and add appropriate error
       if (

@@ -2,12 +2,12 @@
 
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
 import { Button } from '@/components/ui/button'
-import AgentsFeed from '@/features/feed/agents-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
 import { ProfileAgentsFilter } from '@/features/profile/profile-agents-filter'
+import ProfileAgentsSimple from '@/features/profile/profile-agents-simple'
 import { ProfileCollectionsFilter } from '@/features/profile/profile-collections-filter'
 import { ProfileCreationsFilter } from '@/features/profile/profile-creations-filter'
 import { ProfileModelsFilter } from '@/features/profile/profile-models-filter'
@@ -107,30 +107,14 @@ const ProfileTabs = () => {
           </Link>
         </Button>
       ) : undefined,
-      content: (
-        <AgentsFeed
-          query={{ user: creator._id }}
-          minCols={1}
-          maxCols={5}
-          hideCreateButton={true}
-          improvedLayout={true}
-          hideContextMenu={true}
-          breakpoints={[
-            { minWidth: 1536, columns: 5 },
-            { minWidth: 1280, columns: 4 },
-            { minWidth: 1024, columns: 3 },
-            { minWidth: 768, columns: 2 },
-            { minWidth: 640, columns: 2 },
-            { minWidth: 0, columns: 1 },
-          ]}
-        />
-      ),
+      content: <ProfileAgentsSimple userId={creator._id} />,
     },
     ...(isOwnProfile && isPreviewUser
       ? [
           {
             key: 'shared-agents',
             title: 'Shared Agents',
+            canSearch: true,
             content: <SharedAgentsSection />,
           },
         ]
