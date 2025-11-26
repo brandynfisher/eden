@@ -25,6 +25,7 @@ import {
   Loader2,
   PlayIcon,
   PlusIcon,
+  Trash2,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FC, useMemo, useState } from 'react'
@@ -45,8 +46,8 @@ const TaskItem: FC<{
   onDelete: (triggerId: string) => void
   isFinished?: boolean
   timezone: string
-}> = ({ trigger, agentId, onEdit, isFinished = false, timezone }) => {
-  // const [isDeleting, setIsDeleting] = useState(false)
+}> = ({ trigger, agentId, onEdit, onDelete, isFinished = false, timezone }) => {
+  const [isDeleting, setIsDeleting] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
 
@@ -68,17 +69,18 @@ const TaskItem: FC<{
   }, [trigger.next_scheduled_run, timezone, scheduleDescription])
 
   // const handleDelete = async () => {
-  //   setIsDeleting(true)
-  //   try {
-  //     await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
-  //     onDelete(trigger._id)
-  //     toast.success('Task deleted successfully')
-  //   } catch (error) {
-  //     toast.error('Failed to delete task')
-  //   } finally {
-  //     setIsDeleting(false)
-  //   }
-  // }
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
+      onDelete(trigger._id)
+      toast.success('Task deleted successfully')
+    } catch (error) {
+      toast.error('Failed to delete task')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const handleExecuteNow = async () => {
     setIsExecuting(true)
@@ -179,17 +181,32 @@ const TaskItem: FC<{
 
         {/* Edit and Delete buttons - only for active tasks */}
         {!isFinished && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(trigger)}
-              className="h-8 w-8 p-0"
-            >
-              <EditIcon className="h-4 w-4" />
-            </Button>
-          </>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(trigger)}
+            className="h-8 w-8 p-0"
+            title="Edit task"
+          >
+            <EditIcon className="h-4 w-4" />
+          </Button>
         )}
+
+        {/* Delete button - available for all tasks */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="h-8 w-8 p-0 text-destructive"
+          title="Delete task"
+        >
+          {isDeleting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2 className="h-4 w-4" />
+          )}
+        </Button>
       </div>
     </div>
   )
