@@ -54,57 +54,8 @@ class FarcasterEmbedErrorBoundary extends Component<
   }
 }
 
-// Wrapper component with error tracking
+// Wrapper component - only rely on error boundary for actual render errors
 const SafeFarcasterEmbed: React.FC<{ url: string }> = ({ url }) => {
-  const [hasError, setHasError] = React.useState(false)
-  const errorCaughtRef = React.useRef(false)
-
-  React.useEffect(() => {
-    // Reset error state when URL changes
-    setHasError(false)
-    errorCaughtRef.current = false
-
-    // Set up promise rejection handler for this specific cast
-    const handleRejection = (event: PromiseRejectionEvent) => {
-      const errorMessage = event.reason?.message || ''
-
-      // Check if this error is related to fetching a cast
-      if (
-        errorMessage.includes('Unable to fetch cast') &&
-        !errorCaughtRef.current
-      ) {
-        errorCaughtRef.current = true
-        setHasError(true)
-        event.preventDefault()
-      }
-    }
-
-    window.addEventListener('unhandledrejection', handleRejection)
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('unhandledrejection', handleRejection)
-    }
-  }, [url])
-
-  if (hasError) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Cast unavailable (may have been deleted)
-        </span>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-500 hover:underline block mt-1"
-        >
-          View on Warpcast
-        </a>
-      </div>
-    )
-  }
-
   return (
     <FarcasterEmbedErrorBoundary url={url}>
       <FarcasterEmbed url={url} />
