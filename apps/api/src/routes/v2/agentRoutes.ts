@@ -37,6 +37,10 @@ import {
   updateMemoryUser,
   updateUserMemoryEnabled,
 } from '../../controllers/agentController'
+import {
+  getAgentRealtimeSettings,
+  updateAgentRealtimeSettings,
+} from '../../controllers/agentRealtimeController'
 import { getAgentTrigger } from '../../controllers/agentServicesController'
 import {
   createEmailDomain,
@@ -1069,6 +1073,85 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getSharedAgents(server, request, reply),
+  })
+
+  // Agent Realtime Settings routes
+  server.get('/v2/agents/:agentId/realtime', {
+    schema: {
+      tags: ['Agents - Realtime'],
+      summary: 'Get Agent Realtime Settings',
+      description:
+        'Retrieve the ElevenLabs realtime voice conversation settings for an agent.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: {
+          settings: Type.Object({
+            agent: Type.String(),
+            elevenlabs_agent_id: Type.Optional(
+              Type.Union([Type.String(), Type.Null()]),
+            ),
+            voice_id: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+            language: Type.String(),
+            first_message: Type.Optional(
+              Type.Union([Type.String(), Type.Null()]),
+            ),
+            llm_model: Type.String(),
+            temperature: Type.Number(),
+            max_tokens: Type.Number(),
+            tts_stability: Type.Number(),
+            tts_speed: Type.Number(),
+            tts_similarity_boost: Type.Number(),
+          }),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      getAgentRealtimeSettings(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/realtime', {
+    schema: {
+      tags: ['Agents - Realtime'],
+      summary: 'Update Agent Realtime Settings',
+      description:
+        'Update the ElevenLabs realtime voice conversation settings for an agent.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        elevenlabs_agent_id: Type.Optional(Type.String()),
+        voice_id: Type.Optional(Type.String()),
+        language: Type.Optional(Type.String()),
+        first_message: Type.Optional(Type.String()),
+        llm_model: Type.Optional(
+          Type.Union([
+            Type.Literal('gpt-5'),
+            Type.Literal('gpt-5-mini'),
+            Type.Literal('gpt-5-nano'),
+            Type.Literal('gemini-2.5-flash-lite'),
+            Type.Literal('gemini-2.5-flash'),
+            Type.Literal('claude-sonnet-4-5'),
+            Type.Literal('claude-haiku-4-5'),
+          ]),
+        ),
+        temperature: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
+        max_tokens: Type.Optional(Type.Number({ minimum: 1, maximum: 16384 })),
+        tts_stability: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })),
+        tts_speed: Type.Optional(Type.Number({ minimum: 0, maximum: 1.2 })),
+        tts_similarity_boost: Type.Optional(
+          Type.Number({ minimum: 0, maximum: 1 }),
+        ),
+      }),
+      response: {
+        200: {
+          settings: Type.Any(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      updateAgentRealtimeSettings(server, request, reply),
   })
 }
 
