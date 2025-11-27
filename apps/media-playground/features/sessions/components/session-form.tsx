@@ -392,6 +392,7 @@ export const SessionForm = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">Instant</SelectItem>
+                    <SelectItem value="10">10 seconds</SelectItem>
                     <SelectItem value="60">1 minute</SelectItem>
                     <SelectItem value="300">5 minutes</SelectItem>
                     <SelectItem value="900">15 minutes</SelectItem>

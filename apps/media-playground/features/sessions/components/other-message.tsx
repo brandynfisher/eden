@@ -19,6 +19,8 @@ type OtherMessageProps = {
   message: Message
   showAvatar?: boolean
   isStreamingTokens?: boolean
+  /** If provided, clicking a child session card will call this instead of navigating */
+  onSessionClick?: (sessionId: string) => void
 }
 
 export const OtherMessage = ({
@@ -26,6 +28,7 @@ export const OtherMessage = ({
   message,
   showAvatar = true,
   isStreamingTokens = false,
+  onSessionClick,
 }: OtherMessageProps) => {
   // Track optimistically cancelled tool calls
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
@@ -230,6 +233,7 @@ export const OtherMessage = ({
               <TaskResultTool
                 key={toolCall.id}
                 toolCall={optimisticToolCall}
+                onSessionClick={onSessionClick}
                 onCancel={async () => {
                   // Optimistically mark as cancelled
                   setOptimisticallyCancelled(prev =>

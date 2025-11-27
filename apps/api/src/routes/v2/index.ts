@@ -5,6 +5,7 @@ import conceptRoutesV2 from './conceptRoutesV2'
 import creationRoutesV2 from './creationRoutesV2'
 import creatorRoutesV2 from './creatorRoutesV2'
 import feedRoutesV2 from './feedRoutesV2'
+import llmCallRoutes from './llmCallRoutes'
 import modelRoutesV2 from './modelRoutesV2'
 import notificationRoutes from './notificationRoutes'
 import sessionRoutesV2 from './sessionRoutesV2'
@@ -26,4 +27,5 @@ export const routes = [
   userRoutes,
   sessionRoutesV2,
   notificationRoutes,
+  llmCallRoutes,
 ]

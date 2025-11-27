@@ -55,6 +55,8 @@ export type Message = {
   tool_calls?: ToolCall[]
   thought?: Thought[]
   apiKey?: string
+  /** Reference to raw LLM call data */
+  llm_call?: string
   createdAt: Date
   updatedAt: Date
 }

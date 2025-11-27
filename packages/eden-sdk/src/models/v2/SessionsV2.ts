@@ -569,6 +569,8 @@ export type SessionV2 = {
   pinned?: boolean
   active_requests?: string[]
   extras?: SessionExtras
+  /** Maps agent IDs to their private workspace session IDs */
+  agent_sessions?: Record<string, string>
   deleted?: boolean
   createdAt: Date
   updatedAt: Date

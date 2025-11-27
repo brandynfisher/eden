@@ -10,12 +10,21 @@ type MessageAttachmentProps = {
   url: string
   index: number
   className?: string
+  /** Size variant for the attachment */
+  size?: 'sm' | 'md' | 'lg'
+}
+
+const sizeClasses = {
+  sm: 'w-24 h-24',
+  md: 'w-32 h-32',
+  lg: 'w-48 h-48',
 }
 
 export const MessageAttachment: FC<MessageAttachmentProps> = ({
   url,
   index,
   className,
+  size = 'md',
 }) => {
   const mediaType = getSuspectedMediaType(url)
 
@@ -23,6 +32,7 @@ export const MessageAttachment: FC<MessageAttachmentProps> = ({
     <div
       className={cn([
         'relative rounded-lg border border-border overflow-hidden',
+        sizeClasses[size],
         className,
       ])}
     >
@@ -49,7 +59,16 @@ export const MessageAttachment: FC<MessageAttachmentProps> = ({
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted rounded-lg">
           <div className="text-xs font-medium">
-            {url.split('.').pop()?.toUpperCase() || 'FILE'}
+            {(() => {
+              try {
+                const pathname = new URL(url).pathname
+                return pathname.split('.').pop()?.toUpperCase() || 'FILE'
+              } catch {
+                return (
+                  url.split('?')[0].split('.').pop()?.toUpperCase() || 'FILE'
+                )
+              }
+            })()}
           </div>
         </div>
       )}
