@@ -1,8 +1,17 @@
 export type MediaType = 'image' | 'video' | 'audio' | null
 
 export function getSuspectedMediaType(fileUrl: string): MediaType {
-  // Get the file extension from the URL
-  const extension = fileUrl.split('.').pop()?.toLowerCase()
+  // Get the file extension from the URL, handling query strings
+  let urlPath = fileUrl
+  try {
+    // Try to parse as URL to extract just the pathname
+    const url = new URL(fileUrl)
+    urlPath = url.pathname
+  } catch {
+    // If not a valid URL, strip query string manually
+    urlPath = fileUrl.split('?')[0]
+  }
+  const extension = urlPath.split('.').pop()?.toLowerCase()
 
   if (!extension) return null
 

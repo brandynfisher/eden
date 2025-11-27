@@ -21,6 +21,8 @@ export type SessionPostEmbedProps = {
   toolName?: string
   toolArgs?: TaskV2Args
   error?: string
+  /** If provided, clicking the session card will call this instead of navigating */
+  onSessionClick?: (sessionId: string) => void
 }
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
@@ -31,6 +33,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   toolName,
   toolArgs,
   error,
+  onSessionClick,
 }) => {
   // Get the current session ID to fetch current session's agents
   const params = useParams()
@@ -38,6 +41,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   // Extract session ID from results or use the provided childSessionId
   // The result structure should have a session field with the session ID
+  // Also supports posted_to_session from post_to_chatroom tool
   const sessionId = React.useMemo(() => {
     // If childSessionId is provided, use it directly
     if (childSessionId) {
@@ -47,12 +51,32 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
       return null
     }
 
+    // Helper to extract session ID from an object (checks both 'session' and 'posted_to_session')
+    const extractSessionId = (obj: Record<string, unknown>): string | null => {
+      // Check for session field
+      if ('session' in obj && typeof obj.session === 'string') {
+        return obj.session
+      }
+      // Check for posted_to_session field (from post_to_chatroom)
+      if ('posted_to_session' in obj) {
+        const posted = obj.posted_to_session
+        // posted_to_session can be a string ID or a Session object with _id
+        if (typeof posted === 'string') {
+          return posted
+        }
+        if (posted && typeof posted === 'object' && '_id' in posted) {
+          return (posted as { _id: string })._id
+        }
+      }
+      return null
+    }
+
     // Try to find session ID in various possible structures
     for (const result of results) {
-      // Check if result has a session field directly
-      if (result && typeof result === 'object' && 'session' in result) {
-        const sessionValue = (result as { session?: string }).session
-        if (typeof sessionValue === 'string') {
+      // Check if result has a session/posted_to_session field directly
+      if (result && typeof result === 'object') {
+        const sessionValue = extractSessionId(result as Record<string, unknown>)
+        if (sessionValue) {
           return sessionValue
         }
       }
@@ -66,16 +90,20 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
       if (result && result.output && typeof result.output === 'object') {
         if (Array.isArray(result.output)) {
           for (const output of result.output) {
-            if (output && typeof output === 'object' && 'session' in output) {
-              const sessionValue = (output as { session?: string }).session
-              if (typeof sessionValue === 'string') {
+            if (output && typeof output === 'object') {
+              const sessionValue = extractSessionId(
+                output as Record<string, unknown>,
+              )
+              if (sessionValue) {
                 return sessionValue
               }
             }
           }
-        } else if ('session' in result.output) {
-          const sessionValue = (result.output as { session?: string }).session
-          if (typeof sessionValue === 'string') {
+        } else {
+          const sessionValue = extractSessionId(
+            result.output as Record<string, unknown>,
+          )
+          if (sessionValue) {
             return sessionValue
           }
         }
@@ -122,9 +150,16 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           !Array.isArray(result.output)
         ) {
           const output = result.output as Record<string, unknown>
-          // If it's an object with only a 'session' field, filter it out
+          // If it's an object with only a 'session' or 'posted_to_session' field, filter it out
           const keys = Object.keys(output)
-          if (keys.length === 1 && keys[0] === 'session') {
+          if (
+            keys.length === 1 &&
+            (keys[0] === 'session' || keys[0] === 'posted_to_session')
+          ) {
+            return false
+          }
+          // Also filter out if it only has posted_to_session and maybe a message field (post_to_chatroom result)
+          if (keys.length <= 2 && keys.includes('posted_to_session')) {
             return false
           }
         }
@@ -243,6 +278,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           session={session}
           hideAgentIds={currentAgentIds}
           linkPath={chatLinkPath}
+          onClick={onSessionClick}
         />
 
         {/* Running indicator and cancel button - top right corner */}

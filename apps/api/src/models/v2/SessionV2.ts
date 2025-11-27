@@ -41,6 +41,8 @@ export interface SessionSchema {
     exclude_memory?: boolean
     is_public?: boolean
   }
+  /** Maps agent IDs to their private workspace session IDs */
+  agent_sessions?: Record<string, ObjectId | string>
   createdAt: Date
   updatedAt: Date
 }
@@ -150,6 +152,10 @@ export const sessionSchema = new Schema<SessionDocument>(
       default: false,
     },
     extras: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
+    agent_sessions: {
       type: Schema.Types.Mixed,
       default: null,
     },

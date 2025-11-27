@@ -1,8 +1,7 @@
 import ActionBar from './action-bar'
+import { AssistantAttachmentGrid } from './assistant-attachment-grid'
 import { AssistantContentRenderer } from './assistant-content-renderer'
-import { MessageAttachment } from './message-attachment'
 import ToolResultActionBar from './tool-result-action-bar'
-import { LightboxGallery } from '@/components/media/lightbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { ThoughtBlock } from '@/features/sessions/components/thought-block'
@@ -19,6 +18,8 @@ type AssistantMessageProps = {
   isStreamingTokens?: boolean
   showAvatar?: boolean
   isChatRoute?: boolean
+  /** If provided, clicking a child session card will call this instead of navigating */
+  onSessionClick?: (sessionId: string) => void
 }
 
 export const AssistantMessage = ({
@@ -27,6 +28,7 @@ export const AssistantMessage = ({
   isStreamingTokens = false,
   showAvatar = true,
   isChatRoute = false,
+  onSessionClick,
 }: AssistantMessageProps) => {
   // Track optimistically cancelled tool calls
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
@@ -148,20 +150,6 @@ export const AssistantMessage = ({
               return null
             })()}
 
-            {hasAttachments && (
-              <LightboxGallery galleryKey={message._id}>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {message.attachments?.map((attachment, index) => (
-                    <MessageAttachment
-                      key={attachment}
-                      url={attachment}
-                      index={index}
-                    />
-                  ))}
-                </div>
-              </LightboxGallery>
-            )}
-
             {!isEmpty && (
               <>
                 {!expanded && (
@@ -193,6 +181,13 @@ export const AssistantMessage = ({
               </>
             )}
 
+            {hasAttachments && (
+              <AssistantAttachmentGrid
+                attachments={message.attachments!}
+                messageId={message._id}
+              />
+            )}
+
             {message.tool_calls &&
               message.tool_calls.length > 0 &&
               message.tool_calls.map(toolCall => {
@@ -206,6 +201,7 @@ export const AssistantMessage = ({
                   <TaskResultTool
                     key={toolCall.id}
                     toolCall={optimisticToolCall}
+                    onSessionClick={onSessionClick}
                     onCancel={async () => {
                       setOptimisticallyCancelled(prev =>
                         new Set(prev).add(toolCall.id),
@@ -354,20 +350,6 @@ export const AssistantMessage = ({
                 return null
               })()}
 
-              {hasAttachments && (
-                <LightboxGallery galleryKey={message._id}>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {message.attachments?.map((attachment, index) => (
-                      <MessageAttachment
-                        key={attachment}
-                        url={attachment}
-                        index={index}
-                      />
-                    ))}
-                  </div>
-                </LightboxGallery>
-              )}
-
               {!isEmpty && (
                 <>
                   {!expanded && (
@@ -399,6 +381,13 @@ export const AssistantMessage = ({
                 </>
               )}
 
+              {hasAttachments && (
+                <AssistantAttachmentGrid
+                  attachments={message.attachments!}
+                  messageId={message._id}
+                />
+              )}
+
               {message.tool_calls &&
                 message.tool_calls.length > 0 &&
                 message.tool_calls.map(toolCall => {
@@ -412,6 +401,7 @@ export const AssistantMessage = ({
                     <TaskResultTool
                       key={toolCall.id}
                       toolCall={optimisticToolCall}
+                      onSessionClick={onSessionClick}
                       onCancel={async () => {
                         setOptimisticallyCancelled(prev =>
                           new Set(prev).add(toolCall.id),
@@ -561,20 +551,6 @@ export const AssistantMessage = ({
           return null
         })()}
 
-        {hasAttachments && (
-          <LightboxGallery galleryKey={message._id}>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {message.attachments?.map((attachment, index) => (
-                <MessageAttachment
-                  key={attachment}
-                  url={attachment}
-                  index={index}
-                />
-              ))}
-            </div>
-          </LightboxGallery>
-        )}
-
         {!isEmpty && (
           <>
             {!expanded && (
@@ -604,6 +580,13 @@ export const AssistantMessage = ({
           </>
         )}
 
+        {hasAttachments && (
+          <AssistantAttachmentGrid
+            attachments={message.attachments!}
+            messageId={message._id}
+          />
+        )}
+
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
           message.tool_calls.map(toolCall => {
@@ -615,6 +598,7 @@ export const AssistantMessage = ({
               <TaskResultTool
                 key={toolCall.id}
                 toolCall={optimisticToolCall}
+                onSessionClick={onSessionClick}
                 onCancel={async () => {
                   setOptimisticallyCancelled(prev =>
                     new Set(prev).add(toolCall.id),

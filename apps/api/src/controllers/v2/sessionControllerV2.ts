@@ -423,6 +423,10 @@ export const createSessionMessage = async (
 
     if (sessionType) {
       sessionData.session_type = sessionType
+      // Automatic sessions should start paused by default
+      if (sessionType === 'automatic' && !status) {
+        sessionData.status = 'paused'
+      }
     }
 
     if (status) {
@@ -491,6 +495,12 @@ export const createSessionMessage = async (
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
+    }
+
+    // For automatic sessions, set status to 'paused' when a new message is submitted
+    if (session.session_type === 'automatic' && session.status !== 'paused') {
+      session.status = 'paused'
+      await session.save()
     }
   }
 
@@ -893,7 +903,7 @@ export const getSession = async (
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
       )
 
     // Check if there are more messages by seeing if we got more than limit
@@ -1066,7 +1076,7 @@ export const getSessionMessages = async (
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
       )
 
     // Check if there are more messages
@@ -1244,6 +1254,7 @@ export const deleteSession = async (
 }
 
 export const renameSession = async (
+  server: FastifyInstance,
   request: FastifyRequest<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
     Body: Omit<SessionsV2RenameArguments, 'session_id'>
@@ -1338,13 +1349,39 @@ export const renameSession = async (
       ...budget,
     }
   }
-  if (status !== undefined) {
-    updateData.status = status
+
+  // Update local fields if any
+  if (Object.keys(updateData).length > 0) {
+    await session.updateOne({
+      $set: updateData,
+    })
   }
 
-  await session.updateOne({
-    $set: updateData,
-  })
+  // For status changes, forward to compute API instead of saving directly
+  // For play (active), just hit the endpoint without status - compute will handle it
+  // For pause, include status in the payload
+  if (status !== undefined) {
+    try {
+      const payload: { session_id: string; status?: string } = {
+        session_id: session_id as string,
+      }
+      if (status !== 'active') {
+        payload.status = status as string
+      }
+      await axios.post(
+        `${server.config.EDEN_COMPUTE_API_URL}/sessions/status`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+          },
+        },
+      )
+    } catch (error) {
+      console.error('Error forwarding status to compute API:', error)
+      // Don't fail the whole request if compute API fails
+    }
+  }
 
   return reply.status(200).send({ success: true })
 }
@@ -1553,7 +1590,7 @@ export const getSharedSession = async (
       })
       .sort({ createdAt: 1 })
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt llm_call',
       )
 
     return reply.status(200).send({

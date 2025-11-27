@@ -58,6 +58,7 @@ type MessageInputProps = {
   enableLiveAudio?: boolean
   agent?: Agent // Optional agent prop for welcome screen
   placeholder?: string // Custom placeholder text
+  expanded?: boolean // Start with expanded multi-line view
 }
 
 type AttachmentDropzoneProps = {
@@ -96,9 +97,10 @@ export const MessageInput = ({
   enableLiveAudio = false,
   agent: propAgent,
   placeholder = 'Write a message...',
+  expanded = false,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
-  const [isMultiline, setIsMultiline] = useState(false)
+  const [isMultiline, setIsMultiline] = useState(expanded)
   const {
     addOptimisticMessage,
     removeOptimisticMessage,
@@ -133,6 +135,13 @@ export const MessageInput = ({
   // Use prop agent if available (for welcome screen), otherwise use session agent
   const activeAgent = propAgent || fullAgent
   const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
+
+  // Sync isMultiline with expanded prop when it changes
+  useEffect(() => {
+    if (expanded) {
+      setIsMultiline(true)
+    }
+  }, [expanded])
 
   // Auto-focus the textarea when starting a new chat
   useEffect(() => {
@@ -420,8 +429,10 @@ export const MessageInput = ({
     const cursorPosition = e.target.selectionStart
 
     // Check if textarea has multiple lines (wrapped or newline)
-    // Reset to single line if content is empty or very short
-    const shouldBeMultiline = value.length > 0 && e.target.scrollHeight > 40 // ~40px is roughly 2rem height
+    // If expanded prop is set, stay in multiline mode even when empty
+    // Otherwise, reset to single line if content is empty or very short
+    const shouldBeMultiline =
+      expanded || (value.length > 0 && e.target.scrollHeight > 40) // ~40px is roughly 2rem height
 
     // Only update isMultiline state if it actually changed to prevent unnecessary re-renders
     if (shouldBeMultiline !== isMultiline) {
@@ -611,7 +622,12 @@ export const MessageInput = ({
                                 {...field}
                                 ref={textareaRef}
                                 placeholder={placeholder}
-                                className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-0 resize-none min-h-[2rem] max-h-[200px] w-full"
+                                className={cn(
+                                  'focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-0 resize-none max-h-[200px] w-full',
+                                  expanded && !field.value
+                                    ? 'min-h-[4.5rem]'
+                                    : 'min-h-[2rem]',
+                                )}
                                 disabled={isSubmitting}
                                 onKeyDown={e => {
                                   const mentionHandled = handleKeyDown(e)

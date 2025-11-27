@@ -555,7 +555,10 @@ const ChatLaunchpad = () => {
         <div className="chat-launchpad-content">
           {/* Agent Display Area */}
           <div className="agents-section">
-            <div className="agents-collection">
+            <div
+              className="agents-collection"
+              data-agent-count={selectedAgents.length}
+            >
               {selectedAgents.map((agent, index) => (
                 <SelectedAgentCard
                   key={agent._id}
@@ -585,9 +588,9 @@ const ChatLaunchpad = () => {
                         }}
                       >
                         <div className="add-agent-icon">
-                          <Plus className="w-5 h-5" />
+                          <Plus className="w-4 h-4" />
                         </div>
-                        <p className="add-agent-text">Add Agent</p>
+                        <p className="add-agent-text">Add</p>
                       </button>
                     }
                     selectedAgents={selectedAgents}
@@ -750,6 +753,7 @@ const ChatLaunchpad = () => {
                     ? 'Describe a scenario, game, or collaborative mission involving your agents'
                     : 'Write a message...'
                 }
+                expanded={selectedAgents.length > 1}
               />
             </div>
           </div>
@@ -881,26 +885,161 @@ const ChatLaunchpad = () => {
             position: relative;
             z-index: 1;
             overflow-y: auto;
-            padding: 2rem;
-            gap: 2rem;
+            padding: 1.5rem 1rem;
+            gap: 1.5rem;
           }
 
           .agents-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2rem;
-            max-width: 1200px;
+            gap: 0.75rem;
             width: 100%;
+            padding: 0 0.5rem;
           }
 
           .agents-collection {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
+            display: grid;
+            gap: 0.625rem;
             justify-content: center;
-            align-items: flex-start;
+            align-items: start;
             width: 100%;
+            max-width: 100%;
+            /* Mobile default - use fr units to fill available space */
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          /* ===== MOBILE GRID LAYOUTS ===== */
+          /* 1-3 agents: single row, big cards - use fr to fill width */
+          .agents-collection[data-agent-count='1'] {
+            grid-template-columns: minmax(160px, 220px);
+          }
+          .agents-collection[data-agent-count='2'] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 360px;
+          }
+          .agents-collection[data-agent-count='3'] {
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          /* 4 agents: 2x2 grid */
+          .agents-collection[data-agent-count='4'] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 320px;
+          }
+
+          /* 5-6 agents: 3 cols */
+          .agents-collection[data-agent-count='5'],
+          .agents-collection[data-agent-count='6'] {
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          /* 7-9 agents: 3 cols */
+          .agents-collection[data-agent-count='7'],
+          .agents-collection[data-agent-count='8'],
+          .agents-collection[data-agent-count='9'] {
+            grid-template-columns: repeat(3, 1fr);
+          }
+
+          /* 10-12 agents: 4 cols */
+          .agents-collection[data-agent-count='10'],
+          .agents-collection[data-agent-count='11'],
+          .agents-collection[data-agent-count='12'],
+          .agents-collection[data-agent-count='13'] {
+            grid-template-columns: repeat(4, 1fr);
+          }
+
+          /* ===== DESKTOP GRID LAYOUTS ===== */
+          @media (min-width: 768px) {
+            .chat-launchpad-content {
+              padding: 2.5rem 2rem;
+              gap: 2rem;
+            }
+
+            .agents-section {
+              gap: 1.25rem;
+              max-width: 70%;
+              padding: 0;
+            }
+
+            .agents-collection {
+              gap: 1.5rem;
+              max-width: none;
+            }
+
+            /* 1-4 agents: single row, generous cards */
+            .agents-collection[data-agent-count='1'] {
+              grid-template-columns: minmax(0, 280px);
+            }
+            .agents-collection[data-agent-count='2'] {
+              grid-template-columns: repeat(2, minmax(0, 220px));
+              max-width: none;
+            }
+            .agents-collection[data-agent-count='3'] {
+              grid-template-columns: repeat(3, minmax(0, 200px));
+            }
+            .agents-collection[data-agent-count='4'] {
+              grid-template-columns: repeat(4, minmax(0, 180px));
+              max-width: none;
+            }
+
+            /* 5 agents: single row, can expand wider */
+            .agents-collection[data-agent-count='5'] {
+              grid-template-columns: repeat(5, minmax(0, 180px));
+            }
+
+            /* 6 agents: 2 rows of 3 - bigger cards */
+            .agents-collection[data-agent-count='6'] {
+              grid-template-columns: repeat(3, minmax(0, 220px));
+            }
+
+            /* 7-9 agents: 3 cols - bigger cards */
+            .agents-collection[data-agent-count='7'],
+            .agents-collection[data-agent-count='8'],
+            .agents-collection[data-agent-count='9'] {
+              grid-template-columns: repeat(3, minmax(0, 200px));
+            }
+
+            /* 10-12 agents: 4 cols */
+            .agents-collection[data-agent-count='10'],
+            .agents-collection[data-agent-count='11'],
+            .agents-collection[data-agent-count='12'],
+            .agents-collection[data-agent-count='13'] {
+              grid-template-columns: repeat(4, minmax(0, 180px));
+            }
+
+            /* Desktop: Add button centering */
+            /* Single row layouts (1-5 agents) - add button alone on row 2 */
+            .agents-collection[data-agent-count='1'] .add-agent-card,
+            .agents-collection[data-agent-count='2'] .add-agent-card,
+            .agents-collection[data-agent-count='3'] .add-agent-card,
+            .agents-collection[data-agent-count='4'] .add-agent-card,
+            .agents-collection[data-agent-count='5'] .add-agent-card {
+              grid-column: 1 / -1;
+              justify-self: center;
+              max-width: 180px;
+            }
+
+            /* 6 agents (3 cols, 2 rows) - add alone on row 3 */
+            .agents-collection[data-agent-count='6'] .add-agent-card {
+              grid-column: 1 / -1;
+              justify-self: center;
+              max-width: 180px;
+            }
+
+            /* 9 agents (3 cols, 3 rows) - add alone on row 4 */
+            .agents-collection[data-agent-count='9'] .add-agent-card {
+              grid-column: 1 / -1;
+              justify-self: center;
+              max-width: 180px;
+            }
+
+            /* 12 agents (4 cols, 3 rows) - add alone on row 4 */
+            .agents-collection[data-agent-count='12'] .add-agent-card {
+              grid-column: 1 / -1;
+              justify-self: center;
+              max-width: 160px;
+            }
           }
 
           @keyframes fadeInUp {
@@ -924,29 +1063,29 @@ const ChatLaunchpad = () => {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5rem;
-            padding: 2rem 1.5rem;
+            gap: 0.5rem;
+            padding: 0.75rem 0.5rem;
             background: hsl(var(--card));
             border: 1px solid hsl(var(--border));
-            border-radius: 1.25rem;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             backdrop-filter: blur(8px);
-            min-width: 240px;
+            width: 100%;
           }
 
           .agent-card-inner:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             border-color: hsl(var(--primary) / 0.3);
             background: hsl(var(--card));
-            box-shadow: 0 8px 24px hsl(var(--primary) / 0.15);
+            box-shadow: 0 4px 12px hsl(var(--primary) / 0.1);
           }
 
           .agent-remove-btn {
             position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            width: 2rem;
-            height: 2rem;
+            top: 0.25rem;
+            right: 0.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -957,6 +1096,16 @@ const ChatLaunchpad = () => {
             cursor: pointer;
             transition: all 0.2s ease;
             z-index: 10;
+            opacity: 0;
+          }
+
+          .agent-card-inner:hover .agent-remove-btn {
+            opacity: 1;
+          }
+
+          .agent-remove-btn svg {
+            width: 0.75rem;
+            height: 0.75rem;
           }
 
           .agent-remove-btn:hover {
@@ -974,15 +1123,310 @@ const ChatLaunchpad = () => {
           }
 
           .agent-avatar-glow {
-            position: absolute;
-            inset: -20%;
-            background: radial-gradient(
-              circle,
-              hsl(var(--primary) / 0.15) 0%,
-              transparent 70%
-            );
+            display: none;
+          }
+
+          /* Mobile default: big beautiful cards */
+          .agent-avatar {
+            width: 56px;
+            height: 56px;
+            border: 2px solid hsl(var(--primary) / 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+          }
+
+          .agent-card-inner:hover .agent-avatar {
+            border-color: hsl(var(--primary) / 0.4);
+          }
+
+          .agent-avatar-fallback {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: hsl(var(--muted));
+            color: hsl(var(--primary));
+          }
+
+          .agent-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            text-align: center;
+            min-width: 0;
+            width: 100%;
+          }
+
+          .agent-name {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+          }
+
+          .agent-creator {
+            font-size: 0.6875rem;
+            color: hsl(var(--muted-foreground));
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+          }
+
+          .add-agent-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.875rem 0.5rem;
+            width: 100%;
+            min-height: 0;
+            background: transparent;
+            border: 1px dashed hsl(var(--border) / 0.4);
+            border-radius: 0.625rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          .add-agent-card:hover {
+            background: hsl(var(--muted) / 0.3);
+            border-color: hsl(var(--border));
+            border-style: solid;
+          }
+
+          .add-agent-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 50%;
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            background: hsl(var(--muted) / 0.5);
+            color: hsl(var(--muted-foreground) / 0.7);
+            transition: all 0.3s ease;
+          }
+
+          .add-agent-card:hover .add-agent-icon {
+            color: hsl(var(--muted-foreground));
+            background: hsl(var(--muted));
+          }
+
+          .add-agent-text {
+            font-size: 0.6875rem;
+            color: hsl(var(--muted-foreground) / 0.6);
+            font-weight: 500;
+          }
+
+          .add-agent-card:hover .add-agent-text {
+            color: hsl(var(--muted-foreground));
+          }
+
+          /* ===== ADD BUTTON CENTERING ===== */
+          /* When add button is alone on its row, center it */
+          /* Mobile: 3 cols - center when 3, 6, 9 agents */
+          .agents-collection[data-agent-count='3'] .add-agent-card,
+          .agents-collection[data-agent-count='6'] .add-agent-card,
+          .agents-collection[data-agent-count='9'] .add-agent-card {
+            grid-column: 1 / -1;
+            justify-self: center;
+            max-width: 140px;
+          }
+
+          /* Mobile: 2 cols (for 4 agents) - center when 2, 4 agents */
+          .agents-collection[data-agent-count='4'] .add-agent-card {
+            grid-column: 1 / -1;
+            justify-self: center;
+            max-width: 140px;
+          }
+
+          /* Mobile: 4 cols - center when 4, 8, 12 agents */
+          .agents-collection[data-agent-count='12'] .add-agent-card {
+            grid-column: 1 / -1;
+            justify-self: center;
+            max-width: 120px;
+          }
+
+          /* ===== MOBILE CARD SCALING ===== */
+
+          /* Mobile: 1 agent - big card */
+          .agents-collection[data-agent-count='1'] .agent-card-inner {
+            padding: 1.5rem 1.25rem;
+            gap: 0.75rem;
+          }
+          .agents-collection[data-agent-count='1'] .agent-avatar {
+            width: 88px;
+            height: 88px;
+          }
+          .agents-collection[data-agent-count='1'] .agent-avatar-fallback {
+            font-size: 2.25rem;
+          }
+          .agents-collection[data-agent-count='1'] .agent-name {
+            font-size: 1.125rem;
+          }
+          .agents-collection[data-agent-count='1'] .agent-creator {
+            font-size: 0.875rem;
+          }
+          .agents-collection[data-agent-count='1'] .add-agent-card {
+            padding: 1.5rem 1.25rem;
+            gap: 0.625rem;
+          }
+          .agents-collection[data-agent-count='1'] .add-agent-icon {
+            width: 2.75rem;
+            height: 2.75rem;
+          }
+          .agents-collection[data-agent-count='1'] .add-agent-text {
+            font-size: 0.9375rem;
+          }
+
+          /* Mobile: 2 agents - 2 cols, big cards */
+          .agents-collection[data-agent-count='2'] .agent-card-inner {
+            padding: 1.25rem 0.875rem;
+            gap: 0.625rem;
+          }
+          .agents-collection[data-agent-count='2'] .agent-avatar {
+            width: 72px;
+            height: 72px;
+          }
+          .agents-collection[data-agent-count='2'] .agent-avatar-fallback {
+            font-size: 1.75rem;
+          }
+          .agents-collection[data-agent-count='2'] .agent-name {
+            font-size: 0.9375rem;
+          }
+          .agents-collection[data-agent-count='2'] .agent-creator {
+            font-size: 0.75rem;
+          }
+
+          /* Mobile: 3 agents - 3 cols, fill width */
+          .agents-collection[data-agent-count='3'] .agent-card-inner {
+            padding: 1rem 0.625rem;
+            gap: 0.5rem;
+          }
+          .agents-collection[data-agent-count='3'] .agent-avatar {
+            width: 64px;
+            height: 64px;
+          }
+          .agents-collection[data-agent-count='3'] .agent-avatar-fallback {
+            font-size: 1.5rem;
+          }
+          .agents-collection[data-agent-count='3'] .agent-name {
+            font-size: 0.8125rem;
+          }
+          .agents-collection[data-agent-count='3'] .agent-creator {
+            font-size: 0.6875rem;
+          }
+
+          /* Mobile: 4 agents - 2x2 grid, nice cards */
+          .agents-collection[data-agent-count='4'] .agent-card-inner {
+            padding: 1.125rem 0.75rem;
+            gap: 0.5rem;
+          }
+          .agents-collection[data-agent-count='4'] .agent-avatar {
+            width: 68px;
+            height: 68px;
+          }
+          .agents-collection[data-agent-count='4'] .agent-avatar-fallback {
+            font-size: 1.625rem;
+          }
+          .agents-collection[data-agent-count='4'] .agent-name {
+            font-size: 0.875rem;
+          }
+          .agents-collection[data-agent-count='4'] .agent-creator {
+            font-size: 0.6875rem;
+          }
+
+          /* Mobile: 5-6 agents - 3 cols, fill width */
+          .agents-collection[data-agent-count='5'] .agent-card-inner,
+          .agents-collection[data-agent-count='6'] .agent-card-inner {
+            padding: 1rem 0.625rem;
+            gap: 0.5rem;
+          }
+          .agents-collection[data-agent-count='5'] .agent-avatar,
+          .agents-collection[data-agent-count='6'] .agent-avatar {
+            width: 60px;
+            height: 60px;
+          }
+          .agents-collection[data-agent-count='5'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='6'] .agent-avatar-fallback {
+            font-size: 1.5rem;
+          }
+          .agents-collection[data-agent-count='5'] .agent-name,
+          .agents-collection[data-agent-count='6'] .agent-name {
+            font-size: 0.8125rem;
+          }
+          .agents-collection[data-agent-count='5'] .agent-creator,
+          .agents-collection[data-agent-count='6'] .agent-creator {
+            font-size: 0.625rem;
+          }
+
+          /* Mobile: 7-9 agents - 3 cols */
+          .agents-collection[data-agent-count='7'] .agent-card-inner,
+          .agents-collection[data-agent-count='8'] .agent-card-inner,
+          .agents-collection[data-agent-count='9'] .agent-card-inner {
+            padding: 0.875rem 0.5rem;
+            gap: 0.375rem;
+          }
+          .agents-collection[data-agent-count='7'] .agent-avatar,
+          .agents-collection[data-agent-count='8'] .agent-avatar,
+          .agents-collection[data-agent-count='9'] .agent-avatar {
+            width: 52px;
+            height: 52px;
+          }
+          .agents-collection[data-agent-count='7'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='8'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='9'] .agent-avatar-fallback {
+            font-size: 1.25rem;
+          }
+          .agents-collection[data-agent-count='7'] .agent-name,
+          .agents-collection[data-agent-count='8'] .agent-name,
+          .agents-collection[data-agent-count='9'] .agent-name {
+            font-size: 0.75rem;
+          }
+          .agents-collection[data-agent-count='7'] .agent-creator,
+          .agents-collection[data-agent-count='8'] .agent-creator,
+          .agents-collection[data-agent-count='9'] .agent-creator {
+            font-size: 0.5625rem;
+          }
+
+          /* Mobile: 10-12 agents - 4 cols, compact */
+          .agents-collection[data-agent-count='10'] .agent-card-inner,
+          .agents-collection[data-agent-count='11'] .agent-card-inner,
+          .agents-collection[data-agent-count='12'] .agent-card-inner,
+          .agents-collection[data-agent-count='13'] .agent-card-inner {
+            padding: 0.75rem 0.375rem;
+            gap: 0.25rem;
+          }
+          .agents-collection[data-agent-count='10'] .agent-avatar,
+          .agents-collection[data-agent-count='11'] .agent-avatar,
+          .agents-collection[data-agent-count='12'] .agent-avatar,
+          .agents-collection[data-agent-count='13'] .agent-avatar {
+            width: 44px;
+            height: 44px;
+          }
+          .agents-collection[data-agent-count='10'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='11'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='12'] .agent-avatar-fallback,
+          .agents-collection[data-agent-count='13'] .agent-avatar-fallback {
+            font-size: 1rem;
+          }
+          .agents-collection[data-agent-count='10'] .agent-name,
+          .agents-collection[data-agent-count='11'] .agent-name,
+          .agents-collection[data-agent-count='12'] .agent-name,
+          .agents-collection[data-agent-count='13'] .agent-name {
+            font-size: 0.625rem;
+          }
+          .agents-collection[data-agent-count='10'] .agent-creator,
+          .agents-collection[data-agent-count='11'] .agent-creator,
+          .agents-collection[data-agent-count='12'] .agent-creator,
+          .agents-collection[data-agent-count='13'] .agent-creator {
+            display: none;
           }
 
           @keyframes pulse {
@@ -997,99 +1441,237 @@ const ChatLaunchpad = () => {
             }
           }
 
-          .agent-avatar {
-            width: 120px;
-            height: 120px;
-            border: 2px solid hsl(var(--primary) / 0.2);
-            box-shadow: 0 8px 32px hsl(var(--background) / 0.4);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            z-index: 1;
-          }
+          /* ===== DESKTOP CARD SCALING ===== */
+          @media (min-width: 768px) {
+            /* Desktop defaults - tall vertical cards */
+            .agent-avatar {
+              width: 96px;
+              height: 96px;
+            }
+            .agent-avatar-fallback {
+              font-size: 2rem;
+            }
+            .agent-name {
+              font-size: 1.0625rem;
+            }
+            .agent-creator {
+              font-size: 0.875rem;
+            }
+            .agent-card-inner {
+              padding: 2rem 1.25rem;
+              gap: 1rem;
+            }
+            .add-agent-card {
+              padding: 2rem 1.25rem;
+              gap: 0.875rem;
+            }
+            .add-agent-icon {
+              width: 3rem;
+              height: 3rem;
+            }
+            .add-agent-text {
+              font-size: 0.9375rem;
+            }
 
-          .agent-card-inner:hover .agent-avatar {
-            border-color: hsl(var(--primary) / 0.4);
-            box-shadow: 0 12px 48px hsl(var(--primary) / 0.2);
-          }
+            /* Desktop: 1 agent - large card with glow */
+            .agents-collection[data-agent-count='1'] .agent-card-inner {
+              padding: 3rem 2.5rem;
+              gap: 1.5rem;
+            }
+            .agents-collection[data-agent-count='1'] .agent-avatar {
+              width: 160px;
+              height: 160px;
+            }
+            .agents-collection[data-agent-count='1'] .agent-avatar-fallback {
+              font-size: 3.5rem;
+            }
+            .agents-collection[data-agent-count='1'] .agent-name {
+              font-size: 1.625rem;
+            }
+            .agents-collection[data-agent-count='1'] .agent-creator {
+              font-size: 1.0625rem;
+            }
+            .agents-collection[data-agent-count='1'] .agent-avatar-glow {
+              display: block;
+              position: absolute;
+              inset: -20%;
+              background: radial-gradient(
+                circle,
+                hsl(var(--primary) / 0.15) 0%,
+                transparent 70%
+              );
+              border-radius: 50%;
+              animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .agents-collection[data-agent-count='1'] .add-agent-card {
+              padding: 3rem 2.5rem;
+              gap: 1.25rem;
+            }
+            .agents-collection[data-agent-count='1'] .add-agent-icon {
+              width: 4rem;
+              height: 4rem;
+            }
+            .agents-collection[data-agent-count='1'] .add-agent-text {
+              font-size: 1.375rem;
+            }
 
-          .agent-avatar-fallback {
-            font-size: 2.5rem;
-            font-weight: 600;
-            background: hsl(var(--muted));
-            color: hsl(var(--primary));
-          }
+            /* Desktop: 2 agents - big tall cards */
+            .agents-collection[data-agent-count='2'] .agent-card-inner {
+              padding: 2.5rem 1.75rem;
+              gap: 1.25rem;
+            }
+            .agents-collection[data-agent-count='2'] .agent-avatar {
+              width: 130px;
+              height: 130px;
+            }
+            .agents-collection[data-agent-count='2'] .agent-avatar-fallback {
+              font-size: 3rem;
+            }
+            .agents-collection[data-agent-count='2'] .agent-name {
+              font-size: 1.375rem;
+            }
+            .agents-collection[data-agent-count='2'] .agent-creator {
+              font-size: 1rem;
+            }
 
-          .agent-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            text-align: center;
-          }
+            /* Desktop: 3 agents - big tall cards */
+            .agents-collection[data-agent-count='3'] .agent-card-inner {
+              padding: 2.25rem 1.5rem;
+              gap: 1.125rem;
+            }
+            .agents-collection[data-agent-count='3'] .agent-avatar {
+              width: 115px;
+              height: 115px;
+            }
+            .agents-collection[data-agent-count='3'] .agent-avatar-fallback {
+              font-size: 2.75rem;
+            }
+            .agents-collection[data-agent-count='3'] .agent-name {
+              font-size: 1.25rem;
+            }
+            .agents-collection[data-agent-count='3'] .agent-creator {
+              font-size: 0.9375rem;
+            }
 
-          .agent-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: hsl(var(--foreground));
-            letter-spacing: -0.01em;
-            line-height: 1.3;
-          }
+            /* Desktop: 4 agents - tall cards with big avatars */
+            .agents-collection[data-agent-count='4'] .agent-card-inner {
+              padding: 2rem 1.25rem;
+              gap: 1rem;
+            }
+            .agents-collection[data-agent-count='4'] .agent-avatar {
+              width: 100px;
+              height: 100px;
+            }
+            .agents-collection[data-agent-count='4'] .agent-avatar-fallback {
+              font-size: 2.25rem;
+            }
+            .agents-collection[data-agent-count='4'] .agent-name {
+              font-size: 1.125rem;
+            }
+            .agents-collection[data-agent-count='4'] .agent-creator {
+              font-size: 0.875rem;
+            }
 
-          .agent-creator {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground));
-            font-weight: 400;
-          }
+            /* Desktop: 5 agents - tall cards */
+            .agents-collection[data-agent-count='5'] .agent-card-inner {
+              padding: 1.75rem 1rem;
+              gap: 0.875rem;
+            }
+            .agents-collection[data-agent-count='5'] .agent-avatar {
+              width: 88px;
+              height: 88px;
+            }
+            .agents-collection[data-agent-count='5'] .agent-avatar-fallback {
+              font-size: 2rem;
+            }
+            .agents-collection[data-agent-count='5'] .agent-name {
+              font-size: 1rem;
+            }
+            .agents-collection[data-agent-count='5'] .agent-creator {
+              font-size: 0.8125rem;
+            }
 
-          .add-agent-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 2rem 1.5rem;
-            min-width: 240px;
-            min-height: 240px;
-            background: transparent;
-            border: 1px dashed hsl(var(--border) / 0.4);
-            border-radius: 1.25rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-          }
+            /* Desktop: 6 agents - bigger cards (2 rows of 3) */
+            .agents-collection[data-agent-count='6'] .agent-card-inner {
+              padding: 2rem 1.25rem;
+              gap: 1rem;
+            }
+            .agents-collection[data-agent-count='6'] .agent-avatar {
+              width: 100px;
+              height: 100px;
+            }
+            .agents-collection[data-agent-count='6'] .agent-avatar-fallback {
+              font-size: 2.25rem;
+            }
+            .agents-collection[data-agent-count='6'] .agent-name {
+              font-size: 1.125rem;
+            }
+            .agents-collection[data-agent-count='6'] .agent-creator {
+              font-size: 0.875rem;
+            }
 
-          .add-agent-card:hover {
-            background: hsl(var(--muted) / 0.3);
-            border-color: hsl(var(--border));
-            border-style: solid;
-          }
+            /* Desktop: 7-9 agents - medium tall cards (3 cols) */
+            .agents-collection[data-agent-count='7'] .agent-card-inner,
+            .agents-collection[data-agent-count='8'] .agent-card-inner,
+            .agents-collection[data-agent-count='9'] .agent-card-inner {
+              padding: 1.75rem 1.125rem;
+              gap: 0.875rem;
+            }
+            .agents-collection[data-agent-count='7'] .agent-avatar,
+            .agents-collection[data-agent-count='8'] .agent-avatar,
+            .agents-collection[data-agent-count='9'] .agent-avatar {
+              width: 92px;
+              height: 92px;
+            }
+            .agents-collection[data-agent-count='7'] .agent-avatar-fallback,
+            .agents-collection[data-agent-count='8'] .agent-avatar-fallback,
+            .agents-collection[data-agent-count='9'] .agent-avatar-fallback {
+              font-size: 2rem;
+            }
+            .agents-collection[data-agent-count='7'] .agent-name,
+            .agents-collection[data-agent-count='8'] .agent-name,
+            .agents-collection[data-agent-count='9'] .agent-name {
+              font-size: 1.0625rem;
+            }
+            .agents-collection[data-agent-count='7'] .agent-creator,
+            .agents-collection[data-agent-count='8'] .agent-creator,
+            .agents-collection[data-agent-count='9'] .agent-creator {
+              font-size: 0.8125rem;
+            }
 
-          .add-agent-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: transparent;
-            color: hsl(var(--muted-foreground) / 0.5);
-            transition: all 0.3s ease;
-          }
-
-          .add-agent-card:hover .add-agent-icon {
-            color: hsl(var(--muted-foreground));
-            transform: rotate(90deg);
-          }
-
-          .add-agent-text {
-            font-size: 0.875rem;
-            color: hsl(var(--muted-foreground) / 0.6);
-            font-weight: 500;
-          }
-
-          .add-agent-card:hover .add-agent-text {
-            color: hsl(var(--muted-foreground));
+            /* Desktop: 10-12+ agents - slightly smaller */
+            .agents-collection[data-agent-count='10'] .agent-card-inner,
+            .agents-collection[data-agent-count='11'] .agent-card-inner,
+            .agents-collection[data-agent-count='12'] .agent-card-inner,
+            .agents-collection[data-agent-count='13'] .agent-card-inner {
+              padding: 1.25rem 0.875rem;
+              gap: 0.625rem;
+            }
+            .agents-collection[data-agent-count='10'] .agent-avatar,
+            .agents-collection[data-agent-count='11'] .agent-avatar,
+            .agents-collection[data-agent-count='12'] .agent-avatar,
+            .agents-collection[data-agent-count='13'] .agent-avatar {
+              width: 72px;
+              height: 72px;
+            }
+            .agents-collection[data-agent-count='10'] .agent-avatar-fallback,
+            .agents-collection[data-agent-count='11'] .agent-avatar-fallback,
+            .agents-collection[data-agent-count='12'] .agent-avatar-fallback,
+            .agents-collection[data-agent-count='13'] .agent-avatar-fallback {
+              font-size: 1.625rem;
+            }
+            .agents-collection[data-agent-count='10'] .agent-name,
+            .agents-collection[data-agent-count='11'] .agent-name,
+            .agents-collection[data-agent-count='12'] .agent-name,
+            .agents-collection[data-agent-count='13'] .agent-name {
+              font-size: 0.9375rem;
+            }
+            .agents-collection[data-agent-count='10'] .agent-creator,
+            .agents-collection[data-agent-count='11'] .agent-creator,
+            .agents-collection[data-agent-count='12'] .agent-creator,
+            .agents-collection[data-agent-count='13'] .agent-creator {
+              font-size: 0.75rem;
+            }
           }
 
           .session-settings-btn {
@@ -1288,41 +1870,14 @@ const ChatLaunchpad = () => {
             width: 100%;
           }
 
-          @media (max-width: 768px) {
+          @media (max-width: 767px) {
             .chat-launchpad-content {
-              padding: 1.5rem 1rem;
-              gap: 1.5rem;
-            }
-
-            .agents-section {
-              gap: 1.5rem;
-            }
-
-            .agents-collection {
+              padding: 1rem 0.75rem;
               gap: 1rem;
-              flex-direction: column;
-              align-items: stretch;
-            }
-
-            .agent-card-inner,
-            .add-agent-card {
-              min-width: unset;
-              width: 100%;
-              min-height: auto;
-              padding: 1.25rem 1rem;
-            }
-
-            .agent-avatar {
-              width: 80px;
-              height: 80px;
-            }
-
-            .agent-name {
-              font-size: 1.125rem;
             }
 
             .message-input-wrapper {
-              padding: 1rem;
+              padding: 0.75rem;
             }
           }
         `}</style>

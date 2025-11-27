@@ -458,7 +458,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
-    handler: (request, reply) => renameSession(request, reply),
+    handler: (request, reply) => renameSession(server, request, reply),
   })
 
   server.delete<{

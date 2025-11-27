@@ -31,6 +31,8 @@ export interface MessageSchema {
   tool_calls?: ToolCall[]
   thought?: Thought[]
   apiKey?: string
+  /** Reference to raw LLM call data in llm_calls collection */
+  llm_call?: Schema.Types.ObjectId | null
   createdAt?: Date
   updatedAt?: Date
 }
@@ -114,6 +116,11 @@ const messageSchema = new Schema<MessageDocument>(
     apiKey: {
       type: Schema.Types.ObjectId,
       ref: 'apikeys',
+    },
+    llm_call: {
+      type: Schema.Types.ObjectId,
+      ref: 'llm_calls',
+      default: null,
     },
   },
   {

@@ -17,6 +17,8 @@ import React, { useMemo } from 'react'
 export type TaskResultToolProps = {
   toolCall: ToolCall
   onCancel?: () => void
+  /** If provided, clicking a child session card will call this instead of navigating */
+  onSessionClick?: (sessionId: string) => void
 }
 
 // Social tools mapping
@@ -40,6 +42,7 @@ const SOCIAL_TOOLS = {
     verdelis_story: {},
     abraham_daily: {},
     media_editor: {},
+    post_to_chatroom: {},
   },
 
   // Covenant tools - use CovenantEmbed
@@ -102,6 +105,7 @@ const SOCIAL_TOOLS = {
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   toolCall,
   onCancel,
+  onSessionClick,
 }) => {
   const { tool, result: toolResults } = toolCall
 
@@ -198,6 +202,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               toolName={tool}
               toolArgs={toolCall.args}
               error={toolCall.error}
+              onSessionClick={onSessionClick}
             />
           </div>
         ) : isCovenantTool ? (
@@ -238,6 +243,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             onCancel={onCancel}
             toolName={tool}
             toolArgs={toolCall.args}
+            onSessionClick={onSessionClick}
           />
         ) : (
           <ToolMediaRenderer results={toolResults || []} args={toolCall.args} />

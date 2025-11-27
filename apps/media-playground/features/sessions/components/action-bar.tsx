@@ -1,3 +1,4 @@
+import { LLMCallButton } from './llm-call-modal'
 import { ToolHoverMenu } from './tool-hover-menu'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -36,6 +37,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
     'verdelis_story',
     'abraham_daily',
     'media_editor',
+    'post_to_chatroom',
   ]
 
   // Get completed tool calls with results
@@ -135,6 +137,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
             args={toolCall.args}
           />
         ))}
+        {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
         <div
           className="text-xs bg-transparent"
           title={new Date(message.createdAt).toLocaleString()}

@@ -1,3 +1,4 @@
+import { LLMCallButton } from './llm-call-modal'
 import { ToolHoverMenu } from './tool-hover-menu'
 import {
   Tooltip,
@@ -191,6 +192,7 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
     'verdelis_story',
     'abraham_daily',
     'media_editor',
+    'post_to_chatroom',
   ]
 
   // Get completed tool calls with results that have creation IDs
@@ -249,6 +251,7 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
             result={toolCall.result}
           />
         ))}
+        {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
         {/* <div
           className="text-xs bg-transparent"
           title={new Date(message.createdAt).toLocaleString()}
