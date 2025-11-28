@@ -162,61 +162,53 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[min(1200px,95vw)] max-w-[1200px] h-[85vh] p-0 flex flex-col overflow-hidden">
+      <DialogContent className="w-[min(1200px,95vw)] max-w-[1200px] h-[90vh] p-0 flex flex-col overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>Select Tool</DialogTitle>
           <DialogDescription>Choose a tool to work with</DialogDescription>
         </VisuallyHidden>
 
         {/* Header */}
-        <div className="p-6 border-b flex-shrink-0 space-y-4 bg-background">
-          <div className="flex items-center justify-between">
-            <TypographyH4>Select Tool</TypographyH4>
-            {/* <DialogClose asChild>
-              <Button variant="ghost" size="sm" className="p-2">
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogClose> */}
+        <div className="px-4 pt-4 pb-3 border-b flex-shrink-0 bg-background space-y-2 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <TypographyH4 className="flex-shrink-0">Select Tool</TypographyH4>
+            <div className="flex items-center gap-2 flex-1">
+              <Input
+                ref={inputRef}
+                placeholder="Search tools..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="flex-1 h-9"
+                autoFocus={false}
+                tabIndex={-1}
+              />
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+                disabled={!categories.length}
+              >
+                <SelectTrigger className="w-32 sm:w-48 h-9 flex-shrink-0 flex-row-reverse">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category.id} value={category.id}>
+                      <div className="flex items-center justify-between w-full gap-4">
+                        <span>{category.title}</span>
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          {category.tools.length}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <Input
-            ref={inputRef}
-            placeholder="Search tools..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full h-11"
-            autoFocus={false}
-            tabIndex={-1}
-          />
-        </div>
-
-        {/* Category selector */}
-        <div className="px-6 py-4 border-b flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-background">
-          <p className="text-sm text-muted-foreground">Filter by category</p>
-          <Select
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-            disabled={!categories.length}
-          >
-            <SelectTrigger className="w-full sm:w-64">
-              <SelectValue placeholder="Choose a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(category => (
-                <SelectItem key={category.id} value={category.id}>
-                  <div className="flex items-center justify-between w-full gap-4">
-                    <span>{category.title}</span>
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {category.tools.length}
-                    </Badge>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Category content */}
-        <div className="flex-1 min-h-0 px-6 pb-6 pt-4 overflow-hidden bg-background">
+        <div className="flex-1 min-h-0 px-4 pb-4 pt-3 overflow-hidden bg-background">
           <div className="h-full overflow-y-auto pr-1">
             {selectedTools.length ? (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
