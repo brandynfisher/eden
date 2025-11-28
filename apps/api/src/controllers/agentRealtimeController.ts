@@ -6,20 +6,6 @@ import {
 import { AgentRealtime } from '../models/AgentRealtime'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-const DEFAULT_SETTINGS = {
-  elevenlabs_agent_id: null,
-  voice_id: null,
-  language: 'en',
-  first_message: null,
-  llm_model: 'claude-sonnet-4-5',
-  temperature: 0.7,
-  max_tokens: 4096,
-  tts_stability: 0.45,
-  tts_speed: 1.0,
-  tts_similarity_boost: 0.25,
-  user_input_fields: [],
-}
-
 const hasOwnerAccess = async (
   agent: AgentDocument,
   userId: string,
@@ -60,8 +46,10 @@ export const getAgentRealtimeSettings = async (
 
   const settings = await AgentRealtime.findOne({ agent: agentId })
 
+  // Return settings if found, otherwise just the agent ID
+  // Frontend merges with DEFAULT_REALTIME_SETTINGS from realtime-defaults.ts
   return reply.status(200).send({
-    settings: settings || { agent: agentId, ...DEFAULT_SETTINGS },
+    settings: settings || { agent: agentId },
   })
 }
 

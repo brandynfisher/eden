@@ -13,7 +13,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import type { RealtimeLLM } from '@/lib/voice/realtime-defaults'
+import {
+  DEFAULT_REALTIME_SETTINGS,
+  type RealtimeLLM,
+} from '@/lib/voice/realtime-defaults'
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, ExternalLink, Loader2, X } from 'lucide-react'
@@ -25,11 +28,9 @@ import { toast } from 'sonner'
 const LLM_OPTIONS: { value: RealtimeLLM; label: string }[] = [
   { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
   { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
-  { value: 'gpt-5', label: 'GPT-5' },
   { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
   { value: 'gpt-5-nano', label: 'GPT-5 Nano' },
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
 ]
 
 // Max tokens options
@@ -77,18 +78,9 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<RealtimeSettings>({
+    ...DEFAULT_REALTIME_SETTINGS,
     agent: agent._id,
-    voice_id: null,
-    language: 'en',
-    first_message: null,
-    llm_model: 'claude-haiku-4-5',
-    temperature: 0.8,
-    max_tokens: 4096,
-    tts_stability: 0.5,
-    tts_speed: 1.0,
-    tts_similarity_boost: 0.3,
-    user_input_fields: [],
-  })
+  } as RealtimeSettings)
 
   // State for adding new user input field
   const [newFieldLabel, setNewFieldLabel] = useState('')

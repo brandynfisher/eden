@@ -3,10 +3,8 @@ import { Document, Schema, model } from 'mongoose'
 
 // LLM model options for ElevenLabs
 export type RealtimeLLM =
-  | 'gpt-5'
   | 'gpt-5-mini'
   | 'gpt-5-nano'
-  | 'gemini-2.5-flash-lite'
   | 'gemini-2.5-flash'
   | 'claude-sonnet-4-5'
   | 'claude-haiku-4-5'
@@ -54,10 +52,8 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
     llm_model: {
       type: String,
       enum: [
-        'gpt-5',
         'gpt-5-mini',
         'gpt-5-nano',
-        'gemini-2.5-flash-lite',
         'gemini-2.5-flash',
         'claude-sonnet-4-5',
         'claude-haiku-4-5',

@@ -10,10 +10,8 @@
 export const ELEVENLABS_AGENT_ID = 'agent_1501k7xznma4fnprjh81qvanzrrr'
 
 export type RealtimeLLM =
-  | 'gpt-5'
   | 'gpt-5-mini'
   | 'gpt-5-nano'
-  | 'gemini-2.5-flash-lite'
   | 'gemini-2.5-flash'
   | 'claude-sonnet-4-5'
   | 'claude-haiku-4-5'
@@ -38,8 +36,8 @@ export interface RealtimeSettings {
  */
 export const DEFAULT_REALTIME_SETTINGS: RealtimeSettings = {
   agent: '',
-  voice_id: null,
-  first_message: null,
+  voice_id: 'alFofuDn3cOwyoz1i44T',
+  first_message: 'Hey there, how are you doing today?',
   language: 'en',
   llm_model: 'claude-haiku-4-5',
   temperature: 0.8,

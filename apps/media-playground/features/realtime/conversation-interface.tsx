@@ -235,7 +235,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
               size="lg"
               className="w-full h-[clamp(3.5rem,8vh,5rem)] text-[clamp(1.125rem,3vw,1.5rem)] border-muted-foreground/30 hover:bg-muted/50"
             >
-              Stop gesprek
+              End conversation
             </Button>
           )}
 
@@ -347,7 +347,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                 size="lg"
                 className="border-muted-foreground/30 hover:bg-muted/50"
               >
-                Stop gesprek
+                End conversation
               </Button>
             )}
           </div>
