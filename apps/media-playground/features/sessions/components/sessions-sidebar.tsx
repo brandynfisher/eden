@@ -570,6 +570,12 @@ const MainLeft = ({
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
 
+  // Track if component has mounted to avoid hydration mismatch
+  const [hasMounted, setHasMounted] = useState(false)
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
   // Always show "Recent Chats" label
   const sessionsLabel = 'Recent Chats'
   const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
@@ -677,9 +683,12 @@ const MainLeft = ({
     return [...pinnedSessions, ...unpinnedSessions]
   }, [sessions])
 
+  // Show loading state until mounted and data is loaded
+  const showLoading = !hasMounted || isLoading
+
   return (
     <div className="flex flex-col text-sm font-medium mr-2 min-h-0">
-      {isLoading ? (
+      {showLoading ? (
         <div className="flex flex-col items-stretch gap-1 pb-2">
           <Skeleton className="w-full h-9" />
           <Skeleton className="w-full h-9" />
@@ -763,7 +772,14 @@ const SidebarUserProfile = ({
   const { signOut, openSignIn } = useClerk()
   const pathname = usePathname()
   const { unreadCount } = useNotificationContext()
-  const isAuthReady = isLoaded
+
+  // Track if component has mounted to avoid hydration mismatch
+  const [hasMounted, setHasMounted] = useState(false)
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  const isAuthReady = isLoaded && hasMounted
   const shouldFetchMe = isAuthReady && !!isSignedIn
 
   const { user, balance, isLoading } = useMe({
@@ -1144,6 +1160,13 @@ export const SessionsSidebarContent = ({
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
+
+  // Track if component has mounted to avoid hydration mismatch
+  const [hasMounted, setHasMounted] = React.useState(false)
+  React.useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
   const sessionsScrollContainerRef = React.useRef<HTMLDivElement | null>(null)
@@ -1269,6 +1292,43 @@ export const SessionsSidebarContent = ({
   )
 
   // Show collapsed sidebar with icons only
+  // Show skeleton loading state until mounted to avoid hydration mismatch
+  // while still displaying visual feedback (auth state differs between server and client)
+  // IMPORTANT: Always show the same skeleton structure regardless of isCollapsed to avoid
+  // hydration mismatch (isCollapsed comes from localStorage which differs server/client)
+  if (!hasMounted) {
+    return (
+      <div className="flex flex-col h-full min-h-0">
+        {/* Skeleton header */}
+        <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
+          <Skeleton className="h-7 w-7 rounded" />
+          <Skeleton className="h-8 w-8 rounded" />
+        </div>
+        {/* Skeleton navigation buttons */}
+        <div className="mb-4 mr-2 flex-shrink-0 flex-col hidden md:flex gap-1">
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+          <Skeleton className="h-11 w-full rounded-md" />
+        </div>
+        {/* Skeleton session list */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex flex-col gap-1 pb-2 mr-2">
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-9 w-full rounded-md" />
+            <Skeleton className="h-9 w-full rounded-md" />
+            <Skeleton className="h-9 w-full rounded-md" />
+          </div>
+        </div>
+        {/* Skeleton user profile */}
+        <div className="border-t bg-background -ml-2 w-[calc(100%_+_0.5rem)] flex-shrink-0 p-3">
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+    )
+  }
+
   if (isCollapsed) {
     return (
       <div className="flex flex-col items-center gap-2 h-full min-h-0 pt-2">
@@ -1325,7 +1385,7 @@ export const SessionsSidebarContent = ({
             onClick={item.onClick}
             className={cn(
               'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-              item.isActive
+              hasMounted && item.isActive
                 ? 'bg-primary/20 text-primary-foreground'
                 : 'hover:bg-muted/20',
             )}

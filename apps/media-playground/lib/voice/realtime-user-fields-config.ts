@@ -1,54 +1,45 @@
-// User input fields configuration
-export const REALTIME_USER_FIELDS: string[] = ['name', 'email']
+/**
+ * User input fields configuration for realtime conversations
+ *
+ * NOTE: User input fields are now configured per-agent in the RealtimeTab UI
+ * and stored in the AgentRealtime model. The hardcoded fields below are
+ * deprecated and kept only for backwards compatibility.
+ */
 
-export const REALTIME_USER_FIELD_LABELS: Record<string, string> = {
-  name: 'Name',
-  email: 'Email',
-}
+// Re-export types from the single source of truth
+export type { RealtimeLLM as LLM } from './realtime-defaults'
+export { DEFAULT_REALTIME_SETTINGS } from './realtime-defaults'
 
-export const REALTIME_USER_FIELD_TYPES: Record<string, string> = {
-  email: 'email',
-}
+/**
+ * @deprecated User input fields are now configured per-agent via RealtimeSettings.user_input_fields
+ */
+export const REALTIME_USER_FIELDS: string[] = []
 
-// Agent configuration types
-export type LLM =
-  | 'gpt-5'
-  | 'gpt-5-mini'
-  | 'gpt-5-nano'
-  | 'gemini-2.5-flash-lite'
-  | 'gemini-2.5-flash'
-  | 'claude-sonnet-4-5'
-  | 'claude-haiku-4-5'
+/**
+ * @deprecated No longer used - field labels are the field names themselves
+ */
+export const REALTIME_USER_FIELD_LABELS: Record<string, string> = {}
 
-export interface PromptConfig {
-  prompt?: string // Always populated dynamically from agent persona + memory
-  llm: LLM
+/**
+ * @deprecated No longer used - all fields are now free-text inputs
+ */
+export const REALTIME_USER_FIELD_TYPES: Record<string, string> = {}
+
+// Legacy types for backwards compatibility with conversationConfig
+// These are deprecated - use RealtimeSettings instead
+export interface PromptConfigOverride {
+  prompt?: string
+  llm?: string
   temperature?: number
   maxTokens?: number
 }
 
-export interface TTSConfig {
+export interface TTSConfigOverride {
   voiceId?: string
-  stability?: number // 0.0 to 1.0
-  speed?: number // 0.7 to 1.2
-  similarityBoost?: number // 0.0 to 1.0
+  stability?: number
+  speed?: number
+  similarityBoost?: number
 }
-
-export interface AgentConfig {
-  agent_id?: string // ElevenLabs agent ID override
-  firstMessage?: string
-  language?: string
-  prompt: PromptConfig
-  tts?: TTSConfig
-}
-
-export interface ConversationConfig {
-  agent: AgentConfig
-}
-
-// Override types (all fields optional)
-export type PromptConfigOverride = Partial<PromptConfig>
-export type TTSConfigOverride = Partial<TTSConfig>
 
 export interface AgentConfigOverride {
   agent_id?: string
@@ -60,50 +51,4 @@ export interface AgentConfigOverride {
 
 export interface ConversationConfigOverride {
   agent?: AgentConfigOverride
-}
-
-// Default configuration
-export const DEFAULT_AGENT_CONFIG: ConversationConfig = {
-  agent: {
-    firstMessage:
-      'Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?',
-    language: 'nl',
-    //firstMessage: 'Whats up? Gigabrain online — what are we building today?',
-    //language: 'en',
-
-    prompt: {
-      // prompt is always populated dynamically from agent persona + memory
-      llm: 'claude-sonnet-4-5',
-      temperature: 0.7,
-      maxTokens: 4096,
-    },
-    tts: {
-      stability: 0.45,
-      speed: 1.2,
-      similarityBoost: 0.25,
-    },
-  },
-}
-
-// Merge helper
-export function mergeAgentConfig(
-  baseConfig: ConversationConfig,
-  overrides?: ConversationConfigOverride,
-): ConversationConfig {
-  if (!overrides?.agent) return baseConfig
-
-  return {
-    agent: {
-      ...baseConfig.agent,
-      ...overrides.agent,
-      prompt: {
-        ...baseConfig.agent.prompt,
-        ...overrides.agent.prompt,
-      },
-      tts: {
-        ...baseConfig.agent.tts,
-        ...overrides.agent.tts,
-      },
-    },
-  }
 }

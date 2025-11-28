@@ -1102,6 +1102,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             tts_stability: Type.Number(),
             tts_speed: Type.Number(),
             tts_similarity_boost: Type.Number(),
+            user_input_fields: Type.Optional(Type.Array(Type.String())),
           }),
         },
       },
@@ -1142,6 +1143,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         tts_similarity_boost: Type.Optional(
           Type.Number({ minimum: 0, maximum: 1 }),
         ),
+        user_input_fields: Type.Optional(Type.Array(Type.String())),
       }),
       response: {
         200: {

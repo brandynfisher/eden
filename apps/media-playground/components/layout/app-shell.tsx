@@ -117,19 +117,22 @@ const AppShell = ({ children }: PropsWithChildren) => {
   }, [defaultConfig])
 
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') {
-      return false
-    }
-    try {
-      return (
-        window.localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY) === 'true'
-      )
-    } catch {
-      return false
-    }
-  })
+  // Always initialize to false for SSR, then read from localStorage after mount
+  // to avoid hydration mismatch
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Read sidebar collapsed state from localStorage after mount
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY)
+      if (stored === 'true') {
+        setIsSidebarCollapsed(true)
+      }
+    } catch {
+      // Ignore storage failures
+    }
+  }, [])
 
   const openMobileSidebar = useCallback(() => {
     setIsSheetOpen(true)

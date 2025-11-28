@@ -13,8 +13,6 @@ export type RealtimeLLM =
 
 export interface AgentRealtimeSchema {
   agent: AgentDocument['_id']
-  // ElevenLabs agent ID override
-  elevenlabs_agent_id?: string
   // Voice settings
   voice_id?: string
   // Language code (e.g., 'en', 'nl')
@@ -29,6 +27,8 @@ export interface AgentRealtimeSchema {
   tts_stability?: number
   tts_speed?: number
   tts_similarity_boost?: number
+  // User input field labels to collect before conversation
+  user_input_fields?: string[]
 }
 
 export interface AgentRealtimeDocument extends AgentRealtimeSchema, Document {}
@@ -40,9 +40,6 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
       ref: 'users3',
       required: true,
       unique: true,
-    },
-    elevenlabs_agent_id: {
-      type: String,
     },
     voice_id: {
       type: String,
@@ -65,13 +62,13 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
         'claude-sonnet-4-5',
         'claude-haiku-4-5',
       ],
-      default: 'claude-sonnet-4-5',
+      default: 'claude-haiku-4-5',
     },
     temperature: {
       type: Number,
       min: 0,
       max: 1,
-      default: 0.7,
+      default: 0.8,
     },
     max_tokens: {
       type: Number,
@@ -83,7 +80,7 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
       type: Number,
       min: 0,
       max: 1,
-      default: 0.45,
+      default: 0.5,
     },
     tts_speed: {
       type: Number,
@@ -95,11 +92,16 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
       type: Number,
       min: 0,
       max: 1,
-      default: 0.25,
+      default: 0.3,
+    },
+    user_input_fields: {
+      type: [String],
+      default: [],
     },
   },
   {
     timestamps: true,
+    collection: 'agent_realtime',
   },
 )
 

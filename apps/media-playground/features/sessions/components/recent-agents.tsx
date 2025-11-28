@@ -27,7 +27,7 @@ import {
   SettingsIcon,
 } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import React, { FC, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 
 const MAX_PINNED_AGENTS = 5
 const RECENT_AGENT_COUNT = 3
@@ -59,6 +59,12 @@ const AgentListItem: FC<AgentListItemProps> = ({
   const pathname = usePathname()
   const { hasEditAccess, isLoading: isPermissionsLoading } =
     useAgentPermissions(agent, currentUserId)
+
+  // Track if component has mounted to avoid hydration mismatch
+  const [hasMounted, setHasMounted] = useState(false)
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   // Only highlight if on agent's home screen, not on a specific session
   const agentPath = `/chat/${agent.username || agent._id}`
@@ -108,7 +114,7 @@ const AgentListItem: FC<AgentListItemProps> = ({
       </button>
 
       <div className="flex items-center gap-1 shrink-0 opacity-100">
-        {!isPermissionsLoading && (
+        {hasMounted && !isPermissionsLoading && (
           <>
             {hasEditAccess ? (
               <button
@@ -186,6 +192,12 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
   const [isMemoriesOnly, setIsMemoriesOnly] = useState(false)
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
 
+  // Track if component has mounted to avoid hydration mismatch
+  const [hasMounted, setHasMounted] = useState(false)
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
   const pinnedAgentIds = useMemo(
     () => new Set(pinnedAgents.map(a => a._id)),
     [pinnedAgents],
@@ -206,7 +218,8 @@ export const RecentAgents = ({ onItemClick }: { onItemClick?: () => void }) => {
   const canPinMoreAgents = pinnedAgents.length < MAX_PINNED_AGENTS
   const hasAgents = pinnedDisplayAgents.length + recentDisplayAgents.length > 0
 
-  if (!isSignedIn || isLoading || !hasAgents) {
+  // Don't render until mounted to avoid hydration mismatch
+  if (!hasMounted || !isSignedIn || isLoading || !hasAgents) {
     return null
   }
 

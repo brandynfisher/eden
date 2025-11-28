@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
   tts_stability: 0.45,
   tts_speed: 1.0,
   tts_similarity_boost: 0.25,
+  user_input_fields: [],
 }
 
 const hasOwnerAccess = async (
@@ -54,9 +55,8 @@ export const getAgentRealtimeSettings = async (
     return reply.status(404).send({ message: 'Agent not found' })
   }
 
-  if (!(await hasOwnerAccess(agent, userId.toString()))) {
-    return reply.status(403).send({ message: 'Forbidden' })
-  }
+  // Any authenticated user can read realtime settings (needed for /realtime page)
+  // Owner check is only required for updating settings
 
   const settings = await AgentRealtime.findOne({ agent: agentId })
 

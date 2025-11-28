@@ -12,11 +12,9 @@ import {
   buildDynamicVariables,
 } from '@/lib/voice/build-dynamic-variables'
 import {
-  DEFAULT_AGENT_CONFIG,
-  REALTIME_USER_FIELDS,
-  REALTIME_USER_FIELD_LABELS,
-  REALTIME_USER_FIELD_TYPES,
-} from '@/lib/voice/realtime-user-fields-config'
+  DEFAULT_REALTIME_SETTINGS,
+  RealtimeSettings,
+} from '@/lib/voice/realtime-defaults'
 import { useVoiceConversation } from '@/lib/voice/use-voice-conversation'
 import { Maximize2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -26,6 +24,7 @@ interface ConversationInterfaceProps {
   agentName: string
   agentContext: AgentContext
   edenAgentId: string
+  realtimeSettings: RealtimeSettings
   isDevMode?: boolean
   onSpeakingChange?: (isSpeaking: boolean) => void
   onStatusChange?: (status: string) => void
@@ -35,6 +34,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   agentName,
   agentContext,
   edenAgentId,
+  realtimeSettings,
   isDevMode = true,
   onSpeakingChange,
   onStatusChange,
@@ -42,13 +42,19 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   const router = useRouter()
   const { verifyAuth } = useAuthState()
 
+  // Get user input fields from realtime settings (or empty array if not configured)
+  const userInputFields = useMemo(
+    () => realtimeSettings.user_input_fields || [],
+    [realtimeSettings.user_input_fields],
+  )
+
   // Initialize userInfo state based on config fields
   const initialUserInfo = useMemo(() => {
-    return REALTIME_USER_FIELDS.reduce((acc, field) => {
+    return userInputFields.reduce((acc, field) => {
       acc[field] = ''
       return acc
     }, {} as Record<string, string>)
-  }, [])
+  }, [userInputFields])
 
   const [userInfo, setUserInfo] =
     useState<Record<string, string>>(initialUserInfo)
@@ -65,14 +71,18 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   // This constructs the complete system prompt and first message
   const dynamicVariables = useMemo(() => {
     const agentData: AgentData = { name: agentName }
-    const baseFirstMessage = DEFAULT_AGENT_CONFIG.agent.firstMessage || ''
+    // Use first_message from realtime settings, fall back to default
+    const baseFirstMessage =
+      realtimeSettings.first_message ||
+      DEFAULT_REALTIME_SETTINGS.first_message ||
+      ''
     return buildDynamicVariables(
       agentContext,
       agentData,
       userInfo,
       baseFirstMessage,
     )
-  }, [agentContext, agentName, userInfo])
+  }, [agentContext, agentName, userInfo, realtimeSettings.first_message])
 
   // Initialize voice conversation with ElevenLabs provider
   // Dynamic variables are passed instead of agentPrompt
@@ -81,6 +91,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
     dynamicVariables,
     edenAgentId,
     userInfo,
+    realtimeSettings,
   })
 
   // Toggle fullscreen by removing dev=true from URL
@@ -90,12 +101,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   }
 
   // Determine if user info collection is needed
-  const hasUserFields = REALTIME_USER_FIELDS.length > 0
+  const hasUserFields = userInputFields.length > 0
 
   // Check if all required fields are filled (production mode only)
   const isUserInfoComplete =
     !hasUserFields ||
-    REALTIME_USER_FIELDS.every(field => userInfo[field]?.trim() !== '')
+    userInputFields.every(field => userInfo[field]?.trim() !== '')
 
   // In dev mode, always allow starting. In production, require complete info
   const canStartConversation = isDevMode || isUserInfoComplete
@@ -158,11 +169,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
           {conversation.status !== 'connected' && hasUserFields && (
             <div className="flex flex-col gap-4 w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw]">
               {/* Dynamically generate input fields from config */}
-              {REALTIME_USER_FIELDS.map(field => {
-                const label =
-                  REALTIME_USER_FIELD_LABELS[field] ||
-                  field.charAt(0).toUpperCase() + field.slice(1)
-                const inputType = REALTIME_USER_FIELD_TYPES[field] || 'text'
+              {userInputFields.map(field => {
                 const isFilled = userInfo[field]?.trim() !== ''
 
                 return (
@@ -173,12 +180,12 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                         isFilled ? 'text-white' : 'text-orange-500'
                       }`}
                     >
-                      {label}:
+                      {field}:
                     </Label>
                     <Input
                       id={`user-${field}`}
-                      type={inputType}
-                      placeholder={label}
+                      type="text"
+                      placeholder={field}
                       value={userInfo[field] || ''}
                       onChange={e => updateUserInfoField(field, e.target.value)}
                       disabled={
@@ -301,30 +308,21 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {/* Dynamically generate input fields from config */}
-                {REALTIME_USER_FIELDS.map(field => {
-                  const label =
-                    REALTIME_USER_FIELD_LABELS[field] ||
-                    field.charAt(0).toUpperCase() + field.slice(1)
-                  const inputType = REALTIME_USER_FIELD_TYPES[field] || 'text'
-
-                  return (
-                    <div key={field} className="flex flex-col gap-2">
-                      <Label htmlFor={`user-${field}-dev`}>{label}</Label>
-                      <Input
-                        id={`user-${field}-dev`}
-                        type={inputType}
-                        placeholder={`${label} (optional)`}
-                        value={userInfo[field] || ''}
-                        onChange={e =>
-                          updateUserInfoField(field, e.target.value)
-                        }
-                        disabled={
-                          isStarting || conversation.status === 'connecting'
-                        }
-                      />
-                    </div>
-                  )
-                })}
+                {userInputFields.map(field => (
+                  <div key={field} className="flex flex-col gap-2">
+                    <Label htmlFor={`user-${field}-dev`}>{field}</Label>
+                    <Input
+                      id={`user-${field}-dev`}
+                      type="text"
+                      placeholder={`${field} (optional)`}
+                      value={userInfo[field] || ''}
+                      onChange={e => updateUserInfoField(field, e.target.value)}
+                      disabled={
+                        isStarting || conversation.status === 'connecting'
+                      }
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}

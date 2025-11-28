@@ -15,6 +15,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useAgentRealtimeSettings } from '@/hooks/query/use-agent-realtime-settings'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { AgentContext } from '@/lib/voice/build-dynamic-variables'
@@ -34,6 +35,13 @@ const RealtimeView: FC = () => {
     isError: agentError,
     error: agentErrorDetails,
   } = useAgentQuery({ key: agentId as string })
+
+  // Fetch realtime settings for this agent (falls back to defaults if none exist)
+  // Note: Must use agent._id (MongoDB ObjectId), not agentId (username from URL)
+  const { settings: realtimeSettings } = useAgentRealtimeSettings({
+    agentId: agent?._id as string,
+    enabled: !!agent?._id,
+  })
 
   const [agentContext, setAgentContext] = useState<AgentContext | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -187,6 +195,7 @@ const RealtimeView: FC = () => {
               agentName={agent.name}
               agentContext={agentContext}
               edenAgentId={agent._id}
+              realtimeSettings={realtimeSettings}
               isDevMode={false}
               onSpeakingChange={setIsSpeaking}
               onStatusChange={setConnectionStatus}
@@ -316,6 +325,7 @@ const RealtimeView: FC = () => {
                     agentName={agent.name}
                     agentContext={agentContext}
                     edenAgentId={agent._id}
+                    realtimeSettings={realtimeSettings}
                     isDevMode={true}
                     onSpeakingChange={setIsSpeaking}
                     onStatusChange={setConnectionStatus}

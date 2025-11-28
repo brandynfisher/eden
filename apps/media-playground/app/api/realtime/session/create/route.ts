@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // If user info provided, dump it as JSON as the first passive message
+    // If user info provided, dump it as the first message in the session
     const sessionId = (res.session as { _id?: string } | undefined)?._id
     if (userInfo && Object.keys(userInfo).length > 0 && sessionId) {
       try {
@@ -59,11 +59,14 @@ export async function POST(request: NextRequest) {
         const userId = userResponse?.creator?._id
 
         if (userId) {
-          // Dump user info as JSON string
-          const userInfoJson = JSON.stringify(userInfo, null, 2)
+          // Format user info as a clear key:value JSON dict with context message
+          const userInfoEntries = Object.entries(userInfo)
+            .map(([key, value]) => `"${key}": "${value}"`)
+            .join(', ')
+          const formattedMessage = `[User Info Collected at Start of Conversation]\n{${userInfoEntries}}`
 
           // Add passive message using the Fastify endpoint
-          await fetch(
+          const messageResponse = await fetch(
             `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/add-message`,
             {
               method: 'POST',
@@ -75,10 +78,17 @@ export async function POST(request: NextRequest) {
                 session_id: sessionId,
                 user_id: userId,
                 role: 'user',
-                content: userInfoJson,
+                content: formattedMessage,
               }),
             },
           )
+
+          if (!messageResponse.ok) {
+            console.error(
+              'Failed to add user info message:',
+              await messageResponse.text(),
+            )
+          }
         }
       } catch (error) {
         // Log but don't fail session creation if user info message fails
