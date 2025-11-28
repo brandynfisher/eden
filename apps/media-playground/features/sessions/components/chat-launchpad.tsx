@@ -39,6 +39,7 @@ import {
   EditIcon,
   HelpCircle,
   MenuIcon,
+  PenLine,
   Plus,
   Settings,
   X,
@@ -99,7 +100,7 @@ const SelectedAgentCard = ({
               e.stopPropagation()
               onOpenSettings(agent.username || agent._id)
             }}
-            className="absolute top-3 left-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="agent-settings-btn absolute top-3 left-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
             title="Agent Settings"
           >
             <Settings className="h-4 w-4" />
@@ -616,11 +617,11 @@ const ChatLaunchpad = () => {
                     setIsSessionSettingsOpen(true)
                   }}
                 >
-                  <Settings className="w-4 h-4" />
+                  <PenLine className="w-4 h-4" />
                   <span>Add context</span>
                 </button>
 
-                {/* Multi-agent: Show session mode selector inline */}
+                {/* Multi-agent: Show response mode selector inline */}
                 <div
                   className="session-mode-selector"
                   style={{
@@ -630,7 +631,7 @@ const ChatLaunchpad = () => {
                   {/* Compact header with inline help */}
                   <div className="session-mode-compact-header">
                     <span className="session-mode-label-compact">
-                      Session Mode
+                      Response Mode
                     </span>
                     <button
                       className="session-mode-help-btn-compact"
@@ -803,16 +804,16 @@ const ChatLaunchpad = () => {
           minimal={true}
         />
 
-        {/* Session Mode Help Modal */}
+        {/* Response Mode Help Modal */}
         <Dialog
           open={isSessionModeHelpOpen}
           onOpenChange={setIsSessionModeHelpOpen}
         >
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Session Modes</DialogTitle>
+              <DialogTitle>Response Modes</DialogTitle>
               <DialogDescription>
-                Choose how your agents interact in multi-agent sessions
+                Choose how your agents respond in multi-agent sessions
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -893,7 +894,7 @@ const ChatLaunchpad = () => {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
             width: 100%;
             padding: 0 0.5rem;
           }
@@ -1066,18 +1067,18 @@ const ChatLaunchpad = () => {
             gap: 0.5rem;
             padding: 0.75rem 0.5rem;
             background: hsl(var(--card));
-            border: 1px solid hsl(var(--border));
+            border: 1px solid hsl(var(--foreground) / 0.12);
             border-radius: 0.75rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
             backdrop-filter: blur(8px);
             width: 100%;
           }
 
           .agent-card-inner:hover {
             transform: translateY(-2px);
-            border-color: hsl(var(--primary) / 0.3);
+            border-color: hsl(var(--foreground) / 0.2);
             background: hsl(var(--card));
-            box-shadow: 0 4px 12px hsl(var(--primary) / 0.1);
+            box-shadow: 0 4px 16px hsl(0 0% 0% / 0.2);
           }
 
           .agent-remove-btn {
@@ -1130,21 +1131,21 @@ const ChatLaunchpad = () => {
           .agent-avatar {
             width: 56px;
             height: 56px;
-            border: 2px solid hsl(var(--primary) / 0.2);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 2px solid hsl(var(--foreground) / 0.1);
+            transition: all 0.2s ease;
             position: relative;
             z-index: 1;
           }
 
           .agent-card-inner:hover .agent-avatar {
-            border-color: hsl(var(--primary) / 0.4);
+            border-color: hsl(var(--foreground) / 0.2);
           }
 
           .agent-avatar-fallback {
             font-size: 1.25rem;
             font-weight: 600;
             background: hsl(var(--muted));
-            color: hsl(var(--primary));
+            color: hsl(var(--foreground) / 0.7);
           }
 
           .agent-info {
@@ -1184,48 +1185,48 @@ const ChatLaunchpad = () => {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.375rem;
-            padding: 0.875rem 0.5rem;
+            gap: 0.5rem;
+            padding: 1rem 0.75rem;
             width: 100%;
             min-height: 0;
             background: transparent;
-            border: 1px dashed hsl(var(--border) / 0.4);
+            border: none;
             border-radius: 0.625rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
           }
 
           .add-agent-card:hover {
-            background: hsl(var(--muted) / 0.3);
-            border-color: hsl(var(--border));
-            border-style: solid;
+            background: hsl(var(--muted) / 0.2);
           }
 
           .add-agent-icon {
-            width: 2rem;
-            height: 2rem;
+            width: 2.25rem;
+            height: 2.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: hsl(var(--muted) / 0.5);
-            color: hsl(var(--muted-foreground) / 0.7);
-            transition: all 0.3s ease;
+            background: transparent;
+            border: 1.5px dashed hsl(var(--muted-foreground) / 0.3);
+            color: hsl(var(--muted-foreground) / 0.5);
+            transition: all 0.2s ease;
           }
 
           .add-agent-card:hover .add-agent-icon {
-            color: hsl(var(--muted-foreground));
-            background: hsl(var(--muted));
+            color: hsl(var(--muted-foreground) / 0.8);
+            border-color: hsl(var(--muted-foreground) / 0.5);
+            background: hsl(var(--muted) / 0.3);
           }
 
           .add-agent-text {
-            font-size: 0.6875rem;
-            color: hsl(var(--muted-foreground) / 0.6);
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground) / 0.4);
             font-weight: 500;
           }
 
           .add-agent-card:hover .add-agent-text {
-            color: hsl(var(--muted-foreground));
+            color: hsl(var(--muted-foreground) / 0.7);
           }
 
           /* ===== ADD BUTTON CENTERING ===== */
@@ -1494,14 +1495,14 @@ const ChatLaunchpad = () => {
             .agents-collection[data-agent-count='1'] .agent-avatar-glow {
               display: block;
               position: absolute;
-              inset: -20%;
+              inset: -15%;
               background: radial-gradient(
                 circle,
-                hsl(var(--primary) / 0.15) 0%,
+                hsl(var(--foreground) / 0.06) 0%,
                 transparent 70%
               );
               border-radius: 50%;
-              animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+              animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             }
             .agents-collection[data-agent-count='1'] .add-agent-card {
               padding: 3rem 2.5rem;
@@ -1679,7 +1680,7 @@ const ChatLaunchpad = () => {
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            font-size: 0.875rem;
+            font-size: 1.0625rem;
             color: hsl(var(--muted-foreground) / 0.7);
             background: transparent;
             border: none;
@@ -1707,16 +1708,12 @@ const ChatLaunchpad = () => {
             flex-direction: column;
             gap: 0.625rem;
             padding: 0.875rem 1rem;
-            background: linear-gradient(
-              135deg,
-              hsl(var(--muted) / 0.15) 0%,
-              hsl(var(--muted) / 0.08) 100%
-            );
+            background: hsl(var(--card) / 0.5);
             backdrop-filter: blur(8px);
-            border: 1px solid hsl(var(--border) / 0.4);
-            border-radius: 0.625rem;
+            border: 1px solid hsl(var(--foreground) / 0.1);
+            border-radius: 0.75rem;
             opacity: 1;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
             width: 100%;
             max-width: 520px;
           }
@@ -1729,7 +1726,7 @@ const ChatLaunchpad = () => {
           }
 
           .session-mode-label-compact {
-            font-size: 0.688rem;
+            font-size: 0.8rem;
             font-weight: 600;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -1756,41 +1753,54 @@ const ChatLaunchpad = () => {
 
           .session-mode-segmented {
             display: flex;
-            gap: 0;
-            background: hsl(var(--background) / 0.5);
-            border: 1px solid hsl(var(--border) / 0.3);
+            gap: 0.25rem;
+            background: hsl(var(--muted) / 0.3);
+            border: 1px solid hsl(var(--foreground) / 0.06);
             border-radius: 0.5rem;
             padding: 0.25rem;
             position: relative;
             width: 100%;
-            max-width: 420px;
+            max-width: 460px;
           }
 
           .session-mode-segment {
             flex: 1;
             padding: 0.5rem 0.75rem;
-            font-size: 0.813rem;
+            font-size: 0.9375rem;
             font-weight: 500;
-            color: hsl(var(--muted-foreground) / 0.7);
+            color: hsl(var(--muted-foreground) / 0.6);
             background: transparent;
-            border: none;
+            border: 1px solid transparent;
             border-radius: 0.375rem;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: color 0.15s ease, background 0.15s ease,
+              box-shadow 0.15s ease;
             position: relative;
             z-index: 1;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
           }
 
           .session-mode-segment:hover {
-            color: hsl(var(--foreground) / 0.9);
-            background: hsl(var(--muted) / 0.15);
+            color: hsl(var(--foreground) / 0.8);
+          }
+
+          .session-mode-segment:active,
+          .session-mode-segment:focus {
+            outline: none;
+            background: transparent;
+          }
+
+          .session-mode-segment:focus-visible {
+            outline: none;
           }
 
           .session-mode-segment.active {
             color: hsl(var(--foreground));
-            background: hsl(var(--primary) / 0.15);
-            box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3),
-              0 0 12px hsl(var(--primary) / 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: hsl(var(--background));
+            border: 1px solid hsl(var(--foreground) / 0.15);
+            box-shadow: 0 1px 4px hsl(0 0% 0% / 0.2),
+              inset 0 1px 0 hsl(var(--foreground) / 0.05);
             font-weight: 600;
           }
 
@@ -1799,18 +1809,18 @@ const ChatLaunchpad = () => {
             align-items: center;
             gap: 0.5rem;
             flex-wrap: wrap;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             line-height: 1.4;
           }
 
           .session-mode-description-compact {
             color: hsl(var(--muted-foreground) / 0.75);
-            font-size: 0.75rem;
+            font-size: 0.875rem;
           }
 
           .session-mode-divider {
             color: hsl(var(--muted-foreground) / 0.3);
-            font-size: 0.625rem;
+            font-size: 0.75rem;
             user-select: none;
           }
 
@@ -1823,7 +1833,7 @@ const ChatLaunchpad = () => {
             border: 1px solid hsl(45 100% 51% / 0.3);
             border-radius: 0.375rem;
             color: hsl(45 100% 60%);
-            font-size: 0.688rem;
+            font-size: 0.8rem;
             font-weight: 600;
             white-space: nowrap;
           }
@@ -1841,15 +1851,15 @@ const ChatLaunchpad = () => {
           }
 
           .session-mode-delay-row .delay-label {
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             font-weight: 500;
             color: hsl(var(--muted-foreground) / 0.8);
             white-space: nowrap;
           }
 
           .session-mode-delay-select {
-            height: 1.875rem;
-            font-size: 0.813rem;
+            height: 2rem;
+            font-size: 0.9375rem;
             border-color: hsl(var(--border) / 0.4);
             background: hsl(var(--background) / 0.8);
             flex: 1;
@@ -1878,6 +1888,15 @@ const ChatLaunchpad = () => {
 
             .message-input-wrapper {
               padding: 0.75rem;
+            }
+
+            /* Mobile: always show remove and settings buttons */
+            .agent-remove-btn {
+              opacity: 1;
+            }
+
+            .agent-settings-btn {
+              opacity: 1 !important;
             }
           }
         `}</style>
