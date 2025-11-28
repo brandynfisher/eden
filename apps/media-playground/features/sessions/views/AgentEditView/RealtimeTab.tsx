@@ -55,6 +55,166 @@ const LANGUAGE_OPTIONS = [
   { value: 'ko', label: 'Korean' },
 ] as const
 
+// ElevenLabs voice options from eve/tools/elevenlabs/api.yaml
+const VOICE_OPTIONS: { value: string; label: string; description?: string }[] =
+  [
+    {
+      value: '9BWtsMINqrJLrRacOk9x',
+      label: 'Aria',
+      description: 'american, husky, middle_aged, female',
+    },
+    {
+      value: 'EXAVITQu4vr4xnSDxMaL',
+      label: 'Sarah',
+      description: 'american, professional, young, female',
+    },
+    {
+      value: 'FGY2WhTYpPnrIDTdsKH5',
+      label: 'Laura',
+      description: 'american, sassy, young, female',
+    },
+    {
+      value: 'IKne3meq5aSn9XLyUdCD',
+      label: 'Charlie',
+      description: 'australian, hyped, young, male',
+    },
+    {
+      value: 'JBFqnCBsd6RMkjVDRZzb',
+      label: 'George',
+      description: 'british, mature, middle_aged, male',
+    },
+    {
+      value: 'N2lVS1w4EtoT3dr4eOWO',
+      label: 'Callum',
+      description: 'middle_aged, male',
+    },
+    {
+      value: 'SAz9YHcvj6GT2YYXdXww',
+      label: 'River',
+      description: 'american, calm, middle_aged, neutral',
+    },
+    {
+      value: 'TX3LPaxmHKxFdv7VOQHJ',
+      label: 'Liam',
+      description: 'american, confident, young, male',
+    },
+    {
+      value: 'XB0fDUnXU5powFXDhCwa',
+      label: 'Charlotte',
+      description: 'swedish, relaxed, young, female',
+    },
+    {
+      value: 'Xb7hH8MSUJpSbSDYk0k2',
+      label: 'Alice',
+      description: 'british, professional, middle_aged, female',
+    },
+    {
+      value: 'XrExE9yKIg1WjnnlVkGX',
+      label: 'Matilda',
+      description: 'american, upbeat, middle_aged, female',
+    },
+    {
+      value: 'bIHbv24MWmeRgasZH58o',
+      label: 'Will',
+      description: 'american, chill, young, male',
+    },
+    {
+      value: 'cgSgspJ2msm6clMCkdW9',
+      label: 'Jessica',
+      description: 'american, cute, young, female',
+    },
+    {
+      value: 'cjVigY5qzO86Huf0OWal',
+      label: 'Eric',
+      description: 'american, classy, middle_aged, male',
+    },
+    {
+      value: 'iP95p4xoKVk53GoZ742B',
+      label: 'Chris',
+      description: 'american, casual, middle_aged, male',
+    },
+    {
+      value: 'nPczCjzI2devNBz1zQrb',
+      label: 'Brian',
+      description: 'american, classy, middle_aged, male',
+    },
+    {
+      value: 'onwK4e9ZLuTAKqWW03F9',
+      label: 'Daniel',
+      description: 'british, formal, middle_aged, male',
+    },
+    {
+      value: 'pFZP5JQG7iQjIQuC4Bku',
+      label: 'Lily',
+      description: 'british, warm, confident, female, middle_aged',
+    },
+    {
+      value: 'pqHfZKP75CvOlQylNhV4',
+      label: 'Bill',
+      description: 'american, crisp, old, male',
+    },
+    {
+      value: '1D8EGxrYFNUCluLDkSZc',
+      label: 'Maggi',
+      description: 'en-spanish',
+    },
+    { value: '1wDwDMEYwjOS0vDcRyy3', label: 'Tao' },
+    { value: '4ljHadDomzGBqOnMxshc', label: 'Gene' },
+    { value: '8tmloozfTsgXBZPdWZMY', label: 'Marzipan' },
+    { value: 'FAxfNIX38LpaNkcLeQIk', label: 'Sofy' },
+    { value: 'FMrLYY5CYQ0O0iutL2v1', label: 'Meredith' },
+    { value: 'JpC250odUgEpLFIpYweh', label: 'Lucy', description: 'en-chinese' },
+    { value: 'JzaYTZZm6u7962K8PrTe', label: 'Jmill' },
+    { value: 'LnscIwfjAhOaLg6miw62', label: 'Boots', description: 'en-german' },
+    { value: 'MbrroYvMdxSywuyOfJje', label: 'Xander', description: 'en-dutch' },
+    { value: 'MmJV6I1NAbGP13xgbxVz', label: 'Joey' },
+    { value: 'NtBayVEGSDC8tLZVhlbh', label: 'Colton' },
+    {
+      value: 'PfwUcgYQ7oSunm7PqMXi',
+      label: 'Chebel',
+      description: 'en-portuguese',
+    },
+    { value: 'RmWmsefzgwpKYD2NHnwK', label: 'Koi', description: 'en-chinese' },
+    { value: 'StzPkufRHTjBTiQg6CS9', label: 'Jordan' },
+    {
+      value: 'YXpFCvM1S3JbWEJhoskW',
+      label: 'Wyatt',
+      description: 'wise, american, male, old',
+    },
+    { value: 'Z8chHYUiDMhjlLdPQ3Tl', label: 'Freeman' },
+    {
+      value: 'Zm3hQWGo4lO5GpPsyaJu',
+      label: 'Dimitri',
+      description: 'en-dutch, male',
+    },
+    { value: 'cr6kV5mMqkYAIyrNKttl', label: 'Lydia' },
+    { value: 'i4NARTXKU6n1jo7SNaeP', label: 'Jero Wiku' },
+    { value: 'kLMGliDx2OLhf5Moxbmj', label: 'Vincent' },
+    { value: 'kLjCh136HhlEVfCL0Tkq', label: 'Gandala' },
+    { value: 'mXfvFHljLNpg72LsX7l1', label: 'Jack' },
+    { value: 'mrACSB3QITzdoWMZJH8P', label: 'Verdelis' },
+    { value: 'pjJGFLdac4QE3xEB6WmU', label: 'Mycos' },
+    { value: 'n4uaKdXrIGvL8tpvywB0', label: 'Solar Sam' },
+    {
+      value: 'qNkzaJoHLLdpvgh5tISm',
+      label: 'Carter the Mountain King',
+      description: 'deep, american, male, middle_aged',
+    },
+    {
+      value: 'tlETan7Okc4pzjD0z62P',
+      label: 'Mohammed',
+      description: 'arabic, calm, middle_aged, male',
+    },
+    { value: 'twidbmOywJPdPH0pwJ7m', label: 'Gallo' },
+    { value: 'wYpFGZNdEeoKqO3vg6hv', label: 'Ben' },
+    { value: 'yyyKwKpg6HoyhF7ic7v8', label: 'Maria Clara' },
+    { value: 'RIWb4qBcX1Q2tCIQmqZd', label: 'Solienne' },
+    { value: 'tpr7IQBrTR0SxWQ4HpM1', label: 'Miyomi' },
+  ]
+
+// Special value for custom voice ID
+const CUSTOM_VOICE_VALUE = '__custom__'
+
 interface RealtimeSettings {
   agent: string
   voice_id: string | null
@@ -88,6 +248,10 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
   // State for debug mode checkbox (default enabled)
   const [debugMode, setDebugMode] = useState(true)
 
+  // State for custom voice ID mode
+  const [isCustomVoice, setIsCustomVoice] = useState(false)
+  const [customVoiceId, setCustomVoiceId] = useState('')
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -95,13 +259,22 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
         setError(null)
         const response = await axios.get(`/api/agents/${agent._id}/realtime`)
         if (response.data?.settings) {
+          const loadedSettings = response.data.settings
           // Merge with defaults to ensure all fields exist
           setSettings(prev => ({
             ...prev,
-            ...response.data.settings,
+            ...loadedSettings,
             // Ensure user_input_fields is always an array
-            user_input_fields: response.data.settings.user_input_fields || [],
+            user_input_fields: loadedSettings.user_input_fields || [],
           }))
+          // Check if loaded voice_id is a custom one (not in preset list)
+          if (
+            loadedSettings.voice_id &&
+            !VOICE_OPTIONS.some(v => v.value === loadedSettings.voice_id)
+          ) {
+            setIsCustomVoice(true)
+            setCustomVoiceId(loadedSettings.voice_id)
+          }
         }
       } catch (err) {
         if (axios.isAxiosError(err)) {
@@ -235,20 +408,70 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="voice_id">Voice ID</Label>
-            <Input
-              id="voice_id"
-              placeholder="Optional: ElevenLabs voice ID"
-              value={settings.voice_id || ''}
-              onChange={e =>
-                setSettings(prev => ({
-                  ...prev,
-                  voice_id: e.target.value || null,
-                }))
+            <Label htmlFor="voice_id">Voice</Label>
+            <Select
+              value={
+                isCustomVoice ? CUSTOM_VOICE_VALUE : settings.voice_id || ''
               }
-            />
+              onValueChange={value => {
+                if (value === CUSTOM_VOICE_VALUE) {
+                  setIsCustomVoice(true)
+                  // Keep current custom voice if there is one
+                  setSettings(prev => ({
+                    ...prev,
+                    voice_id: customVoiceId || null,
+                  }))
+                } else {
+                  setIsCustomVoice(false)
+                  setCustomVoiceId('')
+                  setSettings(prev => ({
+                    ...prev,
+                    voice_id: value || null,
+                  }))
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a voice" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                {VOICE_OPTIONS.map(voice => (
+                  <SelectItem key={voice.value} value={voice.value}>
+                    <div className="flex flex-col">
+                      <span>{voice.label}</span>
+                      {voice.description && (
+                        <span className="text-xs text-muted-foreground">
+                          {voice.description}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+                <SelectItem value={CUSTOM_VOICE_VALUE}>
+                  <span className="text-muted-foreground">
+                    Custom voice ID...
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {isCustomVoice && (
+              <Input
+                id="custom_voice_id"
+                placeholder="Enter custom ElevenLabs voice ID"
+                value={customVoiceId}
+                onChange={e => {
+                  const value = e.target.value
+                  setCustomVoiceId(value)
+                  setSettings(prev => ({
+                    ...prev,
+                    voice_id: value || null,
+                  }))
+                }}
+                className="mt-2"
+              />
+            )}
             <p className="text-xs text-muted-foreground">
-              Custom ElevenLabs voice ID for this agent.
+              Select a preset voice or enter a custom ElevenLabs voice ID.
             </p>
           </div>
 

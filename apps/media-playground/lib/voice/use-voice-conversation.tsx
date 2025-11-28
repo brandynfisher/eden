@@ -195,6 +195,7 @@ export function useVoiceConversation(
         ...(realtimeSettings.voice_id && {
           voiceId: realtimeSettings.voice_id,
         }),
+        model_id: realtimeSettings.tts_model ?? defaults.tts_model,
         stability: realtimeSettings.tts_stability ?? defaults.tts_stability,
         speed: realtimeSettings.tts_speed ?? defaults.tts_speed,
         similarityBoost:
