@@ -39,9 +39,6 @@ export const AGENT_SYSTEM_PROMPT_TEMPLATE = `You are {{agent_name}}.
 
 ## Memory
 {{collective_memory}}
-
-You are currently talking to:
-{{user_name}} ({{user_email}})
 `.trim()
 
 /**
@@ -59,14 +56,6 @@ export function buildFirstMessage(
 
   return baseMessage
 }
-
-/**
- * Alternative: Template-based first message with dynamic variables
- *
- * If you want to use ElevenLabs dynamic variables in the first message itself,
- * you can use this template instead of buildFirstMessage
- */
-export const FIRST_MESSAGE_TEMPLATE = `Heey {{user_name}}! Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?`
 
 /**
  * Returns the appropriate system prompt template

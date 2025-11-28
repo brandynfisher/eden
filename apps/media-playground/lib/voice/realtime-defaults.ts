@@ -7,7 +7,7 @@
  * Hardcoded ElevenLabs Agent ID
  * This is the conversational agent ID used for all realtime conversations
  */
-export const ELEVENLABS_AGENT_ID = 'agent_1501k7xznma4fnprjh81qvanzrrr'
+export const ELEVENLABS_AGENT_ID = 'agent_2201kb5s70rffdb90jm6sz54f6qt'
 
 export type RealtimeLLM =
   | 'gpt-5-mini'
@@ -15,6 +15,13 @@ export type RealtimeLLM =
   | 'gemini-2.5-flash'
   | 'claude-sonnet-4-5'
   | 'claude-haiku-4-5'
+
+export type RealtimeTTSModel =
+  | 'eleven_multilingual_v2'
+  | 'eleven_turbo_v2'
+  | 'eleven_turbo_v2_5'
+  | 'eleven_flash_v2'
+  | 'eleven_flash_v2_5'
 
 export interface RealtimeSettings {
   agent: string
@@ -24,6 +31,7 @@ export interface RealtimeSettings {
   llm_model: RealtimeLLM
   temperature: number
   max_tokens: number
+  tts_model: RealtimeTTSModel
   tts_stability: number
   tts_speed: number
   tts_similarity_boost: number
@@ -42,6 +50,7 @@ export const DEFAULT_REALTIME_SETTINGS: RealtimeSettings = {
   llm_model: 'claude-haiku-4-5',
   temperature: 0.8,
   max_tokens: 4096,
+  tts_model: 'eleven_multilingual_v2',
   tts_stability: 0.5,
   tts_speed: 1.0,
   tts_similarity_boost: 0.3,
