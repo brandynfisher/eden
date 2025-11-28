@@ -7,7 +7,7 @@
  * Hardcoded ElevenLabs Agent ID
  * This is the conversational agent ID used for all realtime conversations
  */
-export const ELEVENLABS_AGENT_ID = 'agent_1501k7xznma4fnprjh81qvanzrrr'
+export const ELEVENLABS_AGENT_ID = 'agent_2201kb5s70rffdb90jm6sz54f6qt'
 
 export type RealtimeLLM =
   | 'gpt-5-mini'

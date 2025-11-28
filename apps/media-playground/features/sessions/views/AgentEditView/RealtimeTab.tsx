@@ -19,9 +19,24 @@ import {
 } from '@/lib/voice/realtime-defaults'
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { AlertCircle, ExternalLink, Loader2, X } from 'lucide-react'
+import {
+  AlertCircle,
+  AlertTriangle,
+  ExternalLink,
+  Loader2,
+  Pause,
+  Play,
+  X,
+} from 'lucide-react'
 import Link from 'next/link'
-import { FC, useEffect, useState } from 'react'
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 // LLM options derived from RealtimeLLM type
@@ -55,162 +70,14 @@ const LANGUAGE_OPTIONS = [
   { value: 'ko', label: 'Korean' },
 ] as const
 
-// ElevenLabs voice options from eve/tools/elevenlabs/api.yaml
-const VOICE_OPTIONS: { value: string; label: string; description?: string }[] =
-  [
-    {
-      value: '9BWtsMINqrJLrRacOk9x',
-      label: 'Aria',
-      description: 'american, husky, middle_aged, female',
-    },
-    {
-      value: 'EXAVITQu4vr4xnSDxMaL',
-      label: 'Sarah',
-      description: 'american, professional, young, female',
-    },
-    {
-      value: 'FGY2WhTYpPnrIDTdsKH5',
-      label: 'Laura',
-      description: 'american, sassy, young, female',
-    },
-    {
-      value: 'IKne3meq5aSn9XLyUdCD',
-      label: 'Charlie',
-      description: 'australian, hyped, young, male',
-    },
-    {
-      value: 'JBFqnCBsd6RMkjVDRZzb',
-      label: 'George',
-      description: 'british, mature, middle_aged, male',
-    },
-    {
-      value: 'N2lVS1w4EtoT3dr4eOWO',
-      label: 'Callum',
-      description: 'middle_aged, male',
-    },
-    {
-      value: 'SAz9YHcvj6GT2YYXdXww',
-      label: 'River',
-      description: 'american, calm, middle_aged, neutral',
-    },
-    {
-      value: 'TX3LPaxmHKxFdv7VOQHJ',
-      label: 'Liam',
-      description: 'american, confident, young, male',
-    },
-    {
-      value: 'XB0fDUnXU5powFXDhCwa',
-      label: 'Charlotte',
-      description: 'swedish, relaxed, young, female',
-    },
-    {
-      value: 'Xb7hH8MSUJpSbSDYk0k2',
-      label: 'Alice',
-      description: 'british, professional, middle_aged, female',
-    },
-    {
-      value: 'XrExE9yKIg1WjnnlVkGX',
-      label: 'Matilda',
-      description: 'american, upbeat, middle_aged, female',
-    },
-    {
-      value: 'bIHbv24MWmeRgasZH58o',
-      label: 'Will',
-      description: 'american, chill, young, male',
-    },
-    {
-      value: 'cgSgspJ2msm6clMCkdW9',
-      label: 'Jessica',
-      description: 'american, cute, young, female',
-    },
-    {
-      value: 'cjVigY5qzO86Huf0OWal',
-      label: 'Eric',
-      description: 'american, classy, middle_aged, male',
-    },
-    {
-      value: 'iP95p4xoKVk53GoZ742B',
-      label: 'Chris',
-      description: 'american, casual, middle_aged, male',
-    },
-    {
-      value: 'nPczCjzI2devNBz1zQrb',
-      label: 'Brian',
-      description: 'american, classy, middle_aged, male',
-    },
-    {
-      value: 'onwK4e9ZLuTAKqWW03F9',
-      label: 'Daniel',
-      description: 'british, formal, middle_aged, male',
-    },
-    {
-      value: 'pFZP5JQG7iQjIQuC4Bku',
-      label: 'Lily',
-      description: 'british, warm, confident, female, middle_aged',
-    },
-    {
-      value: 'pqHfZKP75CvOlQylNhV4',
-      label: 'Bill',
-      description: 'american, crisp, old, male',
-    },
-    {
-      value: '1D8EGxrYFNUCluLDkSZc',
-      label: 'Maggi',
-      description: 'en-spanish',
-    },
-    { value: '1wDwDMEYwjOS0vDcRyy3', label: 'Tao' },
-    { value: '4ljHadDomzGBqOnMxshc', label: 'Gene' },
-    { value: '8tmloozfTsgXBZPdWZMY', label: 'Marzipan' },
-    { value: 'FAxfNIX38LpaNkcLeQIk', label: 'Sofy' },
-    { value: 'FMrLYY5CYQ0O0iutL2v1', label: 'Meredith' },
-    { value: 'JpC250odUgEpLFIpYweh', label: 'Lucy', description: 'en-chinese' },
-    { value: 'JzaYTZZm6u7962K8PrTe', label: 'Jmill' },
-    { value: 'LnscIwfjAhOaLg6miw62', label: 'Boots', description: 'en-german' },
-    { value: 'MbrroYvMdxSywuyOfJje', label: 'Xander', description: 'en-dutch' },
-    { value: 'MmJV6I1NAbGP13xgbxVz', label: 'Joey' },
-    { value: 'NtBayVEGSDC8tLZVhlbh', label: 'Colton' },
-    {
-      value: 'PfwUcgYQ7oSunm7PqMXi',
-      label: 'Chebel',
-      description: 'en-portuguese',
-    },
-    { value: 'RmWmsefzgwpKYD2NHnwK', label: 'Koi', description: 'en-chinese' },
-    { value: 'StzPkufRHTjBTiQg6CS9', label: 'Jordan' },
-    {
-      value: 'YXpFCvM1S3JbWEJhoskW',
-      label: 'Wyatt',
-      description: 'wise, american, male, old',
-    },
-    { value: 'Z8chHYUiDMhjlLdPQ3Tl', label: 'Freeman' },
-    {
-      value: 'Zm3hQWGo4lO5GpPsyaJu',
-      label: 'Dimitri',
-      description: 'en-dutch, male',
-    },
-    { value: 'cr6kV5mMqkYAIyrNKttl', label: 'Lydia' },
-    { value: 'i4NARTXKU6n1jo7SNaeP', label: 'Jero Wiku' },
-    { value: 'kLMGliDx2OLhf5Moxbmj', label: 'Vincent' },
-    { value: 'kLjCh136HhlEVfCL0Tkq', label: 'Gandala' },
-    { value: 'mXfvFHljLNpg72LsX7l1', label: 'Jack' },
-    { value: 'mrACSB3QITzdoWMZJH8P', label: 'Verdelis' },
-    { value: 'pjJGFLdac4QE3xEB6WmU', label: 'Mycos' },
-    { value: 'n4uaKdXrIGvL8tpvywB0', label: 'Solar Sam' },
-    {
-      value: 'qNkzaJoHLLdpvgh5tISm',
-      label: 'Carter the Mountain King',
-      description: 'deep, american, male, middle_aged',
-    },
-    {
-      value: 'tlETan7Okc4pzjD0z62P',
-      label: 'Mohammed',
-      description: 'arabic, calm, middle_aged, male',
-    },
-    { value: 'twidbmOywJPdPH0pwJ7m', label: 'Gallo' },
-    { value: 'wYpFGZNdEeoKqO3vg6hv', label: 'Ben' },
-    { value: 'yyyKwKpg6HoyhF7ic7v8', label: 'Maria Clara' },
-    { value: 'RIWb4qBcX1Q2tCIQmqZd', label: 'Solienne' },
-    { value: 'tpr7IQBrTR0SxWQ4HpM1', label: 'Miyomi' },
-  ]
+// Voice option type for dynamically loaded voices
+interface VoiceOption {
+  value: string
+  label: string
+  description?: string
+  category?: string
+  previewUrl?: string
+}
 
 // Special value for custom voice ID
 const CUSTOM_VOICE_VALUE = '__custom__'
@@ -242,6 +109,11 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
     agent: agent._id,
   } as RealtimeSettings)
 
+  // Track the last saved settings to detect unsaved changes
+  const [savedSettings, setSavedSettings] = useState<RealtimeSettings | null>(
+    null,
+  )
+
   // State for adding new user input field
   const [newFieldLabel, setNewFieldLabel] = useState('')
 
@@ -252,6 +124,83 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
   const [isCustomVoice, setIsCustomVoice] = useState(false)
   const [customVoiceId, setCustomVoiceId] = useState('')
 
+  // State for dynamically loaded voices from ElevenLabs
+  const [voices, setVoices] = useState<VoiceOption[]>([])
+  const [totalVoiceCount, setTotalVoiceCount] = useState<number>(0)
+  const [voicesLoading, setVoicesLoading] = useState(true)
+  const [voicesError, setVoicesError] = useState<string | null>(null)
+
+  // Voice filter state
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>(
+    'all',
+  )
+  const [matchLanguage, setMatchLanguage] = useState(false)
+
+  // Audio preview state
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    if (!savedSettings) return false
+    return (
+      settings.voice_id !== savedSettings.voice_id ||
+      settings.language !== savedSettings.language ||
+      settings.first_message !== savedSettings.first_message ||
+      settings.llm_model !== savedSettings.llm_model ||
+      settings.temperature !== savedSettings.temperature ||
+      settings.max_tokens !== savedSettings.max_tokens ||
+      settings.tts_stability !== savedSettings.tts_stability ||
+      settings.tts_speed !== savedSettings.tts_speed ||
+      settings.tts_similarity_boost !== savedSettings.tts_similarity_boost ||
+      JSON.stringify(settings.user_input_fields) !==
+        JSON.stringify(savedSettings.user_input_fields)
+    )
+  }, [settings, savedSettings])
+
+  // Fetch available voices from ElevenLabs API with filters
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        setVoicesLoading(true)
+        setVoicesError(null)
+
+        // Build query params for filters
+        const params = new URLSearchParams()
+        if (genderFilter !== 'all') {
+          params.append('gender', genderFilter)
+        }
+        if (matchLanguage && settings.language) {
+          params.append('language', settings.language)
+        }
+
+        const queryString = params.toString()
+        const url = queryString
+          ? `/api/realtime/voices?${queryString}`
+          : '/api/realtime/voices'
+
+        const response = await axios.get(url)
+        if (response.data?.voices) {
+          setVoices(response.data.voices)
+          // Store total count (unfiltered) on first load only
+          if (
+            genderFilter === 'all' &&
+            !matchLanguage &&
+            response.data.totalCount
+          ) {
+            setTotalVoiceCount(response.data.totalCount)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch voices:', err)
+        setVoicesError('Failed to load voices')
+      } finally {
+        setVoicesLoading(false)
+      }
+    }
+    fetchVoices()
+  }, [genderFilter, matchLanguage, settings.language])
+
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -261,20 +210,25 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
         if (response.data?.settings) {
           const loadedSettings = response.data.settings
           // Merge with defaults to ensure all fields exist
-          setSettings(prev => ({
-            ...prev,
+          const mergedSettings = {
+            ...DEFAULT_REALTIME_SETTINGS,
+            agent: agent._id,
             ...loadedSettings,
             // Ensure user_input_fields is always an array
             user_input_fields: loadedSettings.user_input_fields || [],
-          }))
-          // Check if loaded voice_id is a custom one (not in preset list)
-          if (
-            loadedSettings.voice_id &&
-            !VOICE_OPTIONS.some(v => v.value === loadedSettings.voice_id)
-          ) {
-            setIsCustomVoice(true)
-            setCustomVoiceId(loadedSettings.voice_id)
-          }
+          } as RealtimeSettings
+          setSettings(mergedSettings)
+          // Track the saved state for detecting changes
+          setSavedSettings(mergedSettings)
+        } else {
+          // No existing settings, use defaults and track them as saved
+          const defaultSettings = {
+            ...DEFAULT_REALTIME_SETTINGS,
+            agent: agent._id,
+            user_input_fields: [],
+          } as RealtimeSettings
+          setSettings(defaultSettings)
+          setSavedSettings(defaultSettings)
         }
       } catch (err) {
         if (axios.isAxiosError(err)) {
@@ -291,6 +245,17 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
     fetchSettings()
   }, [agent._id])
 
+  // Check if loaded voice_id is a custom one (not in the fetched voice list)
+  useEffect(() => {
+    if (!voicesLoading && voices.length > 0 && settings.voice_id) {
+      const isKnownVoice = voices.some(v => v.value === settings.voice_id)
+      if (!isKnownVoice) {
+        setIsCustomVoice(true)
+        setCustomVoiceId(settings.voice_id)
+      }
+    }
+  }, [voices, voicesLoading, settings.voice_id])
+
   const handleSave = async () => {
     setIsSubmitting(true)
     try {
@@ -306,6 +271,8 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
         tts_similarity_boost: settings.tts_similarity_boost,
         user_input_fields: settings.user_input_fields,
       })
+      // Update saved state to reflect the new saved values
+      setSavedSettings({ ...settings })
       toast.success('Realtime settings saved', {
         description: 'Your changes have been saved.',
         richColors: true,
@@ -350,6 +317,54 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
     }))
   }
 
+  // Handle voice preview playback
+  const handlePlayPreview = useCallback(
+    (voiceId: string, previewUrl: string, e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // If clicking the same voice that's playing, pause it
+      if (playingVoiceId === voiceId && audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+        setPlayingVoiceId(null)
+        return
+      }
+
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+
+      // Create and play new audio
+      const audio = new Audio(previewUrl)
+      audioRef.current = audio
+      setPlayingVoiceId(voiceId)
+
+      audio.play().catch(err => {
+        console.error('Failed to play audio preview:', err)
+        setPlayingVoiceId(null)
+      })
+
+      audio.onended = () => {
+        setPlayingVoiceId(null)
+        audioRef.current = null
+      }
+    },
+    [playingVoiceId],
+  )
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [])
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center mt-10">
@@ -371,20 +386,33 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
     <div className="space-y-6">
       {/* Start Conversation button with debug mode toggle */}
       <div className="flex items-center justify-start gap-4">
-        <Button
-          size="sm"
-          className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
-          asChild
-        >
-          <Link
-            href={`/realtime/${agent.username}${debugMode ? '?dev=true' : ''}`}
-            target="_blank"
-            rel="noopener noreferrer"
+        {hasUnsavedChanges ? (
+          <Button
+            size="sm"
+            className="gap-2 bg-purple-600/50 text-white cursor-not-allowed"
+            disabled
           >
             Start conversation
             <ExternalLink className="w-4 h-4" />
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+            asChild
+          >
+            <Link
+              href={`/realtime/${agent.username}${
+                debugMode ? '?dev=true' : ''
+              }`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Start conversation
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+          </Button>
+        )}
         <div className="flex items-center gap-2">
           <Checkbox
             id="debug-mode"
@@ -397,23 +425,183 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
         </div>
       </div>
 
-      {/* ElevenLabs Configuration */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-lg font-medium text-foreground">
-          ElevenLabs Configuration
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Configure ElevenLabs voice and speech settings for this agent.
-        </p>
+      {/* Unsaved changes warning banner */}
+      {hasUnsavedChanges && (
+        <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-amber-500/50 bg-amber-500/10">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-200">
+              You have unsaved changes. Save your settings before starting a
+              conversation.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={isSubmitting}
+            className="shrink-0"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
+        </div>
+      )}
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="voice_id">Voice</Label>
+      {/* ElevenLabs Settings */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+        <div>
+          <h2 className="text-lg font-medium text-foreground">
+            ElevenLabs Settings
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Configure ElevenLabs voice and conversation settings for this agent.
+          </p>
+        </div>
+
+        {/* Language */}
+        <div className="space-y-2">
+          <Label htmlFor="language">Language</Label>
+          <Select
+            value={settings.language}
+            onValueChange={value =>
+              setSettings(prev => ({ ...prev, language: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGE_OPTIONS.map(lang => (
+                <SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* First Message */}
+        <div className="space-y-2">
+          <Label htmlFor="first_message">First Message</Label>
+          <AutosizeTextarea
+            id="first_message"
+            placeholder="Custom greeting message when conversation starts..."
+            value={settings.first_message || ''}
+            onChange={e =>
+              setSettings(prev => ({
+                ...prev,
+                first_message: e.target.value || null,
+              }))
+            }
+            className="min-h-[80px]"
+          />
+          <p className="text-xs text-muted-foreground">
+            The message the agent will say when starting a conversation.
+          </p>
+        </div>
+
+        {/* Voice */}
+        <div className="space-y-2">
+          <Label htmlFor="voice_id">Voice</Label>
+
+          {/* Voice Filters */}
+          <div className="flex flex-wrap items-center gap-4 py-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm text-muted-foreground">Gender:</Label>
+              <Select
+                value={genderFilter}
+                onValueChange={(value: 'all' | 'male' | 'female') =>
+                  setGenderFilter(value)
+                }
+              >
+                <SelectTrigger className="w-[100px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="match-language"
+                checked={matchLanguage}
+                onCheckedChange={checked => setMatchLanguage(checked === true)}
+              />
+              <Label
+                htmlFor="match-language"
+                className="text-sm text-muted-foreground cursor-pointer"
+              >
+                Match language ({settings.language})
+              </Label>
+            </div>
+
+            {voicesLoading ? (
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {genderFilter !== 'all' || matchLanguage
+                  ? `${voices.length} of ${totalVoiceCount} voices`
+                  : `${voices.length} voices`}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Play button for selected voice */}
+            {(() => {
+              const selectedVoice = voices.find(
+                v => v.value === settings.voice_id,
+              )
+              if (selectedVoice?.previewUrl) {
+                return (
+                  <button
+                    type="button"
+                    onClick={e =>
+                      handlePlayPreview(
+                        selectedVoice.value,
+                        selectedVoice.previewUrl!,
+                        e,
+                      )
+                    }
+                    className="flex items-center justify-center w-9 h-9 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors shrink-0"
+                    aria-label={
+                      playingVoiceId === selectedVoice.value
+                        ? 'Pause preview'
+                        : 'Play preview'
+                    }
+                  >
+                    {playingVoiceId === selectedVoice.value ? (
+                      <Pause className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4 ml-0.5" />
+                    )}
+                  </button>
+                )
+              }
+              return null
+            })()}
+
             <Select
               value={
                 isCustomVoice ? CUSTOM_VOICE_VALUE : settings.voice_id || ''
               }
               onValueChange={value => {
+                // Stop any playing audio when changing voice
+                if (audioRef.current) {
+                  audioRef.current.pause()
+                  audioRef.current = null
+                  setPlayingVoiceId(null)
+                }
                 if (value === CUSTOM_VOICE_VALUE) {
                   setIsCustomVoice(true)
                   // Keep current custom voice if there is one
@@ -430,162 +618,136 @@ export const RealtimeTab: FC<RealtimeTabProps> = ({ agent }) => {
                   }))
                 }
               }}
+              disabled={voicesLoading}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a voice" />
+              <SelectTrigger className="flex-1">
+                <SelectValue
+                  placeholder={
+                    voicesLoading ? 'Loading voices...' : 'Select a voice'
+                  }
+                />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {VOICE_OPTIONS.map(voice => (
-                  <SelectItem key={voice.value} value={voice.value}>
-                    <div className="flex flex-col">
-                      <span>{voice.label}</span>
-                      {voice.description && (
-                        <span className="text-xs text-muted-foreground">
-                          {voice.description}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-                <SelectItem value={CUSTOM_VOICE_VALUE}>
-                  <span className="text-muted-foreground">
-                    Custom voice ID...
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {isCustomVoice && (
-              <Input
-                id="custom_voice_id"
-                placeholder="Enter custom ElevenLabs voice ID"
-                value={customVoiceId}
-                onChange={e => {
-                  const value = e.target.value
-                  setCustomVoiceId(value)
-                  setSettings(prev => ({
-                    ...prev,
-                    voice_id: value || null,
-                  }))
-                }}
-                className="mt-2"
-              />
-            )}
-            <p className="text-xs text-muted-foreground">
-              Select a preset voice or enter a custom ElevenLabs voice ID.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Stability</Label>
-              <span className="text-sm text-muted-foreground">
-                {settings.tts_stability.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[settings.tts_stability]}
-              min={0}
-              max={1}
-              step={0.01}
-              onValueChange={([value]) =>
-                setSettings(prev => ({ ...prev, tts_stability: value }))
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Lower values make the voice more expressive but less consistent.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Speed</Label>
-              <span className="text-sm text-muted-foreground">
-                {settings.tts_speed.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[settings.tts_speed]}
-              min={0}
-              max={1.2}
-              step={0.01}
-              onValueChange={([value]) =>
-                setSettings(prev => ({ ...prev, tts_speed: value }))
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Adjust the speaking speed (0 - 1.2x).
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Similarity Boost</Label>
-              <span className="text-sm text-muted-foreground">
-                {settings.tts_similarity_boost.toFixed(2)}
-              </span>
-            </div>
-            <Slider
-              value={[settings.tts_similarity_boost]}
-              min={0}
-              max={1}
-              step={0.01}
-              onValueChange={([value]) =>
-                setSettings(prev => ({ ...prev, tts_similarity_boost: value }))
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Higher values make the voice closer to the original sample.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Conversation Settings */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-lg font-medium text-foreground">
-          Conversation Settings
-        </h2>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="language">Language</Label>
-            <Select
-              value={settings.language}
-              onValueChange={value =>
-                setSettings(prev => ({ ...prev, language: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGE_OPTIONS.map(lang => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
+                {voicesError ? (
+                  <div className="px-2 py-1.5 text-sm text-destructive">
+                    {voicesError}
+                  </div>
+                ) : (
+                  <>
+                    {voices.map(voice => (
+                      <SelectItem
+                        key={voice.value}
+                        value={voice.value}
+                        className="py-2"
+                        textValue={voice.label}
+                      >
+                        <div className="flex flex-col gap-0.5 text-left">
+                          <span className="font-medium">{voice.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {voice.description
+                              ? voice.description.length > 200
+                                ? `${voice.description.slice(0, 200)}...`
+                                : voice.description
+                              : '\u00A0'}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={CUSTOM_VOICE_VALUE}>
+                      <span className="text-muted-foreground">
+                        Custom voice ID...
+                      </span>
+                    </SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="first_message">First Message</Label>
-            <AutosizeTextarea
-              id="first_message"
-              placeholder="Custom greeting message when conversation starts..."
-              value={settings.first_message || ''}
-              onChange={e =>
+          {isCustomVoice && (
+            <Input
+              id="custom_voice_id"
+              placeholder="Enter custom ElevenLabs voice ID"
+              value={customVoiceId}
+              onChange={e => {
+                const value = e.target.value
+                setCustomVoiceId(value)
                 setSettings(prev => ({
                   ...prev,
-                  first_message: e.target.value || null,
+                  voice_id: value || null,
                 }))
-              }
-              className="min-h-[80px]"
+              }}
+              className="mt-2"
             />
-            <p className="text-xs text-muted-foreground">
-              The message the agent will say when starting a conversation.
-            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Select a preset voice or enter a custom ElevenLabs voice ID.
+          </p>
+        </div>
+
+        {/* Stability */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Stability</Label>
+            <span className="text-sm text-muted-foreground">
+              {settings.tts_stability.toFixed(2)}
+            </span>
           </div>
+          <Slider
+            value={[settings.tts_stability]}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={([value]) =>
+              setSettings(prev => ({ ...prev, tts_stability: value }))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Lower values make the voice more expressive but less consistent.
+          </p>
+        </div>
+
+        {/* Speed */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Speed</Label>
+            <span className="text-sm text-muted-foreground">
+              {settings.tts_speed.toFixed(2)}
+            </span>
+          </div>
+          <Slider
+            value={[settings.tts_speed]}
+            min={0}
+            max={1.2}
+            step={0.01}
+            onValueChange={([value]) =>
+              setSettings(prev => ({ ...prev, tts_speed: value }))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Adjust the speaking speed (0 - 1.2x).
+          </p>
+        </div>
+
+        {/* Similarity Boost */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Similarity Boost</Label>
+            <span className="text-sm text-muted-foreground">
+              {settings.tts_similarity_boost.toFixed(2)}
+            </span>
+          </div>
+          <Slider
+            value={[settings.tts_similarity_boost]}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={([value]) =>
+              setSettings(prev => ({ ...prev, tts_similarity_boost: value }))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Higher values make the voice closer to the original sample.
+          </p>
         </div>
       </div>
 
