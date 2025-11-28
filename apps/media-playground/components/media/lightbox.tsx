@@ -304,6 +304,13 @@ export const LightboxTrigger = React.forwardRef<
 
   if (!slide) return null
 
+  // Check if we have known dimensions for proper sizing
+  const hasKnownDimensions =
+    typeof slide.width === 'number' &&
+    slide.width > 0 &&
+    typeof slide.height === 'number' &&
+    slide.height > 0
+
   return (
     <div
       ref={ref}
@@ -312,7 +319,9 @@ export const LightboxTrigger = React.forwardRef<
         e.dataTransfer.setData('text/plain', slide.url || '')
       }}
       className={cn(
-        'rounded-md overflow-hidden cursor-zoom-in w-full h-full',
+        'rounded-md overflow-hidden cursor-zoom-in',
+        // Only use w-full h-full when we have known dimensions
+        hasKnownDimensions && 'w-full h-full',
         className,
       )}
       onClick={() => {
@@ -365,9 +374,19 @@ export function LightboxImageTrigger({
   customLoader,
   ...props
 }: LightboxImageTriggerProps) {
-  const { width: ignoredWidth, height: ignoredHeight, ...restProps } = props
-  const width = typeof ignoredWidth === 'number' ? ignoredWidth : 1024
-  const height = typeof ignoredHeight === 'number' ? ignoredHeight : 1024
+  const {
+    width: ignoredWidth,
+    height: ignoredHeight,
+    onLoad: propsOnLoad,
+    ...restProps
+  } = props
+  const hasKnownDimensions =
+    typeof ignoredWidth === 'number' &&
+    ignoredWidth > 0 &&
+    typeof ignoredHeight === 'number' &&
+    ignoredHeight > 0
+  const width = hasKnownDimensions ? ignoredWidth : 1024
+  const height = hasKnownDimensions ? ignoredHeight : 1024
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
   const [isHighResLoaded, setIsHighResLoaded] = React.useState(false)
 
@@ -378,12 +397,24 @@ export function LightboxImageTrigger({
   const placeholderSrc = lowResSrc || blurDataUrl || undefined
   const showPlaceholder = Boolean(placeholderSrc)
 
+  // When dimensions are unknown, render a simple img tag that sizes naturally
+  if (!hasKnownDimensions) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={cn('h-auto', className)}
+        draggable={false}
+        loading={loading ?? 'lazy'}
+        onLoad={propsOnLoad as React.ReactEventHandler<HTMLImageElement>}
+      />
+    )
+  }
+
   return (
     <div
       className={cn('relative w-full', className)}
-      style={
-        height && width ? { aspectRatio: `${width}/${height}` } : undefined
-      }
+      style={{ aspectRatio: `${width}/${height}` }}
     >
       <div className="absolute inset-0">
         {showPlaceholder ? (
@@ -411,8 +442,16 @@ export function LightboxImageTrigger({
           blurDataURL={!lowResSrc ? blurDataUrl : undefined}
           placeholder={!lowResSrc && blurDataUrl ? 'blur' : undefined}
           loading={loading ?? 'eager'}
-          onLoad={() => {
+          onLoad={e => {
             setIsHighResLoaded(true)
+            // Call any passed onLoad handler
+            if (propsOnLoad) {
+              (
+                propsOnLoad as (
+                  e: React.SyntheticEvent<HTMLImageElement>,
+                ) => void
+              )(e)
+            }
           }}
           {...restProps}
         />

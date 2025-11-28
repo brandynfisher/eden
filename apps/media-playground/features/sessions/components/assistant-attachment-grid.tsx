@@ -4,6 +4,7 @@ import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { getSuspectedMediaType } from '@/features/sessions/utils/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import React, { useState } from 'react'
 
 interface AssistantAttachmentGridProps {
   attachments: string[]
@@ -12,11 +13,106 @@ interface AssistantAttachmentGridProps {
 }
 
 /**
- * Optimized attachment grid for assistant/agent messages.
- * - Single image: natural aspect ratio with max constraints
- *   - Landscape: up to 480px wide (wider on desktop)
- *   - Portrait: max 320px height to avoid taking too much vertical space
- * - Multiple images: responsive grid
+ * Single image wrapper that detects aspect ratio for smart sizing.
+ * Portrait images are height-constrained, landscape images are width-constrained.
+ */
+const SingleImageWrapper = ({
+  url,
+  mediaType,
+}: {
+  url: string
+  mediaType: 'image' | 'video'
+}) => {
+  const [isPortrait, setIsPortrait] = useState(false)
+
+  return (
+    <div
+      className={cn(
+        isPortrait
+          ? 'max-h-[40vh]' // Portrait: constrain height
+          : 'max-w-full sm:max-w-[80%] md:max-w-[600px]', // Landscape: constrain width
+      )}
+    >
+      <LightboxTrigger
+        startIndex={0}
+        slide={{
+          type: mediaType,
+          url: getCloudfrontOriginalUrl(url),
+          duration: mediaType === 'video' ? 0 : undefined,
+        }}
+        imageProps={{
+          className: 'rounded-lg w-full h-auto',
+          unoptimized: true,
+          loading: 'lazy',
+          onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
+            const img = e.currentTarget
+            setIsPortrait(img.naturalHeight > img.naturalWidth * 1.2)
+          },
+        }}
+        videoProps={{
+          className: 'rounded-lg w-full h-auto',
+        }}
+      />
+    </div>
+  )
+}
+
+/**
+ * Grid image tile that uses flex-grow based on aspect ratio.
+ */
+const GridImageTile = ({
+  url,
+  mediaType,
+  index,
+  rowHeight,
+}: {
+  url: string
+  mediaType: 'image' | 'video'
+  index: number
+  rowHeight: number
+}) => {
+  const [aspectRatio, setAspectRatio] = useState(1)
+
+  return (
+    <div
+      className="overflow-hidden rounded-lg"
+      style={{
+        flexGrow: aspectRatio,
+        flexBasis: 0,
+        minWidth: '30%',
+        height: rowHeight,
+      }}
+    >
+      <LightboxTrigger
+        startIndex={index}
+        className="w-full h-full"
+        slide={{
+          type: mediaType,
+          url: getCloudfrontOriginalUrl(url),
+          duration: mediaType === 'video' ? 0 : undefined,
+        }}
+        imageProps={{
+          className: 'w-full h-full object-cover rounded-lg',
+          unoptimized: true,
+          loading: 'lazy',
+          onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
+            const img = e.currentTarget
+            const ratio = img.naturalWidth / img.naturalHeight
+            setAspectRatio(ratio)
+          },
+        }}
+        videoProps={{
+          className: 'w-full h-full object-cover rounded-lg',
+        }}
+      />
+    </div>
+  )
+}
+
+/**
+ * Attachment display for assistant/agent messages.
+ * - Single images: natural aspect ratio with sensible constraints
+ * - Multiple images: flex grid with aspect-ratio-based width distribution
  */
 export const AssistantAttachmentGrid = ({
   attachments,
@@ -27,136 +123,102 @@ export const AssistantAttachmentGrid = ({
 
   if (count === 0) return null
 
-  // For single image, let it display at natural aspect ratio with sensible limits
-  if (count === 1) {
-    const attachment = attachments[0]
-    const mediaType = getSuspectedMediaType(attachment)
-    const isMedia =
-      mediaType === 'image' || mediaType === 'video' || mediaType === 'audio'
+  // Filter to only media
+  const mediaAttachments = attachments.filter(url => {
+    const type = getSuspectedMediaType(url)
+    return type === 'image' || type === 'video'
+  })
+
+  const nonMediaAttachments = attachments.filter(url => {
+    const type = getSuspectedMediaType(url)
+    return type !== 'image' && type !== 'video'
+  })
+
+  // No media - just show file badges
+  if (mediaAttachments.length === 0) {
+    return (
+      <div className={cn('mt-4 flex flex-wrap gap-2', className)}>
+        {nonMediaAttachments.map(url => (
+          <FileTypeBadge key={url} url={url} />
+        ))}
+      </div>
+    )
+  }
+
+  // Single image - natural display with smart constraints
+  if (mediaAttachments.length === 1) {
+    const url = mediaAttachments[0]
+    const mediaType = getSuspectedMediaType(url) as 'image' | 'video'
 
     return (
       <LightboxGallery galleryKey={messageId}>
-        <div className={cn('mt-3', className)}>
-          {isMedia ? (
-            <LightboxTrigger
-              startIndex={0}
-              className="block"
-              slide={{
-                type: mediaType,
-                duration: mediaType === 'video' ? 0 : undefined,
-                url:
-                  mediaType === 'audio'
-                    ? attachment
-                    : getCloudfrontOriginalUrl(attachment),
-              }}
-              imageProps={{
-                // Landscape images can be wider, portrait images are height-limited
-                // max-w-[480px] on mobile, max-w-[560px] on desktop
-                // max-h-[320px] prevents tall portrait images from dominating
-                className:
-                  'h-auto rounded-lg object-contain max-w-full max-h-[320px] sm:max-w-[480px] md:max-w-[560px]',
-                unoptimized: true,
-                loading: 'lazy',
-              }}
-              videoProps={{
-                className:
-                  'h-auto rounded-lg max-w-full max-h-[320px] sm:max-w-[480px] md:max-w-[560px]',
-              }}
-            />
-          ) : (
-            <div className="w-48 h-32 flex items-center justify-center text-muted-foreground bg-muted rounded-lg">
-              <div className="text-xs font-medium">
-                {(() => {
-                  try {
-                    const pathname = new URL(attachment).pathname
-                    return pathname.split('.').pop()?.toUpperCase() || 'FILE'
-                  } catch {
-                    return (
-                      attachment
-                        .split('?')[0]
-                        .split('.')
-                        .pop()
-                        ?.toUpperCase() || 'FILE'
-                    )
-                  }
-                })()}
-              </div>
-            </div>
-          )}
+        <div className={cn('mt-4 flex justify-center', className)}>
+          <SingleImageWrapper url={url} mediaType={mediaType} />
         </div>
+        {nonMediaAttachments.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2 justify-center">
+            {nonMediaAttachments.map(u => (
+              <FileTypeBadge key={u} url={u} />
+            ))}
+          </div>
+        )}
       </LightboxGallery>
     )
   }
 
-  // For multiple images, use a responsive grid
-  // 2 columns on mobile, up to 3 on larger screens
+  // Multiple images - flex grid with aspect-ratio-based sizing
+  const rowHeight =
+    mediaAttachments.length <= 2
+      ? 280
+      : mediaAttachments.length <= 4
+      ? 220
+      : 180
+
   return (
     <LightboxGallery galleryKey={messageId}>
-      <div
-        className={cn(
-          'mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-[480px]',
-          className,
+      <div className={cn('mt-4', className)}>
+        <div className="flex flex-wrap gap-1">
+          {mediaAttachments.map((url, index) => {
+            const mediaType = getSuspectedMediaType(url) as 'image' | 'video'
+            return (
+              <GridImageTile
+                key={url}
+                url={url}
+                mediaType={mediaType}
+                index={index}
+                rowHeight={rowHeight}
+              />
+            )
+          })}
+        </div>
+        {nonMediaAttachments.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nonMediaAttachments.map(u => (
+              <FileTypeBadge key={u} url={u} />
+            ))}
+          </div>
         )}
-      >
-        {attachments.map((attachment, index) => {
-          const mediaType = getSuspectedMediaType(attachment)
-          const isMedia =
-            mediaType === 'image' ||
-            mediaType === 'video' ||
-            mediaType === 'audio'
-
-          return (
-            <div
-              key={attachment}
-              className="relative rounded-lg overflow-hidden aspect-square"
-            >
-              {isMedia ? (
-                <LightboxTrigger
-                  startIndex={index}
-                  className="block w-full h-full"
-                  slide={{
-                    type: mediaType,
-                    duration: mediaType === 'video' ? 0 : undefined,
-                    url:
-                      mediaType === 'audio'
-                        ? attachment
-                        : getCloudfrontOriginalUrl(attachment),
-                  }}
-                  imageProps={{
-                    className: 'w-full h-full object-cover rounded-lg',
-                    unoptimized: true,
-                    loading: 'lazy',
-                  }}
-                  videoProps={{
-                    className: 'w-full h-full object-cover rounded-lg',
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted rounded-lg">
-                  <div className="text-xs font-medium">
-                    {(() => {
-                      try {
-                        const pathname = new URL(attachment).pathname
-                        return (
-                          pathname.split('.').pop()?.toUpperCase() || 'FILE'
-                        )
-                      } catch {
-                        return (
-                          attachment
-                            .split('?')[0]
-                            .split('.')
-                            .pop()
-                            ?.toUpperCase() || 'FILE'
-                        )
-                      }
-                    })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
       </div>
     </LightboxGallery>
+  )
+}
+
+/**
+ * Badge for non-media file types
+ */
+const FileTypeBadge = ({ url }: { url: string }) => {
+  const extension = (() => {
+    try {
+      const pathname = new URL(url).pathname
+      return pathname.split('.').pop()?.toUpperCase() || 'FILE'
+    } catch {
+      return url.split('?')[0].split('.').pop()?.toUpperCase() || 'FILE'
+    }
+  })()
+
+  return (
+    <div className="w-24 h-20 flex items-center justify-center text-muted-foreground bg-muted/50 rounded-lg border border-border/50">
+      <span className="text-xs font-medium tracking-wide">{extension}</span>
+    </div>
   )
 }
