@@ -49,7 +49,7 @@ import {
   WrenchIcon,
 } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -109,7 +109,32 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     invalidate,
   } = useAgentQuery({
     key: agentId,
+    refetchOnWindowFocus: false,
   })
+
+  // Track last user activity to implement delayed refetch
+  const lastActivityTimeRef = useRef<number>(Date.now())
+
+  // Refetch agent data only if user was inactive for 5+ minutes
+  useEffect(() => {
+    if (!open) return
+
+    const REFETCH_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const timeSinceLastActivity = Date.now() - lastActivityTimeRef.current
+        if (timeSinceLastActivity > REFETCH_THRESHOLD_MS) {
+          invalidate() // Refetch after 5+ minutes of inactivity
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [open, invalidate])
 
   // When memoriesOnly mode, always use 'memories' tab
   const effectiveInitialTab = memoriesOnly ? 'memories' : initialTab
@@ -152,6 +177,14 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       },
     },
   })
+
+  // Reset activity timer whenever form changes (user is actively editing)
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      lastActivityTimeRef.current = Date.now()
+    })
+    return () => subscription.unsubscribe()
+  }, [form])
 
   // Update form when agent data changes
   useEffect(() => {
