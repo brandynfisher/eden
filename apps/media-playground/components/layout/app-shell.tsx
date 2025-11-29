@@ -52,7 +52,13 @@ export const useAppShell = () => {
 
 export const useOptionalAppShell = () => useContext(AppShellContext)
 
-const DISABLE_PREFIXES = ['/sign-in', '/sign-up', '/new', '/studio']
+const DISABLE_PREFIXES = [
+  '/sign-in',
+  '/sign-up',
+  '/new',
+  '/studio',
+  '/gigabrain',
+]
 const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'
 
