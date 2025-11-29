@@ -1,4 +1,8 @@
 import { Agent } from '../models/Agent'
+import {
+  AgentPermission,
+  AgentPermissionLevel,
+} from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { EmailDomain } from '../models/EmailDomain'
 import { MailgunDomainResult } from '../plugins/mailgunPlugin'
@@ -33,7 +37,14 @@ const hasOwnerPermissions = async (
     return true
   }
 
-  return false
+  // Check if user has owner permission via AgentPermission
+  const permission = await AgentPermission.findOne({
+    agent: agentId,
+    user: userId,
+    level: AgentPermissionLevel.Owner,
+  })
+
+  return !!permission
 }
 
 const serializeEmailDomain = (domain: any) => {
