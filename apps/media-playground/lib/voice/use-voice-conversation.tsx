@@ -2,6 +2,7 @@
 
 import { SAFE_MICROPHONE_CONSTRAINTS } from './audio-config'
 import { validateDynamicVariables } from './build-dynamic-variables'
+import { DEFAULT_REALTIME_SETTINGS } from './realtime-defaults'
 import {
   ConnectionStatus,
   DebugLog,
@@ -148,8 +149,9 @@ export function useVoiceConversation(
     }
   }, [addDebugLog])
 
-  // Prepare conversation config with dynamic variables
-  // This uses ElevenLabs' recommended dynamic variables approach
+  // Prepare conversation config with dynamic variables and realtime settings
+  // This uses ElevenLabs' recommended dynamic variables approach for prompt content
+  // and overrides for other settings (language, voice, TTS, LLM)
   const prepareConversationConfig = useCallback(() => {
     // Validate dynamic variables
     const validation = validateDynamicVariables(config.dynamicVariables)
@@ -167,26 +169,60 @@ export function useVoiceConversation(
       })
     }
 
+    const { realtimeSettings } = config
+    const defaults = DEFAULT_REALTIME_SETTINGS
+
+    // Build overrides from realtime settings
+    // These configure the ElevenLabs agent behavior (language, voice, LLM, TTS, first_message)
+    // Note: tts is a SIBLING of agent, not nested inside it
+    // See: https://elevenlabs.io/docs/agents-platform/customization/personalization/overrides
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const overrides: any = {
+      agent: {
+        language: realtimeSettings.language || defaults.language,
+        // Set firstMessage override if available from dynamic variables
+        ...(config.dynamicVariables.first_message && {
+          firstMessage: config.dynamicVariables.first_message,
+        }),
+        prompt: {
+          llm: realtimeSettings.llm_model || defaults.llm_model,
+          temperature: realtimeSettings.temperature ?? defaults.temperature,
+          max_tokens: realtimeSettings.max_tokens ?? defaults.max_tokens,
+        },
+      },
+      // TTS overrides are at the top level (sibling of agent), not nested inside agent
+      tts: {
+        ...(realtimeSettings.voice_id && {
+          voiceId: realtimeSettings.voice_id,
+        }),
+        model_id: realtimeSettings.tts_model ?? defaults.tts_model,
+        stability: realtimeSettings.tts_stability ?? defaults.tts_stability,
+        speed: realtimeSettings.tts_speed ?? defaults.tts_speed,
+        similarityBoost:
+          realtimeSettings.tts_similarity_boost ??
+          defaults.tts_similarity_boost,
+      },
+    }
+
+    addDebugLog(
+      `Using realtime settings: language=${overrides.agent.language}, llm=${
+        overrides.agent.prompt.llm
+      }, voice_id=${realtimeSettings.voice_id || 'default'}, first_message=${
+        config.dynamicVariables.first_message ? 'set' : 'empty'
+      }`,
+      'info',
+    )
+
     // Return config for ElevenLabs startSession
-    // We only pass dynamic variables now (agent_system_prompt and first_message)
+    // Dynamic variables are used for prompt content (agent_system_prompt, first_message)
+    // Overrides are used for other settings (language, voice, LLM, TTS)
     const sessionConfig = {
       dynamicVariables: config.dynamicVariables,
-      // Optional config overrides for non-prompt settings only
-      ...(config.conversationConfig?.agent?.language && {
-        overrides: {
-          agent: {
-            language: config.conversationConfig.agent.language,
-            // Include TTS settings if provided
-            ...(config.conversationConfig?.agent?.tts && {
-              tts: config.conversationConfig.agent.tts,
-            }),
-          },
-        },
-      }),
+      overrides,
     }
 
     return sessionConfig
-  }, [config.dynamicVariables, config.conversationConfig, addDebugLog])
+  }, [config.dynamicVariables, config.realtimeSettings, addDebugLog])
 
   // Initialize ElevenLabs conversation
   // Note: onMessage uses sessionId from the current closure

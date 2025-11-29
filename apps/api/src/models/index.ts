@@ -4,6 +4,7 @@ import {
 } from './AccountDeletionRequest'
 import { Agent, AgentDocument } from './Agent'
 import { AgentPermission, AgentPermissionDocument } from './AgentPermission'
+import { AgentRealtime, AgentRealtimeDocument } from './AgentRealtime'
 import { ApiKey, ApiKeyDocument } from './ApiKey'
 import { BaseUser, BaseUserDocument } from './BaseUser'
 import Challenge, { ChallengeDocument } from './Challenge'
@@ -85,6 +86,7 @@ export interface Database {
   Message: Model<MessageDocument>
   SessionV2: Model<SessionV2Document>
   AgentPermission: Model<AgentPermissionDocument>
+  AgentRealtime: Model<AgentRealtimeDocument>
 }
 
 export const models: Database = {
@@ -125,4 +127,5 @@ export const models: Database = {
   Message,
   SessionV2,
   AgentPermission,
+  AgentRealtime,
 }

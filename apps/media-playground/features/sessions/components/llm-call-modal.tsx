@@ -30,18 +30,46 @@ interface LLMCallData {
   provider?: string
   agent?: string | { _id?: string; name?: string; username?: string }
   session?: string
-  messages?: Array<{
-    role: string
-    content: string | Array<{ type: string; text?: string }>
-  }>
-  tools?: Array<{
-    type?: string
-    function?: {
-      name: string
+  request_payload?: {
+    system?: string
+    messages?: Array<{
+      role: string
+      content:
+        | string
+        | Array<{
+            type: string
+            text?: string
+            // Image content
+            source?: {
+              type: string
+              media_type?: string
+              data?: string
+              url?: string
+            }
+            // Tool use (assistant calling a tool)
+            id?: string
+            name?: string
+            input?: Record<string, unknown>
+            // Tool result
+            tool_use_id?: string
+            content?: string | Array<{ type: string; text?: string }>
+            is_error?: boolean
+          }>
+    }>
+    tools?: Array<{
+      // Anthropic format (top-level)
+      name?: string
       description?: string
-      parameters?: Record<string, unknown>
-    }
-  }>
+      input_schema?: Record<string, unknown>
+      // OpenAI format (nested)
+      type?: string
+      function?: {
+        name: string
+        description?: string
+        parameters?: Record<string, unknown>
+      }
+    }>
+  }
   usage?: {
     prompt_tokens?: number
     completion_tokens?: number
@@ -51,7 +79,7 @@ interface LLMCallData {
   }
   createdAt?: string
   completedAt?: string
-  duration?: number
+  duration_ms?: number
   response?: unknown
   [key: string]: unknown
 }
@@ -134,7 +162,7 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
             Duration
           </div>
           <div className="font-medium">
-            {data.duration ? formatDuration(data.duration) : 'Unknown'}
+            {data.duration_ms ? formatDuration(data.duration_ms) : 'Unknown'}
           </div>
         </div>
       </div>
@@ -183,18 +211,17 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
 
 // System message tab
 const SystemTab = ({ data }: { data: LLMCallData }) => {
-  const systemMessage = data.messages?.find(m => m.role === 'system')
+  // Check for system as direct string field first (Anthropic format)
+  const systemString = data.request_payload?.system
 
-  if (!systemMessage) {
-    return (
-      <div className="text-muted-foreground text-center py-8">
-        No system message found
-      </div>
-    )
-  }
+  // Fall back to checking messages array (OpenAI format)
+  const messages = data.request_payload?.messages || []
+  const systemMessage = messages.find(m => m.role === 'system')
 
-  const content =
-    typeof systemMessage.content === 'string'
+  const content = systemString
+    ? systemString
+    : systemMessage
+    ? typeof systemMessage.content === 'string'
       ? systemMessage.content
       : Array.isArray(systemMessage.content)
       ? systemMessage.content
@@ -202,6 +229,15 @@ const SystemTab = ({ data }: { data: LLMCallData }) => {
           .map(c => c.text)
           .join('\n')
       : ''
+    : ''
+
+  if (!content) {
+    return (
+      <div className="text-muted-foreground text-center py-8">
+        No system message found
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-md border bg-muted/30 p-4 overflow-auto max-h-[50vh]">
@@ -210,9 +246,141 @@ const SystemTab = ({ data }: { data: LLMCallData }) => {
   )
 }
 
+// Content block renderer for messages
+const ContentBlock = ({
+  block,
+}: {
+  block: {
+    type: string
+    text?: string
+    source?: {
+      type: string
+      media_type?: string
+      data?: string
+      url?: string
+    }
+    id?: string
+    name?: string
+    input?: Record<string, unknown>
+    tool_use_id?: string
+    content?: string | Array<{ type: string; text?: string }>
+    is_error?: boolean
+  }
+}) => {
+  // Text content
+  if (block.type === 'text' && block.text) {
+    return <FormattedText text={block.text} />
+  }
+
+  // Image content
+  if (block.type === 'image' && block.source) {
+    const src =
+      block.source.type === 'base64'
+        ? `data:${block.source.media_type};base64,${block.source.data}`
+        : block.source.url
+    return (
+      <div className="my-2">
+        <img
+          src={src}
+          alt="Attached image"
+          className="max-w-full max-h-48 rounded border object-contain"
+        />
+      </div>
+    )
+  }
+
+  // Tool use (assistant calling a tool)
+  if (block.type === 'tool_use' && block.name) {
+    return (
+      <div className="my-2 rounded border bg-purple-500/10 p-2">
+        <div className="flex items-center gap-2 mb-1">
+          <WrenchIcon className="w-3 h-3 text-purple-500" />
+          <span className="text-xs font-medium text-purple-500">Tool Call</span>
+          <span className="font-mono text-xs">{block.name}</span>
+        </div>
+        {block.input && Object.keys(block.input).length > 0 && (
+          <details className="text-xs">
+            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+              Input
+            </summary>
+            <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto text-xs">
+              {JSON.stringify(block.input, null, 2)}
+            </pre>
+          </details>
+        )}
+      </div>
+    )
+  }
+
+  // Tool result
+  if (block.type === 'tool_result') {
+    const rawContent =
+      typeof block.content === 'string'
+        ? block.content
+        : Array.isArray(block.content)
+        ? block.content
+            .filter(c => c.type === 'text')
+            .map(c => c.text)
+            .join('\n')
+        : ''
+
+    // Try to parse and pretty-print as JSON
+    let formattedContent = rawContent
+    try {
+      const parsed = JSON.parse(rawContent)
+      formattedContent = JSON.stringify(parsed, null, 2)
+    } catch {
+      // Not JSON, use as-is
+    }
+
+    return (
+      <div
+        className={cn(
+          'my-2 rounded border p-2',
+          block.is_error ? 'bg-red-500/10' : 'bg-orange-500/10',
+        )}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <TerminalSquareIcon
+            className={cn(
+              'w-3 h-3',
+              block.is_error ? 'text-red-500' : 'text-orange-500',
+            )}
+          />
+          <span
+            className={cn(
+              'text-xs font-medium',
+              block.is_error ? 'text-red-500' : 'text-orange-500',
+            )}
+          >
+            {block.is_error ? 'Tool Error' : 'Tool Result'}
+          </span>
+        </div>
+        {formattedContent && (
+          <details className="text-xs" open>
+            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+              Output
+            </summary>
+            <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
+              {formattedContent}
+            </pre>
+          </details>
+        )}
+      </div>
+    )
+  }
+
+  // Unknown type - show as JSON
+  return (
+    <pre className="text-xs text-muted-foreground">
+      {JSON.stringify(block, null, 2)}
+    </pre>
+  )
+}
+
 // Messages tab
 const MessagesTab = ({ data }: { data: LLMCallData }) => {
-  const messages = data.messages || []
+  const messages = data.request_payload?.messages || []
   const nonSystemMessages = messages.filter(m => m.role !== 'system')
 
   if (nonSystemMessages.length === 0) {
@@ -226,15 +394,11 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
   return (
     <div className="space-y-3 overflow-auto max-h-[50vh]">
       {nonSystemMessages.map((msg, idx) => {
-        const content =
-          typeof msg.content === 'string'
-            ? msg.content
-            : Array.isArray(msg.content)
-            ? msg.content
-                .filter(c => c.type === 'text')
-                .map(c => c.text)
-                .join('\n')
-            : JSON.stringify(msg.content)
+        const contentBlocks = Array.isArray(msg.content)
+          ? msg.content
+          : typeof msg.content === 'string'
+          ? [{ type: 'text', text: msg.content }]
+          : []
 
         return (
           <div key={idx} className="rounded-md border p-3">
@@ -252,8 +416,10 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
                 {msg.role}
               </span>
             </div>
-            <div className="text-sm">
-              <FormattedText text={content} />
+            <div className="text-sm space-y-1">
+              {contentBlocks.map((block, blockIdx) => (
+                <ContentBlock key={blockIdx} block={block} />
+              ))}
             </div>
           </div>
         )
@@ -264,7 +430,7 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
 
 // Tools tab
 const ToolsTab = ({ data }: { data: LLMCallData }) => {
-  const tools = data.tools || []
+  const tools = data.request_payload?.tools || []
 
   if (tools.length === 0) {
     return (
@@ -277,31 +443,42 @@ const ToolsTab = ({ data }: { data: LLMCallData }) => {
   return (
     <div className="space-y-3 overflow-auto max-h-[50vh]">
       {tools.map((tool, idx) => {
-        const func = tool.function
-        if (!func) return null
+        // Handle both Anthropic format (top-level) and OpenAI format (nested under function)
+        const name = tool.name || tool.function?.name
+        const description = tool.description || tool.function?.description
+        const parameters = tool.input_schema || tool.function?.parameters
+
+        if (!name) return null
 
         return (
-          <div key={idx} className="rounded-md border p-3">
-            <div className="flex items-center gap-2 mb-2">
+          <details key={idx} className="rounded-md border">
+            <summary className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted/50">
               <WrenchIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium">{func.name}</span>
+              <span className="font-medium">{name}</span>
+            </summary>
+            <div className="px-3 pb-3 space-y-2">
+              {description && (
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Description
+                  </div>
+                  <div className="p-2 bg-muted/50 rounded text-sm text-muted-foreground">
+                    <FormattedText text={description} />
+                  </div>
+                </div>
+              )}
+              {parameters && (
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Parameters
+                  </div>
+                  <pre className="p-2 bg-muted/50 rounded overflow-auto text-xs">
+                    {JSON.stringify(parameters, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
-            {func.description && (
-              <p className="text-sm text-muted-foreground mb-2">
-                {func.description}
-              </p>
-            )}
-            {func.parameters && (
-              <details className="text-xs">
-                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                  Parameters
-                </summary>
-                <pre className="mt-2 p-2 bg-muted/50 rounded overflow-auto">
-                  {JSON.stringify(func.parameters, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
+          </details>
         )
       })}
     </div>

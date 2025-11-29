@@ -1,7 +1,9 @@
 import RealtimeView from '@/features/realtime/realtime-view'
 import { getAgentCached } from '@/lib/actions/agent'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
+import { auth } from '@clerk/nextjs/server'
 import { Metadata, ResolvingMetadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 interface Props {
@@ -59,7 +61,16 @@ export async function generateMetadata(
   }
 }
 
-const RealtimePage = () => {
+const RealtimePage = async ({ params }: Props) => {
+  // Require authentication - redirect to sign-in if not authenticated
+  const { userId } = await auth()
+
+  if (!userId) {
+    // Redirect to sign-in with return URL to come back after login
+    const returnUrl = `/realtime/${params.agentId}`
+    redirect(`/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`)
+  }
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <RealtimeView />

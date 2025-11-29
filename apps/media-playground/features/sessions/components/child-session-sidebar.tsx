@@ -9,7 +9,8 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
-import { XIcon } from 'lucide-react'
+import { ExternalLinkIcon, XIcon } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 
 interface ChildSessionSidebarProps {
@@ -81,14 +82,25 @@ export const ChildSessionSidebar = ({
           </h3>
         </div>
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
-          aria-label="Close sidebar"
-        >
-          <XIcon className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Open in new page link */}
+          <Link
+            href={`/sessions/${sessionId}`}
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            aria-label="Open session in new page"
+          >
+            <ExternalLinkIcon className="w-4 h-4 text-muted-foreground" />
+          </Link>
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            aria-label="Close sidebar"
+          >
+            <XIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Messages area */}

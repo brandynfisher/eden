@@ -80,11 +80,36 @@ ${collectiveMemoryFormatted || ''}`.trim()
   // Build first message with personalization
   let firstMessage = baseFirstMessage || ''
 
-  // Extract user name if provided
-  const userName = userInfo?.name || userInfo?.Name || ''
+  // Extract user name if provided - check common username field variations
+  const usernameFields = [
+    'name',
+    'Name',
+    'NAME',
+    'username',
+    'userName',
+    'Username',
+    'UserName',
+    'user',
+    'User',
+    'USER',
+    'fullName',
+    'full_name',
+    'displayName',
+    'display_name',
+    'firstName',
+    'first_name',
+    'naam',
+    'Naam',
+    'nickname',
+    'Nickname',
+  ]
+  const matchedField = userInfo
+    ? usernameFields.find(field => userInfo[field]?.trim())
+    : undefined
+  const userName = matchedField ? userInfo![matchedField] : ''
 
   if (userName && userName.trim() !== '' && firstMessage) {
-    firstMessage = `Heey ${userName}! ${firstMessage}`
+    firstMessage = `Hey ${userName}! ${firstMessage}`
   }
 
   const variables: DynamicVariables = {

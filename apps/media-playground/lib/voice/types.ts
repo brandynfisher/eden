@@ -4,7 +4,7 @@
  * (e.g., ElevenLabs, OpenAI, etc.)
  */
 import type { DynamicVariables } from './build-dynamic-variables'
-import type { ConversationConfigOverride } from './realtime-user-fields-config'
+import type { RealtimeSettings } from './realtime-defaults'
 
 export type ConnectionStatus =
   | 'disconnected'
@@ -41,10 +41,10 @@ export interface VoiceProviderConfig {
    */
   userInfo?: Record<string, string>
   /**
-   * Optional ElevenLabs conversation config overrides
-   * Used for settings like language, TTS config, etc. (not for prompt content)
+   * Realtime settings from the database (voice_id, language, LLM, TTS, etc.)
+   * These are used to configure the ElevenLabs conversation session
    */
-  conversationConfig?: ConversationConfigOverride
+  realtimeSettings: RealtimeSettings
 }
 
 export interface VoiceConversationState {

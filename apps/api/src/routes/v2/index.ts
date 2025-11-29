@@ -1,4 +1,5 @@
 import agentRoutes from './agentRoutes'
+import artifactRoutesV2 from './artifactRoutesV2'
 import authRoutesV2 from './authRoutesV2'
 import collectionRoutesV2 from './collectionRoutesV2'
 import conceptRoutesV2 from './conceptRoutesV2'
@@ -21,6 +22,7 @@ export const routes = [
   modelRoutesV2,
   conceptRoutesV2,
   creationRoutesV2,
+  artifactRoutesV2,
   feedRoutesV2,
   collectionRoutesV2,
   agentRoutes,

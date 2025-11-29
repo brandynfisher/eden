@@ -6,6 +6,7 @@ import {
   PermissionsTab,
   PersonaTab,
   ProfileTab,
+  RealtimeTab,
   ToolsTab,
 } from '../sessions/views/AgentEditView'
 import AgentDashboardView from '../sessions/views/agent-dashboard-view'
@@ -30,6 +31,7 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -39,6 +41,7 @@ import {
   ImageIcon,
   KeyIcon,
   Loader2,
+  MicIcon,
   ScrollTextIcon,
   SettingsIcon,
   Trash2Icon,
@@ -75,6 +78,8 @@ const getTabDescription = (tabKey: string, agentName: string) => {
       return `Choose the models, reasoning, and tools ${agentName} can use.`
     case 'integrations':
       return `Connect ${agentName} to social platforms and utilities.`
+    case 'realtime':
+      return `Configure ${agentName}'s voice conversation settings.`
     case 'memories':
       return `Review and edit ${agentName}'s memories.`
     case 'tasks':
@@ -302,6 +307,13 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         label: 'Integrations',
         icon: SettingsIcon,
       })
+      if (user?.featureFlags?.includes(FeatureFlag.Preview)) {
+        tabs.push({
+          key: 'realtime',
+          label: 'Realtime',
+          icon: MicIcon,
+        })
+      }
       tabs.push({ key: 'manage', label: 'Manage', icon: Trash2Icon })
     }
 
@@ -332,6 +344,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   // Determine if save button should show for current tab
   const showSaveButton =
     activeTab !== 'integrations' &&
+    activeTab !== 'realtime' &&
     activeTab !== 'tasks' &&
     activeTab !== 'memories' &&
     activeTab !== 'permissions' &&
@@ -499,6 +512,12 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                         isError={deploymentsQuery.isError}
                       />
                     )}
+
+                    {activeTab === 'realtime' &&
+                      hasOwnerAccess &&
+                      user?.featureFlags?.includes(FeatureFlag.Preview) && (
+                        <RealtimeTab agent={agent} />
+                      )}
 
                     {activeTab === 'memories' &&
                       (hasEditAccess || memoriesOnly) && (

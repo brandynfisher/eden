@@ -57,9 +57,22 @@ class FarcasterEmbedErrorBoundary extends Component<
 // Wrapper component - only rely on error boundary for actual render errors
 const SafeFarcasterEmbed: React.FC<{ url: string }> = ({ url }) => {
   return (
-    <FarcasterEmbedErrorBoundary url={url}>
-      <FarcasterEmbed url={url} />
-    </FarcasterEmbedErrorBoundary>
+    <div className="space-y-1">
+      <div className="text-xs text-muted-foreground">
+        Casted to Farcaster:{' '}
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          View on Warpcast
+        </a>
+      </div>
+      <FarcasterEmbedErrorBoundary url={url}>
+        <FarcasterEmbed url={url} />
+      </FarcasterEmbedErrorBoundary>
+    </div>
   )
 }
 

@@ -110,10 +110,16 @@ const AgentsPage = () => {
     }
   }, [isSettingsModalOpen, settingsAgentId])
 
-  const recentAgents = useMemo(
-    () => (lastAgents || []).slice(0, 3),
-    [lastAgents],
-  )
+  const recentAgents = useMemo(() => {
+    const seen = new Set<string>()
+    return (lastAgents || [])
+      .filter(agent => {
+        if (seen.has(agent._id)) return false
+        seen.add(agent._id)
+        return true
+      })
+      .slice(0, 3)
+  }, [lastAgents])
 
   const recentAgentsWithDescriptions = recentAgents
 
