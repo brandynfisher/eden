@@ -374,7 +374,10 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           icon: MicIcon,
         })
       }
-      // Manage tab - includes permissions for original owner and danger zone
+    }
+
+    // Manage tab - only visible to the original owner (not co-owners or co-editors)
+    if (isOriginalOwner) {
       tabs.push({ key: 'manage', label: 'Manage', icon: KeyIcon })
     }
 
@@ -651,7 +654,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                         <AgentDashboardView agent={agent} variant="panel" />
                       )}
 
-                      {activeTab === 'manage' && hasOwnerAccess && (
+                      {activeTab === 'manage' && isOriginalOwner && (
                         <div className="space-y-8">
                           {/* Permissions Section - only for original owner */}
                           {isOriginalOwner && <PermissionsTab agent={agent} />}
