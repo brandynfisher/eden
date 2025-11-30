@@ -6,6 +6,7 @@ import {
 import {
   addPassiveMessage,
   addSessionMessageReaction,
+  addSessionToolCallReaction,
   cancelSession,
   createSession,
   createSessionMessage,
@@ -32,6 +33,7 @@ import {
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
   SessionsV2RenameArguments,
+  SessionsV2ToolCallReactArguments,
 } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
@@ -269,6 +271,52 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => addSessionMessageReaction(request, reply),
+  })
+
+  server.post<{
+    Body: SessionsV2ToolCallReactArguments
+  }>('/v2/sessions/tool-react', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'React to Tool Call',
+      description:
+        'Add a text reaction to a specific tool call within a message.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+        tool_call_id: Type.String(),
+        reaction: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          message: Type.Any(),
+        }),
+        400: {
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          message: Type.Optional(Type.String()),
+        },
+        403: {
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) =>
+      addSessionToolCallReaction(server, request, reply),
   })
 
   server.get<{

@@ -1,21 +1,25 @@
-import { Button } from '@/components/ui/button'
+'use client'
+
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { useVoicesQuery } from '@/hooks/query/use-voices-query'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown, Loader2, Play } from 'lucide-react'
-import React, { useCallback, useMemo, useState } from 'react'
+import axios from 'axios'
+import { Loader2, Pause, Play } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+interface VoiceOption {
+  value: string
+  label: string
+  description?: string
+  previewUrl?: string
+}
 
 interface VoiceSelectorProps {
   value?: string
@@ -28,126 +32,234 @@ export function VoiceSelector({
   onChange,
   className,
 }: VoiceSelectorProps) {
-  const [open, setOpen] = useState(false)
+  const [voices, setVoices] = useState<VoiceOption[]>([])
+  const [voicesLoading, setVoicesLoading] = useState(true)
+  const [voicesError, setVoicesError] = useState<string | null>(null)
+  const [totalVoiceCount, setTotalVoiceCount] = useState(0)
 
-  const voicesQuery = useVoicesQuery()
+  // Filters
+  const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>(
+    'all',
+  )
+  const [matchLanguage, setMatchLanguage] = useState(false)
+
+  // Audio preview state
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null)
+
+  // Fetch voices from ElevenLabs API with filters
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        setVoicesLoading(true)
+        setVoicesError(null)
+
+        // Build query params for filters
+        const params = new URLSearchParams()
+        if (genderFilter !== 'all') {
+          params.append('gender', genderFilter)
+        }
+        if (matchLanguage) {
+          params.append('language', 'en')
+        }
+
+        const queryString = params.toString()
+        const url = queryString
+          ? `/api/realtime/voices?${queryString}`
+          : '/api/realtime/voices'
+
+        const response = await axios.get(url)
+        if (response.data?.voices) {
+          setVoices(response.data.voices)
+          // Store total count (unfiltered) on first load only
+          if (
+            genderFilter === 'all' &&
+            !matchLanguage &&
+            response.data.totalCount
+          ) {
+            setTotalVoiceCount(response.data.totalCount)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch voices:', err)
+        setVoicesError('Failed to load voices')
+      } finally {
+        setVoicesLoading(false)
+      }
+    }
+    fetchVoices()
+  }, [genderFilter, matchLanguage])
 
   const selectedVoice = useMemo(() => {
-    if (!voicesQuery.voices) return null
+    return voices.find(voice => voice.value === value)
+  }, [voices, value])
 
-    return voicesQuery.voices.find(voice => voice.voiceId === value)
-  }, [voicesQuery.voices, value])
+  const handlePlayPreview = useCallback(
+    (voiceId: string, previewUrl: string, e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
 
-  const handlePlayVoiceSample = useCallback((url: string) => {
-    const audioElement = document.createElement('audio')
-    audioElement.autoplay = true
-    audioElement.controls = false
-    audioElement.src = url
-  }, [])
+      // If this voice is already playing, stop it
+      if (playingVoiceId === voiceId && audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+        setPlayingVoiceId(null)
+        return
+      }
+
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+
+      // Create and play new audio
+      const audio = new Audio(previewUrl)
+      audioRef.current = audio
+      setPlayingVoiceId(voiceId)
+
+      audio.play().catch(err => {
+        console.error('Failed to play audio:', err)
+        setPlayingVoiceId(null)
+      })
+
+      audio.onended = () => {
+        setPlayingVoiceId(null)
+        audioRef.current = null
+      }
+
+      audio.onerror = () => {
+        setPlayingVoiceId(null)
+        audioRef.current = null
+      }
+    },
+    [playingVoiceId],
+  )
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      <Popover open={open} onOpenChange={setOpen} modal>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-          >
-            {selectedVoice ? selectedVoice.name : 'Select voice...'}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="p-0 w-[--radix-popover-trigger-width]">
-          {voicesQuery.isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="size-4 animate-spin" />
-            </div>
-          ) : voicesQuery.isError || voicesQuery.voices.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Voices could not be loaded. Please try again later.
-            </div>
-          ) : (
-            <Command>
-              <CommandInput placeholder="Search voices..." />
-              <CommandEmpty>No voice found.</CommandEmpty>
-              <CommandGroup>
-                <ScrollArea className="max-h-80 overflow-y-auto">
-                  {voicesQuery.voices.map(voice => (
-                    <CommandItem
-                      key={voice.voiceId}
-                      onSelect={() => {
-                        onChange(voice.voiceId!)
-                        setOpen(false)
-                      }}
-                      className="group flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Check
-                          className={cn(
-                            'h-4 w-4',
-                            value === voice.voiceId
-                              ? 'opacity-100'
-                              : 'opacity-0',
-                          )}
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium">{voice.name}</span>
-                          <div className="text-xs text-muted-foreground">
-                            {[
-                              voice.labels?.accent,
-                              voice.labels?.age,
-                              voice.labels?.gender,
-                              voice.description,
-                              voice.labels?.useCase,
-                            ]
-                              .filter(Boolean)
-                              .join(', ')}
-                          </div>
-                        </div>
-                      </div>
-                      {voice.previewUrl && (
-                        <Button
-                          className="sm:opacity-0 group-hover:opacity-100"
-                          variant="outline"
-                          size="sm"
-                          onClick={e => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            if (voice.previewUrl) {
-                              handlePlayVoiceSample(voice.previewUrl)
-                            }
-                          }}
-                        >
-                          <Play className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </CommandItem>
-                  ))}
-                </ScrollArea>
-              </CommandGroup>
-            </Command>
-          )}
-        </PopoverContent>
-      </Popover>
-
-      {selectedVoice && (
-        <Button
-          variant="ghost"
-          className="w-fit gap-2"
-          type="button"
-          disabled={!selectedVoice.previewUrl}
-          onClick={() => {
-            if (selectedVoice.previewUrl) {
-              handlePlayVoiceSample(selectedVoice.previewUrl)
+    <div className={cn('flex flex-col gap-3', className)}>
+      {/* Voice Filters */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm text-muted-foreground">Gender:</Label>
+          <Select
+            value={genderFilter}
+            onValueChange={(val: 'all' | 'male' | 'female') =>
+              setGenderFilter(val)
             }
+          >
+            <SelectTrigger className="w-[100px] h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="match-language-voice"
+            checked={matchLanguage}
+            onCheckedChange={checked => setMatchLanguage(checked === true)}
+          />
+          <Label
+            htmlFor="match-language-voice"
+            className="text-sm text-muted-foreground cursor-pointer"
+          >
+            Match language (en)
+          </Label>
+        </div>
+
+        {voicesLoading ? (
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {genderFilter !== 'all' || matchLanguage
+              ? `${voices.length} of ${totalVoiceCount} voices`
+              : `${voices.length} voices`}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {/* Play button for selected voice */}
+        {selectedVoice?.previewUrl && (
+          <button
+            type="button"
+            onClick={e =>
+              handlePlayPreview(
+                selectedVoice.value,
+                selectedVoice.previewUrl!,
+                e,
+              )
+            }
+            className="flex items-center justify-center w-9 h-9 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors shrink-0"
+            aria-label={
+              playingVoiceId === selectedVoice.value
+                ? 'Pause preview'
+                : 'Play preview'
+            }
+          >
+            {playingVoiceId === selectedVoice.value ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4 ml-0.5" />
+            )}
+          </button>
+        )}
+
+        <Select
+          value={value || ''}
+          onValueChange={val => {
+            // Stop any playing audio when changing voice
+            if (audioRef.current) {
+              audioRef.current.pause()
+              audioRef.current = null
+              setPlayingVoiceId(null)
+            }
+            onChange(val)
           }}
+          disabled={voicesLoading}
         >
-          <Play className="h-3 w-3" />
-          Preview voice
-        </Button>
-      )}
+          <SelectTrigger className="flex-1">
+            <SelectValue
+              placeholder={
+                voicesLoading ? 'Loading voices...' : 'Select a voice'
+              }
+            />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            {voicesError ? (
+              <div className="px-2 py-1.5 text-sm text-destructive">
+                {voicesError}
+              </div>
+            ) : (
+              voices.map(voice => (
+                <SelectItem
+                  key={voice.value}
+                  value={voice.value}
+                  className="py-2"
+                  textValue={voice.label}
+                >
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <span className="font-medium">{voice.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {voice.description
+                        ? voice.description.length > 200
+                          ? `${voice.description.slice(0, 200)}...`
+                          : voice.description
+                        : '\u00A0'}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   )
 }

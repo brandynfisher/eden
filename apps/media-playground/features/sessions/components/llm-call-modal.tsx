@@ -18,6 +18,7 @@ import {
   FileTextIcon,
   Loader2Icon,
   MessageSquareIcon,
+  ReplyIcon,
   TerminalSquareIcon,
   UserIcon,
   WrenchIcon,
@@ -76,6 +77,30 @@ interface LLMCallData {
     total_tokens?: number
     input_tokens?: number
     output_tokens?: number
+  }
+  response_payload?: {
+    content?:
+      | string
+      | Array<{
+          type: string
+          text?: string
+          // Tool use in response
+          id?: string
+          name?: string
+          input?: Record<string, unknown>
+        }>
+    stop?: string
+    tokens_spent?: number
+    prompt_tokens?: number
+    completion_tokens?: number
+    usage?: {
+      prompt_tokens?: number
+      completion_tokens?: number
+      cached_prompt_tokens?: number
+      cached_completion_tokens?: number
+      total_tokens?: number
+    }
+    [key: string]: unknown
   }
   createdAt?: string
   completedAt?: string
@@ -485,6 +510,188 @@ const ToolsTab = ({ data }: { data: LLMCallData }) => {
   )
 }
 
+// Response tab
+const ResponseTab = ({ data }: { data: LLMCallData }) => {
+  const response = data.response_payload
+
+  if (!response) {
+    return (
+      <div className="text-muted-foreground text-center py-8">
+        No response data available
+      </div>
+    )
+  }
+
+  const usage = response.usage || {}
+  const hasUsage = Object.keys(usage).length > 0
+
+  // Parse content - can be string or array of content blocks
+  const contentBlocks = Array.isArray(response.content)
+    ? response.content
+    : typeof response.content === 'string'
+    ? [{ type: 'text', text: response.content }]
+    : []
+
+  const textBlocks = contentBlocks.filter(b => b.type === 'text' && b.text)
+  const toolUseBlocks = contentBlocks.filter(b => b.type === 'tool_use')
+
+  return (
+    <div className="space-y-4 overflow-auto max-h-[50vh]">
+      {/* Response text content */}
+      {textBlocks.length > 0 && (
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <ReplyIcon className="w-3 h-3" />
+            Response Content
+          </div>
+          <div className="rounded-md bg-muted/30 p-3">
+            {textBlocks.map((block, idx) => (
+              <FormattedText key={idx} text={block.text || ''} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tool calls in response */}
+      {toolUseBlocks.length > 0 && (
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <WrenchIcon className="w-3 h-3" />
+            Tool Calls ({toolUseBlocks.length})
+          </div>
+          <div className="space-y-2">
+            {toolUseBlocks.map((block, idx) => (
+              <div key={idx} className="rounded border bg-purple-500/10 p-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <WrenchIcon className="w-3 h-3 text-purple-500" />
+                  <span className="text-xs font-medium text-purple-500">
+                    Tool Call
+                  </span>
+                  <span className="font-mono text-xs">{block.name}</span>
+                </div>
+                {block.input && Object.keys(block.input).length > 0 && (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      Input
+                    </summary>
+                    <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto text-xs">
+                      {JSON.stringify(block.input, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stop reason and token counts */}
+      <div className="grid grid-cols-2 gap-4">
+        {response.stop && (
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs mb-1">
+              Stop Reason
+            </div>
+            <div className="font-medium font-mono text-sm">{response.stop}</div>
+          </div>
+        )}
+        {response.tokens_spent !== undefined && (
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs mb-1">
+              Tokens Spent
+            </div>
+            <div className="font-medium">
+              {response.tokens_spent.toLocaleString()}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Token breakdown from response */}
+      {(response.prompt_tokens !== undefined ||
+        response.completion_tokens !== undefined) && (
+        <div className="grid grid-cols-2 gap-4">
+          {response.prompt_tokens !== undefined && (
+            <div className="rounded-lg border p-3">
+              <div className="text-muted-foreground text-xs mb-1">
+                Prompt Tokens
+              </div>
+              <div className="font-medium">
+                {response.prompt_tokens.toLocaleString()}
+              </div>
+            </div>
+          )}
+          {response.completion_tokens !== undefined && (
+            <div className="rounded-lg border p-3">
+              <div className="text-muted-foreground text-xs mb-1">
+                Completion Tokens
+              </div>
+              <div className="font-medium">
+                {response.completion_tokens.toLocaleString()}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Detailed usage object */}
+      {hasUsage && (
+        <div className="rounded-lg border p-3">
+          <div className="text-muted-foreground text-xs mb-2">
+            Usage Details
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+            {usage.prompt_tokens !== undefined && (
+              <div>
+                <span className="text-muted-foreground">Prompt:</span>{' '}
+                <span className="font-medium">
+                  {usage.prompt_tokens.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {usage.completion_tokens !== undefined && (
+              <div>
+                <span className="text-muted-foreground">Completion:</span>{' '}
+                <span className="font-medium">
+                  {usage.completion_tokens.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {usage.total_tokens !== undefined && (
+              <div>
+                <span className="text-muted-foreground">Total:</span>{' '}
+                <span className="font-medium">
+                  {usage.total_tokens.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {usage.cached_prompt_tokens !== undefined &&
+              usage.cached_prompt_tokens > 0 && (
+                <div>
+                  <span className="text-muted-foreground">Cached Prompt:</span>{' '}
+                  <span className="font-medium">
+                    {usage.cached_prompt_tokens.toLocaleString()}
+                  </span>
+                </div>
+              )}
+            {usage.cached_completion_tokens !== undefined &&
+              usage.cached_completion_tokens > 0 && (
+                <div>
+                  <span className="text-muted-foreground">
+                    Cached Completion:
+                  </span>{' '}
+                  <span className="font-medium">
+                    {usage.cached_completion_tokens.toLocaleString()}
+                  </span>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const LLMCallModal = ({
   llmCallId,
   isOpen,
@@ -558,8 +765,8 @@ export const LLMCallModal = ({
 
           {data && !isLoading && (
             <Tabs defaultValue="meta" className="flex-1 flex flex-col min-h-0">
-              <div className="flex items-center justify-between flex-shrink-0 mb-2">
-                <TabsList>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 flex-shrink-0 mb-2">
+                <TabsList className="h-auto flex-wrap justify-start">
                   <TabsTrigger value="meta" className="gap-1.5">
                     <CpuIcon className="w-3 h-3" />
                     Meta
@@ -571,6 +778,10 @@ export const LLMCallModal = ({
                   <TabsTrigger value="messages" className="gap-1.5">
                     <MessageSquareIcon className="w-3 h-3" />
                     Messages
+                  </TabsTrigger>
+                  <TabsTrigger value="response" className="gap-1.5">
+                    <ReplyIcon className="w-3 h-3" />
+                    Response
                   </TabsTrigger>
                   <TabsTrigger value="tools" className="gap-1.5">
                     <WrenchIcon className="w-3 h-3" />
@@ -586,7 +797,7 @@ export const LLMCallModal = ({
                   variant="outline"
                   size="sm"
                   onClick={handleCopy}
-                  className="gap-2"
+                  className="gap-2 flex-shrink-0"
                 >
                   {copied ? (
                     <>
@@ -612,6 +823,10 @@ export const LLMCallModal = ({
 
               <TabsContent value="messages" className="flex-1 overflow-auto">
                 <MessagesTab data={data} />
+              </TabsContent>
+
+              <TabsContent value="response" className="flex-1 overflow-auto">
+                <ResponseTab data={data} />
               </TabsContent>
 
               <TabsContent value="tools" className="flex-1 overflow-auto">

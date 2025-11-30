@@ -76,6 +76,7 @@ export type FeedCursorRouteQueryParams = {
     owner?: string | string[]
     character?: string | string[]
     collection?: string | string[]
+    artifact?: string | string[]
     creation?: string | string[]
     generator?: string | string[]
     tool?: string[]

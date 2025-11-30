@@ -10,12 +10,15 @@ import { SocialContentEmbed } from '@/features/sessions/tools/social-content-emb
 import { SocialPostEmbed } from '@/features/sessions/tools/social-post-embed'
 import { ToolFallback } from '@/features/sessions/tools/tool-fallback'
 import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
+import { VerdelisPlantSeedEmbed } from '@/features/sessions/tools/verdelis-plant-seed-embed'
+import { VerdelisSeedEmbed } from '@/features/sessions/tools/verdelis-seed-embed'
 import { WebSearchCitations } from '@/features/sessions/tools/web-search-citations'
 import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
 import React, { useMemo } from 'react'
 
 export type TaskResultToolProps = {
   toolCall: ToolCall
+  messageId?: string
   onCancel?: () => void
   /** If provided, clicking a child session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
@@ -39,7 +42,8 @@ const SOCIAL_TOOLS = {
   SESSION_POST_TOOLS: {
     session_post: {},
     abraham_publish: {},
-    verdelis_story: {},
+    verdelis_storyboard: {},
+    verdelis_draft_storyboard: {},
     abraham_daily: {},
     media_editor: {},
     post_to_chatroom: {},
@@ -53,6 +57,16 @@ const SOCIAL_TOOLS = {
   // Seed tools - use SeedEmbed
   SEED_TOOLS: {
     abraham_seed: {},
+  },
+
+  // Verdelis seed tools - use VerdelisSeedEmbed
+  VERDELIS_SEED_TOOLS: {
+    verdelis_seed: {},
+  },
+
+  // Verdelis plant seed tools - use VerdelisPlantSeedEmbed (session + seed preview)
+  VERDELIS_PLANT_SEED_TOOLS: {
+    verdelis_plant_seed: {},
   },
 
   // Collection tools - use CollectionAddedEmbed
@@ -104,6 +118,7 @@ const SOCIAL_TOOLS = {
 
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   toolCall,
+  messageId,
   onCancel,
   onSessionClick,
 }) => {
@@ -122,6 +137,14 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     ]
   const seedToolConfig =
     SOCIAL_TOOLS.SEED_TOOLS[tool as keyof typeof SOCIAL_TOOLS.SEED_TOOLS]
+  const verdelisSeedToolConfig =
+    SOCIAL_TOOLS.VERDELIS_SEED_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.VERDELIS_SEED_TOOLS
+    ]
+  const verdelisPlantSeedToolConfig =
+    SOCIAL_TOOLS.VERDELIS_PLANT_SEED_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.VERDELIS_PLANT_SEED_TOOLS
+    ]
   const contentToolConfig =
     SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
   const collectionToolConfig =
@@ -138,6 +161,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   const isSessionPost = !!sessionPostToolConfig
   const isCovenantTool = !!covenantToolConfig
   const isSeedTool = !!seedToolConfig
+  const isVerdelisSeedTool = !!verdelisSeedToolConfig
+  const isVerdelisPlantSeedTool = !!verdelisPlantSeedToolConfig
   const isSocialContent = !!contentToolConfig
   const isCollectionTool = !!collectionToolConfig
   const isWebSearchTool = !!webSearchToolConfig
@@ -213,7 +238,38 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
         ) : isSeedTool ? (
           // Handle seed results (abraham_seed)
           <div className="mb-2 relative group">
-            <SeedEmbed results={toolResults || []} />
+            <SeedEmbed
+              results={toolResults || []}
+              messageId={messageId}
+              toolCallId={toolCall.id}
+              existingReactions={toolCall.reactions}
+            />
+          </div>
+        ) : isVerdelisSeedTool && toolCall.status === 'completed' ? (
+          // Handle verdelis seed results (verdelis_seed) - only when completed
+          <div className="mb-2 relative group">
+            <VerdelisSeedEmbed
+              results={toolResults || []}
+              toolName={tool}
+              toolArgs={toolCall.args}
+            />
+          </div>
+        ) : isVerdelisPlantSeedTool ? (
+          // Handle verdelis plant seed results (verdelis_plant_seed) - session + seed preview
+          <div className="mb-2 relative group">
+            <VerdelisPlantSeedEmbed
+              results={toolResults || []}
+              childSessionId={toolCall.child_session}
+              toolStatus={toolCall.status}
+              onCancel={onCancel}
+              toolName={tool}
+              toolArgs={toolCall.args}
+              error={toolCall.error}
+              onSessionClick={onSessionClick}
+              messageId={messageId}
+              toolCallId={toolCall.id}
+              existingReactions={toolCall.reactions}
+            />
           </div>
         ) : isCollectionTool ? (
           // Handle collection tool results
@@ -252,6 +308,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
       {/* Show ToolFallback only when there are no displayable results */}
       {!hasDisplayableResults &&
         !(isWebSearchTool && toolCall.status === 'completed') &&
+        !(isVerdelisSeedTool && toolCall.status === 'completed') &&
+        !isVerdelisPlantSeedTool &&
         !isSessionPost &&
         !toolCall.child_session && (
           <ToolFallback

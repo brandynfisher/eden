@@ -155,6 +155,9 @@ export const createCursorPaginationRoute = (
   if (query.collection) {
     filters.push({ collection: String(query.collection) })
   }
+  if (query.artifact) {
+    filters.push({ artifact: String(query.artifact) })
+  }
   if (query.character) {
     filters.push({ character: String(query.character) })
   }

@@ -136,6 +136,14 @@ export const listArtifacts = async (
         artifact.user.userImage,
       )
     }
+    if (artifact.agents) {
+      artifact.agents = artifact.agents.map((agent: any) => {
+        if (agent?.userImage) {
+          agent.userImage = forceCloudfrontUrl(server, agent.userImage)
+        }
+        return agent
+      })
+    }
     return artifact
   })
 
@@ -145,6 +153,7 @@ export const listArtifacts = async (
     limit: result.limit,
     pages: result.pages,
     page: result.page,
+    pagingCounter: result.pagingCounter,
     hasPrevPage: result.hasPrevPage,
     hasNextPage: result.hasNextPage,
     prevPage: result.prevPage,
@@ -216,6 +225,14 @@ export const getArtifact = async (
       server,
       artifactObj.user.userImage,
     )
+  }
+  if (artifactObj.agents) {
+    artifactObj.agents = artifactObj.agents.map((agent: any) => {
+      if (agent?.userImage) {
+        agent.userImage = forceCloudfrontUrl(server, agent.userImage)
+      }
+      return agent
+    })
   }
 
   return reply.status(200).send({ artifact: artifactObj })

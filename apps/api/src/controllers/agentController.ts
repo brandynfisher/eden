@@ -225,8 +225,19 @@ export const getAgent = async (
   }
 
   const currentUserId = request.user ? request.user.userId : undefined
-  const isOwnAgent =
+  const isNativeOwner =
     currentUserId && agent.owner.toString() === currentUserId.toString()
+
+  // Check if user has co-owner permissions
+  const coOwnerPermission = currentUserId
+    ? await AgentPermission.findOne({
+        agent: agent._id,
+        user: currentUserId,
+        level: AgentPermissionLevel.Owner,
+      })
+    : null
+
+  const hasOwnerAccess = isNativeOwner || !!coOwnerPermission
 
   const agentRepository = new AgentRepository(Agent)
 
@@ -235,7 +246,7 @@ export const getAgent = async (
       path: 'owner',
       select: '_id userId username userImage',
     }),
-    isOwnAgent && agent.deployments && agent.deployments.length > 0
+    hasOwnerAccess && agent.deployments && agent.deployments.length > 0
       ? agentRepository.model.populate(agent, {
           path: 'deployments',
           select: '_id platform',
@@ -263,8 +274,8 @@ export const getAgent = async (
     agent.isLiked = !!userLike
   }
 
-  // Get permissions if user is owner
-  if (isOwnAgent) {
+  // Get permissions if user has owner access
+  if (hasOwnerAccess) {
     const permissions = await AgentPermission.find({
       agent: agent._id,
     }).populate('user', '_id userId username userImage')
@@ -787,9 +798,17 @@ export const getAgentCreations = async (
           message: 'Authentication required to view private agent creations',
         })
       }
-      const isOwner =
+      const isNativeOwner =
         agent.owner && agent.owner.toString() === authUserId.toString()
-      if (!isOwner) {
+
+      // Check if user has co-owner permissions
+      const coOwnerPermission = await AgentPermission.findOne({
+        agent: agent._id,
+        user: authUserId,
+        level: AgentPermissionLevel.Owner,
+      })
+
+      if (!isNativeOwner && !coOwnerPermission) {
         return reply.status(403).send({
           message:
             "Forbidden: you do not have access to this agent's private creations",

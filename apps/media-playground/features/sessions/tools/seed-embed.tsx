@@ -1,14 +1,70 @@
 'use client'
 
-import { TaskV2Result } from '@edenlabs/eden-sdk'
-import { ExternalLink } from 'lucide-react'
-import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { TaskV2Result, ToolCallReaction } from '@edenlabs/eden-sdk'
+import axios from 'axios'
+import { ExternalLink, Loader2, SendIcon } from 'lucide-react'
+import React, { useState } from 'react'
+import { toast } from 'sonner'
 
 export type SeedEmbedProps = {
   results: TaskV2Result[]
+  messageId?: string
+  toolCallId?: string
+  existingReactions?: ToolCallReaction[]
 }
 
-export const SeedEmbed: React.FC<SeedEmbedProps> = ({ results }) => {
+export const SeedEmbed: React.FC<SeedEmbedProps> = ({
+  results,
+  messageId,
+  toolCallId,
+  existingReactions,
+}) => {
+  const [reactionText, setReactionText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [reactions, setReactions] = useState<ToolCallReaction[]>(
+    Array.isArray(existingReactions) ? existingReactions : [],
+  )
+
+  const handleSubmitReaction = async () => {
+    if (!messageId || !toolCallId) {
+      toast.error('Cannot submit reaction', {
+        description: 'Missing message or tool call information',
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await axios.post('/api/sessions/tool-react', {
+        message_id: messageId,
+        tool_call_id: toolCallId,
+        reaction: reactionText,
+      })
+
+      if (response.data.success) {
+        // Update local reactions state
+        const newReaction: ToolCallReaction = {
+          user_id: 'current_user', // Will be replaced by actual user from API response
+          reaction: reactionText,
+          createdAt: new Date(),
+        }
+        setReactions(prev => {
+          // Replace existing reaction from this user or add new one
+          const filtered = prev.filter(r => r.user_id !== newReaction.user_id)
+          return [...filtered, newReaction]
+        })
+        setReactionText('')
+        toast.success('Reaction submitted')
+      }
+    } catch (error) {
+      toast.error('Failed to submit reaction')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   // Handle case where results might not have the expected structure
   if (!results || !Array.isArray(results)) {
     return (
@@ -84,6 +140,50 @@ export const SeedEmbed: React.FC<SeedEmbedProps> = ({ results }) => {
           )}
         </div>
       ))}
+
+      {/* Display existing reactions */}
+      {reactions.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {reactions.map((reaction, idx) => (
+            <div
+              key={idx}
+              className="px-3 py-2 bg-muted/50 rounded-md text-sm text-muted-foreground italic"
+            >
+              {reaction.reaction || '(empty reaction)'}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reaction input */}
+      {messageId && toolCallId && (
+        <div className="mt-3 space-y-2">
+          <Textarea
+            placeholder="Add a reaction or note about this seed..."
+            value={reactionText}
+            onChange={e => setReactionText(e.target.value)}
+            className="min-h-[60px] text-sm resize-none"
+            disabled={isSubmitting}
+          />
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSubmitReaction}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <SendIcon className="h-4 w-4 mr-1" />
+                  Submit
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

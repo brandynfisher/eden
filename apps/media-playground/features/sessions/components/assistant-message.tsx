@@ -201,6 +201,7 @@ export const AssistantMessage = ({
                   <TaskResultTool
                     key={toolCall.id}
                     toolCall={optimisticToolCall}
+                    messageId={message._id}
                     onSessionClick={onSessionClick}
                     onCancel={async () => {
                       setOptimisticallyCancelled(prev =>
@@ -401,6 +402,7 @@ export const AssistantMessage = ({
                     <TaskResultTool
                       key={toolCall.id}
                       toolCall={optimisticToolCall}
+                      messageId={message._id}
                       onSessionClick={onSessionClick}
                       onCancel={async () => {
                         setOptimisticallyCancelled(prev =>
@@ -598,6 +600,7 @@ export const AssistantMessage = ({
               <TaskResultTool
                 key={toolCall.id}
                 toolCall={optimisticToolCall}
+                messageId={message._id}
                 onSessionClick={onSessionClick}
                 onCancel={async () => {
                   setOptimisticallyCancelled(prev =>

@@ -177,6 +177,11 @@ const CreationCard = ({
           disabled={!isSignedIn}
         />
       </div>
+      {creation.artifactCaption && (
+        <p className="text-sm text-muted-foreground mt-2 px-1 line-clamp-3">
+          {creation.artifactCaption}
+        </p>
+      )}
     </Card>
   )
 }

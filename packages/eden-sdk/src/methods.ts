@@ -104,6 +104,20 @@ import {
   AgentsUpdateDeploymentResponse,
   AgentsUpdateTriggerArguments,
   AgentsUpdateTriggerResponse,
+  ArtifactsV2AddCreationArguments,
+  ArtifactsV2AddCreationResponse,
+  ArtifactsV2CreateArguments,
+  ArtifactsV2CreateResponse,
+  ArtifactsV2DeleteArguments,
+  ArtifactsV2DeleteResponse,
+  ArtifactsV2GetArguments,
+  ArtifactsV2GetResponse,
+  ArtifactsV2ListArguments,
+  ArtifactsV2ListResponse,
+  ArtifactsV2RemoveCreationArguments,
+  ArtifactsV2RemoveCreationResponse,
+  ArtifactsV2UpdateArguments,
+  ArtifactsV2UpdateResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -190,6 +204,8 @@ import {
   SessionsV2ShareGetResponse,
   SessionsV2ShareListArguments,
   SessionsV2ShareListResponse,
+  SessionsV2ToolCallReactArguments,
+  SessionsV2ToolCallReactResponse,
   SessionsV2UpdatePermissionsArguments,
   SessionsV2UpdatePermissionsResponse,
   TasksV2CancelArguments,
@@ -206,6 +222,10 @@ import {
   ToolsListResponseV2,
   UserConceptsGetArguments,
   UserConceptsListResponse,
+  VerdelisSeedsV2GetArguments,
+  VerdelisSeedsV2GetResponse,
+  VerdelisSeedsV2ListArguments,
+  VerdelisSeedsV2ListResponse,
   agentsCreateTriggerRequestConfig,
   agentsDeleteDeploymentRequestConfig,
   agentsDeleteTriggerRequestConfig,
@@ -221,6 +241,13 @@ import {
   agentsUpdateDeploymentRequestConfig,
   agentsUpdatePermissionsRequestConfig,
   agentsUpdateTriggerRequestConfig,
+  artifactsV2AddCreationRequestConfig,
+  artifactsV2CreateRequestConfig,
+  artifactsV2DeleteRequestConfig,
+  artifactsV2GetRequestConfig,
+  artifactsV2ListRequestConfig,
+  artifactsV2RemoveCreationRequestConfig,
+  artifactsV2UpdateRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -264,6 +291,7 @@ import {
   sessionsShareDeleteRequestConfigV2,
   sessionsShareGetRequestConfigV2,
   sessionsShareListRequestConfigV2,
+  sessionsToolCallReactRequestConfigV2,
   sessionsUpdatePermissionsRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
@@ -273,6 +301,8 @@ import {
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
   userConceptsListRequestConfig,
+  verdelisSeedsV2GetRequestConfig,
+  verdelisSeedsV2ListRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -385,6 +415,50 @@ export abstract class Methods {
       CollectionsV2DeleteArguments,
       CollectionsV2DeleteResponse
     >(this, collectionsV2DeleteRequestConfig),
+  }
+
+  public readonly artifacts = {
+    list: bindApiCall<ArtifactsV2ListArguments, ArtifactsV2ListResponse>(
+      this,
+      artifactsV2ListRequestConfig,
+    ),
+    get: bindApiCall<ArtifactsV2GetArguments, ArtifactsV2GetResponse>(
+      this,
+      artifactsV2GetRequestConfig,
+    ),
+    create: bindApiCall<ArtifactsV2CreateArguments, ArtifactsV2CreateResponse>(
+      this,
+      artifactsV2CreateRequestConfig,
+    ),
+    update: bindApiCall<ArtifactsV2UpdateArguments, ArtifactsV2UpdateResponse>(
+      this,
+      artifactsV2UpdateRequestConfig,
+    ),
+    delete: bindApiCall<ArtifactsV2DeleteArguments, ArtifactsV2DeleteResponse>(
+      this,
+      artifactsV2DeleteRequestConfig,
+    ),
+    creations: {
+      add: bindApiCall<
+        ArtifactsV2AddCreationArguments,
+        ArtifactsV2AddCreationResponse
+      >(this, artifactsV2AddCreationRequestConfig),
+      remove: bindApiCall<
+        ArtifactsV2RemoveCreationArguments,
+        ArtifactsV2RemoveCreationResponse
+      >(this, artifactsV2RemoveCreationRequestConfig),
+    },
+  }
+
+  public readonly verdelisSeeds = {
+    list: bindApiCall<
+      VerdelisSeedsV2ListArguments,
+      VerdelisSeedsV2ListResponse
+    >(this, verdelisSeedsV2ListRequestConfig),
+    get: bindApiCall<VerdelisSeedsV2GetArguments, VerdelisSeedsV2GetResponse>(
+      this,
+      verdelisSeedsV2GetRequestConfig,
+    ),
   }
 
   public readonly models = {
@@ -686,6 +760,10 @@ export abstract class Methods {
         SessionsV2MessageReactArguments,
         SessionsV2MessageReactResponse
       >(this, sessionsMessageReactRequestConfigV2),
+      toolReact: bindApiCall<
+        SessionsV2ToolCallReactArguments,
+        SessionsV2ToolCallReactResponse
+      >(this, sessionsToolCallReactRequestConfigV2),
       message: bindApiCall<
         SessionsV2MessageArguments,
         SessionsV2MessageResponse

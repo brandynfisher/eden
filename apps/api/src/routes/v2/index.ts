@@ -13,6 +13,7 @@ import sessionRoutesV2 from './sessionRoutesV2'
 import taskRoutesV2 from './taskRoutesV2'
 import toolRoutesV2 from './toolRoutesV2'
 import userRoutes from './userRoutes'
+import verdelisSeedRoutesV2 from './verdelisSeedRoutesV2'
 
 export const routes = [
   authRoutesV2,
@@ -30,4 +31,5 @@ export const routes = [
   sessionRoutesV2,
   notificationRoutes,
   llmCallRoutes,
+  verdelisSeedRoutesV2,
 ]

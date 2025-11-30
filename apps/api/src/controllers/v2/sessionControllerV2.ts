@@ -23,6 +23,7 @@ import {
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
   SessionsV2RenameArguments,
+  SessionsV2ToolCallReactArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -1215,6 +1216,153 @@ export const addSessionMessageReaction = async (
   // Use markModified to ensure Mongoose knows the mixed type field was changed
   message.markModified('reactions')
   await message.save()
+
+  return reply.status(200).send({ success: true, message })
+}
+
+export const addSessionToolCallReaction = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Body: SessionsV2ToolCallReactArguments }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { message_id, tool_call_id, reaction } = request.body
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
+    })
+  }
+
+  if (!tool_call_id) {
+    return reply.status(400).send({
+      message: 'tool_call_id not provided',
+    })
+  }
+
+  const message = await Message.findOne({
+    _id: new ObjectId(message_id as string),
+  })
+
+  if (!message) {
+    return reply.status(404).send({
+      message: 'Message not found',
+    })
+  }
+
+  // Find the session to check access
+  const session = await Session.findOne({
+    _id: message.session,
+  })
+
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  // Check if user has access to the session (owner, in users list, or has permission)
+  const reactionUserIdStr = userId.toString()
+  const isSessionOwner = session.owner.toString() === reactionUserIdStr
+  const isSessionUser = session.users?.some(
+    (user: any) => user.toString() === reactionUserIdStr,
+  )
+  const hasPermission = await SessionPermission.exists({
+    session: session._id,
+    user: userId,
+  })
+
+  if (!isSessionOwner && !isSessionUser && !hasPermission) {
+    return reply.status(403).send({
+      message: 'You do not have access to this session',
+    })
+  }
+
+  // Find the tool_call in the message
+  if (!message.tool_calls || !Array.isArray(message.tool_calls)) {
+    return reply.status(404).send({
+      message: 'Message has no tool calls',
+    })
+  }
+
+  const toolCallIndex = message.tool_calls.findIndex(
+    (tc: any) => tc.id === tool_call_id,
+  )
+
+  if (toolCallIndex === -1) {
+    return reply.status(404).send({
+      message: 'Tool call not found in message',
+    })
+  }
+
+  // Initialize reactions array if it doesn't exist or isn't an array
+  if (
+    !message.tool_calls[toolCallIndex].reactions ||
+    !Array.isArray(message.tool_calls[toolCallIndex].reactions)
+  ) {
+    message.tool_calls[toolCallIndex].reactions = []
+  }
+
+  const userIdStr = userId.toString()
+  const reactionsArray = message.tool_calls[toolCallIndex].reactions as any[]
+  const existingReactionIndex = reactionsArray.findIndex(
+    (r: any) => r.user_id === userIdStr,
+  )
+
+  if (existingReactionIndex !== -1) {
+    // Update existing reaction
+    reactionsArray[existingReactionIndex] = {
+      user_id: userIdStr,
+      reaction: reaction,
+      createdAt: new Date(),
+    }
+  } else {
+    // Add new reaction
+    reactionsArray.push({
+      user_id: userIdStr,
+      reaction: reaction,
+      createdAt: new Date(),
+    })
+  }
+  message.tool_calls[toolCallIndex].reactions = reactionsArray
+
+  // Use markModified to ensure Mongoose knows the mixed type field was changed
+  message.markModified('tool_calls')
+  await message.save()
+
+  // Call compute API to process the reaction
+  try {
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/reaction`,
+      {
+        message_id: message_id,
+        tool_call_id: tool_call_id,
+        reaction: reaction,
+        user_id: userIdStr,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+  } catch (error) {
+    // Log error but don't fail the request - the reaction was saved locally
+    console.error('Failed to send reaction to compute API:', error)
+  }
 
   return reply.status(200).send({ success: true, message })
 }
