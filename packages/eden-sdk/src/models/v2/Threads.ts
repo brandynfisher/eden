@@ -253,6 +253,12 @@ export type ThreadUserMessage = BaseThreadMessage & {
   attachments?: UserMessageAttachments[]
 }
 
+export type ToolCallReaction = {
+  user_id: string
+  reaction: string
+  createdAt?: Date
+}
+
 export type ToolCall = {
   id: string
   name: string
@@ -263,6 +269,7 @@ export type ToolCall = {
   result?: TaskV2Result[]
   task?: string
   child_session?: string
+  reactions?: ToolCallReaction[]
 }
 
 export type ThreadMessageReaction = {

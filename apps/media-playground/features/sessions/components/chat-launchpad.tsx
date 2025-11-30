@@ -591,7 +591,7 @@ const ChatLaunchpad = () => {
                         <div className="add-agent-icon">
                           <Plus className="w-4 h-4" />
                         </div>
-                        <p className="add-agent-text">Add</p>
+                        <p className="add-agent-text">Add agents</p>
                       </button>
                     }
                     selectedAgents={selectedAgents}
@@ -1185,8 +1185,8 @@ const ChatLaunchpad = () => {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 0.75rem;
+            gap: 0.375rem;
+            padding: 0.5rem 0.75rem;
             width: 100%;
             min-height: 0;
             background: transparent;
@@ -1275,8 +1275,8 @@ const ChatLaunchpad = () => {
             font-size: 0.875rem;
           }
           .agents-collection[data-agent-count='1'] .add-agent-card {
-            padding: 1.5rem 1.25rem;
-            gap: 0.625rem;
+            padding: 0.75rem 1rem;
+            gap: 0.5rem;
           }
           .agents-collection[data-agent-count='1'] .add-agent-icon {
             width: 2.75rem;
@@ -1463,12 +1463,12 @@ const ChatLaunchpad = () => {
               gap: 1rem;
             }
             .add-agent-card {
-              padding: 2rem 1.25rem;
-              gap: 0.875rem;
+              padding: 0.75rem 1rem;
+              gap: 0.5rem;
             }
             .add-agent-icon {
-              width: 3rem;
-              height: 3rem;
+              width: 2.5rem;
+              height: 2.5rem;
             }
             .add-agent-text {
               font-size: 0.9375rem;
@@ -1505,15 +1505,15 @@ const ChatLaunchpad = () => {
               animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             }
             .agents-collection[data-agent-count='1'] .add-agent-card {
-              padding: 3rem 2.5rem;
-              gap: 1.25rem;
+              padding: 1rem 1.5rem;
+              gap: 0.625rem;
             }
             .agents-collection[data-agent-count='1'] .add-agent-icon {
-              width: 4rem;
-              height: 4rem;
+              width: 3rem;
+              height: 3rem;
             }
             .agents-collection[data-agent-count='1'] .add-agent-text {
-              font-size: 1.375rem;
+              font-size: 1rem;
             }
 
             /* Desktop: 2 agents - big tall cards */

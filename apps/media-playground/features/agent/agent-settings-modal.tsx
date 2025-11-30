@@ -3,10 +3,12 @@
 import {
   ConceptsTab,
   IntegrationsTab,
+  type IntegrationsTabHandle,
   PermissionsTab,
   PersonaTab,
   ProfileTab,
   RealtimeTab,
+  type RealtimeTabHandle,
   ToolsTab,
 } from '../sessions/views/AgentEditView'
 import AgentDashboardView from '../sessions/views/agent-dashboard-view'
@@ -14,7 +16,14 @@ import AgentMemoryView from '../sessions/views/agent-memory-view'
 import AgentTasksView from '../sessions/views/agent-tasks-view'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -35,6 +44,7 @@ import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
+  AlertTriangle,
   BarChart3Icon,
   BrainIcon,
   ClockIcon,
@@ -49,7 +59,7 @@ import {
   WrenchIcon,
 } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -84,10 +94,8 @@ const getTabDescription = (tabKey: string, agentName: string) => {
       return `Review and edit ${agentName}'s memories.`
     case 'tasks':
       return `Schedule automated tasks for ${agentName}.`
-    case 'permissions':
-      return `Control who can view, edit, or manage ${agentName}.`
     case 'manage':
-      return `Manage ${agentName}'s data.`
+      return `Manage permissions and settings for ${agentName}.`
     default:
       return undefined
   }
@@ -140,6 +148,23 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   const effectiveInitialTab = memoriesOnly ? 'memories' : initialTab
   const [activeTab, setActiveTab] = useState(effectiveInitialTab)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Refs for tabs with their own save logic
+  const realtimeTabRef = useRef<RealtimeTabHandle>(null)
+  const integrationsTabRef = useRef<IntegrationsTabHandle>(null)
+
+  // Track unsaved changes from different tabs
+  const [realtimeHasUnsavedChanges, setRealtimeHasUnsavedChanges] =
+    useState(false)
+  const [integrationsHasUnsavedChanges, setIntegrationsHasUnsavedChanges] =
+    useState(false)
+
+  // Track saving state for special tabs
+  const [isSpecialTabSaving, setIsSpecialTabSaving] = useState(false)
+
+  // Confirmation dialog for unsaved changes
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
+    useState(false)
 
   // Reset active tab when modal opens
   useEffect(() => {
@@ -234,6 +259,8 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         ...data,
         image: imageToSend,
       })
+      // Reset form with current values to clear dirty state
+      form.reset(data)
       toast.success('Agent updated successfully', {
         description: `"${data.name}" has been updated successfully`,
         richColors: true,
@@ -347,15 +374,59 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           icon: MicIcon,
         })
       }
-      tabs.push({ key: 'manage', label: 'Manage', icon: Trash2Icon })
-    }
-
-    if (isOriginalOwner) {
-      tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
+      // Manage tab - includes permissions for original owner and danger zone
+      tabs.push({ key: 'manage', label: 'Manage', icon: KeyIcon })
     }
 
     return tabs
   }
+
+  // Compute overall unsaved changes state (moved before early return for hooks)
+  const formHasUnsavedChanges = form.formState.isDirty
+  const hasUnsavedChanges =
+    (activeTab === 'realtime' && realtimeHasUnsavedChanges) ||
+    (activeTab === 'integrations' && integrationsHasUnsavedChanges) ||
+    (['profile', 'persona', 'tools'].includes(activeTab) &&
+      formHasUnsavedChanges)
+
+  // Handler for saving based on current tab
+  const handleSaveAction = useCallback(async () => {
+    if (activeTab === 'realtime' && realtimeTabRef.current) {
+      setIsSpecialTabSaving(true)
+      try {
+        await realtimeTabRef.current.save()
+      } finally {
+        setIsSpecialTabSaving(false)
+      }
+    } else if (activeTab === 'integrations' && integrationsTabRef.current) {
+      setIsSpecialTabSaving(true)
+      try {
+        await integrationsTabRef.current.save()
+      } finally {
+        setIsSpecialTabSaving(false)
+      }
+    } else {
+      await form.handleSubmit(handleSubmit)()
+    }
+  }, [activeTab, form, handleSubmit])
+
+  // Handler for closing with unsaved changes check
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen && hasUnsavedChanges) {
+        setShowUnsavedChangesDialog(true)
+        return
+      }
+      onOpenChange(newOpen)
+    },
+    [hasUnsavedChanges, onOpenChange],
+  )
+
+  // Handler for confirming close with unsaved changes
+  const handleConfirmClose = useCallback(() => {
+    setShowUnsavedChangesDialog(false)
+    onOpenChange(false)
+  }, [onOpenChange])
 
   const availableTabs = getAvailableTabs()
   const currentTab = availableTabs.find(tab => tab.key === activeTab)
@@ -376,258 +447,318 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
   // Determine if save button should show for current tab
   const showSaveButton =
-    activeTab !== 'integrations' &&
-    activeTab !== 'realtime' &&
     activeTab !== 'tasks' &&
     activeTab !== 'memories' &&
-    activeTab !== 'permissions' &&
     activeTab !== 'concepts' &&
     activeTab !== 'manage' &&
     activeTab !== 'dashboard'
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden">
-        <DialogTitle className="sr-only">Agent Settings</DialogTitle>
-        <div className="flex flex-col md:flex-row h-full overflow-hidden">
-          {/* Desktop Sidebar - Hidden on mobile */}
-          <div className="hidden md:flex w-56 border-r bg-muted/30 flex-col">
-            <div className="p-4 border-b">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border border-border/40">
-                  <AvatarImage
-                    src={
-                      agent.userImage && agent.userImage.trim()
-                        ? getCloudfrontOriginalUrl(agent.userImage)
-                        : undefined
-                    }
-                    alt={agent.name}
-                  />
-                  <AvatarFallback className="text-sm">
-                    {agent.name?.charAt(0).toUpperCase() ?? 'A'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h2 className="font-semibold text-lg leading-tight">
-                    Settings
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {agent.name}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <ScrollArea className="flex-1">
-              <div className="p-2 space-y-1">
-                {availableTabs.map(tab => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={cn(
-                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left',
-                        activeTab === tab.key
-                          ? 'bg-background text-foreground font-medium shadow-sm'
-                          : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
-                      )}
-                    >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      {tab.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </ScrollArea>
-          </div>
+  // Determine if save is in progress
+  const isSaving =
+    form.formState.isSubmitting ||
+    isSpecialTabSaving ||
+    (activeTab === 'realtime' && realtimeTabRef.current?.isSaving) ||
+    (activeTab === 'integrations' && integrationsTabRef.current?.isSaving)
 
-          {/* Mobile Header with Dropdown Tabs */}
-          <div className="md:hidden border-b bg-background">
-            <div className="p-4 border-b">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border border-border/40">
-                  <AvatarImage
-                    src={
-                      agent.userImage && agent.userImage.trim()
-                        ? getCloudfrontOriginalUrl(agent.userImage)
-                        : undefined
-                    }
-                    alt={agent.name}
-                  />
-                  <AvatarFallback className="text-sm">
-                    {agent.name?.charAt(0).toUpperCase() ?? 'A'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h2 className="font-semibold text-base leading-tight">
-                    Settings
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {agent.name}
-                  </p>
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden">
+          <DialogTitle className="sr-only">Agent Settings</DialogTitle>
+          <div className="flex flex-col md:flex-row h-full overflow-hidden">
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <div className="hidden md:flex w-56 border-r bg-muted/30 flex-col">
+              <div className="p-4 border-b">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border border-border/40">
+                    <AvatarImage
+                      src={
+                        agent.userImage && agent.userImage.trim()
+                          ? getCloudfrontOriginalUrl(agent.userImage)
+                          : undefined
+                      }
+                      alt={agent.name}
+                    />
+                    <AvatarFallback className="text-sm">
+                      {agent.name?.charAt(0).toUpperCase() ?? 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="font-semibold text-lg leading-tight">
+                      Settings
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {agent.name}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="w-full px-4 py-3">
-              <Select value={activeTab} onValueChange={setActiveTab}>
-                <SelectTrigger
-                  className="w-full"
-                  aria-label="Select settings tab"
-                >
-                  <SelectValue placeholder="Select tab" />
-                </SelectTrigger>
-                <SelectContent>
+              <ScrollArea className="flex-1">
+                <div className="p-2 space-y-1">
                   {availableTabs.map(tab => {
                     const Icon = tab.icon
                     return (
-                      <SelectItem key={tab.key} value={tab.key}>
-                        <span className="inline-flex items-center gap-2">
-                          <Icon className="h-3.5 w-3.5" />
-                          {tab.label}
-                        </span>
-                      </SelectItem>
+                      <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left',
+                          activeTab === tab.key
+                            ? 'bg-background text-foreground font-medium shadow-sm'
+                            : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
+                        )}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        {tab.label}
+                      </button>
                     )
                   })}
-                </SelectContent>
-              </Select>
+                </div>
+              </ScrollArea>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <ScrollArea className="flex-1">
-              <div className="p-6">
-                {currentTab && (
-                  <div className="mb-8 space-y-2">
-                    <h1 className="text-3xl font-semibold">
-                      {currentTab.label}
-                    </h1>
-                    {headerDescription && (
-                      <p className="text-sm text-muted-foreground max-w-2xl">
-                        {headerDescription}
-                      </p>
+            {/* Mobile Header with Dropdown Tabs */}
+            <div className="md:hidden border-b bg-background">
+              <div className="p-4 border-b">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border border-border/40">
+                    <AvatarImage
+                      src={
+                        agent.userImage && agent.userImage.trim()
+                          ? getCloudfrontOriginalUrl(agent.userImage)
+                          : undefined
+                      }
+                      alt={agent.name}
+                    />
+                    <AvatarFallback className="text-sm">
+                      {agent.name?.charAt(0).toUpperCase() ?? 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="font-semibold text-base leading-tight">
+                      Settings
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {agent.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full px-4 py-3">
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger
+                    className="w-full"
+                    aria-label="Select settings tab"
+                  >
+                    <SelectValue placeholder="Select tab" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTabs.map(tab => {
+                      const Icon = tab.icon
+                      return (
+                        <SelectItem key={tab.key} value={tab.key}>
+                          <span className="inline-flex items-center gap-2">
+                            <Icon className="h-3.5 w-3.5" />
+                            {tab.label}
+                          </span>
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <ScrollArea className="flex-1">
+                <div className="p-6">
+                  {currentTab && (
+                    <div className="mb-8 space-y-2">
+                      <h1 className="text-3xl font-semibold">
+                        {currentTab.label}
+                      </h1>
+                      {headerDescription && (
+                        <p className="text-sm text-muted-foreground max-w-2xl">
+                          {headerDescription}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(handleSubmit)}
+                      className="space-y-8"
+                    >
+                      {activeTab === 'profile' && (
+                        <ProfileTab form={form} agent={agent} />
+                      )}
+
+                      {activeTab === 'persona' && hasEditAccess && (
+                        <PersonaTab form={form} />
+                      )}
+
+                      {activeTab === 'tools' && hasEditAccess && (
+                        <ToolsTab
+                          form={form}
+                          hasDeployments={
+                            deploymentsQuery.deployments &&
+                            deploymentsQuery.deployments.length > 0
+                          }
+                          user={user}
+                        />
+                      )}
+
+                      {activeTab === 'concepts' && hasEditAccess && (
+                        <ConceptsTab form={form} agent={agent} />
+                      )}
+
+                      {activeTab === 'integrations' && hasOwnerAccess && (
+                        <IntegrationsTab
+                          ref={integrationsTabRef}
+                          agent={agent}
+                          deployments={deploymentsQuery.deployments}
+                          isLoading={deploymentsQuery.isPending}
+                          isError={deploymentsQuery.isError}
+                          onUnsavedChangesChange={
+                            setIntegrationsHasUnsavedChanges
+                          }
+                        />
+                      )}
+
+                      {activeTab === 'realtime' &&
+                        hasOwnerAccess &&
+                        user?.featureFlags?.includes(FeatureFlag.Preview) && (
+                          <RealtimeTab
+                            ref={realtimeTabRef}
+                            agent={agent}
+                            onUnsavedChangesChange={
+                              setRealtimeHasUnsavedChanges
+                            }
+                          />
+                        )}
+
+                      {activeTab === 'memories' &&
+                        (hasEditAccess || memoriesOnly) && (
+                          <AgentMemoryView agent={agent} variant="panel" />
+                        )}
+
+                      {activeTab === 'tasks' && hasEditAccess && (
+                        <AgentTasksView agent={agent} variant="panel" />
+                      )}
+
+                      {activeTab === 'dashboard' && hasEditAccess && (
+                        <AgentDashboardView agent={agent} variant="panel" />
+                      )}
+
+                      {activeTab === 'manage' && hasOwnerAccess && (
+                        <div className="space-y-8">
+                          {/* Permissions Section - only for original owner */}
+                          {isOriginalOwner && <PermissionsTab agent={agent} />}
+
+                          {/* Danger Zone */}
+                          <div className="space-y-4">
+                            <h2 className="text-lg font-medium text-destructive">
+                              Danger Zone
+                            </h2>
+                            <div className="rounded-xl border border-destructive/60 bg-card p-6">
+                              <p className="text-base font-semibold text-destructive">
+                                Permanently delete this agent
+                              </p>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                This will remove the agent, its deployments, and
+                                any associated data. This action cannot be
+                                undone.
+                              </p>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={handleDeleteAgent}
+                                disabled={isDeleting}
+                                className="mt-4 w-full md:w-auto"
+                              >
+                                {isDeleting ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Deleting Agent...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Trash2Icon className="w-4 h-4 mr-2" />
+                                    Delete Agent Permanently
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </form>
+                  </Form>
+                </div>
+              </ScrollArea>
+
+              {/* Action Footer */}
+              {showSaveButton && (
+                <div className="border-t p-4 bg-background flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  {/* Unsaved changes warning */}
+                  <div className="flex items-center gap-2">
+                    {hasUnsavedChanges && (
+                      <>
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="text-sm text-amber-500">
+                          You have unsaved changes
+                        </span>
+                      </>
                     )}
                   </div>
-                )}
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                    className="space-y-8"
+                  <Button
+                    onClick={handleSaveAction}
+                    disabled={isSaving || isDeleting}
+                    className="w-full md:w-auto"
                   >
-                    {activeTab === 'profile' && (
-                      <ProfileTab form={form} agent={agent} />
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
                     )}
-
-                    {activeTab === 'persona' && hasEditAccess && (
-                      <PersonaTab form={form} />
-                    )}
-
-                    {activeTab === 'tools' && hasEditAccess && (
-                      <ToolsTab
-                        form={form}
-                        hasDeployments={
-                          deploymentsQuery.deployments &&
-                          deploymentsQuery.deployments.length > 0
-                        }
-                        user={user}
-                      />
-                    )}
-
-                    {activeTab === 'concepts' && hasEditAccess && (
-                      <ConceptsTab form={form} agent={agent} />
-                    )}
-
-                    {activeTab === 'integrations' && hasOwnerAccess && (
-                      <IntegrationsTab
-                        agent={agent}
-                        deployments={deploymentsQuery.deployments}
-                        isLoading={deploymentsQuery.isPending}
-                        isError={deploymentsQuery.isError}
-                      />
-                    )}
-
-                    {activeTab === 'realtime' &&
-                      hasOwnerAccess &&
-                      user?.featureFlags?.includes(FeatureFlag.Preview) && (
-                        <RealtimeTab agent={agent} />
-                      )}
-
-                    {activeTab === 'memories' &&
-                      (hasEditAccess || memoriesOnly) && (
-                        <AgentMemoryView agent={agent} variant="panel" />
-                      )}
-
-                    {activeTab === 'tasks' && hasEditAccess && (
-                      <AgentTasksView agent={agent} variant="panel" />
-                    )}
-
-                    {activeTab === 'permissions' && isOriginalOwner && (
-                      <PermissionsTab agent={agent} />
-                    )}
-
-                    {activeTab === 'dashboard' && hasEditAccess && (
-                      <AgentDashboardView agent={agent} variant="panel" />
-                    )}
-
-                    {activeTab === 'manage' && hasOwnerAccess && (
-                      <div className="space-y-4">
-                        <div className="rounded-xl border border-destructive/60 bg-card p-6">
-                          <p className="text-base font-semibold text-destructive">
-                            Permanently delete this agent
-                          </p>
-                          <p className="text-sm text-muted-foreground mt-2">
-                            This will remove the agent, its deployments, and any
-                            associated data. This action cannot be undone.
-                          </p>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={handleDeleteAgent}
-                            disabled={isDeleting}
-                            className="mt-4 w-full md:w-auto"
-                          >
-                            {isDeleting ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Deleting Agent...
-                              </>
-                            ) : (
-                              <>
-                                <Trash2Icon className="w-4 h-4 mr-2" />
-                                Delete Agent Permanently
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </form>
-                </Form>
-              </div>
-            </ScrollArea>
-
-            {/* Action Footer */}
-            {showSaveButton && (
-              <div className="border-t p-4 bg-background flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
-                <Button
-                  onClick={form.handleSubmit(handleSubmit)}
-                  disabled={form.formState.isSubmitting || isDeleting}
-                  className="w-full md:w-auto"
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Updating Agent...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </Button>
-              </div>
-            )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unsaved Changes Confirmation Dialog */}
+      <Dialog
+        open={showUnsavedChangesDialog}
+        onOpenChange={setShowUnsavedChangesDialog}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes to your agent&apos;s settings. Are you
+              sure you want to close without saving?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowUnsavedChangesDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmClose}>
+              Discard Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

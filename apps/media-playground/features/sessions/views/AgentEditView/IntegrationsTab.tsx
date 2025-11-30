@@ -1,7 +1,6 @@
 'use client'
 
 import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
-import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
@@ -19,12 +18,34 @@ import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'
-import { FC, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 type OwnerPaysOption = 'off' | 'deployments' | 'full'
 
-export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
+export interface DeploymentSettingsHandle {
+  save: () => Promise<void>
+  hasUnsavedChanges: boolean
+  isSaving: boolean
+}
+
+interface DeploymentSettingsInlineProps {
+  agent: Agent
+  onUnsavedChangesChange?: (hasChanges: boolean) => void
+}
+
+export const DeploymentSettingsInline = forwardRef<
+  DeploymentSettingsHandle,
+  DeploymentSettingsInlineProps
+>(({ agent, onUnsavedChangesChange }, ref) => {
   // Convert legacy boolean values to new string format
   const getInitialValue = (): OwnerPaysOption => {
     if (typeof agent.owner_pays === 'boolean') {
@@ -41,9 +62,21 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
   }
 
   const [ownerPays, setOwnerPays] = useState<OwnerPaysOption>(getInitialValue())
+  const [savedOwnerPays, setSavedOwnerPays] = useState<OwnerPaysOption>(
+    getInitialValue(),
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSave = async () => {
+  const hasUnsavedChanges = useMemo(() => {
+    return ownerPays !== savedOwnerPays
+  }, [ownerPays, savedOwnerPays])
+
+  // Notify parent of unsaved changes
+  useEffect(() => {
+    onUnsavedChangesChange?.(hasUnsavedChanges)
+  }, [hasUnsavedChanges, onUnsavedChangesChange])
+
+  const handleSave = useCallback(async () => {
     setIsSubmitting(true)
     try {
       // Send complete agent data to prevent field deletion
@@ -63,6 +96,7 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
       }
 
       await axios.patch(`/api/agents/${agent._id}`, updatePayload)
+      setSavedOwnerPays(ownerPays)
       toast.success('Integration settings updated successfully', {
         description: 'Your changes have been saved.',
         richColors: true,
@@ -77,84 +111,108 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
     } finally {
       setIsSubmitting(false)
     }
-  }
+  }, [agent, ownerPays])
+
+  // Expose imperative handle for parent to control save
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: handleSave,
+      hasUnsavedChanges,
+      isSaving: isSubmitting,
+    }),
+    [handleSave, hasUnsavedChanges, isSubmitting],
+  )
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
-        <div className="flex flex-col gap-3">
-          <label className="text-sm font-medium">Cover Usage Costs</label>
-          <div className="space-y-2">
-            <ToggleGroup
-              type="single"
-              value={ownerPays}
-              onValueChange={value =>
-                value && setOwnerPays(value as OwnerPaysOption)
-              }
-              className="flex flex-col items-stretch gap-2"
+    <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
+      <div className="flex flex-col gap-3">
+        <label className="text-sm font-medium">Cover Usage Costs</label>
+        <div className="space-y-2">
+          <ToggleGroup
+            type="single"
+            value={ownerPays}
+            onValueChange={value =>
+              value && setOwnerPays(value as OwnerPaysOption)
+            }
+            className="flex flex-col items-stretch gap-2"
+          >
+            <ToggleGroupItem
+              value="off"
+              className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
             >
-              <ToggleGroupItem
-                value="off"
-                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
-              >
-                <div className="font-medium text-sm">Off</div>
-                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
-                  Users pay for their own usage.
-                </div>
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="deployments"
-                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
-              >
-                <div className="font-medium text-sm">Deployments only</div>
-                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
-                  Agent owner covers all usage costs on social platforms and
-                  deployments only.
-                </div>
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="full"
-                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
-              >
-                <div className="font-medium text-sm">Full</div>
-                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
-                  Agent owner covers all costs, including the main Eden app.
-                </div>
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+              <div className="font-medium text-sm">Off</div>
+              <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                Users pay for their own usage.
+              </div>
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="deployments"
+              className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+            >
+              <div className="font-medium text-sm">Deployments only</div>
+              <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                Agent owner covers all usage costs on social platforms and
+                deployments only.
+              </div>
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="full"
+              className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+            >
+              <div className="font-medium text-sm">Full</div>
+              <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                Agent owner covers all costs, including the main Eden app.
+              </div>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSubmitting} type="button">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save'
-          )}
-        </Button>
       </div>
     </div>
   )
-}
+})
+
+DeploymentSettingsInline.displayName = 'DeploymentSettingsInline'
 
 interface IntegrationsTabProps {
   agent: Agent
   deployments?: Deployment[]
   isLoading?: boolean
   isError?: boolean
+  onUnsavedChangesChange?: (hasChanges: boolean) => void
 }
 
-export const IntegrationsTab: FC<IntegrationsTabProps> = ({
-  agent,
-  deployments,
-  isLoading,
-  isError,
-}) => {
+export interface IntegrationsTabHandle {
+  save: () => Promise<void>
+  hasUnsavedChanges: boolean
+  isSaving: boolean
+}
+
+export const IntegrationsTab = forwardRef<
+  IntegrationsTabHandle,
+  IntegrationsTabProps
+>(({ agent, deployments, isLoading, isError, onUnsavedChangesChange }, ref) => {
+  const settingsRef = useRef<DeploymentSettingsHandle>(null)
+
+  // Expose imperative handle for parent to control save
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: async () => {
+        if (settingsRef.current) {
+          await settingsRef.current.save()
+        }
+      },
+      get hasUnsavedChanges() {
+        return settingsRef.current?.hasUnsavedChanges ?? false
+      },
+      get isSaving() {
+        return settingsRef.current?.isSaving ?? false
+      },
+    }),
+    [],
+  )
+
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const deploymentsGate = useGatedResource(GatedResource.Deployments, {
@@ -304,8 +362,14 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <h2 className="text-lg font-medium">Integration Settings</h2>
-        <DeploymentSettingsInline agent={agent} />
+        <DeploymentSettingsInline
+          ref={settingsRef}
+          agent={agent}
+          onUnsavedChangesChange={onUnsavedChangesChange}
+        />
       </div>
     </div>
   )
-}
+})
+
+IntegrationsTab.displayName = 'IntegrationsTab'

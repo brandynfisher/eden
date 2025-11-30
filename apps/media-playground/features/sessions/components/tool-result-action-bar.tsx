@@ -189,7 +189,8 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
   const SESSION_POST_TOOLS = [
     'session_post',
     'abraham_publish',
-    'verdelis_story',
+    'verdelis_storyboard',
+    'verdelis_draft_storyboard',
     'abraham_daily',
     'media_editor',
     'post_to_chatroom',

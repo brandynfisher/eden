@@ -62,6 +62,12 @@ export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
   reaction: 'thumbs_up' | 'thumbs_down' | 'pin'
 }
 
+export interface SessionsV2ToolCallReactArguments extends WebAPICallOptions {
+  message_id: string
+  tool_call_id: string
+  reaction: string
+}
+
 export interface SessionsV2ListArguments
   extends WebAPICallOptions,
     ListQueryParams {
@@ -149,6 +155,18 @@ export const sessionsMessageReactRequestConfigV2 = (
   return {
     method: 'POST',
     url: 'v2/sessions/react',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const sessionsToolCallReactRequestConfigV2 = (
+  args: SessionsV2ToolCallReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/sessions/tool-react',
     data: {
       ...args,
     },
@@ -361,6 +379,15 @@ export type SessionsV2MessageResponse = WebAPICallResult &
   )
 
 export type SessionsV2MessageReactResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean; message?: Message }
+  )
+
+export type SessionsV2ToolCallReactResponse = WebAPICallResult &
   (
     | {
         error?: string

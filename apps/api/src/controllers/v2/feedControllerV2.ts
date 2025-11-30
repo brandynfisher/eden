@@ -4,6 +4,7 @@ import { getSimilarCreationIds } from '../../lib/similar'
 import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import { User } from '../../models/User'
+import { ArtifactV2 } from '../../models/v2/ArtifactV2'
 import {
   CollectionV2,
   CollectionV2Document,
@@ -204,6 +205,37 @@ const collectionsPreAggregatePipeline = (
   ]
 }
 
+const artifactsPreAggregatePipeline = (
+  matchStage: PipelineStage[],
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    ...matchStage,
+    // Unwind the creations array to get individual creation references
+    { $unwind: '$creations' },
+    // Lookup the actual creation documents using let/expr for proper join
+    {
+      $lookup: {
+        from: 'creations3',
+        let: { creationId: '$creations.creation' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$_id', '$$creationId'] } } },
+          ...lookupPipeline,
+        ],
+        as: 'creationDoc',
+      },
+    },
+    { $unwind: '$creationDoc' },
+    // Add the caption from the artifact's creations array to the creation document
+    {
+      $addFields: {
+        'creationDoc.artifactCaption': '$creations.caption',
+      },
+    },
+    { $replaceRoot: { newRoot: '$creationDoc' } },
+  ]
+}
+
 const tasksPreAggregatePipeline = (
   matchStage: PipelineStage[],
   lookupPipeline: PipelineStage[],
@@ -298,6 +330,7 @@ const handleArguments = async ({
   let useReactionsPreAggregate = false
   let useEmbeddingsPreAggregate = false
   let useCollectionsPreAggregate = false
+  let useArtifactsPreAggregate = false
   let useTasksPreAggregate = false
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
@@ -386,10 +419,17 @@ const handleArguments = async ({
             field === 'character' ||
             field === 'concept' ||
             field === 'collection' ||
+            field === 'artifact' ||
             field === 'agent'
           ) {
             if (field === 'collection') {
               useCollectionsPreAggregate = true
+              preAggregateFilterOptions['_id'] = new ObjectId(value)
+              return []
+            }
+
+            if (field === 'artifact') {
+              useArtifactsPreAggregate = true
               preAggregateFilterOptions['_id'] = new ObjectId(value)
               return []
             }
@@ -580,6 +620,11 @@ const handleArguments = async ({
     ? await CollectionV2.findById(collectionFilter.value)
     : undefined
 
+  const artifactFilter = filterMap?.filter(item => item.name === 'artifact')[0]
+  const artifact = artifactFilter
+    ? await ArtifactV2.findById(artifactFilter.value)
+    : undefined
+
   const defaultPrivacyFilter =
     !usesLikedFilter &&
     usesPrivacy &&
@@ -589,6 +634,12 @@ const handleArguments = async ({
       collection.user &&
       authUserId &&
       collection.user.toString() === authUserId.toString()
+    ) &&
+    !(
+      artifact &&
+      artifact.user &&
+      authUserId &&
+      artifact.user.toString() === authUserId.toString()
     )
       ? { public: { $eq: true } }
       : undefined
@@ -613,6 +664,7 @@ const handleArguments = async ({
     useReactionsPreAggregate,
     useEmbeddingsPreAggregate,
     useCollectionsPreAggregate,
+    useArtifactsPreAggregate,
     useFollowingPreAggregate,
     useTasksPreAggregate,
   }
@@ -812,6 +864,7 @@ export const getCreationsFeedCursorV2 = async (
     customFilterOptions,
     preAggregateFilterOptions,
     useCollectionsPreAggregate,
+    useArtifactsPreAggregate,
     useTasksPreAggregate,
     useReactionsPreAggregate,
   } = await handleArguments({
@@ -962,6 +1015,29 @@ export const getCreationsFeedCursorV2 = async (
 
     // @ts-ignore
     results = await CollectionV2.aggregate(pipeline)
+  } else if (useArtifactsPreAggregate) {
+    const lookupPipeline = await createPipeline({
+      // @ts-ignore
+      filters,
+      sortOptions,
+    })
+    // Add deleted: false to ensure we only match non-deleted artifacts
+    const artifactMatchFilter = {
+      ...preAggregateFilterOptions,
+      deleted: { $ne: true },
+    }
+    const pipeline = [
+      ...artifactsPreAggregatePipeline(
+        [{ $match: artifactMatchFilter }],
+        lookupPipeline,
+      ),
+      maybeAddCursorFilterStage(cursor),
+      { $limit: limit ?? 100 },
+      ...lateLookupStages,
+    ].filter(Boolean)
+
+    // @ts-ignore
+    results = await ArtifactV2.aggregate(pipeline)
   } else if (useTasksPreAggregate) {
     const lookupPipeline = await createPipeline({
       // @ts-ignore
