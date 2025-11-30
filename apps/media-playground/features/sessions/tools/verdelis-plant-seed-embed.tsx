@@ -8,6 +8,14 @@ import InlineSessionCard from '@/components/session/inline-session-card'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { ToolHoverMenu } from '@/features/sessions/components/tool-hover-menu'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -20,7 +28,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { Loader2, SendIcon, Sparkles, XIcon } from 'lucide-react'
+import { CheckIcon, Loader2, Sparkles, XIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
@@ -103,6 +111,7 @@ export const VerdelisPlantSeedEmbed: React.FC<VerdelisPlantSeedEmbedProps> = ({
   const [reactions, setReactions] = useState<ToolCallReaction[]>(
     Array.isArray(existingReactions) ? existingReactions : [],
   )
+  const [isStoryboardModalOpen, setIsStoryboardModalOpen] = useState(false)
 
   const handleSubmitReaction = async () => {
     if (!messageId || !toolCallId) {
@@ -131,7 +140,8 @@ export const VerdelisPlantSeedEmbed: React.FC<VerdelisPlantSeedEmbedProps> = ({
           return [...filtered, newReaction]
         })
         setReactionText('')
-        toast.success('Reaction submitted')
+        setIsStoryboardModalOpen(false)
+        toast.success('Selected for storyboard')
       }
     } catch (err) {
       toast.error('Failed to submit reaction')
@@ -372,34 +382,70 @@ export const VerdelisPlantSeedEmbed: React.FC<VerdelisPlantSeedEmbedProps> = ({
         </div>
       )}
 
-      {/* Reaction input - only show when seed exists */}
+      {/* Select to storyboard button - only show when seed exists */}
       {seedId && messageId && toolCallId && (
-        <div className="space-y-2">
-          <Textarea
-            placeholder="Add a reaction or note about this seed..."
-            value={reactionText}
-            onChange={e => setReactionText(e.target.value)}
-            className="min-h-[60px] text-sm resize-none"
-            disabled={isSubmitting}
-          />
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSubmitReaction}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <SendIcon className="h-4 w-4 mr-1" />
-                  Submit
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        <>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setIsStoryboardModalOpen(true)}
+          >
+            <CheckIcon className="h-4 w-4 mr-2" />
+            Select to storyboard
+          </Button>
+
+          <Dialog
+            open={isStoryboardModalOpen}
+            onOpenChange={setIsStoryboardModalOpen}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Select to storyboard</DialogTitle>
+                <DialogDescription>
+                  This seed will be used to create a storyboard.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="comments"
+                    className="text-sm font-medium leading-none"
+                  >
+                    Comments{' '}
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <Textarea
+                    id="comments"
+                    placeholder="What would you like to keep or change about this seed before I make a storyboard for it?"
+                    value={reactionText}
+                    onChange={e => setReactionText(e.target.value)}
+                    className="min-h-[100px] text-sm resize-none"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsStoryboardModalOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSubmitReaction} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <CheckIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Confirm
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
 
       {/* Display error if present */}
