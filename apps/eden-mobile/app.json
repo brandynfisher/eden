@@ -51,8 +51,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Eden app needs access to your camera to capture photos and videos.",
-          "cameraPermission": "Eden app needs access to your photo library to select images and videos."
+          "photosPermission": "Eden app needs access to your photo library to select images and videos.",
+          "cameraPermission": "Eden app needs access to your camera to capture photos and videos."
         }
       ],
       [

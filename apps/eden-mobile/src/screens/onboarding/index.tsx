@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -134,7 +133,7 @@ export default function Onboarding() {
   )
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.wrapper}>
         <View style={styles.header}>
           <TouchableOpacity onPress={handleSkip}>
@@ -166,6 +165,6 @@ export default function Onboarding() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   )
 }

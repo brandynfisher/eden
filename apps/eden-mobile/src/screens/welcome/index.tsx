@@ -4,7 +4,6 @@ import createStyles from '@/styles/welcome.styles'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Image, Text, TouchableOpacity, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -19,7 +18,7 @@ export default function Welcome() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <Image
           source={require('@assets/images/transparent-icon.png')}
@@ -36,6 +35,6 @@ export default function Welcome() {
       <TouchableOpacity onPress={handleGetStarted} style={styles.button}>
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   )
 }

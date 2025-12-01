@@ -1,8 +1,13 @@
+import { ONBOARDING_COMPLETE_KEY } from '@/constants/storage'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { RootStackParamList } from '@/navigator'
 import createStyles from '@/styles/settings.styles'
 import { Ionicons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Notifications from 'expo-notifications'
+import * as SecureStore from 'expo-secure-store'
 import * as StoreReview from 'expo-store-review'
 import { useEffect, useState } from 'react'
 import {
@@ -16,12 +21,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
 export default function Settings() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const styles = createStyles(theme)
+  const navigation = useNavigation<NavigationProp>()
   const colors = Colors[theme]
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -66,6 +73,26 @@ export default function Settings() {
     } catch (error) {
       console.error('Error requesting review:', error)
       Alert.alert('Error', 'Failed to open review dialog.')
+    }
+  }
+
+  const handleResetOnboarding = async () => {
+    try {
+      await SecureStore.deleteItemAsync(ONBOARDING_COMPLETE_KEY)
+      Alert.alert(
+        'Onboarding Reset',
+        'Onboarding is now reset. You will need to complete it again.',
+        [
+          {
+            text: 'OK',
+            onPress: () =>
+              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] }),
+          },
+        ],
+      )
+    } catch (error) {
+      console.error('Error resetting onboarding:', error)
+      Alert.alert('Error', 'Failed to reset onboarding state.')
     }
   }
 
@@ -127,7 +154,7 @@ export default function Settings() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Settings</Text>
@@ -173,7 +200,19 @@ export default function Settings() {
             color={colors.textTertiary}
           />
         </TouchableOpacity>
+
+        {__DEV__ && (
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={handleResetOnboarding}
+          >
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Reset Onboarding</Text>
+            </View>
+            <Ionicons name="refresh" size={20} color={colors.textTertiary} />
+          </TouchableOpacity>
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }

@@ -10,7 +10,7 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 
 // For Android real device testing, set this to your computer's local IP address
@@ -147,7 +147,7 @@ export default function Webview() {
           </TouchableOpacity>
           <WebView
             ref={webRef}
-            source={{ uri: WEB_URL }}
+            source={{ uri: `${WEB_URL}/sign-in` }}
             onMessage={handleMessage}
             javaScriptEnabled
             domStorageEnabled
