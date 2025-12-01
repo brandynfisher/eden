@@ -1,3 +1,4 @@
+import { ONBOARDING_COMPLETE_KEY } from '@/constants/storage'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { RootStackParamList } from '@/navigator'
@@ -18,11 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
-
-const ONBOARDING_COMPLETE_KEY = 'onboarding_complete'
 
 interface PermissionItem {
   id: string
@@ -172,7 +170,7 @@ export default function Permissions() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>Permissions & Access</Text>
@@ -219,6 +217,6 @@ export default function Permissions() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }

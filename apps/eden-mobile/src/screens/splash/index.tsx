@@ -1,3 +1,4 @@
+import { ONBOARDING_COMPLETE_KEY } from '@/constants/storage'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { RootStackParamList } from '@/navigator'
@@ -16,8 +17,6 @@ import {
 } from 'react-native'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
-
-const ONBOARDING_COMPLETE_KEY = 'onboarding_complete'
 
 export default function Splash() {
   const colorScheme = useColorScheme()
@@ -46,7 +45,7 @@ export default function Splash() {
             index: 0,
             routes: [{ name: 'BottomTabs' }],
           })
-    }
+        }
       } catch (error) {
         console.error('Error checking onboarding status:', error)
         // On error, show onboarding to be safe
@@ -79,26 +78,6 @@ export default function Splash() {
         with people and with each other.
       </Text>
       <View style={styles.footerSeparator} />
-      <View style={styles.footer}>
-        <Text style={styles.subtitle}>
-          This reader app provides access for existing users only. To create or
-          manage an account, please visit our website at{' '}
-          <Text
-            style={styles.link}
-            onPress={async () => {
-              const canOpen = await Linking.canOpenURL('https://www.eden.art')
-              if (canOpen) {
-                Linking.openURL('https://www.eden.art')
-              } else {
-                Alert.alert('Error', 'Unable to open URL')
-              }
-            }}
-          >
-            www.eden.art
-          </Text>
-          .
-        </Text>
-      </View>
     </View>
   )
 }

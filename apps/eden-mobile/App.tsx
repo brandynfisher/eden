@@ -1,4 +1,4 @@
-import { Colors } from './src/constants/theme'
+import { Colors, Spacing } from './src/constants/theme'
 import { useColorScheme } from './src/hooks/use-color-scheme'
 import Navigator from './src/navigator'
 import Providers from './src/providers'
@@ -8,7 +8,6 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync()
@@ -38,15 +37,19 @@ export default function App() {
   return (
     <Providers>
       <NavigationContainer>
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: colors.background,
+            paddingTop: Spacing['2xl'],
+          }}
+        >
           <StatusBar
             style={colorScheme === 'light' ? 'light' : 'dark'}
             backgroundColor={colors.background}
             translucent={false}
           />
-          <SafeAreaView style={{ flex: 1 }}>
-            <Navigator />
-          </SafeAreaView>
+          <Navigator />
         </View>
       </NavigationContainer>
     </Providers>
