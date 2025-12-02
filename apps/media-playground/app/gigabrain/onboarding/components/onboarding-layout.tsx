@@ -12,6 +12,7 @@ interface OnboardingLayoutProps {
   children: ReactNode
   onContinue?: () => void
   progressText?: string
+  agentImage?: string
 }
 
 export function OnboardingLayout({
@@ -23,6 +24,7 @@ export function OnboardingLayout({
   children,
   onContinue,
   progressText,
+  agentImage,
 }: OnboardingLayoutProps) {
   const router = useRouter()
 
@@ -44,7 +46,7 @@ export function OnboardingLayout({
   }
 
   return (
-    <div className="h-screen bg-black flex flex-col">
+    <div className="h-full bg-black flex flex-col">
       {/* Progress Bar - Fixed to top */}
       <div className="w-full bg-gray-900 h-2 flex-shrink-0">
         <div
@@ -57,9 +59,18 @@ export function OnboardingLayout({
       <div className="bg-black/90 border-b border-gray-800 px-4 md:px-6 py-4 flex-shrink-0 sticky top-0 z-20">
         {/* Desktop: Grid layout for true centering */}
         <div className="hidden md:grid md:grid-cols-3 gap-4 items-center w-full">
-          {/* Left: Back Button */}
-          <div className="flex justify-start">
-            {previousRoute && (
+          {/* Left: Agent avatar + Back Button */}
+          <div className="flex justify-start items-center gap-3">
+            {agentImage && (
+              <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 border border-gray-700">
+                <img
+                  src={agentImage}
+                  alt="Agent"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            {previousRoute && currentStep > 1 && (
               <button
                 onClick={handleBack}
                 className="text-yellow-400 hover:text-yellow-300 transition-colors text-sm font-medium flex items-center gap-2"
@@ -92,7 +103,11 @@ export function OnboardingLayout({
           {/* Right: Continue Button */}
           <div className="flex justify-end items-center gap-3">
             {progressText && (
-              <span className="text-xs text-gray-400 font-medium">
+              <span
+                className={`text-xs font-medium ${
+                  canContinue ? 'text-purple-400' : 'text-orange-400'
+                }`}
+              >
                 {progressText}
               </span>
             )}
@@ -134,40 +149,57 @@ export function OnboardingLayout({
           </div>
         </div>
 
-        {/* Mobile: Single row layout - no wrapping */}
+        {/* Mobile: Centered step info with Continue button */}
         <div className="md:hidden flex items-center justify-between gap-2">
-          {previousRoute && (
-            <button
-              onClick={handleBack}
-              className="text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-medium flex items-center gap-1 flex-shrink-0"
-            >
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {agentImage && (
+              <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-gray-700">
+                <img
+                  src={agentImage}
+                  alt="Agent"
+                  className="w-full h-full object-cover"
                 />
-              </svg>
-              Back
-            </button>
-          )}
-          <div className="flex items-center gap-2 flex-1 justify-center">
+              </div>
+            )}
+            {previousRoute && currentStep > 1 ? (
+              <button
+                onClick={handleBack}
+                className="text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-medium flex items-center gap-1 flex-shrink-0"
+              >
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Back
+              </button>
+            ) : !agentImage ? (
+              <div className="w-7" />
+            ) : null}
+          </div>
+          <div className="flex flex-col items-center flex-1">
             <h2 className="text-[11px] font-bold text-yellow-400/60 whitespace-nowrap">
               Step {currentStep}/{totalSteps}
             </h2>
             {progressText && (
-              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
+              <span
+                className={`text-[10px] font-medium whitespace-nowrap ${
+                  canContinue ? 'text-purple-400' : 'text-orange-400'
+                }`}
+              >
                 {progressText}
               </span>
             )}
           </div>
-          {nextRoute && (
+          {nextRoute ? (
             <button
               onClick={handleContinue}
               disabled={!canContinue}
@@ -197,6 +229,8 @@ export function OnboardingLayout({
                 />
               </svg>
             </button>
+          ) : (
+            <div className="w-10" />
           )}
         </div>
       </div>

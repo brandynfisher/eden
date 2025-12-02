@@ -141,7 +141,7 @@ export default function OnboardingFinishPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="h-full bg-black flex flex-col">
       {/* Top 30% - Progress Section */}
       <div
         className={`flex-[0.3] flex flex-col items-center justify-center px-6 py-12 transition-all duration-1000 ${

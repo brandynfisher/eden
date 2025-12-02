@@ -60,7 +60,7 @@ export default function OnboardingChatPage() {
   // Show loading state while authenticating or loading user data
   if (!user || isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="h-full bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <LoadingIndicator className="w-10 h-10 text-yellow-400" />
           <p className="text-gray-300">
@@ -72,7 +72,7 @@ export default function OnboardingChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="h-full bg-black flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <LoadingIndicator className="w-10 h-10 text-yellow-400" />
         <p className="text-gray-300">Loading Gigabrain builder...</p>
