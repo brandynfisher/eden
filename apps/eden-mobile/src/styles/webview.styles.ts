@@ -34,14 +34,14 @@ export default (theme: 'light' | 'dark') =>
     buttonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textPrimary,
+      color: '#FFFFFF',
     },
     buttonTextLink: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textPrimary,
+      color: '#FFFFFF',
       textDecorationLine: 'underline',
-      textDecorationColor: Colors[theme].textPrimary,
+      textDecorationColor: '#FFFFFF',
       textDecorationStyle: 'solid',
     },
     notConnectedContainer: {
@@ -88,6 +88,6 @@ export default (theme: 'light' | 'dark') =>
     closeButtonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textPrimary,
+      color: '#FFFFFF',
     },
   })

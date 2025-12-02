@@ -1,10 +1,14 @@
+import SignInModal from '@/components/auth/sign-in-modal'
+import { config } from '@/lib/config'
 import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
+import { useAuth } from '@clerk/clerk-expo'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
 import { useEffect, useRef, useState } from 'react'
 import {
+  ActivityIndicator,
   AppState,
   NativeModules,
   Text,
@@ -55,14 +59,20 @@ const getWebUrl = () => {
 }
 
 const WEB_URL = getWebUrl()
+const WEB_RETURN_PATH = '/'
 
 export default function Webview() {
+  const { isSignedIn, getToken } = useAuth()
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const styles = createStyles(theme)
   const insets = useSafeAreaInsets()
 
   const [loadWebview, setLoadWebview] = useState(false)
+  const [initialUrl, setInitialUrl] = useState(`${WEB_URL}/sign-in`)
+  const [isBridgeLoading, setIsBridgeLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
 
   const webRef = useRef<WebView>(null)
@@ -126,6 +136,56 @@ export default function Webview() {
     }
   }
 
+  const openWebviewWithSession = async () => {
+    if (!isSignedIn) {
+      setShowSignInModal(true)
+      return
+    }
+
+    setError(null)
+    setIsBridgeLoading(true)
+
+    try {
+      const token = await getToken()
+      if (!token) {
+        throw new Error('Unable to get session token')
+      }
+
+      const res = await fetch(
+        `${config.API_URL}/v2/auth/native/webview-token`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        },
+      )
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        const msg = body?.message || 'Failed to create web session'
+        throw new Error(msg)
+      }
+
+      const data = await res.json()
+      const bridgeUrl = `${WEB_URL}/native-bridge?token=${encodeURIComponent(
+        data.token,
+      )}&return=${encodeURIComponent(WEB_RETURN_PATH)}`
+
+      setInitialUrl(bridgeUrl)
+      setLoadWebview(true)
+    } catch (err: any) {
+      console.error('Failed to open webview session', err)
+      setError(
+        err?.message || 'Something went wrong establishing your web session.',
+      )
+    } finally {
+      setIsBridgeLoading(false)
+    }
+  }
+
   // Show loading state while checking network
   if (isConnected === null) {
     return (
@@ -166,7 +226,7 @@ export default function Webview() {
           </TouchableOpacity>
           <WebView
             ref={webRef}
-            source={{ uri: `${WEB_URL}/sign-in` }}
+            source={{ uri: initialUrl }}
             onMessage={handleMessage}
             javaScriptEnabled
             domStorageEnabled
@@ -182,14 +242,28 @@ export default function Webview() {
             You're about to visit the Eden website where you can log in to your
             account and access all features.
           </Text>
+          {error && <Text style={styles.notConnectedDescription}>{error}</Text>}
           <TouchableOpacity
-            onPress={() => setLoadWebview(true)}
+            onPress={openWebviewWithSession}
             style={styles.button}
+            disabled={isBridgeLoading}
           >
-            <Text style={styles.buttonText}>Enter the Garden</Text>
+            {isBridgeLoading ? (
+              <ActivityIndicator color={styles.buttonText.color} />
+            ) : (
+              <Text style={styles.buttonText}>Enter the Garden</Text>
+            )}
           </TouchableOpacity>
         </View>
       )}
+      <SignInModal
+        visible={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        onSuccess={() => {
+          setShowSignInModal(false)
+          openWebviewWithSession()
+        }}
+      />
     </View>
   )
 }

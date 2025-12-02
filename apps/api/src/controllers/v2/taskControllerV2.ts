@@ -969,12 +969,21 @@ export const subscribeWebSocketUpdates = function wsHandler(
           msgJson.data.userId &&
           msgJson.data.token
         ) {
+          const authorizedParties = [
+            this.config.FRONTEND_URL,
+            this.config.API_URL,
+            this.config.EDEN2_FRONTEND_URL,
+            // Dev variants so 127.0.0.1 works alongside localhost
+            this.config.FRONTEND_URL?.includes('localhost')
+              ? this.config.FRONTEND_URL.replace('localhost', '127.0.0.1')
+              : undefined,
+            this.config.EDEN2_FRONTEND_URL?.includes('localhost')
+              ? this.config.EDEN2_FRONTEND_URL.replace('localhost', '127.0.0.1')
+              : undefined,
+          ].filter(Boolean) as string[]
+
           const tokenClaims = await verifyToken(msgJson.data.token, {
-            authorizedParties: [
-              this.config.FRONTEND_URL,
-              this.config.API_URL,
-              this.config.EDEN2_FRONTEND_URL,
-            ],
+            authorizedParties,
             jwtKey: this.config.CLERK_JWT_KEY,
           })
 
