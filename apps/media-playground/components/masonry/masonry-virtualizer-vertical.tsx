@@ -536,7 +536,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
           key={`${apiEndpoint}_${queryKey.join(',')}`}
           data-test-id="masonry-virtualizer-vertical"
           ref={masonryWrapRef}
-          className="flex pb-12 outline-none"
+          className="flex pb-12 outline-none w-full"
         >
           <div
             ref={innerRef}

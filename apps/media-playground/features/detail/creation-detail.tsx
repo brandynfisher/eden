@@ -64,10 +64,10 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
   }
 
   return (
-    <>
+    <div className="w-full">
       <div
         className={cn([
-          `w-full flex flex-col flex-grow lg:flex-row lg:gap-4 max-h-full lg:ml-0`,
+          `w-full flex flex-col gap-4 lg:flex-row lg:gap-4 lg:flex-1 lg:ml-0`,
           isModal
             ? 'lg:w-[calc(100dvw_-_160px)] lg:min-h-[calc(100dvh_-_98px)]'
             : 'lg:w-[calc(100dvw_-_32px)] lg:min-h-[calc(100dvh_-_198px)]',
@@ -125,7 +125,7 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
           />
         )}
       </div>
-    </>
+    </div>
   )
 }
 
