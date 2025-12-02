@@ -2310,6 +2310,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:^1.10.0":
+  version: 1.10.1
+  resolution: "@bufbuild/protobuf@npm:1.10.1"
+  checksum: 10c0/a89572ae99aa193dd232fca0cdc9ece1dfe2f3d8b061be1f966a4f88fb63410aeb0fe7de927037e970aefcb52036eec58a7f89a40fe1286eed1448ea1bd2634e
+  languageName: node
+  linkType: hard
+
 "@chromatic-com/storybook@npm:^3.2.3":
   version: 3.2.7
   resolution: "@chromatic-com/storybook@npm:3.2.7"
@@ -2772,6 +2779,45 @@ __metadata:
   resolution: "@edenlabs/tsconfig@workspace:packages/tsconfig"
   languageName: unknown
   linkType: soft
+
+"@elevenlabs/client@npm:0.11.3":
+  version: 0.11.3
+  resolution: "@elevenlabs/client@npm:0.11.3"
+  dependencies:
+    "@elevenlabs/types": "npm:0.3.1"
+    livekit-client: "npm:^2.11.4"
+  checksum: 10c0/c4d54054ec8f1bbdf77f7902eee585d5378c4088bd53a770358120d9c3a5f6745c3913dedc5d5647f2e38873e652511ee33e364bf73dd56eeabb0476350095f1
+  languageName: node
+  linkType: hard
+
+"@elevenlabs/elevenlabs-js@npm:^2.24.1":
+  version: 2.26.0
+  resolution: "@elevenlabs/elevenlabs-js@npm:2.26.0"
+  dependencies:
+    command-exists: "npm:^1.2.9"
+    node-fetch: "npm:^2.7.0"
+    ws: "npm:^8.18.3"
+  checksum: 10c0/38d4f8b9bb29c56fe6766e9197bc7f5c674ae35e10fb5a5a222890ec0c1d48dbe9235fe08e960ef3dc0825bb1f327b0f77a57c05c55ad037156b099a9c238c79
+  languageName: node
+  linkType: hard
+
+"@elevenlabs/react@npm:^0.11.0":
+  version: 0.11.3
+  resolution: "@elevenlabs/react@npm:0.11.3"
+  dependencies:
+    "@elevenlabs/client": "npm:0.11.3"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 10c0/cb2b03304e96ce55ed62ecbe3ee4646d5ec1a0eb19ab2b7cd7d3c4098c87baa9e94ae8ed688fbafe7859189e991566cd582ff90658a9cd12c92cbb33005c92e5
+  languageName: node
+  linkType: hard
+
+"@elevenlabs/types@npm:0.3.1":
+  version: 0.3.1
+  resolution: "@elevenlabs/types@npm:0.3.1"
+  checksum: 10c0/e817b94664320c185b858f3807810f331a0994ca4acaf0c95ea8fdc0fd4161e0fc8dc2eaae35ce6a935d8cfb936c57a9b3a71ecfe9e88bbc555a4cc7a42922c9
+  languageName: node
+  linkType: hard
 
 "@emnapi/core@npm:^1.4.3":
   version: 1.7.1
@@ -4884,6 +4930,22 @@ __metadata:
   version: 4.4.2
   resolution: "@js-sdsl/ordered-map@npm:4.4.2"
   checksum: 10c0/cc7e15dc4acf6d9ef663757279600bab70533d847dcc1ab01332e9e680bd30b77cdf9ad885cc774276f51d98b05a013571c940e5b360985af5eb798dc1a2ee2b
+  languageName: node
+  linkType: hard
+
+"@livekit/mutex@npm:1.1.1":
+  version: 1.1.1
+  resolution: "@livekit/mutex@npm:1.1.1"
+  checksum: 10c0/d4bb1bd34e20939dfc8af0ae10b86918f3944336d0236d219e80a8c554207e8bfaf21e86794f0c56d2c28b43d74ca966111172a95eacb0e12b72133dd184d49a
+  languageName: node
+  linkType: hard
+
+"@livekit/protocol@npm:1.42.2":
+  version: 1.42.2
+  resolution: "@livekit/protocol@npm:1.42.2"
+  dependencies:
+    "@bufbuild/protobuf": "npm:^1.10.0"
+  checksum: 10c0/73e77e0975d4d8ca0baa23ad03cb9ac3a844e8d89e9cefbd17343131a774c7aeb4d190fd0397152fcf5a396d921af3eb83e83e660a4aa12215d9ac4e52bf037a
   languageName: node
   linkType: hard
 
@@ -15164,7 +15226,7 @@ __metadata:
     react-native-screens: "npm:~4.16.0"
     react-native-web: "npm:^0.21.0"
     react-native-webview: "npm:^13.16.0"
-    typescript: "npm:~5.9.2"
+    typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
 
@@ -15212,23 +15274,6 @@ __metadata:
   version: 1.5.259
   resolution: "electron-to-chromium@npm:1.5.259"
   checksum: 10c0/a6600ff20d513e1acce29cd04af5fcb338295ebe5a13fa9802009464d9c269a4a092218c8ea8c9b85017a1efd75606fe0cdf5f36216979f7c8462af7df2f530d
-  languageName: node
-  linkType: hard
-
-"elevenlabs@npm:^1.56.0":
-  version: 1.59.0
-  resolution: "elevenlabs@npm:1.59.0"
-  dependencies:
-    command-exists: "npm:^1.2.9"
-    execa: "npm:^5.1.1"
-    form-data: "npm:^4.0.0"
-    form-data-encoder: "npm:^4.0.2"
-    formdata-node: "npm:^6.0.3"
-    node-fetch: "npm:^2.7.0"
-    qs: "npm:^6.13.1"
-    readable-stream: "npm:^4.5.2"
-    url-join: "npm:4.0.1"
-  checksum: 10c0/bd5f02a679360f6ce665c04b071e02c43074b83f3020d02c1a4e7b061c98d093a9dfcbc283cf10120a63203630dbde698a5c11d8dd89a1edfcbcbda80c739117
   languageName: node
   linkType: hard
 
@@ -16669,7 +16714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"execa@npm:^5.0.0, execa@npm:^5.1.1":
+"execa@npm:^5.0.0":
   version: 5.1.1
   resolution: "execa@npm:5.1.1"
   dependencies:
@@ -17734,13 +17779,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data-encoder@npm:^4.0.2":
-  version: 4.1.0
-  resolution: "form-data-encoder@npm:4.1.0"
-  checksum: 10c0/cbd655aa8ffff6f7c2733b1d8e95fa9a2fe8a88a90bde29fb54b8e02c9406e51f32a014bfe8297d67fbac9f77614d14a8b4bbc4fd0352838e67e97a881d06332
-  languageName: node
-  linkType: hard
-
 "form-data@npm:^4.0.0, form-data@npm:^4.0.4":
   version: 4.0.5
   resolution: "form-data@npm:4.0.5"
@@ -17768,13 +17806,6 @@ __metadata:
     node-domexception: "npm:1.0.0"
     web-streams-polyfill: "npm:4.0.0-beta.3"
   checksum: 10c0/74151e7b228ffb33b565cec69182694ad07cc3fdd9126a8240468bb70a8ba66e97e097072b60bcb08729b24c7ce3fd3e0bd7f1f80df6f9f662b9656786e76f6a
-  languageName: node
-  linkType: hard
-
-"formdata-node@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "formdata-node@npm:6.0.3"
-  checksum: 10c0/9b8ada280c7b0c7314bed57fd50b3562f8825bd3ede6f6231b1bc7683b649e7f3ffb7b0f13d8e9e6cae8042ea21eaf497a7c676d2fe6dc63daefefaea4838240
   languageName: node
   linkType: hard
 
@@ -20428,6 +20459,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jose@npm:^6.1.0":
+  version: 6.1.3
+  resolution: "jose@npm:6.1.3"
+  checksum: 10c0/b9577b4a7a5e84131011c23823db9f5951eae3ba796771a6a2401ae5dd50daf71104febc8ded9c38146aa5ebe94a92ac09c725e699e613ef26949b9f5a8bc30f
+  languageName: node
+  linkType: hard
+
 "joycon@npm:^3.1.1":
   version: 3.1.1
   resolution: "joycon@npm:3.1.1"
@@ -20994,6 +21032,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"livekit-client@npm:^2.11.4":
+  version: 2.16.0
+  resolution: "livekit-client@npm:2.16.0"
+  dependencies:
+    "@livekit/mutex": "npm:1.1.1"
+    "@livekit/protocol": "npm:1.42.2"
+    events: "npm:^3.3.0"
+    jose: "npm:^6.1.0"
+    loglevel: "npm:^1.9.2"
+    sdp-transform: "npm:^2.15.0"
+    ts-debounce: "npm:^4.0.0"
+    tslib: "npm:2.8.1"
+    typed-emitter: "npm:^2.1.0"
+    webrtc-adapter: "npm:^9.0.1"
+  peerDependencies:
+    "@types/dom-mediacapture-record": ^1
+  checksum: 10c0/5d03adc5d09efde343ab894db397529dff26117598e773b23a5df90a4fb166bde12c6bb1f2cfd1d28dbaf93fe9f275026d7abb75f2ffd2ba816393a2d58e6c7e
+  languageName: node
+  linkType: hard
+
 "load-esm@npm:1.0.3":
   version: 1.0.3
   resolution: "load-esm@npm:1.0.3"
@@ -21178,6 +21236,13 @@ __metadata:
     strip-ansi: "npm:^7.1.0"
     wrap-ansi: "npm:^9.0.0"
   checksum: 10c0/4b350c0a83d7753fea34dcac6cd797d1dc9603291565de009baa4aa91c0447eab0d3815a05c8ec9ac04fdfffb43c82adcdb03ec1fceafd8518e1a8c1cff4ff89
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:^1.9.2":
+  version: 1.9.2
+  resolution: "loglevel@npm:1.9.2"
+  checksum: 10c0/1e317fa4648fe0b4a4cffef6de037340592cee8547b07d4ce97a487abe9153e704b98451100c799b032c72bb89c9366d71c9fb8192ada8703269263ae77acdc7
   languageName: node
   linkType: hard
 
@@ -21686,6 +21751,8 @@ __metadata:
     "@edenlabs/eden-react": "npm:*"
     "@edenlabs/eden-sdk": "npm:*"
     "@edenlabs/tsconfig": "npm:*"
+    "@elevenlabs/elevenlabs-js": "npm:^2.24.1"
+    "@elevenlabs/react": "npm:^0.11.0"
     "@hookform/resolvers": "npm:^3.9.0"
     "@next/third-parties": "npm:^15.1.7"
     "@radix-ui/react-accordion": "npm:^1.2.0"
@@ -21749,7 +21816,6 @@ __metadata:
     currency.js: "npm:^2.0.4"
     date-fns: "npm:^4.1.0"
     dayjs: "npm:^1.11.13"
-    elevenlabs: "npm:^1.56.0"
     env-cmd: "npm:^10.1.0"
     eslint: "npm:8.56.0"
     eslint-config-next: "npm:14.2.2"
@@ -25863,7 +25929,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.11.0, qs@npm:^6.12.3, qs@npm:^6.13.1":
+"qs@npm:^6.11.0, qs@npm:^6.12.3":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
   dependencies:
@@ -26643,7 +26709,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:>=4.0.0, readable-stream@npm:^4.0.0, readable-stream@npm:^4.5.2, readable-stream@npm:^4.7.0":
+"readable-stream@npm:>=4.0.0, readable-stream@npm:^4.0.0, readable-stream@npm:^4.7.0":
   version: 4.7.0
   resolution: "readable-stream@npm:4.7.0"
   dependencies:
@@ -27524,7 +27590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:7.8.2, rxjs@npm:^7.2.0, rxjs@npm:^7.5.5":
+"rxjs@npm:*, rxjs@npm:7.8.2, rxjs@npm:^7.2.0, rxjs@npm:^7.5.5":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -27729,6 +27795,22 @@ __metadata:
     ajv-formats: "npm:^2.1.1"
     ajv-keywords: "npm:^5.1.0"
   checksum: 10c0/1c8d2c480a026d7c02ab2ecbe5919133a096d6a721a3f201fa50663e4f30f6d6ba020dfddd93cb828b66b922e76b342e103edd19a62c95c8f60e9079cc403202
+  languageName: node
+  linkType: hard
+
+"sdp-transform@npm:^2.15.0":
+  version: 2.15.0
+  resolution: "sdp-transform@npm:2.15.0"
+  bin:
+    sdp-verify: checker.js
+  checksum: 10c0/96c060f113a3d5418defa168db609f7e23e5bd7954fa1cf7784f103dbe702e24d667e5310d2ac6d88abdb32322af83d6ebd0df08e07f4f172d5ed5888f921386
+  languageName: node
+  linkType: hard
+
+"sdp@npm:^3.2.0":
+  version: 3.2.1
+  resolution: "sdp@npm:3.2.1"
+  checksum: 10c0/a534d91972d6c26016f0e814d8e0ca4db6ae714d1da58056d3bcf4660137aeddb71d9085a5dd5eb764d5cffca83ab3ee7446cb6eed36411cd1e93d2c929d7d80
   languageName: node
   linkType: hard
 
@@ -29783,6 +29865,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-debounce@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "ts-debounce@npm:4.0.0"
+  checksum: 10c0/1dfac630127d6982b4ad5114a12bd3e8febfd7a34615e6bf388eaf3a5c355f9ab2ef688688bb7e789bc9f0cabfd82e0a6b363efc451ee626b5722919f7f567cd
+  languageName: node
+  linkType: hard
+
 "ts-dedent@npm:^2.0.0, ts-dedent@npm:^2.2.0":
   version: 2.2.0
   resolution: "ts-dedent@npm:2.2.0"
@@ -30257,6 +30346,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typed-emitter@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "typed-emitter@npm:2.1.0"
+  dependencies:
+    rxjs: "npm:*"
+  dependenciesMeta:
+    rxjs:
+      optional: true
+  checksum: 10c0/01fc354ba8e87bd39b1bf4fe1c96fe7ecff7fde83161003b0f8c7f4b285a368052e185ba655dd8c102c4445301b7a1e032c8972f181b440fc95bd810450f1314
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^4.1.3":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
@@ -30267,7 +30368,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:~5.9.2":
+"typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:^5.9.3":
   version: 5.9.3
   resolution: "typescript@npm:5.9.3"
   bin:
@@ -30287,7 +30388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A~5.9.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.9.3#optional!builtin<compat/typescript>":
   version: 5.9.3
   resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=cef18b"
   bin:
@@ -30659,13 +30760,6 @@ __metadata:
   dependencies:
     punycode: "npm:^2.1.0"
   checksum: 10c0/4ef57b45aa820d7ac6496e9208559986c665e49447cb072744c13b66925a362d96dd5a46c4530a6b8e203e5db5fe849369444440cb22ecfc26c679359e5dfa3c
-  languageName: node
-  linkType: hard
-
-"url-join@npm:4.0.1":
-  version: 4.0.1
-  resolution: "url-join@npm:4.0.1"
-  checksum: 10c0/ac65e2c7c562d7b49b68edddcf55385d3e922bc1dd5d90419ea40b53b6de1607d1e45ceb71efb9d60da02c681d13c6cb3a1aa8b13fc0c989dfc219df97ee992d
   languageName: node
   linkType: hard
 
@@ -31394,6 +31488,15 @@ __metadata:
   bin:
     webpack: bin/webpack.js
   checksum: 10c0/d0cf86f8cac249874d6f36292e25011413ebb5bae82c48fa78a165a217e63db00b1a1f563f5195070eb17a055c6da4b6ab89fbdd37f781abdda862aa8c0bd623
+  languageName: node
+  linkType: hard
+
+"webrtc-adapter@npm:^9.0.1":
+  version: 9.0.3
+  resolution: "webrtc-adapter@npm:9.0.3"
+  dependencies:
+    sdp: "npm:^3.2.0"
+  checksum: 10c0/bb8c1626cc0e18bd34c03074fc6a541666dbe473c8f063c5d0ea2a3a3a4887f498212a131c936777f660382185f44941476609a50df5f1543015240623375725
   languageName: node
   linkType: hard
 

@@ -34,14 +34,14 @@ export default (theme: 'light' | 'dark') =>
     buttonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
     buttonTextLink: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
       color: Colors[theme].textPrimary,
       textDecorationLine: 'underline',
-      textDecorationColor: Colors[theme].primary,
+      textDecorationColor: Colors[theme].textPrimary,
       textDecorationStyle: 'solid',
     },
     notConnectedContainer: {
