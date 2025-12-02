@@ -76,7 +76,7 @@ export default (theme: 'light' | 'dark') =>
     continueButtonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
     footerText: {
       fontSize: Typography.fontSize.xs,
@@ -86,4 +86,3 @@ export default (theme: 'light' | 'dark') =>
       lineHeight: Typography.fontSize.xs * Typography.lineHeight.relaxed,
     },
   })
-

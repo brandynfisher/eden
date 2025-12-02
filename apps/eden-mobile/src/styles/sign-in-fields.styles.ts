@@ -62,18 +62,18 @@ export default (theme: 'light' | 'dark') =>
     continueButtonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
     continueLoadingText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
       marginLeft: Spacing.sm,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
     arrowIcon: {
       fontSize: Typography.fontSize.lg,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
     buttonDisabled: {
       opacity: 0.6,

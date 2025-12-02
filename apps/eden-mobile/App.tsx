@@ -2,7 +2,11 @@ import { Colors, Spacing } from './src/constants/theme'
 import { useColorScheme } from './src/hooks/use-color-scheme'
 import Navigator from './src/navigator'
 import Providers from './src/providers'
-import { NavigationContainer } from '@react-navigation/native'
+import {
+  DarkTheme as NavigationDarkTheme,
+  DefaultTheme as NavigationDefaultTheme,
+  NavigationContainer,
+} from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -15,6 +19,8 @@ SplashScreen.preventAutoHideAsync()
 export default function App() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+  const navTheme =
+    colorScheme === 'dark' ? NavigationDarkTheme : NavigationDefaultTheme
 
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': require('@assets/fonts/SpaceGrotesk-Regular.ttf'),
@@ -36,7 +42,7 @@ export default function App() {
 
   return (
     <Providers>
-      <NavigationContainer>
+      <NavigationContainer theme={navTheme}>
         <View
           style={{
             flex: 1,
@@ -45,7 +51,8 @@ export default function App() {
           }}
         >
           <StatusBar
-            style={colorScheme === 'light' ? 'light' : 'dark'}
+            // On dark backgrounds we want light-content status bar icons
+            style={colorScheme === 'dark' ? 'light' : 'dark'}
             backgroundColor={colors.background}
             translucent={false}
           />

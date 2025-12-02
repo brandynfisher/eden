@@ -1,10 +1,12 @@
 import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
+import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
 import { useEffect, useRef, useState } from 'react'
 import {
   AppState,
+  NativeModules,
   Text,
   TouchableOpacity,
   View,
@@ -13,26 +15,43 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 
-// For Android real device testing, set this to your computer's local IP address
-// Find it with: ifconfig | grep "inet " | grep -v 127.0.0.1
-// Make sure your Android device is on the same WiFi network
-const ANDROID_LOCAL_IP = '192.168.110.223' // Change this to your local IP
+const WEB_DEV_PORT = 3000
+
+/**
+ * In Expo dev, the JS bundle is served from the host running Metro.
+ * We can reuse that host for the web app instead of hard-coding localhost.
+ */
+const getDevHost = () => {
+  const hostFromExpo =
+    Constants.expoConfig?.hostUri?.split(':')?.[0] ??
+    // SDK 49+ manifest shape
+    Constants.manifest2?.extra?.expoGo?.debuggerHost?.split(':')?.[0] ??
+    // Older manifest shape
+    Constants.manifest?.debuggerHost?.split(':')?.[0]
+
+  if (hostFromExpo) return hostFromExpo
+
+  const scriptURL = NativeModules.SourceCode?.scriptURL as string | undefined
+  if (scriptURL) {
+    const host = scriptURL.split('://')[1]?.split(':')?.[0]
+    if (host) return host
+  }
+
+  return null
+}
 
 const getWebUrl = () => {
-  if (!__DEV__) {
-    return 'https://app.eden.art'
-  }
+  if (!__DEV__) return 'https://app.eden.art'
 
-  if (isIos) {
-    // iOS can use localhost when connected via USB
-    return 'http://localhost:3000'
-  } else {
-    // Android: Use local IP for real device, or 10.0.2.2 for emulator
-    // If ANDROID_LOCAL_IP is set, use it; otherwise default to emulator address
-    return ANDROID_LOCAL_IP
-      ? `http://${ANDROID_LOCAL_IP}:3000`
-      : 'http://10.0.2.2:3000'
-  }
+  const devHost = getDevHost()
+
+  // Fallbacks by platform
+  if (devHost) return `http://${devHost}:${WEB_DEV_PORT}`
+
+  if (isIos) return 'http://127.0.0.1:3000'
+
+  // Android emulator default
+  return 'http://10.0.2.2:3000'
 }
 
 const WEB_URL = getWebUrl()
@@ -167,10 +186,7 @@ export default function Webview() {
             onPress={() => setLoadWebview(true)}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>
-              Go to{' '}
-              <Text style={styles.buttonTextLink}>https://app.eden.art</Text>
-            </Text>
+            <Text style={styles.buttonText}>Enter the Garden</Text>
           </TouchableOpacity>
         </View>
       )}

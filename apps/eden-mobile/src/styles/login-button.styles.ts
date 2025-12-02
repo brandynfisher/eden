@@ -15,6 +15,6 @@ export default (theme: 'light' | 'dark') =>
     loginButtonText: {
       fontSize: Typography.fontSize.sm,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
   })

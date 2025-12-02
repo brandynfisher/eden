@@ -15,6 +15,6 @@ export default (theme: 'light' | 'dark') =>
     logoutButtonText: {
       fontSize: Typography.fontSize.sm,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textInverse,
+      color: Colors[theme].textPrimary,
     },
   })
