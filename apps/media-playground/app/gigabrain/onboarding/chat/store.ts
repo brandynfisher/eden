@@ -6,6 +6,20 @@ export interface ReferenceImage {
   description: string
 }
 
+const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000
+
+const initialState = {
+  sessionId: null as string | null,
+  profileImageUrl: null as string | null,
+  name: '',
+  username: '',
+  referenceImages: [] as ReferenceImage[],
+  agentInstructions: null as string | null,
+  agentDescription: null as string | null,
+  memoryInstructions: null as string | null,
+  lastUpdated: null as number | null,
+}
+
 interface OnboardingState {
   sessionId: string | null
   profileImageUrl: string | null
@@ -15,6 +29,7 @@ interface OnboardingState {
   agentInstructions: string | null
   agentDescription: string | null
   memoryInstructions: string | null
+  lastUpdated: number | null
   setSessionId: (sessionId: string) => void
   setProfileImageUrl: (url: string) => void
   setName: (name: string) => void
@@ -23,33 +38,38 @@ interface OnboardingState {
   setAgentInstructions: (instructions: string) => void
   setAgentDescription: (description: string) => void
   setMemoryInstructions: (instructions: string) => void
+  reset: () => void
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     set => ({
-      sessionId: null,
-      profileImageUrl: null,
-      name: '',
-      username: '',
-      referenceImages: [],
-      agentInstructions: null,
-      agentDescription: null,
-      memoryInstructions: null,
-      setSessionId: sessionId => set({ sessionId }),
-      setProfileImageUrl: url => set({ profileImageUrl: url }),
-      setName: name => set({ name }),
-      setUsername: username => set({ username }),
-      setReferenceImages: images => set({ referenceImages: images }),
+      ...initialState,
+      setSessionId: sessionId => set({ sessionId, lastUpdated: Date.now() }),
+      setProfileImageUrl: url =>
+        set({ profileImageUrl: url, lastUpdated: Date.now() }),
+      setName: name => set({ name, lastUpdated: Date.now() }),
+      setUsername: username => set({ username, lastUpdated: Date.now() }),
+      setReferenceImages: images =>
+        set({ referenceImages: images, lastUpdated: Date.now() }),
       setAgentInstructions: instructions =>
-        set({ agentInstructions: instructions }),
+        set({ agentInstructions: instructions, lastUpdated: Date.now() }),
       setAgentDescription: description =>
-        set({ agentDescription: description }),
+        set({ agentDescription: description, lastUpdated: Date.now() }),
       setMemoryInstructions: instructions =>
-        set({ memoryInstructions: instructions }),
+        set({ memoryInstructions: instructions, lastUpdated: Date.now() }),
+      reset: () => set({ ...initialState, lastUpdated: null }),
     }),
     {
       name: 'gigabrain-onboarding-storage',
+      onRehydrateStorage: () => state => {
+        if (state?.lastUpdated) {
+          const isStale = Date.now() - state.lastUpdated > FIVE_DAYS_MS
+          if (isStale) {
+            state.reset()
+          }
+        }
+      },
     },
   ),
 )
