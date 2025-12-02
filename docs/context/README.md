@@ -12,6 +12,10 @@ These documents provide deep-dive context that is too detailed for the main CLAU
 
 - **[user-preferences.md](./user-preferences.md)** - UserPreferences collection structure, lastAgents stack behavior, and frontend integration for agent sorting/quick-switching
 
+### UI Flows
+
+- **[new_agent_context.md](./new_agent_context.md)** - Agent creation flow at `/new/agent`, form components, validation schema, API routes, and state management
+
 ## When to Use These Docs
 
 Claude should reference these documents when:
