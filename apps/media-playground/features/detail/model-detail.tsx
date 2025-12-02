@@ -145,11 +145,11 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
 
   const showFilterTabs = isSignedIn && !!user
 
-  return (
+  const content = (
     <>
       <div
         className={cn([
-          `w-full flex flex-col flex-grow lg:flex-row lg:gap-4 max-h-full lg:ml-0`,
+          `w-full flex flex-col gap-4 lg:flex-row lg:gap-4 lg:flex-1 lg:ml-0`,
           isModal
             ? 'lg:w-[calc(100dvw_-_160px)]'
             : 'lg:w-[calc(100dvw_-_32px)]',
@@ -175,7 +175,7 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
 
       {model && (
         <>
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-6">
             <Button
               variant="outline"
               size="icon"
@@ -185,7 +185,7 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
               <ChevronDownIcon className="w-10 h-10" />
             </Button>
           </div>
-          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
+          <div className="flex text-sm items-center gap-2 justify-center mb-4 pt-4 pb-4 lg:pt-8 lg:pb-6 px-4">
             {`Recent creations using ${model.name}`}
           </div>
 
@@ -216,6 +216,8 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
       )}
     </>
   )
+
+  return content
 }
 
 export default ModelDetail

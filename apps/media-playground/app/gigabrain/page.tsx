@@ -14,7 +14,7 @@ export default function GigabrainPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-full bg-black">
       {/* Background Video - Fixed */}
       <video
         ref={videoRef}
@@ -29,7 +29,7 @@ export default function GigabrainPage() {
       </video>
 
       {/* Content Overlay */}
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-10 min-h-full">
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-4xl mx-auto">
             {/* Hero Section */}

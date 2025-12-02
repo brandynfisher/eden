@@ -1,6 +1,17 @@
-export const onboardingChatConfig = {
+import { OnboardingConfig } from '@/features/onboarding-flow'
+
+export const gigabrainOnboardingConfig: OnboardingConfig = {
   agent_name: 'gigabrain_builder',
-  min_n_turns: 4,
+  min_n_turns: 3,
   initial_user_message:
-    'Can you explain me how to start setting up a gigabrain agent plz?',
+    'Hey! Can you help me set up a new gigabrain agent plz?',
+  routes: {
+    base: '/gigabrain/onboarding',
+    previousFromChat: '/gigabrain',
+  },
+  storageKey: 'gigabrain-onboarding-storage',
+  loadingSignInMessage: 'Signing you in...',
+  loadingBuilderMessage: 'Loading Gigabrain builder...',
+  identityTitle: 'Your agents Identity',
+  finishTitle: 'Gigabrain',
 }

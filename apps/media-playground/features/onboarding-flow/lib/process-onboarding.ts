@@ -1,4 +1,4 @@
-import { useOnboardingStore } from '../chat/store'
+import { OnboardingState } from '../types'
 
 interface AgentPromptsExtractionResponse {
   agent_instructions: string
@@ -26,9 +26,10 @@ interface AgentArgs {
  */
 export async function processOnboardingLLMCalls(
   sessionId: string,
+  getState: () => OnboardingState,
 ): Promise<AgentArgs> {
   // Get agent name from Zustand store to pass to LLM
-  const state = useOnboardingStore.getState()
+  const state = getState()
   const agentName = state.name || '<agent-name>'
 
   const response = await fetch(`/api/agent_creation/extract_prompts`, {
@@ -58,7 +59,7 @@ export async function processOnboardingLLMCalls(
   }
 
   // Store the extracted data in Zustand
-  const store = useOnboardingStore.getState()
+  const store = getState()
   store.setAgentInstructions(data.agent_instructions)
   store.setAgentDescription(data.agent_description)
   store.setMemoryInstructions(data.memory_instructions)
@@ -73,8 +74,10 @@ export async function processOnboardingLLMCalls(
  * - name, username, profileImageUrl, referenceImages
  * - agentInstructions, agentDescription, memoryInstructions
  */
-export async function createAgentFromOnboardingState(): Promise<string> {
-  const state = useOnboardingStore.getState()
+export async function createAgentFromOnboardingState(
+  getState: () => OnboardingState,
+): Promise<string> {
+  const state = getState()
 
   // Validate required fields
   if (!state.name || !state.username) {

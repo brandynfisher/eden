@@ -500,6 +500,12 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
                       description: '2023 Eden tools',
                     },
                     {
+                      key: 'gigabrain_tools',
+                      label: 'Gigabrain tools',
+                      description:
+                        'Profile matching and collective kickstart tools',
+                    },
+                    {
                       key: 'all_tools',
                       label: 'All individual tools',
                       description:

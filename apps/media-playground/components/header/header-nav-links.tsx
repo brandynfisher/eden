@@ -47,14 +47,14 @@ const HeaderNavLinks = ({
   const getLinkClassName = (path: string) => {
     const active = isActive(path)
     return cn(
-      'text-muted-foreground transition-colors hover:text-foreground capitalize py-1.5 px-1 sm:px-2 hover:bg-accent hover:shadow-sm rounded-md font-semibold text-xs sm:text-sm whitespace-nowrap flex-shrink-0',
+      'text-muted-foreground transition-colors hover:text-foreground capitalize py-1.5 px-1.5 sm:px-3 hover:bg-accent hover:shadow-sm rounded-md font-semibold text-sm sm:text-base whitespace-nowrap flex-shrink-0',
       active ? 'text-foreground bg-accent/50' : '',
     )
   }
 
   const baseClassName =
     orientation === 'horizontal'
-      ? 'flex items-center gap-0 sm:gap-4 text-xs sm:text-sm overflow-x-auto'
+      ? 'flex items-center gap-1 sm:gap-4 text-sm sm:text-base overflow-x-auto'
       : 'flex flex-col gap-2 text-sm'
 
   const handleLinkClick = () => {

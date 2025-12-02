@@ -9,5 +9,11 @@ const kumarOne = localFont({
 })
 
 export default function GigabrainLayout({ children }: { children: ReactNode }) {
-  return <div className={kumarOne.variable}>{children}</div>
+  return (
+    <div
+      className={`${kumarOne.variable} w-full flex-1 min-h-0 overflow-y-auto`}
+    >
+      {children}
+    </div>
+  )
 }

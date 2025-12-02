@@ -44,6 +44,27 @@ const ModelsFeed = ({
   const router = useRouter()
   const layoutScrollRef = useScrollContainer()
 
+  const resolvedBreakpoints = useMemo<BreakpointConfig[]>(
+    () =>
+      breakpoints ?? [
+        { minWidth: 1024, columns: 3 }, // lg and up
+        { minWidth: 768, columns: 2 }, // md
+        { minWidth: 0, columns: 1 }, // small
+      ],
+    [breakpoints],
+  )
+
+  const resolvedMinCols = useMemo(() => {
+    // Allow callers to override; otherwise default to single column for small screens
+    return minCols ?? 1
+  }, [minCols])
+
+  const resolvedMaxCols = useMemo(() => {
+    // Keep caller maxCols if provided; otherwise cap at 3 when using the default breakpoints
+    if (maxCols !== undefined) return maxCols
+    return breakpoints ? undefined : 3
+  }, [breakpoints, maxCols])
+
   const defaultQuery: FeedConceptsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -85,9 +106,9 @@ const ModelsFeed = ({
       apiEndpoint={'/api/feed/models'}
       queryKey={queryKey}
       query={query}
-      minCols={minCols || 2}
-      maxCols={maxCols || undefined}
-      breakpoints={breakpoints}
+      minCols={resolvedMinCols}
+      maxCols={resolvedMaxCols}
+      breakpoints={resolvedBreakpoints}
       onItemsLoaded={handleItemsLoaded}
       setFetchNextPage={setFetchNextPage}
       render={(item: RowItem, _onUpdate, index) => (
