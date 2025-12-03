@@ -804,6 +804,15 @@ const SidebarUserProfile = ({
     if (isSignedIn) {
       await signOut()
 
+      // Check if we're in a React Native WebView and send logout message
+      if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'LOGOUT',
+          }),
+        )
+      }
+
       window.location.href = '/'
     }
   }

@@ -1,7 +1,3 @@
-/**
- * Wellness Theme - Warm Earthy Design
- * Based on Mental-Health-Hub theme with sage green primary colors
- */
 import { wp } from '@/utils/responsive'
 
 export const Colors = {

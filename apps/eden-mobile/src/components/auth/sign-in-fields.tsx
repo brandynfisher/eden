@@ -111,6 +111,7 @@ export default function SignInFields({
           autoComplete="email"
           editable={!isEmailLoading}
           onSubmitEditing={handleContinue}
+          autoFocus={true}
         />
       </View>
 
@@ -128,6 +129,7 @@ export default function SignInFields({
               autoCapitalize="none"
               editable={!isEmailLoading}
               onSubmitEditing={handleEmailPasswordSignIn}
+              autoFocus={true}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
