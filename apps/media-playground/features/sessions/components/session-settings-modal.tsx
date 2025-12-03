@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -18,8 +19,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Agent } from '@edenlabs/eden-sdk'
-import { useState } from 'react'
+import {
+  Agent,
+  SessionPermission,
+  SessionPermissionLevel,
+} from '@edenlabs/eden-sdk'
+import {
+  EyeIcon,
+  Loader2,
+  MessageSquareIcon,
+  ShieldIcon,
+  UserIcon,
+  XIcon,
+} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 export type SessionSettings = {
   type: 'passive' | 'natural' | 'automatic'
@@ -47,6 +60,8 @@ type SessionSettingsModalProps = {
   minimal?: boolean // For /chat - only show context field
 }
 
+type PermissionLevelOption = 'owner' | 'editor' | 'participant' | 'viewer'
+
 export const SessionSettingsModal = ({
   open,
   onOpenChange,
@@ -59,6 +74,91 @@ export const SessionSettingsModal = ({
 }: SessionSettingsModalProps) => {
   const isMultiAgent = agents.length > 1
   const [isSaving, setIsSaving] = useState(false)
+  const [permissions, setPermissions] = useState<SessionPermission[]>([])
+  const [isPermissionsLoading, setIsPermissionsLoading] = useState(false)
+  const [isSavingPermissions, setIsSavingPermissions] = useState(false)
+  const [newUsername, setNewUsername] = useState('')
+  const [permissionLevel, setPermissionLevel] =
+    useState<PermissionLevelOption>('participant')
+
+  // Fetch existing permissions when opening
+  useEffect(() => {
+    if (!open || !sessionId) return
+    setIsPermissionsLoading(true)
+    fetch(`/api/sessions/${sessionId}/permissions`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.permissions) {
+          setPermissions(data.permissions)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch permissions:', err)
+      })
+      .finally(() => setIsPermissionsLoading(false))
+  }, [open, sessionId])
+
+  const grouped = useMemo(() => {
+    const by = {
+      owner: [] as SessionPermission[],
+      editor: [] as SessionPermission[],
+      participant: [] as SessionPermission[],
+      viewer: [] as SessionPermission[],
+    }
+    permissions.forEach(p => {
+      const level = p.level as PermissionLevelOption
+      if (by[level]) by[level].push(p)
+    })
+    return by
+  }, [permissions])
+
+  const handleAddPermission = () => {
+    const username = newUsername.trim()
+    if (!username) return
+    const exists = permissions.some(p => p.user?.username === username)
+    if (exists) return
+    setPermissions(prev => [
+      ...prev,
+      {
+        _id: `temp-${Date.now()}`,
+        session: sessionId || '',
+        user: { _id: '', username },
+        level: permissionLevel as SessionPermissionLevel,
+        grantedAt: new Date(),
+      } as SessionPermission,
+    ])
+    setNewUsername('')
+  }
+
+  const handleRemovePermission = (username: string) => {
+    setPermissions(prev => prev.filter(p => p.user?.username !== username))
+  }
+
+  const persistPermissions = async () => {
+    if (!sessionId) return
+    setIsSavingPermissions(true)
+    try {
+      const payload = permissions
+        .filter(p => p.user?.username)
+        .map(p => ({
+          username: p.user!.username,
+          level: p.level as PermissionLevelOption,
+        }))
+
+      const res = await fetch(`/api/sessions/${sessionId}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions: payload }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to update permissions')
+      }
+    } finally {
+      setIsSavingPermissions(false)
+    }
+  }
 
   const handleSave = async () => {
     if (!onSave) {
@@ -69,6 +169,7 @@ export const SessionSettingsModal = ({
     try {
       setIsSaving(true)
       await onSave(settings)
+      await persistPermissions()
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to save session settings:', error)
@@ -198,6 +299,125 @@ export const SessionSettingsModal = ({
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Permissions - only when not minimal and sessionId present */}
+          {!minimal && sessionId && (
+            <div className="space-y-4 border rounded-lg p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-medium">Session Permissions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Invite Eden users as owners, editors, participants, or
+                    viewers. Participants can interact; viewers are read-only
+                    but can open private sessions.
+                  </p>
+                </div>
+                {(isPermissionsLoading || isSavingPermissions) && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Input
+                  value={newUsername}
+                  onChange={e => setNewUsername(e.target.value)}
+                  placeholder="Enter Eden username..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddPermission()
+                    }
+                  }}
+                  disabled={isSavingPermissions}
+                  className="flex-1"
+                />
+                <Select
+                  value={permissionLevel}
+                  onValueChange={value =>
+                    setPermissionLevel(value as PermissionLevelOption)
+                  }
+                  disabled={isSavingPermissions}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="owner">Owner</SelectItem>
+                    <SelectItem value="editor">Editor</SelectItem>
+                    <SelectItem value="participant">Participant</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleAddPermission}
+                  type="button"
+                  disabled={!newUsername.trim() || isSavingPermissions}
+                >
+                  Add
+                </Button>
+              </div>
+
+              {['owner', 'editor', 'participant', 'viewer'].map(level => {
+                const list = grouped[level as PermissionLevelOption]
+                if (!list?.length) return null
+                const label =
+                  level === 'owner'
+                    ? 'Owners'
+                    : level === 'editor'
+                    ? 'Editors'
+                    : level === 'participant'
+                    ? 'Participants'
+                    : 'Viewers'
+                const Icon =
+                  level === 'owner'
+                    ? ShieldIcon
+                    : level === 'editor'
+                    ? UserIcon
+                    : level === 'participant'
+                    ? MessageSquareIcon
+                    : EyeIcon
+                const badge =
+                  level.charAt(0).toUpperCase() + level.slice(1).toLowerCase()
+                return (
+                  <div key={level} className="space-y-2">
+                    <Label className="text-sm font-medium">{label}</Label>
+                    <div className="space-y-2">
+                      {list.map(permission => (
+                        <div
+                          key={permission.user?.username || permission._id}
+                          className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Icon className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {permission.user?.username || 'Unknown user'}
+                            </span>
+                            <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
+                              {badge}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              handleRemovePermission(
+                                permission.user?.username || '',
+                              )
+                            }
+                            type="button"
+                            className="hover:bg-destructive hover:text-destructive-foreground"
+                            disabled={isSavingPermissions}
+                          >
+                            <XIcon className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

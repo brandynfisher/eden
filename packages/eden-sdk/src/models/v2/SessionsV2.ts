@@ -493,6 +493,8 @@ export type SessionsV2ShareListResponse = WebAPICallResult & {
 export enum SessionPermissionLevel {
   Editor = 'editor',
   Owner = 'owner',
+  Participant = 'participant',
+  Viewer = 'viewer',
 }
 
 export interface SessionPermission {
@@ -517,7 +519,7 @@ export interface SessionsV2UpdatePermissionsArguments
   session_id: string
   permissions: Array<{
     username: string
-    level: 'editor' | 'owner'
+    level: 'editor' | 'owner' | 'participant' | 'viewer'
   }>
 }
 
@@ -542,7 +544,7 @@ export type SessionsV2UpdatePermissionsResponse = WebAPICallResult & {
 export type SessionsV2GetSharedResponse = WebAPICallResult & {
   sharedSessions: Array<{
     session: SessionV2
-    permissionLevel: string
+    permissionLevel: SessionPermissionLevel
     grantedAt: Date
   }>
   error?: string
@@ -598,6 +600,8 @@ export type SessionV2 = {
   extras?: SessionExtras
   /** Maps agent IDs to their private workspace session IDs */
   agent_sessions?: Record<string, string>
+  /** Permission level for the authenticated user when present */
+  permission_level_for_user?: SessionPermissionLevel
   deleted?: boolean
   createdAt: Date
   updatedAt: Date

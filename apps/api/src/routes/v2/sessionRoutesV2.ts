@@ -866,7 +866,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     Body: {
       permissions: Array<{
         username: string
-        level: 'editor' | 'owner'
+        level: 'editor' | 'owner' | 'participant' | 'viewer'
       }>
     }
   }>('/v2/sessions/:session_id/permissions', {
@@ -887,7 +887,12 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         permissions: Type.Array(
           Type.Object({
             username: Type.String(),
-            level: Type.Union([Type.Literal('editor'), Type.Literal('owner')]),
+            level: Type.Union([
+              Type.Literal('editor'),
+              Type.Literal('owner'),
+              Type.Literal('participant'),
+              Type.Literal('viewer'),
+            ]),
           }),
         ),
       },

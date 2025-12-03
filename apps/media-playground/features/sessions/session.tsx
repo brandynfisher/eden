@@ -2390,7 +2390,7 @@ const Session = ({
           agents={session.agents}
           sessionId={sessionId}
           onSave={handleSaveSettings}
-          minimal={true}
+          minimal={false}
         />
       )}
 
