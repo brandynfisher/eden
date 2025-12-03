@@ -5,6 +5,8 @@ import { Document, Schema, model } from 'mongoose'
 export enum SessionPermissionLevel {
   Editor = 'editor',
   Owner = 'owner',
+  Participant = 'participant',
+  Viewer = 'viewer',
 }
 
 export interface SessionPermissionSchema {

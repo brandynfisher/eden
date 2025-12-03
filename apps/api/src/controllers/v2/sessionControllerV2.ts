@@ -2,6 +2,7 @@ import { Agent } from '../../models/Agent'
 import { Notification } from '../../models/Notification'
 import {
   SessionPermission,
+  SessionPermissionDocument,
   SessionPermissionLevel,
 } from '../../models/SessionPermission'
 import { User } from '../../models/User'
@@ -54,6 +55,52 @@ const createEdenMessage = async (
   await edenMessage.save()
   return edenMessage
 }
+
+const INTERACTIVE_PERMISSION_LEVELS = new Set<SessionPermissionLevel>([
+  SessionPermissionLevel.Owner,
+  SessionPermissionLevel.Editor,
+  SessionPermissionLevel.Participant,
+])
+
+const canInteractWithPermission = (
+  permission?: { level: SessionPermissionLevel } | null,
+) => {
+  return !!permission && INTERACTIVE_PERMISSION_LEVELS.has(permission.level)
+}
+
+const mapPermissionLevel = (level: string): SessionPermissionLevel => {
+  switch (level) {
+    case SessionPermissionLevel.Owner:
+    case 'owner':
+      return SessionPermissionLevel.Owner
+    case SessionPermissionLevel.Editor:
+    case 'editor':
+      return SessionPermissionLevel.Editor
+    case SessionPermissionLevel.Participant:
+    case 'participant':
+      return SessionPermissionLevel.Participant
+    case SessionPermissionLevel.Viewer:
+    case 'viewer':
+      return SessionPermissionLevel.Viewer
+    default:
+      throw new Error(`Invalid session permission level: ${level}`)
+  }
+}
+
+const formatPermissionLabel = (level: SessionPermissionLevel) =>
+  `${level.charAt(0).toUpperCase()}${level.slice(1)}`
+
+const isUserInList = (list: any[] | undefined, userId: string) =>
+  Array.isArray(list) &&
+  list.some(user => {
+    if (!user) return false
+    if (typeof user === 'string') return user === userId
+    if (user._id) return user._id.toString() === userId
+    if (typeof user.toString === 'function') {
+      return user.toString() === userId
+    }
+    return false
+  })
 
 export const createSession = async (
   server: FastifyInstance,
@@ -484,15 +531,14 @@ export const createSessionMessage = async (
     // Check if user has access to the session (owner, in users list, or has permission)
     const currentUserIdStr = userId.toString()
     const isOwner = session.owner.toString() === currentUserIdStr
-    const isAllowedUser = session.users?.some(
-      (user: any) => user.toString() === currentUserIdStr,
-    )
-    const hasPermission = await SessionPermission.exists({
+    const isAllowedUser = isUserInList(session.users, currentUserIdStr)
+    const permission = await SessionPermission.findOne({
       session: session._id,
       user: userId,
     })
+    const hasInteractionPermission = canInteractWithPermission(permission)
 
-    if (!isOwner && !isAllowedUser && !hasPermission) {
+    if (!isOwner && !isAllowedUser && !hasInteractionPermission) {
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
@@ -739,7 +785,7 @@ export const listSessions = async (
   try {
     const queryOptions: QueryOptions = {
       select:
-        '_id title name createdAt updatedAt trigger agents users pinned session_type parent_session',
+        '_id title name owner createdAt updatedAt trigger agents users pinned session_type parent_session',
       limit,
       page,
       sort: {
@@ -756,12 +802,26 @@ export const listSessions = async (
           path: 'users',
           select: '_id username userImage',
         },
+        {
+          path: 'owner',
+          select: '_id username userImage',
+        },
       ],
     }
+
+    const userPermissions = await SessionPermission.find({ user: userId })
+    const sharedSessionIds = userPermissions.map(p => p.session)
+    const permissionLevelMap = new Map(
+      userPermissions.map(p => [p.session.toString(), p.level]),
+    )
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery: any = {
       $or: [{ owner: userId }, { users: userId }],
+    }
+
+    if (sharedSessionIds.length > 0) {
+      sessionQuery.$or.push({ _id: { $in: sharedSessionIds } })
     }
 
     // Add agent filter if provided - look up agent by username first
@@ -780,7 +840,22 @@ export const listSessions = async (
       queryOptions,
     )
 
-    return reply.status(200).send(paginatedResponse)
+    const docsWithPermissionLevel = paginatedResponse.docs.map(doc => {
+      const asObject = (doc as any)?.toObject ? (doc as any).toObject() : doc
+      const level = permissionLevelMap.get(asObject._id.toString())
+      if (level) {
+        return {
+          ...asObject,
+          permission_level_for_user: level,
+        }
+      }
+      return asObject
+    })
+
+    return reply.status(200).send({
+      ...paginatedResponse,
+      docs: docsWithPermissionLevel,
+    })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
@@ -835,6 +910,13 @@ export const getSession = async (
     // Check if session is public
     const isPublicSession = session.extras?.is_public === true
 
+    const requesterPermission = userId
+      ? await SessionPermission.findOne({
+          session: session._id,
+          user: userId,
+        })
+      : null
+
     // If not authenticated, only allow access to public sessions
     if (!userId) {
       if (!isPublicSession) {
@@ -848,13 +930,8 @@ export const getSession = async (
       const getSessionUserIdStr = userId.toString()
       const isSessionOwner =
         session.owner._id.toString() === getSessionUserIdStr
-      const isSessionUser = session.users?.some(
-        (user: any) => user.toString() === getSessionUserIdStr,
-      )
-      const hasPermission = await SessionPermission.exists({
-        session: session._id,
-        user: userId,
-      })
+      const isSessionUser = isUserInList(session.users, getSessionUserIdStr)
+      const hasPermission = !!requesterPermission
       const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
 
       if (
@@ -931,10 +1008,17 @@ export const getSession = async (
     })
 
     // Add messages and permissions to the session object
+    const permissionLevelForUser =
+      requesterPermission?.level ||
+      (userId && session.owner._id.toString() === userId.toString()
+        ? SessionPermissionLevel.Owner
+        : undefined)
+
     const sessionWithPermissions = {
       ...session.toObject(),
       messages: paginatedMessages,
       permissions,
+      permission_level_for_user: permissionLevelForUser,
     }
 
     return reply.status(200).send({
@@ -983,6 +1067,13 @@ export const getSessionMessages = async (
     // Check if session is public
     const isPublicSession = session.extras?.is_public === true
 
+    const requesterPermission = userId
+      ? await SessionPermission.findOne({
+          session: session._id,
+          user: userId,
+        })
+      : null
+
     // If not authenticated, only allow access to public sessions
     if (!userId) {
       if (!isPublicSession) {
@@ -995,13 +1086,8 @@ export const getSessionMessages = async (
       // Check access (owner, in users list, has permission, is eden admin, or session is public)
       const userIdStr = userId.toString()
       const isOwner = session.owner.toString() === userIdStr
-      const isUser = session.users?.some(
-        (user: any) => user.toString() === userIdStr,
-      )
-      const hasPermission = await SessionPermission.exists({
-        session: session._id,
-        user: userId,
-      })
+      const isUser = isUserInList(session.users, userIdStr)
+      const hasPermission = !!requesterPermission
       const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
 
       if (
@@ -1168,15 +1254,14 @@ export const addSessionMessageReaction = async (
   // Check if user has access to the session (owner, in users list, or has permission)
   const reactionUserIdStr = userId.toString()
   const isSessionOwner = session.owner.toString() === reactionUserIdStr
-  const isSessionUser = session.users?.some(
-    (user: any) => user.toString() === reactionUserIdStr,
-  )
-  const hasPermission = await SessionPermission.exists({
+  const isSessionUser = isUserInList(session.users, reactionUserIdStr)
+  const permission = await SessionPermission.findOne({
     session: session._id,
     user: userId,
   })
+  const hasInteractionPermission = canInteractWithPermission(permission)
 
-  if (!isSessionOwner && !isSessionUser && !hasPermission) {
+  if (!isSessionOwner && !isSessionUser && !hasInteractionPermission) {
     return reply.status(403).send({
       message: 'You do not have access to this session',
     })
@@ -1277,15 +1362,14 @@ export const addSessionToolCallReaction = async (
   // Check if user has access to the session (owner, in users list, or has permission)
   const reactionUserIdStr = userId.toString()
   const isSessionOwner = session.owner.toString() === reactionUserIdStr
-  const isSessionUser = session.users?.some(
-    (user: any) => user.toString() === reactionUserIdStr,
-  )
-  const hasPermission = await SessionPermission.exists({
+  const isSessionUser = isUserInList(session.users, reactionUserIdStr)
+  const permission = await SessionPermission.findOne({
     session: session._id,
     user: userId,
   })
+  const hasInteractionPermission = canInteractWithPermission(permission)
 
-  if (!isSessionOwner && !isSessionUser && !hasPermission) {
+  if (!isSessionOwner && !isSessionUser && !hasInteractionPermission) {
     return reply.status(403).send({
       message: 'You do not have access to this session',
     })
@@ -1872,15 +1956,13 @@ export const streamSession = async (
 
     const currentUserIdStr = userId.toString()
     const isOwner = session.owner.toString() === currentUserIdStr
-    const isAllowedUser = session.users?.some(
-      (user: any) => user.toString() === currentUserIdStr,
-    )
-    const hasPermission = await SessionPermission.exists({
+    const isAllowedUser = isUserInList(session.users, currentUserIdStr)
+    const permission = await SessionPermission.findOne({
       session: session._id,
       user: userId,
     })
 
-    if (!isOwner && !isAllowedUser && !hasPermission) {
+    if (!isOwner && !isAllowedUser && !permission) {
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
@@ -2017,7 +2099,10 @@ export const updateSessionPermissions = async (
 ) => {
   const { session_id } = request.params as { session_id: string }
   const { permissions } = request.body as {
-    permissions: Array<{ username: string; level: 'editor' | 'owner' }>
+    permissions: Array<{
+      username: string
+      level: 'editor' | 'owner' | 'participant' | 'viewer'
+    }>
   }
   const currentUserId = request.user.userId
 
@@ -2038,14 +2123,28 @@ export const updateSessionPermissions = async (
     }).populate('user', 'username')
 
     const existingUserMap = new Map(
-      existingPermissions.map(p => [(p.user as any).username, p.level]),
+      existingPermissions.map(p => [
+        (p.user as any).username,
+        p.level as SessionPermissionLevel,
+      ]),
     )
 
-    await SessionPermission.deleteMany({ session: session_id })
+    const validatedPermissions: Array<{
+      user: any
+      username: string
+      level: SessionPermissionLevel
+    }> = []
 
-    const newPermissions = []
+    for (const perm of permissions || []) {
+      let mappedLevel: SessionPermissionLevel
+      try {
+        mappedLevel = mapPermissionLevel(perm.level)
+      } catch (err) {
+        return reply.status(400).send({
+          error: err instanceof Error ? err.message : String(err),
+        })
+      }
 
-    for (const perm of permissions) {
       const query = createMultiFieldQuery(perm.username, ['userId', 'username'])
       const user = await User.findOne(query)
 
@@ -2055,50 +2154,60 @@ export const updateSessionPermissions = async (
         })
       }
 
+      validatedPermissions.push({
+        user,
+        username: perm.username,
+        level: mappedLevel,
+      })
+    }
+
+    await SessionPermission.deleteMany({ session: session_id })
+
+    const newPermissions: Array<{
+      permission: SessionPermissionDocument
+      user: any
+      username: string
+      level: SessionPermissionLevel
+    }> = []
+
+    for (const perm of validatedPermissions) {
       const newPermission = await SessionPermission.create({
         session: session_id,
-        user: user._id,
-        level:
-          perm.level === 'owner'
-            ? SessionPermissionLevel.Owner
-            : SessionPermissionLevel.Editor,
+        user: perm.user._id,
+        level: perm.level,
         grantedBy: currentUserId,
         grantedAt: new Date(),
       })
 
       newPermissions.push({
         permission: newPermission,
-        user,
+        user: perm.user,
         username: perm.username,
         level: perm.level,
       })
 
       const existingLevel = existingUserMap.get(perm.username)
+      const levelLabel = formatPermissionLabel(perm.level)
       if (!existingLevel) {
         await Notification.create({
-          user: user._id,
+          user: perm.user._id,
           type: 'session_permission_added',
           title: 'Session Permission Added',
-          message: `You've been granted ${perm.level} access to the session "${
+          message: `You've been granted ${levelLabel} access to the session "${
             session.title || 'Untitled Session'
           }".`,
           priority: 'normal',
           action_url: `/sessions/${session_id}`,
           channels: ['in_app'],
         })
-      } else if (
-        existingLevel !==
-        (perm.level === 'owner'
-          ? SessionPermissionLevel.Owner
-          : SessionPermissionLevel.Editor)
-      ) {
+      } else if (existingLevel !== perm.level) {
         await Notification.create({
-          user: user._id,
+          user: perm.user._id,
           type: 'session_permission_added',
           title: 'Session Permission Updated',
           message: `Your access to the session "${
             session.title || 'Untitled Session'
-          }" has been changed to ${perm.level}.`,
+          }" has been changed to ${levelLabel}.`,
           priority: 'normal',
           action_url: `/sessions/${session_id}`,
           channels: ['in_app'],
@@ -2317,6 +2426,24 @@ export const addPassiveMessage = async (
     if (!user) {
       return reply.status(404).send({
         message: 'User not found',
+      })
+    }
+
+    const userIdStr = user_id.toString()
+    const isSessionOwner = session.owner.toString() === userIdStr
+    const isSessionUser = isUserInList(session.users, userIdStr)
+    const sessionPermission = await SessionPermission.findOne({
+      session: session_id,
+      user: user_id,
+    })
+
+    if (
+      !isSessionOwner &&
+      !isSessionUser &&
+      !canInteractWithPermission(sessionPermission)
+    ) {
+      return reply.status(403).send({
+        message: 'User not authorized to post to this session',
       })
     }
 

@@ -47,12 +47,7 @@ export const EditSessionModal = ({
         .then(res => res.json())
         .then(data => {
           if (data.permissions) {
-            setPermissions(
-              data.permissions.map((p: SessionPermission) => ({
-                username: p.user?.username,
-                level: p.level,
-              })),
-            )
+            setPermissions(data.permissions)
           }
         })
         .catch(err => {
@@ -111,22 +106,20 @@ export const EditSessionModal = ({
         throw new Error(errorData.message || 'Failed to update session')
       }
 
-      if (data.permissions && data.permissions.length > 0) {
-        const permissionsResponse = await fetch(
-          `/api/sessions/${sessionId}/permissions`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ permissions: data.permissions }),
+      const permissionsResponse = await fetch(
+        `/api/sessions/${sessionId}/permissions`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        )
+          body: JSON.stringify({ permissions: data.permissions || [] }),
+        },
+      )
 
-        if (!permissionsResponse.ok) {
-          const errorData = await permissionsResponse.json()
-          throw new Error(errorData.error || 'Failed to update permissions')
-        }
+      if (!permissionsResponse.ok) {
+        const errorData = await permissionsResponse.json()
+        throw new Error(errorData.error || 'Failed to update permissions')
       }
 
       await refetch()

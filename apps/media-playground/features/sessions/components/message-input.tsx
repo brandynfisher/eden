@@ -23,7 +23,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
@@ -531,12 +531,27 @@ export const MessageInput = ({
   }, [handleFilesDropped])
 
   // Check if this is a read-only view (user doesn't own session and has no permissions)
-  // User has access if they own the session OR if they have any permission level
-  const hasPermission = session?.permissions?.some(
+  const permissionForUser = session?.permissions?.find(
     p => p.user?._id === user?._id,
   )
+
+  const hasInteractivePermission =
+    permissionForUser &&
+    permissionForUser.level !== SessionPermissionLevel.Viewer
+
+  const isOwner = session?.owner?._id === user?._id
+  const isSessionUser = session?.users?.some(u => {
+    if (!u || !user?._id) return false
+    if (typeof u === 'string') return u === user._id
+    return u._id === user._id
+  })
+
   const isReadOnly =
-    session && user && session.owner?._id !== user._id && !hasPermission
+    !!session &&
+    !!user &&
+    !isOwner &&
+    !isSessionUser &&
+    !hasInteractivePermission
 
   // If read-only, show read-only indicator
   if (isReadOnly) {
