@@ -2,7 +2,7 @@ import SignInModal from '@/components/auth/sign-in-modal'
 import { config } from '@/lib/config'
 import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
-import { useAuth } from '@clerk/clerk-expo'
+import { useAuth, useClerk } from '@clerk/clerk-expo'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
@@ -16,7 +16,6 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 
 const WEB_DEV_PORT = 3000
@@ -66,16 +65,15 @@ export default function Webview() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const styles = createStyles(theme)
-  const insets = useSafeAreaInsets()
 
-  const [loadWebview, setLoadWebview] = useState(false)
-  const [initialUrl, setInitialUrl] = useState(`${WEB_URL}/sign-in`)
+  const [initialUrl, setInitialUrl] = useState(WEB_URL)
   const [isBridgeLoading, setIsBridgeLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
 
   const webRef = useRef<WebView>(null)
+  const hasOpenedSession = useRef(false)
 
   const checkNetworkStatus = async () => {
     try {
@@ -110,6 +108,18 @@ export default function Webview() {
     }
   }, [])
 
+  useEffect(() => {
+    if (isSignedIn && !hasOpenedSession.current && isConnected !== false) {
+      hasOpenedSession.current = true
+      openWebviewWithSession()
+    } else if (!isSignedIn) {
+      hasOpenedSession.current = false
+      setInitialUrl(WEB_URL)
+    }
+  }, [isSignedIn, isConnected])
+
+  const { signOut } = useClerk()
+
   const handleMessage = async (event: WebViewMessageEvent) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data)
@@ -127,6 +137,11 @@ export default function Webview() {
         }
 
         webRef.current?.postMessage(JSON.stringify(response))
+        return
+      }
+
+      if (msg?.type === 'logout') {
+        await signOut()
         return
       }
 
@@ -175,18 +190,21 @@ export default function Webview() {
       )}&return=${encodeURIComponent(WEB_RETURN_PATH)}`
 
       setInitialUrl(bridgeUrl)
-      setLoadWebview(true)
+
+      if (webRef.current) {
+        webRef.current.reload()
+      }
     } catch (err: any) {
       console.error('Failed to open webview session', err)
       setError(
         err?.message || 'Something went wrong establishing your web session.',
       )
+      hasOpenedSession.current = false
     } finally {
       setIsBridgeLoading(false)
     }
   }
 
-  // Show loading state while checking network
   if (isConnected === null) {
     return (
       <View style={styles.notConnectedContainer}>
@@ -197,7 +215,6 @@ export default function Webview() {
     )
   }
 
-  // Show not connected screen if no network
   if (!isConnected) {
     return (
       <View style={styles.notConnectedContainer}>
@@ -213,17 +230,10 @@ export default function Webview() {
     )
   }
 
-  // Show webview or button to enter webview when connected
   return (
     <View style={{ flex: 1 }}>
-      {loadWebview ? (
+      {isSignedIn ? (
         <View style={styles.webview}>
-          <TouchableOpacity
-            onPress={() => setLoadWebview(false)}
-            style={styles.closeButton}
-          >
-            <Text style={styles.closeButtonText}>Close Webview</Text>
-          </TouchableOpacity>
           <WebView
             ref={webRef}
             source={{ uri: initialUrl }}
@@ -239,8 +249,8 @@ export default function Webview() {
       ) : (
         <View style={styles.content}>
           <Text style={styles.description}>
-            You're about to visit the Eden website where you can log in to your
-            account and access all features.
+            You're about to visit the Eden website where you can create and
+            share your own artworks.
           </Text>
           {error && <Text style={styles.notConnectedDescription}>{error}</Text>}
           <TouchableOpacity
@@ -259,10 +269,6 @@ export default function Webview() {
       <SignInModal
         visible={showSignInModal}
         onClose={() => setShowSignInModal(false)}
-        onSuccess={() => {
-          setShowSignInModal(false)
-          openWebviewWithSession()
-        }}
       />
     </View>
   )

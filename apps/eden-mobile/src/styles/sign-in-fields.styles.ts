@@ -84,7 +84,7 @@ export default (theme: 'light' | 'dark') =>
     },
     divider: {
       alignItems: 'center',
-      marginVertical: Spacing.lg,
+      marginBottom: Spacing.lg,
     },
     dividerText: {
       fontSize: Typography.fontSize.xs,

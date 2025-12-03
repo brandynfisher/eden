@@ -15,7 +15,8 @@ import {
   AppState,
   Linking,
   Platform,
-  ScrollView,
+  PlatformColor,
+  SectionList,
   Switch,
   Text,
   TouchableOpacity,
@@ -153,66 +154,171 @@ export default function Settings() {
     }
   }
 
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-        </View>
+  type SettingItem = {
+    id: string
+    title: string
+    description?: string
+    type: 'switch' | 'action' | 'action-icon'
+    onPress?: () => void
+    value?: boolean
+    icon?: keyof typeof Ionicons.glyphMap
+  }
 
-        <View style={styles.settingItem}>
+  type SettingSection = {
+    title?: string
+    data: SettingItem[]
+  }
+
+  const sections: SettingSection[] = [
+    {
+      data: [
+        {
+          id: 'notifications',
+          title: 'Notifications',
+          description:
+            'Receive notifications about new creations, collaborations, and important updates.',
+          type: 'switch',
+          value: notificationsEnabled,
+          onPress: () => {},
+        },
+        {
+          id: 'rate-app',
+          title: 'Rate App',
+          description:
+            'Help us improve by rating your experience in the App Store or Play Store.',
+          type: 'action',
+          onPress: handleRequestReview,
+        },
+      ],
+    },
+    ...(__DEV__
+      ? [
+          {
+            data: [
+              {
+                id: 'reset-onboarding',
+                title: 'Reset Onboarding',
+                type: 'action-icon',
+                icon: 'refresh',
+                onPress: handleResetOnboarding,
+              },
+            ] as SettingItem[],
+          },
+        ]
+      : []),
+  ]
+
+  const renderItem = ({
+    item,
+    index,
+    section,
+  }: {
+    item: SettingItem
+    index: number
+    section: SettingSection
+  }) => {
+    const isFirst = index === 0
+    const isLast = index === section.data.length - 1
+    const itemStyle = [
+      styles.settingItem,
+      isFirst && styles.settingItemFirst,
+      isLast && styles.settingItemLast,
+      Platform.OS === 'ios' && styles.settingItemIOS,
+      Platform.OS === 'android' && styles.settingItemAndroid,
+    ]
+
+    if (item.type === 'switch') {
+      return (
+        <View style={itemStyle}>
           <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Notifications</Text>
-            <Text style={styles.settingDescription}>
-              Receive notifications about new creations, collaborations, and
-              important updates.
-            </Text>
+            <Text style={styles.settingTitle}>{item.title}</Text>
+            {item.description && (
+              <Text style={styles.settingDescription}>{item.description}</Text>
+            )}
           </View>
           {!isLoading && (
             <Switch
-              value={notificationsEnabled}
+              value={item.value}
               onValueChange={handleNotificationToggle}
-              trackColor={{
-                false: colors.border,
-                true: colors.primary,
-              }}
-              thumbColor={
-                notificationsEnabled ? colors.textInverse : colors.textTertiary
-              }
             />
           )}
         </View>
+      )
+    }
 
+    if (item.type === 'action-icon') {
+      return (
         <TouchableOpacity
-          style={styles.settingItem}
-          onPress={handleRequestReview}
+          style={itemStyle}
+          onPress={item.onPress}
+          activeOpacity={Platform.OS === 'ios' ? 0.6 : 0.7}
         >
-          <View style={styles.settingContent}>
-            <Text style={styles.settingTitle}>Rate App</Text>
-            <Text style={styles.settingDescription}>
-              Help us improve by rating your experience in the App Store or Play
-              Store.
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.textTertiary}
-          />
+          <Text style={styles.settingTitle}>{item.title}</Text>
+          {item.icon && (
+            <Ionicons
+              name={item.icon}
+              size={Platform.OS === 'ios' ? 18 : 20}
+              color={colors.textTertiary}
+            />
+          )}
         </TouchableOpacity>
+      )
+    }
 
-        {__DEV__ && (
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={handleResetOnboarding}
-          >
-            <View style={styles.settingContent}>
-              <Text style={styles.settingTitle}>Reset Onboarding</Text>
-            </View>
-            <Ionicons name="refresh" size={20} color={colors.textTertiary} />
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+    return (
+      <TouchableOpacity
+        style={itemStyle}
+        onPress={item.onPress}
+        activeOpacity={Platform.OS === 'ios' ? 0.6 : 0.7}
+      >
+        <View style={styles.settingContent}>
+          <Text style={styles.settingTitle}>{item.title}</Text>
+          {item.description && (
+            <Text style={styles.settingDescription}>{item.description}</Text>
+          )}
+        </View>
+        <Ionicons
+          name="chevron-forward"
+          size={Platform.OS === 'ios' ? 16 : 20}
+          color={colors.textTertiary}
+        />
+      </TouchableOpacity>
+    )
+  }
+
+  const renderSectionHeader = ({ section }: { section: SettingSection }) => {
+    if (!section.title) return null
+    return (
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionHeaderText}>{section.title}</Text>
+      </View>
+    )
+  }
+
+  const renderSectionFooter = () => {
+    if (Platform.OS === 'ios') {
+      return <View style={styles.sectionFooter} />
+    }
+    return null
+  }
+
+  return (
+    <View style={styles.container}>
+      <SectionList
+        sections={sections}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        renderSectionFooter={renderSectionFooter}
+        contentContainerStyle={styles.listContent}
+        style={styles.list}
+        stickySectionHeadersEnabled={false}
+        ItemSeparatorComponent={
+          Platform.OS === 'android'
+            ? () => <View style={styles.separator} />
+            : undefined
+        }
+      />
     </View>
   )
 }

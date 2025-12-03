@@ -1,27 +1,45 @@
-import { Colors, Spacing } from './src/constants/theme'
+import { Colors } from './src/constants/theme'
 import { useColorScheme } from './src/hooks/use-color-scheme'
 import Navigator from './src/navigator'
 import Providers from './src/providers'
 import {
+  NavigationContainer,
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
-  NavigationContainer,
 } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import * as SplashScreen from 'expo-splash-screen'
-import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync()
 
-export default function App() {
+function AppContent() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const navTheme =
     colorScheme === 'dark' ? NavigationDarkTheme : NavigationDefaultTheme
 
+  const insets = useSafeAreaInsets()
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          paddingTop: insets.top,
+        }}
+      >
+        <Navigator />
+      </View>
+    </NavigationContainer>
+  )
+}
+
+export default function App() {
   const [fontsLoaded] = useFonts({
     'SpaceGrotesk-Regular': require('@assets/fonts/SpaceGrotesk-Regular.ttf'),
     'SpaceGrotesk-Medium': require('@assets/fonts/SpaceGrotesk-Medium.ttf'),
@@ -42,23 +60,7 @@ export default function App() {
 
   return (
     <Providers>
-      <NavigationContainer theme={navTheme}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.background,
-            paddingTop: Spacing['2xl'],
-          }}
-        >
-          <StatusBar
-            // On dark backgrounds we want light-content status bar icons
-            style={colorScheme === 'dark' ? 'light' : 'dark'}
-            backgroundColor={colors.background}
-            translucent={false}
-          />
-          <Navigator />
-        </View>
-      </NavigationContainer>
+      <AppContent />
     </Providers>
   )
 }
