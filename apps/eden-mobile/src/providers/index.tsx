@@ -1,4 +1,5 @@
 import { ClerkProviderWrapper } from './clerk-provider'
+import { NotificationProvider } from './notification-provider'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import {
   DarkTheme,
@@ -14,7 +15,9 @@ export default function Providers({ children }: PropsWithChildren) {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <ClerkProviderWrapper>{children}</ClerkProviderWrapper>
+        <ClerkProviderWrapper>
+          <NotificationProvider>{children}</NotificationProvider>
+        </ClerkProviderWrapper>
       </ThemeProvider>
     </SafeAreaProvider>
   )

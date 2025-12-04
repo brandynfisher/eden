@@ -46,14 +46,14 @@ const getDevHost = () => {
 const getWebUrl = () => {
   if (!__DEV__) return 'https://app.eden.art'
 
-  const devHost = getDevHost()
+  // Check for ngrok URL or custom web URL first
+  const customWebUrl = process.env.EXPO_PUBLIC_WEB_URL
+  if (customWebUrl) return customWebUrl
 
-  // Fallbacks by platform
+  const devHost = getDevHost()
   if (devHost) return `http://${devHost}:${WEB_DEV_PORT}`
 
   if (isIos) return 'http://127.0.0.1:3000'
-
-  // Android emulator default
   return 'http://10.0.2.2:3000'
 }
 
@@ -140,7 +140,7 @@ export default function Webview() {
         return
       }
 
-      if (msg?.type === 'logout') {
+      if (msg?.type === 'LOGOUT') {
         await signOut()
         return
       }
