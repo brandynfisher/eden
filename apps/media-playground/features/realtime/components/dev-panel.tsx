@@ -4,6 +4,7 @@ import { AgentContextDisplay } from './agent-context-display'
 import { ConnectionStatus } from './connection-status'
 import { ConversationTranscript } from './conversation-transcript'
 import { DebugLogs } from './debug-logs'
+import { ToolCallsDisplay } from './tool-calls-display'
 import { Button } from '@/components/ui/button'
 import {
   AgentContext,
@@ -45,6 +46,7 @@ export const DevPanel: FC<DevPanelProps> = ({
       {!isMinimized && (
         <div className="p-4 space-y-4">
           <ConversationTranscript transcript={conversation.transcript} />
+          <ToolCallsDisplay toolCalls={conversation.toolCalls} />
           <DebugLogs logs={conversation.debugLogs} />
           <ConnectionStatus
             status={conversation.status}

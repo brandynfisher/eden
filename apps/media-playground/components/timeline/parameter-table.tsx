@@ -111,8 +111,8 @@ const ImageGalleryCell = React.memo(
                 slide={{
                   url: getCloudfrontOriginalUrl(inputImageUrl),
                   thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
-                  width: 192,
-                  height: 128,
+                  width: 1920,
+                  height: 1080,
                 }}
                 startIndex={index}
                 imageProps={{
