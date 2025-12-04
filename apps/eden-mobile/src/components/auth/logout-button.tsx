@@ -1,7 +1,12 @@
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { RootStackParamList } from '@/navigator'
 import createStyles from '@/styles/logout-button.styles'
 import { useClerk } from '@clerk/clerk-expo'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Text, TouchableOpacity } from 'react-native'
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
 export default function LogoutButton() {
   const colorScheme = useColorScheme()
@@ -9,9 +14,12 @@ export default function LogoutButton() {
   const styles = createStyles(theme)
   const { signOut } = useClerk()
 
+  const navigation = useNavigation<NavigationProp>()
+
   const handlePress = async () => {
     try {
       await signOut()
+      navigation.navigate('Splash')
     } catch (error) {
       console.error('Error signing out:', error)
     }
