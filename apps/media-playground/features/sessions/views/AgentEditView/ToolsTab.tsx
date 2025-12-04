@@ -6,6 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   FormControl,
   FormDescription,
   FormField,
@@ -18,8 +26,10 @@ import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Lock, Plus, XIcon } from 'lucide-react'
-import { FC } from 'react'
+import Link from 'next/link'
+import { FC, useState } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -35,10 +45,15 @@ interface ToolsTabProps {
 
 export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
   const hasReasoningFeature = user?.featureFlags?.includes('reasoning') || false
+  const [showGigabrainGateDialog, setShowGigabrainGateDialog] = useState(false)
 
   // show reasoning option if user has reasoning feature flag
   // true / false controls if to show to user who doesn't have flag
   const showReasoningOption = hasReasoningFeature // make invisible for now
+
+  const { isAllowed: isGigabrainAllowed } = useGatedResource(
+    GatedResource.GigabrainTools,
+  )
 
   const models = useFieldArray({
     control: form.control,
@@ -504,6 +519,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
                       label: 'Gigabrain tools',
                       description:
                         'Profile matching and collective kickstart tools',
+                      requiresProSubscription: true,
                     },
                     {
                       key: 'all_tools',
@@ -511,30 +527,42 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
                       description:
                         'Make available individual tools inside the image, video, and audio multi-tools (50+ individual tools)',
                     },
-                  ].map(tool => (
-                    <div key={tool.key} className="flex items-center space-x-2">
-                      <Switch
-                        checked={Boolean(field.value?.[tool.key])}
-                        onCheckedChange={checked => {
-                          const currentTools = field.value || {}
-                          field.onChange({
-                            ...currentTools,
-                            [tool.key]: checked,
-                          })
-                        }}
-                      />
-                      <div className="flex flex-col">
-                        <label className="text-sm font-medium">
-                          {tool.label}
-                        </label>
-                        {tool.description && (
-                          <span className="text-xs text-muted-foreground">
-                            {tool.description}
-                          </span>
-                        )}
+                  ].map(tool => {
+                    const isGated =
+                      tool.requiresProSubscription && !isGigabrainAllowed
+                    return (
+                      <div
+                        key={tool.key}
+                        className="flex items-center space-x-2"
+                      >
+                        <Switch
+                          checked={Boolean(field.value?.[tool.key])}
+                          onCheckedChange={checked => {
+                            if (isGated && checked) {
+                              setShowGigabrainGateDialog(true)
+                              return
+                            }
+                            const currentTools = field.value || {}
+                            field.onChange({
+                              ...currentTools,
+                              [tool.key]: checked,
+                            })
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            {tool.label}
+                            {isGated && <Lock className="h-3 w-3" />}
+                          </label>
+                          {tool.description && (
+                            <span className="text-xs text-muted-foreground">
+                              {tool.description}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </FormControl>
               <FormMessage />
@@ -542,6 +570,33 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
           )}
         />
       </div>
+
+      <Dialog
+        open={showGigabrainGateDialog}
+        onOpenChange={setShowGigabrainGateDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pro+ Subscription Required</DialogTitle>
+            <DialogDescription>
+              Gigabrain tools are only available to Pro+ subscribers. Upgrade
+              your subscription to unlock profile matching and collective
+              kickstart tools.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowGigabrainGateDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button asChild>
+              <Link href="/settings/subscription">View Subscription Plans</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
