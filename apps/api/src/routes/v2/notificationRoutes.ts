@@ -5,6 +5,7 @@ import {
   getNotifications,
   markNotificationsRead,
   markSessionNotificationsRead,
+  registerPushToken,
 } from '../../controllers/notificationController'
 import { isAdmin, isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -241,6 +242,42 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) =>
       markSessionNotificationsRead(server, request, reply),
+  })
+
+  // Register push token for current user
+  server.post('/v2/notifications/register-token', {
+    schema: {
+      tags: ['Notifications'],
+      summary: 'Register Push Token',
+      description: 'Register a push notification token for the current user',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        push_token: Type.String(),
+        platform: Type.Union([
+          Type.Literal('ios'),
+          Type.Literal('android'),
+          Type.Literal('web'),
+        ]),
+        device_id: Type.Optional(Type.String()),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          success: Type.Boolean(),
+          error: Type.String(),
+          details: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => registerPushToken(request, reply),
   })
 }
 

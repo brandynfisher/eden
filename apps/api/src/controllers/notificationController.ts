@@ -1,8 +1,10 @@
 import { Agent } from '../models/Agent'
+import { DeviceToken } from '../models/DeviceToken'
 import { Notification } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import { sendPushNotification } from '../services/pushNotificationService'
 import {
   NotificationsArchiveArguments,
   NotificationsCountArguments,
@@ -81,6 +83,60 @@ export const createNotification = async (
     if (channels.includes('in_app')) {
       notification.delivered_channels.push('in_app')
       await notification.save()
+    }
+
+    // Send push notifications if 'push' is in channels
+    if (channels.includes('push')) {
+      try {
+        // Get user's device tokens
+        const deviceTokens = await DeviceToken.find({
+          user: user_id,
+          active: true,
+        })
+
+        if (deviceTokens.length > 0) {
+          const pushPromises = deviceTokens.map(token =>
+            sendPushNotification(server, token.push_token, title, message, {
+              notification_id: notification._id.toString(),
+              type,
+              session_id,
+              ...metadata,
+            }),
+          )
+
+          const results = await Promise.allSettled(pushPromises)
+
+          // Check results and update delivered_channels
+          const successful = results.filter(
+            r => r.status === 'fulfilled' && r.value.success,
+          )
+          if (successful.length > 0) {
+            notification.delivered_channels.push('push')
+          }
+
+          // Mark failed tokens as inactive if needed
+          results.forEach((result, index) => {
+            if (
+              result.status === 'rejected' ||
+              (result.status === 'fulfilled' && !result.value.success)
+            ) {
+              server.log.warn(
+                `Failed to send push to token ${deviceTokens[index].push_token}`,
+              )
+            }
+          })
+        }
+
+        notification.delivery_attempted_at = new Date()
+        await notification.save()
+      } catch (pushError) {
+        server.log.error(
+          { err: pushError },
+          '[NOTIFICATIONS] Failed to send push notifications',
+        )
+        notification.delivery_failed_channels.push('push')
+        await notification.save()
+      }
     }
 
     // Broadcast WebSocket event for new notification
@@ -439,6 +495,59 @@ export const markSessionNotificationsRead = async (
     )
     return reply.status(500).send({
       error: 'Failed to mark session notifications as read',
+      details: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
+
+export const registerPushToken = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const userId = request.user.userId
+  const { push_token, platform, device_id } = request.body as {
+    push_token: string
+    platform: 'ios' | 'android' | 'web'
+    device_id?: string
+  }
+
+  try {
+    // Check if token already exists
+    const existingToken = await DeviceToken.findOne({ push_token })
+
+    if (existingToken) {
+      // Update existing token (user might have logged in on different account)
+      existingToken.user = userId
+      existingToken.platform = platform
+      existingToken.device_id = device_id
+      existingToken.active = true
+      await existingToken.save()
+
+      return reply.status(200).send({
+        success: true,
+        message: 'Push token updated successfully',
+      })
+    } else {
+      // Create new token
+      const deviceToken = new DeviceToken({
+        user: userId,
+        push_token,
+        platform,
+        device_id,
+        active: true,
+      })
+      await deviceToken.save()
+
+      return reply.status(200).send({
+        success: true,
+        message: 'Push token registered successfully',
+      })
+    }
+  } catch (error) {
+    request.log.error({ err: error }, 'Error registering push token')
+    return reply.status(500).send({
+      success: false,
+      error: 'Failed to register push token',
       details: error instanceof Error ? error.message : String(error),
     })
   }
