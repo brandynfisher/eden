@@ -28,8 +28,9 @@ const SingleImageWrapper = ({
   return (
     <div
       className={cn(
+        'overflow-hidden', // Prevent image from escaping container
         isPortrait
-          ? 'max-h-[40vh]' // Portrait: constrain height
+          ? 'max-h-[70vh] sm:max-h-[60vh] md:max-h-[50vh] lg:max-h-[45vh]' // Portrait: responsive height - generous on mobile, stricter on desktop
           : 'max-w-full sm:max-w-[80%] md:max-w-[600px]', // Landscape: constrain width
       )}
     >
@@ -41,7 +42,12 @@ const SingleImageWrapper = ({
           duration: mediaType === 'video' ? 0 : undefined,
         }}
         imageProps={{
-          className: 'rounded-lg w-full h-auto',
+          className: cn(
+            'rounded-lg',
+            isPortrait
+              ? 'max-h-full max-w-full h-auto w-auto object-contain' // Portrait: fit within container bounds
+              : 'w-full h-auto', // Landscape: width-driven sizing
+          ),
           unoptimized: true,
           loading: 'lazy',
           onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -50,7 +56,12 @@ const SingleImageWrapper = ({
           },
         }}
         videoProps={{
-          className: 'rounded-lg w-full h-auto',
+          className: cn(
+            'rounded-lg',
+            isPortrait
+              ? 'max-h-full max-w-full h-auto w-auto object-contain'
+              : 'w-full h-auto',
+          ),
         }}
       />
     </div>

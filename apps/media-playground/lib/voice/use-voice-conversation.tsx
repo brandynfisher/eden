@@ -6,6 +6,7 @@ import { DEFAULT_REALTIME_SETTINGS } from './realtime-defaults'
 import {
   ConnectionStatus,
   DebugLog,
+  ToolCall,
   TranscriptMessage,
   VoiceConversation,
   VoiceProviderConfig,
@@ -25,6 +26,7 @@ export function useVoiceConversation(
   const [agentId, setAgentId] = useState<string | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
+  const [toolCalls, setToolCalls] = useState<ToolCall[]>([])
   const [inputVolume, setInputVolume] = useState<number>(0)
   const sessionIdRef = useRef<string | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -38,6 +40,65 @@ export function useVoiceConversation(
       setDebugLogs(prev => [...prev, { timestamp, message, type }])
     },
     [],
+  )
+
+  // Helper function to add tool calls
+  const addToolCall = useCallback(
+    (
+      toolName: string,
+      parameters: Record<string, unknown>,
+      result?: unknown,
+    ) => {
+      const timestamp = new Date().toLocaleTimeString()
+      setToolCalls(prev => [
+        ...prev,
+        { timestamp, toolName, parameters, result },
+      ])
+    },
+    [],
+  )
+
+  // Wrap client tools to log them before executing
+  const wrapClientTools = useCallback(
+    (
+      clientTools:
+        | Record<
+            string,
+            (params: Record<string, unknown>) => unknown | Promise<unknown>
+          >
+        | undefined,
+    ) => {
+      if (!clientTools) return undefined
+
+      const wrappedTools: Record<
+        string,
+        (params: Record<string, unknown>) => Promise<unknown>
+      > = {}
+
+      for (const [toolName, handler] of Object.entries(clientTools)) {
+        wrappedTools[toolName] = async (
+          parameters: Record<string, unknown>,
+        ) => {
+          addDebugLog(`Tool called: ${toolName}`, 'info')
+
+          try {
+            const result = await handler(parameters)
+            addToolCall(toolName, parameters, result)
+            addDebugLog(`Tool ${toolName} completed successfully`, 'success')
+            return result
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : String(error)
+            addToolCall(toolName, parameters, { error: errorMessage })
+            addDebugLog(`Tool ${toolName} failed: ${errorMessage}`, 'error')
+            throw error
+          }
+        }
+      }
+
+      return wrappedTools
+    },
+    [addDebugLog, addToolCall],
   )
 
   // Helper function to monitor microphone volume
@@ -236,8 +297,9 @@ export function useVoiceConversation(
         `Disconnected from agent. Reason: ${JSON.stringify(reason)}`,
         'warning',
       )
-      // Clear transcript and reset state when conversation ends
+      // Clear transcript, tool calls and reset state when conversation ends
       setTranscript([])
+      setToolCalls([])
       stopVolumeMonitoring()
       sessionIdRef.current = null
     },
@@ -381,13 +443,25 @@ export function useVoiceConversation(
       // Prepare conversation config with dynamic variables
       const sessionConfig = prepareConversationConfig()
 
-      // Start the conversation with dynamic variables
+      // Wrap client tools to log them
+      const wrappedClientTools = wrapClientTools(config.clientTools)
+
+      // Start the conversation with dynamic variables and client tools
       addDebugLog('Starting ElevenLabs conversation...', 'info')
+      if (wrappedClientTools) {
+        addDebugLog(
+          `Registered client tools: ${Object.keys(wrappedClientTools).join(
+            ', ',
+          )}`,
+          'info',
+        )
+      }
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (conversation.startSession as any)({
           agentId: currentAgentId,
           ...sessionConfig,
+          ...(wrappedClientTools && { clientTools: wrappedClientTools }),
         })
         addDebugLog('ElevenLabs conversation started successfully', 'success')
       } catch (elevenLabsError) {
@@ -423,7 +497,9 @@ export function useVoiceConversation(
     conversation,
     config.edenAgentId,
     config.userInfo,
+    config.clientTools,
     prepareConversationConfig,
+    wrapClientTools,
     addDebugLog,
     startVolumeMonitoring,
     stopVolumeMonitoring,
@@ -452,6 +528,7 @@ export function useVoiceConversation(
     canSendFeedback: conversation.canSendFeedback || false,
     transcript,
     debugLogs,
+    toolCalls,
     inputVolume,
     startConversation,
     endConversation,
