@@ -200,7 +200,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         inModal ? '' : 'mb-4',
       ])}
     >
-      <div className={cn(['h-full px-4'])}>
+      <div className={cn(['h-full px-4 text-sm sm:text-base leading-relaxed'])}>
         <div className="pt-4 pb-3">
           {item ? (
             <div>

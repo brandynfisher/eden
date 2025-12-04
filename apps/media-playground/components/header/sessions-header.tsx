@@ -44,6 +44,8 @@ import { useEffect, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -301,7 +303,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           agents={session.agents}
           sessionId={sessionId}
           onSave={handleSaveSettings}
-          minimal={true}
+          minimal={false}
         />
       )}
     </>

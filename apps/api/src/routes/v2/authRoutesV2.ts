@@ -1,6 +1,7 @@
 import {
   DiscordOAuthQuery,
   createFarcasterManagedSigner,
+  createWebviewSignInToken,
   disconnectTikTok,
   disconnectTwitter,
   disconnectTwitterIntegration,
@@ -154,6 +155,28 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) =>
       getFarcasterSignerStatus(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.post('/v2/auth/native/webview-token', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Create sign-in token for WebView handoff',
+      description:
+        'Returns a short-lived Clerk sign-in token so the native app can open the webview already authenticated.',
+      hide: true,
+      body: Type.Object({
+        returnUrl: Type.Optional(Type.String()),
+      }),
+      response: {
+        200: Type.Object({
+          token: Type.String(),
+          expiresInSeconds: Type.Number(),
+        }),
+      },
+    },
+    handler: (request, reply) =>
+      createWebviewSignInToken(server, request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }

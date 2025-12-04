@@ -56,14 +56,27 @@ const CreateLanding = () => {
                 Select a tool
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-center gap-3">
+            <button
+              type="button"
+              onClick={openSelector}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openSelector()
+                }
+              }}
+              className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
               <div className="rounded-full bg-primary/10 text-primary-foreground h-14 w-14 flex items-center justify-center">
                 <SparklesIcon className="h-6 w-6" />
               </div>
-              <p className="text-sm text-foreground">
+              <p className="text-sm text-foreground font-medium">
                 Select a tool to get started.
               </p>
-            </div>
+              <span className="text-xs text-muted-foreground">
+                Open tool picker
+              </span>
+            </button>
           </div>
         </div>
       </div>

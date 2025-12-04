@@ -77,7 +77,7 @@ export default function SignInModal({ visible, onClose }: SignInModalProps) {
               <View style={styles.closeButton} />
               <View style={styles.logoContainer}>
                 <Image
-                  source={require('../../../assets/images/icon.png')}
+                  source={require('../../../assets/images/transparent-icon.png')}
                   style={styles.logo}
                 />
               </View>

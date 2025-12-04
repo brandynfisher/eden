@@ -26,6 +26,25 @@ export interface DebugLog {
   type: 'info' | 'success' | 'warning' | 'error' | 'debug'
 }
 
+/**
+ * Represents a tool call made by the agent during conversation
+ */
+export interface ToolCall {
+  timestamp: string
+  toolName: string
+  parameters: Record<string, unknown>
+  result?: unknown
+}
+
+/**
+ * Client tool handler function type
+ * Parameters are passed from ElevenLabs based on dashboard configuration
+ * Return value is sent back to agent if "Wait for response" is enabled
+ */
+export type ClientToolHandler = (
+  parameters: Record<string, unknown>,
+) => unknown | Promise<unknown>
+
 export interface VoiceProviderConfig {
   provider: 'elevenlabs' // Can extend to 'openai' | 'other' in future
   /**
@@ -45,6 +64,12 @@ export interface VoiceProviderConfig {
    * These are used to configure the ElevenLabs conversation session
    */
   realtimeSettings: RealtimeSettings
+  /**
+   * Client tools that can be invoked by the agent during conversation
+   * Tool names must match exactly with ElevenLabs dashboard configuration
+   * @see https://elevenlabs.io/docs/agents-platform/customization/tools/client-tools
+   */
+  clientTools?: Record<string, ClientToolHandler>
 }
 
 export interface VoiceConversationState {
@@ -53,6 +78,7 @@ export interface VoiceConversationState {
   canSendFeedback: boolean
   transcript: TranscriptMessage[]
   debugLogs: DebugLog[]
+  toolCalls: ToolCall[] // Tool calls made during conversation
   inputVolume: number // 0-100 representing microphone input volume
 }
 

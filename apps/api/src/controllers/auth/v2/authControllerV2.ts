@@ -6,6 +6,7 @@ import { User } from '../../../models/User'
 import { UserIdentity } from '../../../models/UserIdentity'
 import { CreationV2 } from '../../../models/v2/CreationV2'
 import { linkUserIdentity } from '../../../services/userIdentityService'
+import { getAuth } from '@clerk/fastify'
 import { ViemLocalEip712Signer } from '@farcaster/hub-nodejs'
 import { NeynarAPIClient } from '@neynar/nodejs-sdk'
 import axios from 'axios'
@@ -16,6 +17,40 @@ export type DiscordOAuthQuery = {
   code?: string
   state?: string
   mode?: string
+}
+
+export const createWebviewSignInToken = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId: clerkUserId } = getAuth(request)
+
+  if (!clerkUserId) {
+    return reply.status(401).send({ message: 'Unauthorized' })
+  }
+
+  if (!server.clerk) {
+    server.log.error('Clerk client not registered')
+    return reply.status(500).send({ message: 'Auth service unavailable' })
+  }
+
+  const expiresInSeconds = 120
+
+  try {
+    const token = await server.clerk.signInTokens.createSignInToken({
+      userId: clerkUserId,
+      expiresInSeconds,
+    })
+
+    return reply.send({
+      token: token.token,
+      expiresInSeconds,
+    })
+  } catch (error) {
+    server.log.error({ error }, 'Failed to create webview sign-in token')
+    return reply.status(500).send({ message: 'Failed to create token' })
+  }
 }
 
 export const discordOAuth = async (

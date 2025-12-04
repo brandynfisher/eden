@@ -1,31 +1,6 @@
-/**
- * Wellness Theme - Warm Earthy Design
- * Based on Mental-Health-Hub theme with sage green primary colors
- */
 import { wp } from '@/utils/responsive'
 
 export const Colors = {
-  light: {
-    primary: '#7C3AED',
-    background: '#FFFFFF',
-    iconPrimary: '#7C3AED',
-    iconSecondary: '#1A1A1A',
-    button: '#7C3AED',
-    placeholderText: '#9CA3AF',
-    success: '#10B981',
-    warning: '#F59E0B',
-    error: '#EF4444',
-    info: '#3B82F6',
-    textPrimary: '#1A1A1A',
-    textSecondary: '#6B7280',
-    textTertiary: '#9CA3AF',
-    textInverse: '#FFFFFF',
-    surface: '#D5D5D5',
-    border: '#E5E7EB',
-    shadow: 'rgba(0, 0, 0, 0.08)',
-    shadowMedium: 'rgba(0, 0, 0, 0.12)',
-    shadowStrong: 'rgba(0, 0, 0, 0.2)',
-  },
   dark: {
     primary: '#7C3AED',
     background: '#1A1A1A',
@@ -47,16 +22,37 @@ export const Colors = {
     shadowMedium: 'rgba(0, 0, 0, 0.4)',
     shadowStrong: 'rgba(0, 0, 0, 0.5)',
   },
+  light: {
+    primary: '#7C3AED',
+    background: '#FFFFFF',
+    iconPrimary: '#7C3AED',
+    iconSecondary: '#1A1A1A',
+    button: '#7C3AED',
+    placeholderText: '#9CA3AF',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    info: '#3B82F6',
+    textPrimary: '#1A1A1A',
+    textSecondary: '#6B7280',
+    textTertiary: '#9CA3AF',
+    textInverse: '#FFFFFF',
+    surface: '#D5D5D5',
+    border: '#E5E7EB',
+    shadow: 'rgba(0, 0, 0, 0.08)',
+    shadowMedium: 'rgba(0, 0, 0, 0.12)',
+    shadowStrong: 'rgba(0, 0, 0, 0.2)',
+  },
 }
 
 // Typography
 export const Typography = {
   fontFamily: {
-    regular: 'Inter-Regular',
-    medium: 'Inter-Medium',
-    semibold: 'Inter-SemiBold',
-    bold: 'Inter-Bold',
-    italic: 'Inter-Italic',
+    regular: 'SpaceGrotesk-Regular',
+    medium: 'SpaceGrotesk-Medium',
+    semibold: 'SpaceGrotesk-SemiBold',
+    bold: 'SpaceGrotesk-Bold',
+    light: 'SpaceGrotesk-Light',
   },
   fontSize: {
     xs: wp(3),

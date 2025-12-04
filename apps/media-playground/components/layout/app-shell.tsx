@@ -58,6 +58,8 @@ const DISABLE_PREFIXES = [
   '/new',
   '/studio',
   '/gigabrain',
+  '/models',
+  '/creations',
 ]
 const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'
@@ -268,7 +270,16 @@ const AppShell = ({ children }: PropsWithChildren) => {
           </div>
         </>
       ) : (
-        children
+        // When the shell is disabled, still provide a scroll container so pages
+        // can scroll (body is overflow-hidden globally).
+        <ScrollContainerProvider value={scrollRef}>
+          <div
+            ref={scrollRef}
+            className="flex flex-col min-h-screen w-full overflow-y-auto"
+          >
+            {children}
+          </div>
+        </ScrollContainerProvider>
       )}
     </AppShellContext.Provider>
   )

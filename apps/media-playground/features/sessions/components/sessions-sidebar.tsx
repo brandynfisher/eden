@@ -48,7 +48,12 @@ import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { Agent, FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  FeatureFlag,
+  SessionPermissionLevel,
+  SubscriptionTier,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   ActivityIcon,
@@ -102,6 +107,8 @@ interface SessionListItemProps {
   unreadCount?: number
   userId?: string
   hideAvatars?: boolean
+  ownerId?: string
+  permissionLevel?: SessionPermissionLevel
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -118,6 +125,8 @@ const SessionListItem: FC<SessionListItemProps> = ({
   unreadCount = 0,
   userId: _userId, // Used in share dialog
   hideAvatars = false,
+  ownerId,
+  permissionLevel,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -139,6 +148,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const isSubmittingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const isOwnerOfSession = ownerId && _userId && ownerId === _userId
+  const canManageSession = !!isOwnerOfSession
+  const permissionLabel =
+    permissionLevel && permissionLevel !== SessionPermissionLevel.Owner
+      ? `${permissionLevel.charAt(0).toUpperCase()}${permissionLevel.slice(1)}`
+      : undefined
 
   // Fetch session data when share dialog is opened
   const { data: session, isLoading: isSessionLoading } = useSessionQuery({
@@ -343,6 +359,11 @@ const SessionListItem: FC<SessionListItemProps> = ({
                       {unreadCount}
                     </span>
                   )}
+                  {!canManageSession && permissionLabel && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-medium border border-border text-muted-foreground shrink-0">
+                      {permissionLabel}
+                    </span>
+                  )}
                 </div>
                 {(agents.length > 2 || isFromTrigger) && (
                   <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
@@ -424,7 +445,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                   }
                 }
               }}
-              disabled={isDeleting}
+              disabled={!canManageSession || isDeleting}
             >
               {isPinned ? (
                 <>
@@ -444,7 +465,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                 setIsEditing(true)
                 setNewTitle(optimisticTitle || '')
               }}
-              disabled={isDeleting}
+              disabled={!canManageSession || isDeleting}
             >
               <PencilIcon className="size-4" />
               Rename
@@ -456,7 +477,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                 setPendingDeleteId(id)
                 setShowDeleteDialog(true)
               }}
-              disabled={isDeleting}
+              disabled={!canManageSession || isDeleting}
             >
               <TrashIcon className="size-4" />
               Delete
@@ -732,6 +753,8 @@ const MainLeft = ({
                       onPinToggle={handlePinToggle}
                       unreadCount={unreadCounts?.get(session._id) || 0}
                       userId={user?._id}
+                      ownerId={session.owner?._id}
+                      permissionLevel={session.permission_level_for_user}
                       hideAvatars={false}
                       onItemClick={() => {
                         onItemClick?.()
@@ -803,6 +826,16 @@ const SidebarUserProfile = ({
   const logout = async () => {
     if (isSignedIn) {
       await signOut()
+
+      // Check if we're in a React Native WebView and send logout message
+      if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'LOGOUT',
+          }),
+        )
+      }
+
       window.location.href = '/'
     }
   }
@@ -876,7 +909,7 @@ const SidebarUserProfile = ({
       hidden={hasOpenDialog}
       onCloseAutoFocus={event => {
         if (focusRef.current) {
-          (focusRef.current as HTMLButtonElement).focus()
+          ;(focusRef.current as HTMLButtonElement).focus()
           focusRef.current = null
           event.preventDefault()
         }

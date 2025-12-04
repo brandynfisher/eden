@@ -23,7 +23,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
@@ -91,6 +91,20 @@ const AttachmentDropzone = ({
   )
 }
 
+type NativeWebViewBridge = {
+  postMessage: (message: string) => void
+}
+
+const getNativeWebViewBridge = () => {
+  if (typeof window === 'undefined') return undefined
+
+  return (
+    window as Window & {
+      ReactNativeWebView?: NativeWebViewBridge
+    }
+  ).ReactNativeWebView
+}
+
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
@@ -125,6 +139,8 @@ export const MessageInput = ({
   const [isThinkingEnabled, setIsThinkingEnabled] = useState(false)
   const accept = 'image/*,video/*,/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const awaitingNativePermissionRef = useRef(false)
+  const isNativeWebViewRef = useRef(false)
   const [showMention, setShowMention] = useState(false)
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
@@ -265,6 +281,66 @@ export const MessageInput = ({
     },
     [handleFilesDropped],
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    isNativeWebViewRef.current = !!getNativeWebViewBridge()
+
+    const handleNativeMessage = (event: MessageEvent) => {
+      if (!event.data) return
+
+      let payload = event.data
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload)
+        } catch {
+          return
+        }
+      }
+
+      if (
+        payload?.type === 'PERMISSIONS_RESULT' &&
+        awaitingNativePermissionRef.current
+      ) {
+        awaitingNativePermissionRef.current = false
+
+        if (payload.cameraGranted && payload.storageGranted) {
+          fileInputRef.current?.click()
+        } else {
+          alert(
+            'Camera or storage permission was denied in the mobile app settings.',
+          )
+        }
+      }
+    }
+
+    const handleDocumentMessage = (event: Event) => {
+      handleNativeMessage(event as MessageEvent)
+    }
+
+    window.addEventListener('message', handleNativeMessage)
+    document.addEventListener('message', handleDocumentMessage)
+
+    return () => {
+      window.removeEventListener('message', handleNativeMessage)
+      document.removeEventListener('message', handleDocumentMessage)
+    }
+  }, [])
+
+  const handleAttachmentTrigger = useCallback(() => {
+    if (isSubmitting) return
+
+    const bridge = getNativeWebViewBridge()
+
+    if (bridge && isNativeWebViewRef.current) {
+      awaitingNativePermissionRef.current = true
+      bridge.postMessage(JSON.stringify({ type: 'CHECK_NATIVE_PERMISSIONS' }))
+      return
+    }
+
+    fileInputRef.current?.click()
+  }, [isSubmitting])
 
   useEffect(() => {
     const handleDragEnter = (e: DragEvent) => {
@@ -531,12 +607,27 @@ export const MessageInput = ({
   }, [handleFilesDropped])
 
   // Check if this is a read-only view (user doesn't own session and has no permissions)
-  // User has access if they own the session OR if they have any permission level
-  const hasPermission = session?.permissions?.some(
+  const permissionForUser = session?.permissions?.find(
     p => p.user?._id === user?._id,
   )
+
+  const hasInteractivePermission =
+    permissionForUser &&
+    permissionForUser.level !== SessionPermissionLevel.Viewer
+
+  const isOwner = session?.owner?._id === user?._id
+  const isSessionUser = session?.users?.some(u => {
+    if (!u || !user?._id) return false
+    if (typeof u === 'string') return u === user._id
+    return u._id === user._id
+  })
+
   const isReadOnly =
-    session && user && session.owner?._id !== user._id && !hasPermission
+    !!session &&
+    !!user &&
+    !isOwner &&
+    !isSessionUser &&
+    !hasInteractivePermission
 
   // If read-only, show read-only indicator
   if (isReadOnly) {
@@ -682,7 +773,7 @@ export const MessageInput = ({
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8"
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={handleAttachmentTrigger}
                                 disabled={isSubmitting}
                               >
                                 <PaperclipIcon className="w-4 h-4" />
@@ -807,7 +898,7 @@ export const MessageInput = ({
                               size="icon"
                               variant="ghost"
                               className="h-8 w-8"
-                              onClick={() => fileInputRef.current?.click()}
+                              onClick={handleAttachmentTrigger}
                               disabled={isSubmitting}
                             >
                               <PaperclipIcon className="w-4 h-4" />

@@ -34,7 +34,9 @@ import { Agent, SessionPermission } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   ChevronDown,
+  EyeIcon,
   Loader2,
+  MessageSquareIcon,
   Plus,
   ShieldIcon,
   UserIcon,
@@ -91,13 +93,15 @@ const sessionFormSchema = z.object({
     .array(
       z.object({
         username: z.string(),
-        level: z.enum(['editor', 'owner']),
+        level: z.enum(['editor', 'owner', 'participant', 'viewer']),
       }),
     )
     .default([]),
 })
 
 export type SessionFormValues = z.infer<typeof sessionFormSchema>
+
+type PermissionLevelOption = 'owner' | 'editor' | 'participant' | 'viewer'
 
 type SessionFormProps = {
   mode: 'create' | 'edit'
@@ -120,9 +124,8 @@ export const SessionForm = ({
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>(initialAgents)
   const [isBudgetSettingsOpen, setIsBudgetSettingsOpen] = useState(false)
   const [newUsername, setNewUsername] = useState('')
-  const [permissionLevel, setPermissionLevel] = useState<'editor' | 'owner'>(
-    'editor',
-  )
+  const [permissionLevel, setPermissionLevel] =
+    useState<PermissionLevelOption>('participant')
 
   useEffect(() => {
     if (initialAgents.length > 0 && selectedAgents.length === 0) {
@@ -196,8 +199,18 @@ export const SessionForm = ({
     )
   }
 
-  const owners = form.watch('permissions').filter(p => p.level === 'owner')
-  const editors = form.watch('permissions').filter(p => p.level === 'editor')
+  const owners = form
+    .watch('permissions')
+    .filter(p => p.level === 'owner' && p.username)
+  const editors = form
+    .watch('permissions')
+    .filter(p => p.level === 'editor' && p.username)
+  const participants = form
+    .watch('permissions')
+    .filter(p => p.level === 'participant' && p.username)
+  const viewers = form
+    .watch('permissions')
+    .filter(p => p.level === 'viewer' && p.username)
 
   return (
     <Form {...form}>
@@ -639,8 +652,10 @@ export const SessionForm = ({
                     Session Permissions
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Grant users permission to view or manage this session.
-                    Owners have full control, while editors can only view.
+                    Grant other Eden users access to this session. Owners can
+                    manage settings and permissions, editors and participants
+                    can interact in the session, and viewers have read-only
+                    access (even if the session is private).
                   </p>
 
                   <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
@@ -661,7 +676,28 @@ export const SessionForm = ({
                           Editor Permissions
                         </div>
                         <div className="text-muted-foreground ml-6">
-                          Limited access: View session only
+                          Collaborate: can interact in the session; owners still
+                          manage permissions.
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground mb-1 flex items-center gap-2">
+                          <MessageSquareIcon className="w-4 h-4" />
+                          Participant Permissions
+                        </div>
+                        <div className="text-muted-foreground ml-6">
+                          Can send messages and interact with agents but cannot
+                          change settings or permissions.
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground mb-1 flex items-center gap-2">
+                          <EyeIcon className="w-4 h-4" />
+                          Viewer Permissions
+                        </div>
+                        <div className="text-muted-foreground ml-6">
+                          Read-only: can open the session (even if private) but
+                          cannot interact.
                         </div>
                       </div>
                     </div>
@@ -683,7 +719,7 @@ export const SessionForm = ({
                     <Select
                       value={permissionLevel}
                       onValueChange={value =>
-                        setPermissionLevel(value as 'editor' | 'owner')
+                        setPermissionLevel(value as PermissionLevelOption)
                       }
                     >
                       <SelectTrigger className="w-[140px]">
@@ -692,6 +728,8 @@ export const SessionForm = ({
                       <SelectContent>
                         <SelectItem value="editor">Editor</SelectItem>
                         <SelectItem value="owner">Owner</SelectItem>
+                        <SelectItem value="participant">Participant</SelectItem>
+                        <SelectItem value="viewer">Viewer</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button
@@ -741,7 +779,7 @@ export const SessionForm = ({
                   )}
 
                   {editors.length > 0 && (
-                    <div>
+                    <div className="mb-4">
                       <label className="text-sm font-medium block mb-2">
                         Editors
                       </label>
@@ -758,6 +796,80 @@ export const SessionForm = ({
                               </span>
                               <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
                                 Editor
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleRemovePermission(permission.username)
+                              }
+                              type="button"
+                              className="hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {participants.length > 0 && (
+                    <div className="mb-4">
+                      <label className="text-sm font-medium block mb-2">
+                        Participants
+                      </label>
+                      <div className="space-y-2">
+                        {participants.map(permission => (
+                          <div
+                            key={permission.username}
+                            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <MessageSquareIcon className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                {permission.username}
+                              </span>
+                              <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
+                                Participant
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleRemovePermission(permission.username)
+                              }
+                              type="button"
+                              className="hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {viewers.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium block mb-2">
+                        Viewers
+                      </label>
+                      <div className="space-y-2">
+                        {viewers.map(permission => (
+                          <div
+                            key={permission.username}
+                            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <EyeIcon className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                {permission.username}
+                              </span>
+                              <span className="text-xs text-muted-foreground bg-background px-2 py-1 rounded">
+                                Viewer
                               </span>
                             </div>
                             <Button

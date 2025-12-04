@@ -95,6 +95,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   }, [combinedQuery])
 
   const handleTabChange = (value: string) => {
+    if (value === activeTab) return
     // Clear any existing timeout
     if (tabChangeTimeoutRef.current) {
       clearTimeout(tabChangeTimeoutRef.current)
