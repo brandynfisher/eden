@@ -12,6 +12,27 @@ const registerWebSocket: FastifyPluginAsync = async (
   fastify: FastifyInstance,
 ) => {
   try {
+    const baseAllowed = [
+      fastify.config.FRONTEND_URL,
+      fastify.config.EDEN2_FRONTEND_URL,
+    ]
+
+    // Also allow 127.0.0.1 variants when the configured host is localhost
+    const allowedVariants = baseAllowed.flatMap(origin => {
+      try {
+        const url = new URL(origin)
+        if (url.hostname === 'localhost') {
+          const port = url.port ? `:${url.port}` : ''
+          return [`${url.protocol}//127.0.0.1${port}`]
+        }
+      } catch (err) {
+        fastify.log.debug({ err, origin }, 'websocket origin parse failed')
+      }
+      return [] as string[]
+    })
+
+    const allowedOrigins = [...baseAllowed, ...allowedVariants]
+
     const websocketOptions: WebsocketPluginOptions = {
       errorHandler: (error, socket, req, reply) => {
         fastify.log.error({ error, req, reply }, 'Websocket ErrorHandler')
@@ -21,17 +42,11 @@ const registerWebSocket: FastifyPluginAsync = async (
         clientTracking: true,
         maxPayload: 1048576, // limit message size to 1 MiB
         verifyClient: (info, next) => {
-          if (
-            info.origin !== fastify.config.FRONTEND_URL &&
-            info.origin !== fastify.config.EDEN2_FRONTEND_URL
-          ) {
+          if (!allowedOrigins.includes(info.origin)) {
             fastify.log.warn(
               {
                 origin: info.origin,
-                allowedOrigin: [
-                  fastify.config.FRONTEND_URL,
-                  fastify.config.EDEN2_FRONTEND_URL,
-                ],
+                allowedOrigin: allowedOrigins,
               },
               'WebSocket connection rejected',
             )

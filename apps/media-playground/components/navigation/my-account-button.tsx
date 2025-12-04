@@ -59,6 +59,7 @@ const AccountDropdown = () => {
   const logout = async () => {
     if (isSignedIn) {
       await signOut()
+
       window.location.href = '/'
     }
   }
@@ -101,7 +102,7 @@ const AccountDropdown = () => {
         hidden={hasOpenDialog}
         onCloseAutoFocus={event => {
           if (focusRef.current) {
-            (focusRef.current as HTMLButtonElement).focus()
+            ;(focusRef.current as HTMLButtonElement).focus()
             focusRef.current = null
             event.preventDefault()
           }
