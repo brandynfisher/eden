@@ -3,6 +3,7 @@ import { FileType, MimeType } from '@/types/Media'
 import { downloadZip } from '@/utils/downloader.util'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import exifr from 'exifr'
+import { hash as fastSha256 } from 'fast-sha256'
 
 const MAX_IMAGE_PIXELS = 4000000 // 4MP
 const MAX_IMAGE_WIDTH = 1920
@@ -23,11 +24,25 @@ export const getBase64 = (file: File): Promise<string> =>
   })
 
 export const getFileHash = async (file: File): Promise<string> => {
-  const arrayBuffer = await file.arrayBuffer()
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer)) // Convert buffer to byte array
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('') // Convert bytes to hex string
-  return hashHex
+  const buffer = new Uint8Array(await file.arrayBuffer())
+  const webCrypto =
+    (typeof self !== 'undefined' &&
+      ((self as unknown as { crypto?: Crypto }).crypto ||
+        (self as unknown as { msCrypto?: Crypto }).msCrypto ||
+        (self as unknown as { webkitCrypto?: Crypto }).webkitCrypto)) ||
+    undefined
+
+  if (webCrypto?.subtle?.digest) {
+    const hashBuffer = await webCrypto.subtle.digest('SHA-256', buffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // Fallback for environments (iOS WKWebView) without SubtleCrypto
+  const digest = fastSha256(buffer)
+  return Array.from(digest)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
 }
 
 export const requestSignedUrl = async (
@@ -51,6 +66,13 @@ export const requestSignedUrl = async (
 export const rotateImageBasedOnExif = async (file: File): Promise<File> => {
   // Only process image files
   if (!file.type.startsWith('image/')) {
+    return file
+  }
+
+  // React Native / webviews on older mobile browsers may not expose DOM
+  // imaging APIs. In that case, skip transformation and upload the original
+  // file to avoid hard failures.
+  if (typeof document === 'undefined') {
     return file
   }
 
@@ -240,6 +262,24 @@ export const uploadFileToS3 = async (
     } catch (error) {
       lastError = error as Error
 
+      // Surface detailed logs to JS console for debugging mobile WebView issues
+      if (axios.isAxiosError(error)) {
+        console.error('uploadFileToS3 failed', {
+          attempt,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          responseData: error.response?.data,
+          responseText: error.request?.responseText,
+          requestUrl: error.config?.url,
+          message: error.message,
+        })
+      } else {
+        console.error('uploadFileToS3 failed', {
+          attempt,
+          message: (error as Error)?.message,
+        })
+      }
+
       // Check if this is a cancellation error
       if (axios.isCancel(error)) {
         throw error // Re-throw cancellation errors
@@ -337,14 +377,48 @@ export const getVideoMetadata = async (
 }
 
 export const getDimensionsFromImgBlob = async (file: File) => {
-  const blob = new Blob([file], { type: file.type })
-  const imgBitmap = await createImageBitmap(blob)
-  const { width, height } = imgBitmap
-  imgBitmap.close()
+  try {
+    const blob = new Blob([file], { type: file.type })
 
-  return {
-    width,
-    height,
+    // Prefer createImageBitmap when available (desktop browsers)
+    if (typeof createImageBitmap === 'function') {
+      const imgBitmap = await createImageBitmap(blob)
+      const { width, height } = imgBitmap
+      imgBitmap.close()
+
+      return { width, height }
+    }
+
+    // Fallback for iOS Safari / React Native WebView where createImageBitmap
+    // is missing. Load into an Image element to read natural dimensions.
+    if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
+      return await new Promise<{ width: number; height: number } | undefined>(
+        resolve => {
+          const objectUrl = URL.createObjectURL(blob)
+          const img = new Image()
+
+          img.onload = () => {
+            const width = img.naturalWidth || img.width
+            const height = img.naturalHeight || img.height
+            URL.revokeObjectURL(objectUrl)
+            resolve({ width, height })
+          }
+
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl)
+            resolve(undefined)
+          }
+
+          img.src = objectUrl
+        },
+      )
+    }
+
+    // As a last resort, return undefined instead of throwing
+    return undefined
+  } catch (error) {
+    console.warn('Unable to read image dimensions', error)
+    return undefined
   }
 }
 

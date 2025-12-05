@@ -84,6 +84,6 @@ export default (theme: 'light' | 'dark') =>
     nextButtonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textPrimary,
+      color: '#FFFFFF',
     },
   })

@@ -90,4 +90,28 @@ export default (theme: 'light' | 'dark') =>
       fontFamily: Typography.fontFamily.semibold,
       color: '#FFFFFF',
     },
+    stickyResetBanner: {
+      position: 'absolute',
+      top: Spacing.sm,
+      right: Spacing.sm,
+      zIndex: 10,
+      backgroundColor: Colors[theme].backgroundMuted ?? Colors[theme].background,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: Colors[theme].border,
+      shadowColor: '#000',
+      shadowOpacity: 0.12,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+    resetButton: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+    },
+    resetButtonText: {
+      fontSize: Typography.fontSize.sm,
+      fontFamily: Typography.fontFamily.semibold,
+      color: Colors[theme].primary,
+    },
   })

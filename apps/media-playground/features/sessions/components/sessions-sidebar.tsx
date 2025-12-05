@@ -4,15 +4,10 @@ import { AgentAvatars } from './agent-avatars'
 import { RecentAgents } from './recent-agents'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
-import FeedbackForm from '@/components/form/feedback-form'
-import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
-import DiscordIcon from '@/components/icons/discord'
-import TwitterIcon from '@/components/icons/twitter'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
-import DialogMenuItem from '@/components/modal/dialog-menu-item'
+import AccountMenuContent from '@/components/navigation/account-menu-content'
 import NotificationDropdown from '@/components/notifications/notification-dropdown'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
@@ -41,43 +35,25 @@ import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-quer
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
-import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import {
-  Agent,
-  FeatureFlag,
-  SessionPermissionLevel,
-  SubscriptionTier,
-} from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
-  ActivityIcon,
-  BookmarkIcon,
-  BotIcon,
   CheckIcon,
   ChevronRightIcon,
   ClockIcon,
-  ComponentIcon,
-  CreditCardIcon,
-  ImageIcon,
-  LogOutIcon,
   MenuIcon,
-  MessageSquareIcon,
   MoreHorizontal,
   PencilIcon,
   PinIcon,
   PinOffIcon,
-  SettingsIcon,
   Share2,
-  TicketIcon,
   TrashIcon,
 } from 'lucide-react'
-import Link from 'next/link'
 import {
   useParams,
   usePathname,
@@ -775,16 +751,6 @@ const MainLeft = ({
   )
 }
 
-// ThemeToggle wrapper for forwardRef
-const ThemeToggleForwardWrap = React.forwardRef<HTMLDivElement>(
-  ({ ...rest }, ref) => (
-    <div ref={ref} className="w-full">
-      <ThemeToggle {...rest} label={'Theme'} />
-    </div>
-  ),
-)
-ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
-
 // User Profile component for sidebar bottom
 const SidebarUserProfile = ({
   variant = 'default',
@@ -841,21 +807,14 @@ const SidebarUserProfile = ({
   }
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
-  const [settingsModalInitialTab] = useState('account')
+  const [settingsModalInitialTab, setSettingsModalInitialTab] =
+    useState('account')
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
-  const focusRef = useRef<HTMLButtonElement | null>(null)
 
-  function handleDialogItemSelect() {
-    focusRef.current = dropdownTriggerRef.current
-  }
-
-  function handleDialogItemOpenChange(open: boolean) {
-    setHasOpenDialog(open)
-    if (!open) {
-      setDropdownOpen(false)
-    }
+  const openSettings = (tab = 'account') => {
+    setSettingsModalInitialTab(tab)
+    setSettingsModalOpen(true)
   }
 
   // Avoid rendering auth controls until auth state and user data have settled
@@ -902,198 +861,17 @@ const SidebarUserProfile = ({
   }
 
   const dropdownContent = (
-    <DropdownMenuContent
+    <AccountMenuContent
+      user={user ?? undefined}
+      balance={balance}
+      isPreviewUser={isPreviewUser}
+      onLogout={logout}
+      onOpenSettings={openSettings}
+      setDropdownOpen={setDropdownOpen}
+      triggerRef={dropdownTriggerRef}
       side={variant === 'collapsed' ? 'right' : 'top'}
       align={variant === 'collapsed' ? 'end' : 'start'}
-      className="w-60 mb-2"
-      hidden={hasOpenDialog}
-      onCloseAutoFocus={event => {
-        if (focusRef.current) {
-          ;(focusRef.current as HTMLButtonElement).focus()
-          focusRef.current = null
-          event.preventDefault()
-        }
-      }}
-    >
-      <DropdownMenuItem className="cursor-pointer group" asChild>
-        <Link
-          href={`/creators/${user?.username}`}
-          className="group flex gap-2 items-center cursor-pointer "
-        >
-          <UserAvatar
-            image={user?.userImage}
-            name={user?.username}
-            className="h-8 w-8"
-          />
-          <div className="flex flex-col justify-center min-w-0">
-            <div className="group-hover:text-primary text-xs transition-colors">
-              {user?.username}
-            </div>
-            {user?.email ? (
-              <span className="text-xs text-muted-foreground/70 truncate">
-                {user?.email}
-              </span>
-            ) : null}
-          </div>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link
-          href={'/settings/subscription'}
-          className="flex items-center justify-between w-full"
-        >
-          <div className="capitalize text-xs">
-            <span>
-              {
-                subscriptionTierNameMap[
-                  user?.subscriptionTier || SubscriptionTier.Free
-                ]
-              }
-            </span>
-            <span className="ml-1 text-muted-foreground/70">plan</span>
-          </div>
-          <div className="text-xs">
-            <span>{Number((balance || 0).toFixed(0)).toLocaleString()}</span>
-            <span className="ml-1 text-muted-foreground/70">manna</span>
-          </div>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link href={`/creators/${user?.username}`}>
-          <ImageIcon className="mr-2 h-4 w-4" />
-          <span>Creations</span>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link href={`/creators/${user?.username}?tab=models`}>
-          <ComponentIcon className="mr-2 h-4 w-4" />
-          <span>Models</span>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link href={`/creators/${user?.username}?tab=collections`}>
-          <BookmarkIcon className="mr-2 h-4 w-4" />
-          <span>Collections</span>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link href={`/creators/${user?.username}?tab=agents`}>
-          <BotIcon className="mr-2 h-4 w-4" />
-          <span>Agents</span>
-        </Link>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-
-      {isPreviewUser && (
-        <>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href="/sessions">
-              <MessageSquareIcon className="mr-2 h-4 w-4" />
-              <span>Sessions</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/settings/tasks`}>
-              <ClockIcon className="mr-2 h-4 w-4" />
-              <span>Tasks</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/settings/integrations`}>
-              <ActivityIcon className="mr-2 h-4 w-4" />
-              <span>Integrations</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-        </>
-      )}
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <Link href={`/settings/subscription`}>
-          <CreditCardIcon className="mr-2 h-4 w-4" />
-          <span>Subscription</span>
-        </Link>
-      </DropdownMenuItem>
-      <DialogMenuItem
-        onSelect={handleDialogItemSelect}
-        onOpenChange={handleDialogItemOpenChange}
-        triggerChildren={
-          <>
-            <TicketIcon className="mr-2 h-4 w-4" />
-            <span>Redeem Voucher</span>
-          </>
-        }
-      >
-        <RedeemVoucherForm />
-      </DialogMenuItem>
-      <DropdownMenuItem
-        className="cursor-pointer"
-        onSelect={() => {
-          setSettingsModalOpen(true)
-          setDropdownOpen(false)
-        }}
-      >
-        <SettingsIcon className="mr-2 h-4 w-4" />
-        <span>Settings</span>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem className="cursor-pointer" asChild>
-        <ThemeToggleForwardWrap />
-      </DropdownMenuItem>
-      <DialogMenuItem
-        onSelect={handleDialogItemSelect}
-        onOpenChange={handleDialogItemOpenChange}
-        triggerChildren={
-          <>
-            <MessageSquareIcon className="mr-2 h-4 w-4" />
-            <span>Send Feedback</span>
-          </>
-        }
-      >
-        <FeedbackForm />
-      </DialogMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-        <LogOutIcon className="mr-2 h-4 w-4" />
-        <span>Log out</span>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <div className="pl-2">
-        <div className="flex items-center w-full">
-          <Link
-            className="text-xs hover:underline text-muted-foreground"
-            href={`https://docs.eden.art/legal/tos`}
-            prefetch={false}
-          >
-            <span>Terms</span>
-          </Link>
-
-          <div className="ml-auto flex gap-1">
-            <Button variant="ghost" size={'icon'} asChild>
-              <Link
-                href={siteConfig.links.discord}
-                target="_blank"
-                className="filter grayscale hover:grayscale-0"
-              >
-                <DiscordIcon size={20} />
-              </Link>
-            </Button>
-            <Button variant="ghost" size={'icon'} asChild>
-              <Link
-                href={siteConfig.links.twitter}
-                target="_blank"
-                className="group grayscale hover:grayscale-0 hover:text-white"
-              >
-                <TwitterIcon
-                  size={18}
-                  className="brightness-50 group-hover:!brightness-100"
-                />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </DropdownMenuContent>
+    />
   )
 
   if (variant === 'collapsed') {
