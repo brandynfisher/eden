@@ -9,11 +9,18 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useProductsQuery } from '@/hooks/query/use-products-query'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import sortBy from 'lodash/sortBy'
-import React from 'react'
 
 const SubscriptionsCard = () => {
-  const { subscriptions } = useProductsQuery({})
+  const isNativeWebview = useNativeWebview()
+  const { subscriptions } = useProductsQuery({
+    enabled: !isNativeWebview,
+  })
+
+  if (isNativeWebview) {
+    return null
+  }
 
   return (
     <Card>

@@ -4,6 +4,7 @@ import ApiKeysCard from './api-keys-card'
 import DeleteAccountCard from './delete-account-card'
 import ManageAccountCard from './manage-account-card'
 import MannaCard from './manna-card'
+import MobileSubscriptionNotice from './mobile-subscription-notice'
 import { OrderStateCard } from './order-state-card'
 import SubscriptionsCard from './subscriptions-card'
 import { TransactionHistory } from './transaction-history'
@@ -31,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useMe } from '@/hooks/use-me'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import { cn } from '@/lib/utils'
 import { updateDeleteDialog } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -290,6 +292,7 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
   const { user, isLoading: isUserLoading } = useMe({
     isAuthenticated: !!isSignedIn,
   })
+  const isNativeWebview = useNativeWebview()
 
   const [activeTab, setActiveTab] = useState(initialTab)
 
@@ -501,11 +504,15 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
                       <h3 className="text-lg font-semibold mb-4">
                         Subscription & Manna
                       </h3>
-                      <div className="space-y-6">
-                        <SubscriptionsCard />
-                        <MannaCard />
-                        <OrderStateCard />
-                      </div>
+                      {isNativeWebview ? (
+                        <MobileSubscriptionNotice />
+                      ) : (
+                        <div className="space-y-6">
+                          <SubscriptionsCard />
+                          <MannaCard />
+                          <OrderStateCard />
+                        </div>
+                      )}
                     </div>
                   </>
                 )}

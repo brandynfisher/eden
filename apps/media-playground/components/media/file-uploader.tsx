@@ -11,7 +11,7 @@ import { getFileTypeByMimeType, uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import { arrayMove } from '@dnd-kit/sortable'
-import axios, { AxiosError, AxiosProgressEvent, CancelTokenSource } from 'axios'
+import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import exifr from 'exifr'
 import {
   AudioWaveform,
@@ -278,6 +278,12 @@ const FileUploader = ({
   const rotateImageBasedOnExif = async (file: File): Promise<File> => {
     // Only process image files
     if (!file.type.startsWith('image/')) {
+      return file
+    }
+
+    // In React Native WebView / environments without DOM imaging APIs,
+    // skip client-side rotation to avoid runtime errors.
+    if (typeof document === 'undefined') {
       return file
     }
 
@@ -557,14 +563,23 @@ const FileUploader = ({
           richColors: true,
         })
       } catch (error) {
-        console.error('Error uploading files: ', error)
-        const errorMessage = axios.isAxiosError(error)
-          ? JSON.parse((error as AxiosError).request?.responseText || '{}')
-              ?.message
-          : 'Unknown Error'
+        const debugInfo = axios.isAxiosError(error)
+          ? {
+              message: error.message,
+              status: error.response?.status,
+              statusText: error.response?.statusText,
+              responseData: error.response?.data,
+              responseText: error.request?.responseText,
+              requestUrl: error.config?.url,
+            }
+          : { message: (error as Error)?.message || String(error) }
+
+        console.error('Error uploading files', debugInfo, error)
 
         toast.error('Error while uploading files', {
-          description: JSON.stringify(errorMessage),
+          description:
+            debugInfo.message ||
+            (axios.isAxiosError(error) ? 'Axios error' : 'Unknown error'),
           dismissible: true,
           richColors: true,
         })

@@ -11,12 +11,16 @@ import {
   ActivityIndicator,
   AppState,
   NativeModules,
+  Pressable,
   Text,
   TouchableOpacity,
   View,
   useColorScheme,
 } from 'react-native'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native'
+import type { BottomTabsParamList } from '@/navigator/bottom-tabs'
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 
 const WEB_DEV_PORT = 3000
 
@@ -44,9 +48,6 @@ const getDevHost = () => {
 }
 
 const getWebUrl = () => {
-  if (!__DEV__) return 'https://app.eden.art'
-
-  // Check for ngrok URL or custom web URL first
   const customWebUrl = process.env.EXPO_PUBLIC_WEB_URL
   if (customWebUrl) return customWebUrl
 
@@ -62,11 +63,15 @@ const WEB_RETURN_PATH = '/'
 
 export default function Webview() {
   const { isSignedIn, getToken } = useAuth()
+  const route = useRoute<RouteProp<BottomTabsParamList, 'Webview'>>()
+  const navigation =
+    useNavigation<BottomTabNavigationProp<BottomTabsParamList, 'Webview'>>()
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const styles = createStyles(theme)
 
   const [initialUrl, setInitialUrl] = useState(WEB_URL)
+  const [currentUrl, setCurrentUrl] = useState<string>(WEB_URL)
   const [isBridgeLoading, setIsBridgeLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSignInModal, setShowSignInModal] = useState(false)
@@ -74,6 +79,7 @@ export default function Webview() {
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
+  const lastResetToken = useRef<number | undefined>(undefined)
 
   const checkNetworkStatus = async () => {
     try {
@@ -85,6 +91,11 @@ export default function Webview() {
       console.error('Error checking network status:', error)
       setIsConnected(false)
     }
+  }
+
+  const resetWebview = async () => {
+    // Recreate bridge so we don't show stale /settings or stuck pages
+    await openWebviewWithSession()
   }
 
   useEffect(() => {
@@ -107,6 +118,17 @@ export default function Webview() {
       subscription.remove()
     }
   }, [])
+
+  // If a resetToken is passed via navigation params, force a reset
+  useEffect(() => {
+    const token = (route.params as BottomTabsParamList['Webview'])?.resetToken
+    if (token && token !== lastResetToken.current) {
+      lastResetToken.current = token
+      resetWebview()
+      // clear the param so back nav doesn't keep re-triggering
+      navigation.setParams({ resetToken: undefined })
+    }
+  }, [route.params, navigation])
 
   useEffect(() => {
     if (isSignedIn && !hasOpenedSession.current && isConnected !== false) {
@@ -190,6 +212,7 @@ export default function Webview() {
       )}&return=${encodeURIComponent(WEB_RETURN_PATH)}`
 
       setInitialUrl(bridgeUrl)
+      setCurrentUrl(bridgeUrl)
 
       if (webRef.current) {
         webRef.current.reload()
@@ -234,10 +257,20 @@ export default function Webview() {
     <View style={{ flex: 1 }}>
       {isSignedIn ? (
         <View style={styles.webview}>
+          {currentUrl.includes('/settings') && (
+            <View style={styles.stickyResetBanner}>
+              <Pressable onPress={resetWebview} style={styles.resetButton}>
+                <Text style={styles.resetButtonText}>Reset webview</Text>
+              </Pressable>
+            </View>
+          )}
           <WebView
             ref={webRef}
             source={{ uri: initialUrl }}
             onMessage={handleMessage}
+            onNavigationStateChange={state => {
+              setCurrentUrl(state.url)
+            }}
             javaScriptEnabled
             domStorageEnabled
             sharedCookiesEnabled

@@ -3,10 +3,11 @@ import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { usePushNotifications } from '@/hooks/use-push-notifications'
 import { RootStackParamList } from '@/navigator'
+import { BottomTabsParamList } from '@/navigator/bottom-tabs'
 import createStyles from '@/styles/settings.styles'
 import { Ionicons } from '@expo/vector-icons'
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
 import * as StoreReview from 'expo-store-review'
@@ -23,7 +24,7 @@ import {
   View,
 } from 'react-native'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+type NavigationProp = BottomTabNavigationProp<BottomTabsParamList>
 
 export default function Settings() {
   const colorScheme = useColorScheme()
@@ -130,20 +131,19 @@ export default function Settings() {
     }
   }
 
+  const handleResetWebview = () => {
+    const resetToken = Date.now()
+    navigation.navigate('Webview', { resetToken })
+  }
+
   const handleResetOnboarding = async () => {
     try {
       await SecureStore.deleteItemAsync(ONBOARDING_COMPLETE_KEY)
-      Alert.alert(
-        'Onboarding Reset',
-        'Onboarding is now reset. You will need to complete it again.',
-        [
-          {
-            text: 'OK',
-            onPress: () =>
-              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] }),
-          },
-        ],
-      )
+      const rootNav = navigation.getParent()?.getParent?.()
+      rootNav?.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' as keyof RootStackParamList }],
+      })
     } catch (error) {
       console.error('Error resetting onboarding:', error)
       Alert.alert('Error', 'Failed to reset onboarding state.')
@@ -251,21 +251,30 @@ export default function Settings() {
         },
       ],
     },
-    ...(__DEV__
-      ? [
-          {
-            data: [
-              {
-                id: 'reset-onboarding',
-                title: 'Reset Onboarding',
-                type: 'action-icon',
-                icon: 'refresh',
-                onPress: handleResetOnboarding,
-              },
-            ] as SettingItem[],
-          },
-        ]
-      : []),
+    {
+      data: [
+        {
+          id: 'reset-webview',
+          title: 'Reset Webview',
+          description: 'Reload the embedded Eden site if it gets stuck.',
+          type: 'action-icon',
+          icon: 'refresh',
+          onPress: handleResetWebview,
+        },
+      ] as SettingItem[],
+    },
+    {
+      data: [
+        {
+          id: 'reset-onboarding',
+          title: 'Reset Onboarding',
+          description: 'Restart the intro flow and clear onboarding progress.',
+          type: 'action-icon',
+          icon: 'refresh',
+          onPress: handleResetOnboarding,
+        },
+      ] as SettingItem[],
+    },
   ]
 
   const renderItem = ({
