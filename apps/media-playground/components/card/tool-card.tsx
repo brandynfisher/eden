@@ -3,6 +3,7 @@
 import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import { cn } from '@/lib/utils'
 import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -25,6 +26,7 @@ type ToolCardMediaProps = {
   priority?: boolean
   sizes?: string
   variant?: 'thumbnail' | 'full'
+  isNativeWebview?: boolean
 }
 
 export const ToolCardMedia = ({
@@ -32,21 +34,24 @@ export const ToolCardMedia = ({
   title,
   priority,
   variant = 'full',
+  isNativeWebview = false,
 }: ToolCardMediaProps) => {
   return (
     <>
       {mediaUrl.endsWith('mp4') ? (
         <video
-          autoPlay={variant === 'thumbnail' ? false : true}
+          autoPlay={variant === 'thumbnail' ? false : !isNativeWebview}
           muted={true}
           loop={true}
           src={mediaUrl}
           playsInline={variant === 'thumbnail' ? false : true}
           className={cn(
-            'absolute object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10',
+            'absolute inset-0 object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10 -z-10',
             variant === 'thumbnail'
               ? 'w-12 h-12'
-              : 'w-full h-full transition-transform duration-500 group-hover:scale-105',
+              : !isNativeWebview
+              ? 'w-full h-full transition-transform duration-500 group-hover:scale-105 group-focus:scale-105'
+              : 'w-full h-full',
           )}
           onLoadedMetadata={event => {
             event.currentTarget.setAttribute('data-loaded', 'true')
@@ -73,10 +78,12 @@ export const ToolCardMedia = ({
               : '(max-width: 640px) 95vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'
           }
           className={cn(
-            'object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10',
+            'object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10 -z-10',
             variant === 'thumbnail'
               ? ''
-              : 'transition-transform duration-500 group-hover:scale-105',
+              : !isNativeWebview
+              ? 'transition-transform duration-500 group-hover:scale-105 group-focus:scale-105'
+              : '',
           )}
         />
       )}
@@ -122,6 +129,7 @@ const ToolCard = ({
 }: Props) => {
   const formattedOutputType = formatOutputType(outputType)
   const routeContext = getRouteContext(link, formattedOutputType)
+  const isNativeWebview = useNativeWebview()
 
   const fallbackDescription =
     'See the guardrails, inputs, and costs for this workflow before you launch it.'
@@ -140,15 +148,16 @@ const ToolCard = ({
             'ring-2 ring-primary/60 ring-offset-2 ring-offset-background border-primary/60 hover:border-primary/80',
         )}
       >
-        <div className="relative aspect-[5/3] w-full overflow-hidden">
+        <div className="relative aspect-[5/3] w-full overflow-hidden isolate">
           <ToolCardMedia
             mediaUrl={image}
             title={title}
             priority={priority}
             variant="full"
+            isNativeWebview={isNativeWebview}
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/5 via-black/65 to-black/95 transition-opacity duration-500 group-hover:via-black/60 group-hover:to-black/90" />
-          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between px-4 pt-4 pb-2">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/5 via-black/65 to-black/95 transition-opacity duration-500 group-hover:via-black/60 group-hover:to-black/90 group-focus:via-black/60 group-focus:to-black/90 z-0" />
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between px-4 pt-4 pb-2 z-10">
             <div className="flex flex-wrap gap-2"></div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.35em] text-white/70">

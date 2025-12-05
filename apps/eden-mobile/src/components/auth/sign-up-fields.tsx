@@ -2,6 +2,7 @@ import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import createStyles from '@/styles/sign-up-fields.styles'
 import { useSignUp } from '@clerk/clerk-expo'
+import Icon from '@expo/vector-icons/Ionicons'
 import { useState } from 'react'
 import {
   ActivityIndicator,
@@ -77,6 +78,13 @@ export default function SignUpFields({
     }
   }
 
+  const EyeIcon = () => {
+    return <Icon name="eye" size={24} color={colors.textPrimary} />
+  }
+  const EyeOffIcon = () => {
+    return <Icon name="eye-off" size={24} color={colors.textPrimary} />
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
@@ -125,7 +133,9 @@ export default function SignUpFields({
             onPress={() => setShowPassword(!showPassword)}
             style={styles.eyeButton}
           >
-            <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+            <Text style={styles.eyeIcon}>
+              {showPassword ? <EyeIcon /> : <EyeOffIcon />}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
