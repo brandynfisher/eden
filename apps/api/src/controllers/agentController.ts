@@ -968,7 +968,7 @@ export const updateAgentPermissions = async (
           priority: 'normal',
           agent: agentId,
           action_url: `/chat/?agent=${agent.username}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
       } else if (
         existingLevel !==
@@ -985,7 +985,7 @@ export const updateAgentPermissions = async (
           priority: 'normal',
           agent: agentId,
           action_url: `/chat/?agent=${agent.username}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
       }
     }
@@ -1008,7 +1008,7 @@ export const updateAgentPermissions = async (
             priority: 'normal',
             agent: agentId,
             action_url: `/chat/?agent=${agent.username}`,
-            channels: ['in_app'],
+            channels: ['in_app', 'push'],
           })
         }
       }

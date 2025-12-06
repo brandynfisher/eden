@@ -1,70 +1,12 @@
-version: '3.9'
-
 services:
-  mongo:
-    image: mongo:latest
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
+  redis:
+    image: redis:7-alpine
     ports:
-      - '27017:27017'
+      - '6379:6379'
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ./data:/data/db
-      - ./scripts/migrations/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - ./scripts/generators:/docker-entrypoint-initdb.d/generators:ro
-
-  minio:
-    image: minio/minio:latest
-    networks:
-      - default
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    environment:
-      MINIO_ROOT_USER: eden12345
-      MINIO_ROOT_PASSWORD: eden12345
-    volumes:
-      - ./minio/data:/data
-      - ./minio/config:/root/.minio
-    command: minio server --console-address ":9001" /data
-
-  createbuckets:
-    build:
-      context: .
-      dockerfile: ./scripts/migrations/mc.Dockerfile
-    networks:
-      - default
-    depends_on:
-      - minio
-
-  chromadb:
-    build:
-      context: ./infra/chroma
-      dockerfile: Dockerfile
-    volumes:
-      - ./infra/chroma:/chroma
-      - chroma_index_data:/index_data
-    command: uvicorn chromadb.app:app --reload --workers 1 --host 0.0.0.0 --port 8000 --log-config log_config.yml
-    environment:
-      IS_PERSISTENT: "TRUE"
-    ports:
-      - 8000:8000
-
-  embedder:
-    build:
-      context: ./apps/embedder
-      dockerfile: Dockerfile
-    environment:
-      MONGO_URI: mongodb://admin:admin@mongo:27017
-      MONGO_DB_NAME: eden
-      CHROMA_HOST: chromadb
-      MINIO_HOST: http://minio:9000
-      FAKE_DATA: TRUE  # remove if you want to set to false
-
-networks:
-  default:
-    driver: bridge
+      - redis_data:/data
 
 volumes:
-  chroma_index_data:
+  redis_data:
     driver: local

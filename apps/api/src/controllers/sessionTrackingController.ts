@@ -19,7 +19,17 @@ export const trackSessionView = async (
   const { session_id } = request.body as TrackSessionBody
   const userId = request.user.userId
 
+  server.log.info(
+    {
+      userId: userId?.toString(),
+      sessionId: session_id,
+      redis: Boolean(server.redis),
+    },
+    '[TRACK-VIEW] received request',
+  )
+
   if (!server.redis) {
+    server.log.warn('[TRACK-VIEW] redis unavailable; skipping set')
     return reply.status(200).send({
       tracked: false,
       reason: 'redis_unavailable',
@@ -31,8 +41,17 @@ export const trackSessionView = async (
     await server.redis.sadd(key, session_id)
     await server.redis.expire(key, SESSION_TTL)
 
+    server.log.info(
+      { userId: userId?.toString(), sessionId: session_id },
+      '[TRACK-VIEW] marked active',
+    )
+
     return reply.status(200).send({ tracked: true })
   } catch (error) {
+    server.log.error(
+      { err: error, userId: userId?.toString(), sessionId: session_id },
+      '[TRACK-VIEW] redis error',
+    )
     return reply.status(500).send({
       tracked: false,
       reason: 'redis_error',
@@ -49,7 +68,17 @@ export const untrackSessionView = async (
   const { session_id } = request.body as TrackSessionBody
   const userId = request.user.userId
 
+  server.log.info(
+    {
+      userId: userId?.toString(),
+      sessionId: session_id,
+      redis: Boolean(server.redis),
+    },
+    '[UNTRACK-VIEW] received request',
+  )
+
   if (!server.redis) {
+    server.log.warn('[UNTRACK-VIEW] redis unavailable; skipping remove')
     return reply.status(200).send({
       tracked: false,
       reason: 'redis_unavailable',
@@ -60,8 +89,17 @@ export const untrackSessionView = async (
     const key = `${server.redisEnvPrefix}:active_sessions:${userId}`
     await server.redis.srem(key, session_id)
 
+    server.log.info(
+      { userId: userId?.toString(), sessionId: session_id },
+      '[UNTRACK-VIEW] cleared active',
+    )
+
     return reply.status(200).send({ tracked: true })
   } catch (error) {
+    server.log.error(
+      { err: error, userId: userId?.toString(), sessionId: session_id },
+      '[UNTRACK-VIEW] redis error',
+    )
     return reply.status(500).send({
       tracked: false,
       reason: 'redis_error',
