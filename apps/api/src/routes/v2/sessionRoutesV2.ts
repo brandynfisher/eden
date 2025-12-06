@@ -912,7 +912,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
-    handler: (request, reply) => updateSessionPermissions(request, reply),
+    handler: (request, reply) =>
+      updateSessionPermissions(server, request, reply),
   })
 
   server.get('/v2/sessions/shared', {

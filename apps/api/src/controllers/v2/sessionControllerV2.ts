@@ -228,6 +228,53 @@ const canInteractWithPermission = (
   return !!permission && INTERACTIVE_PERMISSION_LEVELS.has(permission.level)
 }
 
+const deliverSessionPermissionPush = async (
+  server: FastifyInstance,
+  notification: any,
+) => {
+  try {
+    const tokens = await DeviceToken.find({
+      user: notification.user,
+      active: true,
+    })
+    if (!tokens.length) return
+
+    const results = await Promise.allSettled(
+      tokens.map(token =>
+        sendPushNotification(
+          server,
+          token.push_token,
+          notification.title,
+          notification.message,
+          {
+            notification_id: notification._id.toString(),
+            type: notification.type,
+            session_id: notification.session?.toString(),
+            action_url: notification.action_url,
+          },
+        ),
+      ),
+    )
+
+    const successful = results.filter(
+      r => r.status === 'fulfilled' && r.value?.success,
+    )
+    if (successful.length) {
+      notification.delivered_channels.push('push')
+    }
+    notification.delivery_attempted_at = new Date()
+    await notification.save()
+  } catch (error) {
+    server.log.error(
+      { err: error },
+      '[NOTIFICATIONS] session permission push failed',
+    )
+    notification.delivery_failed_channels.push('push')
+    notification.delivery_attempted_at = new Date()
+    await notification.save()
+  }
+}
+
 const mapPermissionLevel = (level: string): SessionPermissionLevel => {
   switch (level) {
     case SessionPermissionLevel.Owner:
@@ -2233,6 +2280,7 @@ export const getSessionPermissions = async (
 }
 
 export const updateSessionPermissions = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -2328,7 +2376,7 @@ export const updateSessionPermissions = async (
       const existingLevel = existingUserMap.get(perm.username)
       const levelLabel = formatPermissionLabel(perm.level)
       if (!existingLevel) {
-        await Notification.create({
+        const notification = await Notification.create({
           user: perm.user._id,
           type: 'session_permission_added',
           title: 'Session Permission Added',
@@ -2339,8 +2387,9 @@ export const updateSessionPermissions = async (
           action_url: `/sessions/${session_id}`,
           channels: ['in_app', 'push'],
         })
+        await deliverSessionPermissionPush(server, notification)
       } else if (existingLevel !== perm.level) {
-        await Notification.create({
+        const notification = await Notification.create({
           user: perm.user._id,
           type: 'session_permission_added',
           title: 'Session Permission Updated',
@@ -2351,6 +2400,7 @@ export const updateSessionPermissions = async (
           action_url: `/sessions/${session_id}`,
           channels: ['in_app', 'push'],
         })
+        await deliverSessionPermissionPush(server, notification)
       }
     }
 
@@ -2362,7 +2412,7 @@ export const updateSessionPermissions = async (
           createMultiFieldQuery(username, ['userId', 'username']),
         )
         if (removedUser) {
-          await Notification.create({
+          const notification = await Notification.create({
             user: removedUser._id,
             type: 'session_permission_removed',
             title: 'Session Permission Removed',
@@ -2373,6 +2423,7 @@ export const updateSessionPermissions = async (
             action_url: `/sessions`,
             channels: ['in_app', 'push'],
           })
+          await deliverSessionPermissionPush(server, notification)
         }
       }
     }
