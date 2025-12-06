@@ -1,4 +1,5 @@
 import { Agent } from '../../models/Agent'
+import { DeviceToken } from '../../models/DeviceToken'
 import { Notification } from '../../models/Notification'
 import {
   SessionPermission,
@@ -12,6 +13,7 @@ import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
+import { sendPushNotification } from '../../services/pushNotificationService'
 import {
   createIdOrSlugQuery,
   createMultiFieldQuery,
@@ -61,6 +63,164 @@ const INTERACTIVE_PERMISSION_LEVELS = new Set<SessionPermissionLevel>([
   SessionPermissionLevel.Editor,
   SessionPermissionLevel.Participant,
 ])
+
+const isUserActiveInSession = async (
+  server: FastifyInstance,
+  userId: ObjectId,
+  sessionId: ObjectId,
+) => {
+  if (!server.redis) return false
+
+  try {
+    const key = `${server.redisEnvPrefix}:active_sessions:${userId.toString()}`
+    const isMember = await server.redis.sismember(key, sessionId.toString())
+    return Boolean(isMember)
+  } catch (error) {
+    server.log.warn(
+      { err: error },
+      '[NOTIFICATIONS] Failed to check session activity; defaulting to inactive',
+    )
+    return false
+  }
+}
+
+const shouldThrottleSessionMessageNotification = async (
+  server: FastifyInstance,
+  userId: ObjectId,
+  sessionId: ObjectId,
+  ttlSeconds = 60,
+) => {
+  if (!server.redis) return false
+
+  const key = `${
+    server.redisEnvPrefix
+  }:notif:session_message:${userId.toString()}:${sessionId.toString()}`
+
+  try {
+    const alreadySet = await server.redis.exists(key)
+    if (alreadySet) return true
+
+    await server.redis.set(key, '1', 'EX', ttlSeconds)
+    return false
+  } catch (error) {
+    server.log.warn(
+      { err: error },
+      '[NOTIFICATIONS] Failed to set throttle key; not throttling',
+    )
+    return false
+  }
+}
+
+const sendSessionMessageNotification = async (
+  server: FastifyInstance,
+  session: any,
+  recipients: ObjectId[],
+  senderId: ObjectId,
+  content?: string,
+) => {
+  const uniqueRecipientIds = Array.from(
+    new Set(
+      recipients
+        .filter(Boolean)
+        .map(r => r.toString())
+        .filter(id => id !== senderId.toString()),
+    ),
+  )
+
+  if (uniqueRecipientIds.length === 0) return
+
+  const title = session.title
+    ? `New message in ${session.title}`
+    : 'New session message'
+
+  const snippet = content
+    ? content.substring(0, 140) + (content.length > 140 ? '…' : '')
+    : 'You have a new message'
+
+  for (const recipientId of uniqueRecipientIds) {
+    const userObjectId = new ObjectId(recipientId)
+
+    // Skip if user is actively viewing the session
+    const isActive = await isUserActiveInSession(
+      server,
+      userObjectId,
+      session._id,
+    )
+    if (isActive) continue
+
+    // Throttle frequent notifications per user/session
+    const throttled = await shouldThrottleSessionMessageNotification(
+      server,
+      userObjectId,
+      session._id,
+    )
+    if (throttled) continue
+
+    const notification = new Notification({
+      user: userObjectId,
+      type: 'session_message',
+      title,
+      message: snippet,
+      priority: 'normal',
+      session: session._id,
+      action_url: `/sessions/${session._id.toString()}`,
+      channels: ['in_app', 'push'],
+      delivered_channels: [],
+    })
+
+    // Mark in-app delivery immediately
+    notification.delivered_channels.push('in_app')
+
+    await notification.save()
+
+    try {
+      const deviceTokens = await DeviceToken.find({
+        user: userObjectId,
+        active: true,
+      })
+
+      if (deviceTokens.length) {
+        const results = await Promise.allSettled(
+          deviceTokens.map(token =>
+            sendPushNotification(server, token.push_token, title, snippet, {
+              notification_id: notification._id.toString(),
+              type: 'session_message',
+              session_id: session._id.toString(),
+              action_url: `/sessions/${session._id.toString()}`,
+            }),
+          ),
+        )
+
+        const successful = results.filter(
+          r => r.status === 'fulfilled' && r.value?.success,
+        )
+        if (successful.length) {
+          notification.delivered_channels.push('push')
+        }
+
+        // Mark bad tokens inactive
+        results.forEach((result, index) => {
+          const token = deviceTokens[index]
+          if (
+            result.status === 'fulfilled' &&
+            result.value?.error === 'Invalid push token'
+          ) {
+            token.active = false
+            token.save().catch(() => null)
+          }
+        })
+      }
+    } catch (error) {
+      server.log.error(
+        { err: error },
+        '[NOTIFICATIONS] Failed sending session_message push',
+      )
+      notification.delivery_failed_channels.push('push')
+    }
+
+    await notification.save()
+  }
+}
 
 const canInteractWithPermission = (
   permission?: { level: SessionPermissionLevel } | null,
@@ -399,19 +559,12 @@ export const createSessionMessage = async (
   }>,
   reply: FastifyReply,
 ) => {
-  console.log('=====================================')
-  console.log('[SESSION] createSessionMessage called!')
-  console.log('[SESSION] Body:', JSON.stringify(request.body, null, 2))
-  console.log('=====================================')
-
   const { userId } = request.user || {}
   if (!userId) {
     return reply.status(400).send({
       message: 'User missing from request',
     })
   }
-
-  console.log('[SESSION] userId:', userId.toString())
 
   const {
     session_id,
@@ -633,12 +786,6 @@ export const createSessionMessage = async (
 
       // Update user preferences with last agents (don't await to avoid blocking the stream)
       if (session.agents && session.agents.length > 0) {
-        console.log(
-          '[UserPreferences] Updating preferences for user:',
-          userId.toString(),
-        )
-        console.log('[UserPreferences] Session agents:', session.agents)
-
         const userOid =
           userId instanceof mongoose.Types.ObjectId
             ? userId
@@ -650,28 +797,10 @@ export const createSessionMessage = async (
               ? agent
               : new mongoose.Types.ObjectId(agent.toString())
 
-          console.log(
-            '[UserPreferences] Updating with agent:',
-            agentOid.toString(),
-          )
           UserPreferences.updateLastAgent(userOid, agentOid)
-            .then(() => {
-              console.log(
-                '[UserPreferences] Successfully updated with agent:',
-                agentOid.toString(),
-              )
-            })
-            .catch(err => {
-              console.error(
-                '[UserPreferences] Error updating user preferences:',
-                err,
-              )
-            })
+            .then(() => {})
+            .catch(() => {})
         }
-      } else {
-        console.log(
-          '[UserPreferences] Skipped - no agents in session or agents array empty',
-        )
       }
     } else {
       // Non-streaming response
@@ -694,15 +823,41 @@ export const createSessionMessage = async (
       const message_id =
         modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
 
+      // Determine recipients for session message notifications
+      try {
+        const permissions = await SessionPermission.find({
+          session: session._id,
+        })
+
+        const interactivePermissionHolders = permissions
+          .filter(p => canInteractWithPermission(p))
+          .map(p => p.user as any as ObjectId)
+
+        const recipientIds = [
+          session.owner as any as ObjectId,
+          ...(Array.isArray(session.users)
+            ? (session.users as any as ObjectId[])
+            : []),
+          ...interactivePermissionHolders,
+        ]
+
+        await sendSessionMessageNotification(
+          server,
+          session,
+          recipientIds,
+          new ObjectId(userId),
+          content,
+        )
+      } catch (notifyError) {
+        server.log.error(
+          { err: notifyError },
+          '[NOTIFICATIONS] Failed to enqueue session message notification',
+        )
+      }
+
       // Update user preferences with last agents
       if (session.agents && session.agents.length > 0) {
         try {
-          console.log(
-            '[UserPreferences] Updating preferences for user:',
-            userId.toString(),
-          )
-          console.log('[UserPreferences] Session agents:', session.agents)
-
           const userOid =
             userId instanceof mongoose.Types.ObjectId
               ? userId
@@ -714,27 +869,11 @@ export const createSessionMessage = async (
                 ? agent
                 : new mongoose.Types.ObjectId(agent.toString())
 
-            console.log(
-              '[UserPreferences] Updating with agent:',
-              agentOid.toString(),
-            )
             await UserPreferences.updateLastAgent(userOid, agentOid)
-            console.log(
-              '[UserPreferences] Successfully updated with agent:',
-              agentOid.toString(),
-            )
           }
         } catch (err) {
-          console.error(
-            '[UserPreferences] Error updating user preferences:',
-            err,
-          )
           // Continue even if preference update fails
         }
-      } else {
-        console.log(
-          '[UserPreferences] Skipped - no agents in session or agents array empty',
-        )
       }
 
       return reply.status(200).send({
@@ -2198,7 +2337,7 @@ export const updateSessionPermissions = async (
           }".`,
           priority: 'normal',
           action_url: `/sessions/${session_id}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
       } else if (existingLevel !== perm.level) {
         await Notification.create({
@@ -2210,7 +2349,7 @@ export const updateSessionPermissions = async (
           }" has been changed to ${levelLabel}.`,
           priority: 'normal',
           action_url: `/sessions/${session_id}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
       }
     }
@@ -2232,7 +2371,7 @@ export const updateSessionPermissions = async (
             }" has been removed.`,
             priority: 'normal',
             action_url: `/sessions`,
-            channels: ['in_app'],
+            channels: ['in_app', 'push'],
           })
         }
       }

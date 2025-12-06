@@ -1,4 +1,5 @@
 import { config } from '@/lib/config'
+import { navigationRef } from '@/navigator/navigation-ref'
 import { useAuth } from '@clerk/clerk-expo'
 import * as Notifications from 'expo-notifications'
 import type { EventSubscription } from 'expo-notifications'
@@ -7,13 +8,22 @@ import { Platform } from 'react-native'
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async notification => {
+    const type = (notification.request.content.data as any)?.type as
+      | string
+      | undefined
+
+    // In foreground, suppress UI for completion-type notifications; keep others
+    const isCompletion = type === 'creation_complete' || type === 'session_complete'
+
+    return {
+      shouldShowAlert: !isCompletion,
+      shouldPlaySound: !isCompletion,
+      shouldSetBadge: true,
+      shouldShowBanner: !isCompletion,
+      shouldShowList: true,
+    }
+  },
 })
 
 export function usePushNotifications() {
@@ -44,8 +54,31 @@ export function usePushNotifications() {
       Notifications.addNotificationResponseReceivedListener(response => {
         const data = response.notification.request.content.data
         console.log('Notification tapped:', data)
-        // Handle navigation based on notification data
-        // e.g., navigate to a specific screen
+        try {
+          const actionUrl = (data as any)?.action_url as string | undefined
+          const sessionId = (data as any)?.session_id as string | undefined
+          const creationId = (data as any)?.creation_id as string | undefined
+
+          const targetPath = actionUrl
+            ? actionUrl
+            : sessionId
+              ? `/sessions/${sessionId}`
+              : creationId
+                ? `/creations/${creationId}`
+                : undefined
+
+          if (targetPath && navigationRef.isReady()) {
+            navigationRef.navigate('BottomTabs', {
+              screen: 'Webview',
+              params: {
+                targetUrl: targetPath,
+                resetToken: Date.now(),
+              },
+            })
+          }
+        } catch (navError) {
+          console.error('Failed to handle notification navigation', navError)
+        }
       })
 
     return () => {
