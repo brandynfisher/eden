@@ -1,6 +1,7 @@
 import { Colors } from './src/constants/theme'
 import { useColorScheme } from './src/hooks/use-color-scheme'
 import Navigator from './src/navigator'
+import { navigationRef } from './src/navigator/navigation-ref'
 import Providers from './src/providers'
 import {
   NavigationContainer,
@@ -25,7 +26,7 @@ function AppContent() {
   const insets = useSafeAreaInsets()
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <View
         style={{
           flex: 1,

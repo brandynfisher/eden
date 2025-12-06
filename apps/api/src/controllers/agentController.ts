@@ -5,6 +5,7 @@ import {
   AgentPermissionLevel,
 } from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
+import { DeviceToken } from '../models/DeviceToken'
 import { Notification } from '../models/Notification'
 import { User } from '../models/User'
 import { CreationV2 } from '../models/v2/CreationV2'
@@ -12,6 +13,7 @@ import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl, s3ThumbnailUrl, s3Url } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
+import { sendPushNotification } from '../services/pushNotificationService'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
@@ -54,6 +56,54 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId, UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
+
+const deliverAgentPermissionPush = async (
+  server: FastifyInstance,
+  notification: any,
+) => {
+  try {
+    const tokens = await DeviceToken.find({
+      user: notification.user,
+      active: true,
+    })
+
+    if (!tokens.length) return
+
+    const results = await Promise.allSettled(
+      tokens.map(token =>
+        sendPushNotification(
+          server,
+          token.push_token,
+          notification.title,
+          notification.message,
+          {
+            notification_id: notification._id.toString(),
+            type: notification.type,
+            agent_id: notification.agent?.toString(),
+            action_url: notification.action_url,
+          },
+        ),
+      ),
+    )
+
+    const successful = results.filter(
+      r => r.status === 'fulfilled' && r.value?.success,
+    )
+    if (successful.length) {
+      notification.delivered_channels.push('push')
+    }
+    notification.delivery_attempted_at = new Date()
+    await notification.save()
+  } catch (error) {
+    server.log.error(
+      { err: error },
+      '[NOTIFICATIONS] agent permission push failed',
+    )
+    notification.delivery_failed_channels.push('push')
+    notification.delivery_attempted_at = new Date()
+    await notification.save()
+  }
+}
 
 // Re-export functions from agentServicesController
 export {
@@ -891,6 +941,7 @@ export const getAgentCreations = async (
 
 // Update agent permissions
 export const updateAgentPermissions = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -960,7 +1011,7 @@ export const updateAgentPermissions = async (
       const existingLevel = existingUserMap.get(perm.username)
       if (!existingLevel) {
         // New permission - send notification
-        await Notification.create({
+        const notification = await Notification.create({
           user: user._id,
           type: 'agent_permission_added',
           title: 'Agent Permission Added',
@@ -968,8 +1019,9 @@ export const updateAgentPermissions = async (
           priority: 'normal',
           agent: agentId,
           action_url: `/chat/?agent=${agent.username}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
+        await deliverAgentPermissionPush(server, notification)
       } else if (
         existingLevel !==
         (perm.level === 'owner'
@@ -977,7 +1029,7 @@ export const updateAgentPermissions = async (
           : AgentPermissionLevel.Editor)
       ) {
         // Permission level changed - send notification
-        await Notification.create({
+        const notification = await Notification.create({
           user: user._id,
           type: 'agent_permission_added',
           title: 'Agent Permission Updated',
@@ -985,8 +1037,9 @@ export const updateAgentPermissions = async (
           priority: 'normal',
           agent: agentId,
           action_url: `/chat/?agent=${agent.username}`,
-          channels: ['in_app'],
+          channels: ['in_app', 'push'],
         })
+        await deliverAgentPermissionPush(server, notification)
       }
     }
 
@@ -1000,7 +1053,7 @@ export const updateAgentPermissions = async (
           createMultiFieldQuery(username, ['userId', 'username']),
         )
         if (removedUser) {
-          await Notification.create({
+          const notification = await Notification.create({
             user: removedUser._id,
             type: 'agent_permission_removed',
             title: 'Agent Permission Removed',
@@ -1008,8 +1061,9 @@ export const updateAgentPermissions = async (
             priority: 'normal',
             agent: agentId,
             action_url: `/chat/?agent=${agent.username}`,
-            channels: ['in_app'],
+            channels: ['in_app', 'push'],
           })
+          await deliverAgentPermissionPush(server, notification)
         }
       }
     }

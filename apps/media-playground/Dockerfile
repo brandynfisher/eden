@@ -25,17 +25,26 @@ WORKDIR /app
 RUN apk add --update --no-cache \
     g++ \
     build-base \
+    python3 \
+    python3-dev \
+    pkgconfig \
+    libpng-dev \
     cairo-dev \
-    jpeg-dev \
     pango-dev \
+    jpeg-dev \
     giflib-dev \
-    librsvg-dev
+    librsvg-dev \
+    pixman-dev \
+    freetype-dev \
+    fontconfig-dev
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/yarn.lock ./yarn.lock
-RUN yarn install
+# Inline builds so native output streams to console (helps debug canvas)
+# CXXFLAGS forces inclusion of <cstdint> to fix canvas@3.2.0 build with newer gcc
+RUN CXXFLAGS="-include cstdint" YARN_ENABLE_INLINE_BUILDS=1 yarn install --inline-builds
 
 # Build the project
 COPY --from=builder /app/out/full/ .
@@ -119,11 +128,18 @@ WORKDIR /app
 RUN apk add --update --no-cache \
     g++ \
     build-base \
+    python3 \
+    python3-dev \
+    pkgconfig \
+    libpng-dev \
     cairo-dev \
-    jpeg-dev \
     pango-dev \
+    jpeg-dev \
     giflib-dev \
-    librsvg-dev
+    librsvg-dev \
+    pixman-dev \
+    freetype-dev \
+    fontconfig-dev
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs

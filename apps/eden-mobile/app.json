@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "eden-mobile",
-    "slug": "eden-mobile",
+    "slug": "eden",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -29,7 +29,8 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO"
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -67,7 +68,28 @@
             "backgroundColor": "#000"
           }
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#000000",
+          "sounds": []
+        }
       ]
-    ]
+    ],
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#000000",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_notifications} new notifications"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "27d060c2-c3cb-4908-b1c1-51adaa630d80"
+      }
+    },
+    "owner": "edenart"
   }
 }

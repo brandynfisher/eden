@@ -252,14 +252,25 @@ export const MessageInput = ({
         }
       } catch (error) {
         if (!axios.isCancel(error)) {
-          console.error('Upload error:', error)
+          const debugInfo = axios.isAxiosError(error)
+            ? {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                responseData: error.response?.data,
+                responseText: error.request?.responseText,
+                requestUrl: error.config?.url,
+              }
+            : { message: (error as Error)?.message || String(error) }
+
+          console.error('Upload error:', debugInfo, error)
           setAttachments(prev =>
             prev.map(a =>
               a.id === attachment.id ? { ...a, status: 'error' } : a,
             ),
           )
           toast.error(`Failed to upload file!`, {
-            description: attachment.file.name,
+            description: debugInfo.message || attachment.file.name,
             dismissible: true,
             richColors: true,
           })

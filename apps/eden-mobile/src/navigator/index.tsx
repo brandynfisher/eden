@@ -10,7 +10,12 @@ export type RootStackParamList = {
   Welcome: undefined
   Onboarding: undefined
   Permissions: undefined
-  BottomTabs: undefined
+  BottomTabs:
+    | undefined
+    | {
+        screen?: keyof BottomTabsParamList
+        params?: BottomTabsParamList[keyof BottomTabsParamList]
+      }
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()

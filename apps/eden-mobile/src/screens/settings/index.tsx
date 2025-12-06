@@ -1,11 +1,13 @@
 import { ONBOARDING_COMPLETE_KEY } from '@/constants/storage'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { usePushNotifications } from '@/hooks/use-push-notifications'
 import { RootStackParamList } from '@/navigator'
+import { BottomTabsParamList } from '@/navigator/bottom-tabs'
 import createStyles from '@/styles/settings.styles'
 import { Ionicons } from '@expo/vector-icons'
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
 import * as StoreReview from 'expo-store-review'
@@ -15,7 +17,6 @@ import {
   AppState,
   Linking,
   Platform,
-  PlatformColor,
   SectionList,
   Switch,
   Text,
@@ -23,7 +24,7 @@ import {
   View,
 } from 'react-native'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+type NavigationProp = BottomTabNavigationProp<BottomTabsParamList>
 
 export default function Settings() {
   const colorScheme = useColorScheme()
@@ -33,6 +34,7 @@ export default function Settings() {
   const colors = Colors[theme]
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const { expoPushToken } = usePushNotifications()
 
   useEffect(() => {
     checkNotificationPermission()
@@ -77,20 +79,71 @@ export default function Settings() {
     }
   }
 
+  const handleTestNotification = async () => {
+    if (!expoPushToken) {
+      Alert.alert(
+        'No Push Token',
+        'Push token is not available. Make sure notifications are enabled and you are signed in.',
+        [{ text: 'OK' }],
+      )
+      return
+    }
+
+    try {
+      const response = await fetch('https://exp.host/--/api/v2/push/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: expoPushToken,
+          title: 'Test Notification',
+          body: 'This is a test notification from the app! 🎉',
+          data: { test: true, timestamp: Date.now() },
+          sound: 'default',
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        Alert.alert(
+          'Notification Sent!',
+          'Check your device - you should receive a notification shortly.',
+          [{ text: 'OK' }],
+        )
+      } else {
+        Alert.alert(
+          'Error',
+          `Failed to send notification: ${
+            result.error?.message || 'Unknown error'
+          }`,
+          [{ text: 'OK' }],
+        )
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error)
+      Alert.alert(
+        'Error',
+        'Failed to send test notification. Please check your connection.',
+        [{ text: 'OK' }],
+      )
+    }
+  }
+
+  const handleResetWebview = () => {
+    const resetToken = Date.now()
+    navigation.navigate('Webview', { resetToken })
+  }
+
   const handleResetOnboarding = async () => {
     try {
       await SecureStore.deleteItemAsync(ONBOARDING_COMPLETE_KEY)
-      Alert.alert(
-        'Onboarding Reset',
-        'Onboarding is now reset. You will need to complete it again.',
-        [
-          {
-            text: 'OK',
-            onPress: () =>
-              navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] }),
-          },
-        ],
-      )
+      const rootNav = navigation.getParent()?.getParent?.()
+      rootNav?.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' as keyof RootStackParamList }],
+      })
     } catch (error) {
       console.error('Error resetting onboarding:', error)
       Alert.alert('Error', 'Failed to reset onboarding state.')
@@ -189,23 +242,39 @@ export default function Settings() {
           type: 'action',
           onPress: handleRequestReview,
         },
+        {
+          id: 'test-notification',
+          title: 'Test Notification',
+          description: 'Send a test push notification to this device.',
+          type: 'action',
+          onPress: handleTestNotification,
+        },
       ],
     },
-    ...(__DEV__
-      ? [
-          {
-            data: [
-              {
-                id: 'reset-onboarding',
-                title: 'Reset Onboarding',
-                type: 'action-icon',
-                icon: 'refresh',
-                onPress: handleResetOnboarding,
-              },
-            ] as SettingItem[],
-          },
-        ]
-      : []),
+    {
+      data: [
+        {
+          id: 'reset-webview',
+          title: 'Reset Webview',
+          description: 'Reload the embedded Eden site if it gets stuck.',
+          type: 'action-icon',
+          icon: 'refresh',
+          onPress: handleResetWebview,
+        },
+      ] as SettingItem[],
+    },
+    {
+      data: [
+        {
+          id: 'reset-onboarding',
+          title: 'Reset Onboarding',
+          description: 'Restart the intro flow and clear onboarding progress.',
+          type: 'action-icon',
+          icon: 'refresh',
+          onPress: handleResetOnboarding,
+        },
+      ] as SettingItem[],
+    },
   ]
 
   const renderItem = ({

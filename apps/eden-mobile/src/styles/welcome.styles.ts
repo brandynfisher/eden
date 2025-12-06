@@ -54,6 +54,6 @@ export default (theme: 'light' | 'dark') =>
     buttonText: {
       fontSize: Typography.fontSize.base,
       fontFamily: Typography.fontFamily.semibold,
-      color: Colors[theme].textPrimary,
+      color: Colors[theme].textInverse,
     },
   })
