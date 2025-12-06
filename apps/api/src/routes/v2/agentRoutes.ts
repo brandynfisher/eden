@@ -1049,7 +1049,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateAgentPermissions(request, reply),
+    handler: (request, reply) => updateAgentPermissions(server, request, reply),
   })
 
   server.get('/v2/agents/shared', {
