@@ -9,6 +9,7 @@ import {
 import UserAvatar from '@/components/user/user-avatar'
 import { UserSettingsModal } from '@/features/account/user-settings-modal'
 import { useMe } from '@/hooks/use-me'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
@@ -22,11 +23,21 @@ const AccountDropdown = () => {
   })
   const { signOut } = useClerk()
 
+  const isNativeWebview = useNativeWebview()
+
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const logout = async () => {
     if (isSignedIn) {
       await signOut()
+
+      if (isNativeWebview) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'LOGOUT',
+          }),
+        )
+      }
 
       window.location.href = '/'
     }

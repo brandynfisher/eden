@@ -1,8 +1,13 @@
 import SignInModal from '@/components/auth/sign-in-modal'
+import { Colors } from '@/constants/theme'
 import { config } from '@/lib/config'
+import type { BottomTabsParamList } from '@/navigator/bottom-tabs'
 import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
 import { useAuth, useClerk } from '@clerk/clerk-expo'
+import { Ionicons } from '@expo/vector-icons'
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
@@ -18,9 +23,6 @@ import {
   useColorScheme,
 } from 'react-native'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native'
-import type { BottomTabsParamList } from '@/navigator/bottom-tabs'
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 
 const WEB_DEV_PORT = 3000
 
@@ -83,6 +85,8 @@ export default function Webview() {
   const [error, setError] = useState<string | null>(null)
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
+  const [canGoBack, setCanGoBack] = useState(false)
+  const [canGoForward, setCanGoForward] = useState(false)
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
@@ -199,6 +203,18 @@ export default function Webview() {
     }
   }
 
+  const handleGoBack = () => {
+    if (webRef.current && canGoBack) {
+      webRef.current.goBack()
+    }
+  }
+
+  const handleGoForward = () => {
+    if (webRef.current && canGoForward) {
+      webRef.current.goForward()
+    }
+  }
+
   const openWebviewWithSession = async () => {
     if (!isSignedIn) {
       setShowSignInModal(true)
@@ -290,12 +306,50 @@ export default function Webview() {
               </Pressable>
             </View>
           )}
+          {/* Navigation Bar */}
+          <View style={styles.navigationBar}>
+            <Pressable
+              onPress={handleGoBack}
+              disabled={!canGoBack}
+              style={[styles.navButton, !canGoBack && styles.navButtonDisabled]}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color={
+                  canGoBack
+                    ? Colors[theme].textPrimary
+                    : Colors[theme].textTertiary
+                }
+              />
+            </Pressable>
+            <Pressable
+              onPress={handleGoForward}
+              disabled={!canGoForward}
+              style={[
+                styles.navButton,
+                !canGoForward && styles.navButtonDisabled,
+              ]}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={24}
+                color={
+                  canGoForward
+                    ? Colors[theme].textPrimary
+                    : Colors[theme].textTertiary
+                }
+              />
+            </Pressable>
+          </View>
           <WebView
             ref={webRef}
             source={{ uri: initialUrl }}
             onMessage={handleMessage}
             onNavigationStateChange={state => {
               setCurrentUrl(state.url)
+              setCanGoBack(state.canGoBack)
+              setCanGoForward(state.canGoForward)
             }}
             javaScriptEnabled
             domStorageEnabled
