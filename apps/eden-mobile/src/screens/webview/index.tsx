@@ -63,6 +63,13 @@ const getWebUrl = () => {
 const WEB_URL = getWebUrl()
 const WEB_RETURN_PATH = '/'
 
+const buildWebUrl = (path?: string) => {
+  if (!path) return WEB_URL
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/')) return `${WEB_URL}${path}`
+  return `${WEB_URL}/${path}`
+}
+
 export default function Webview() {
   const { isSignedIn, getToken } = useAuth()
   const route = useRoute<RouteProp<BottomTabsParamList, 'Webview'>>()
@@ -125,12 +132,31 @@ export default function Webview() {
 
   // If a resetToken is passed via navigation params, force a reset
   useEffect(() => {
-    const token = (route.params as BottomTabsParamList['Webview'])?.resetToken
+    const params = route.params as BottomTabsParamList['Webview']
+    const token = params?.resetToken
+    const targetUrl = params?.targetUrl
+
     if (token && token !== lastResetToken.current) {
       lastResetToken.current = token
-      resetWebview()
+      if (targetUrl) {
+        const full = buildWebUrl(targetUrl)
+        setInitialUrl(full)
+        setCurrentUrl(full)
+        webRef.current?.reload()
+      } else {
+        resetWebview()
+      }
       // clear the param so back nav doesn't keep re-triggering
-      navigation.setParams({ resetToken: undefined })
+      navigation.setParams({ resetToken: undefined, targetUrl: undefined })
+      return
+    }
+
+    if (targetUrl && !token) {
+      const full = buildWebUrl(targetUrl)
+      setInitialUrl(full)
+      setCurrentUrl(full)
+      webRef.current?.reload()
+      navigation.setParams({ targetUrl: undefined })
     }
   }, [route.params, navigation])
 

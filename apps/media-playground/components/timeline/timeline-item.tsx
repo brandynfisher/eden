@@ -69,42 +69,18 @@ const TimelineItem = ({ item, queryKey }: Props) => {
       data-test-id="timeline-item"
       key={item._id}
       className={cn([
-        `border border-secondary p-0.5 md:p-2 rounded-lg overflow-hidden`,
+        `w-full border border-secondary p-0.5 md:p-2 rounded-lg overflow-hidden`,
       ])}
     >
       <ParameterTableCollapsible item={item} />
       <div className="flex items-center justify-center h-full w-full flex-grow">
         <div
           className={cn([
-            'grid gap-2 auto-cols-fr w-full',
-            !num_samples || num_samples === 1
-              ? 'grid-cols-1'
-              : 'grid-cols-1 sm:grid-cols-2 justify-items-center',
-            item.output_type === 'lora' ? 'flex flex-col gap-0' : '',
+            'grid gap-4 w-full',
+            'grid-cols-1 justify-items-center',
           ])}
+          style={{ gridAutoRows: 'auto' }}
         >
-          {item.status !== TaskV2Status.Completed ? (
-            <>
-              {item.status === 'failed' ? (
-                <div className="h-full w-full p-2 bg-accent">
-                  <TaskStatusBadge status={item.status} />
-                  <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
-                    {item.error}
-                    <div className="text-xs text-muted-foreground">
-                      {item._id}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              {item.status === 'cancelled' ? (
-                <div className="h-full w-full p-2 bg-accent">
-                  <TaskStatusBadge status={item.status} />
-                </div>
-              ) : null}
-            </>
-          ) : null}
-
           {item.status === 'pending' || item.status === 'running' ? (
             <>
               {[
@@ -117,10 +93,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
               ].map((_e, i) => (
                 <div
                   key={i}
-                  className={cn([
-                    'relative p-2 bg-secondary rounded-md overflow-hidden', // flex flex-col items-center overflow-hidden max-h-[50dvh]
-                    'max-w-full',
-                  ])}
+                  className="relative flex justify-center items-center bg-transparent"
                   style={{
                     aspectRatio:
                       (item.args?.width ?? 1024) /
@@ -128,37 +101,17 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       (item.output_type === 'audio' ? 3 : 1),
                   }}
                 >
-                  <div
-                    className={cn([
-                      'max-h-[calc(60vh_-_72.4px)]',
-                      (item.args?.width ?? 1024) /
-                        (item.args?.height ?? 1024) ||
-                      ((item.output_type === 'audio' ? 3 : 1) < 1 &&
-                        (num_samples || 1) === 1)
-                        ? 'h-[calc(60dvh_-_72.4px)] max-h-full flex justify-center max-w-full'
-                        : (item.args?.width ?? 1024) /
-                            (item.args?.height ?? 1024) >
-                            1 && (num_samples || 1) === 1
-                        ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
-                        : '',
-                    ])}
-                  >
+                  <div className="relative flex items-center justify-center w-full h-full max-w-[min(80vw,960px)] max-h-[min(70vh,960px)]">
                     <div
-                      className="relative bg-accent z-10 rounded-md max-w-full max-h-full"
+                      className="relative bg-accent z-10 rounded-md w-full h-full flex items-center justify-center"
                       style={{
                         aspectRatio:
                           (item.args?.width ?? 1024) /
                             (item.args?.height ?? 1024) ||
                           (item.output_type === 'audio' ? 3 : 1),
-                        height:
-                          (item.args?.width ?? 1024) /
-                            (item.args?.height ?? 1024) <
-                          1
-                            ? '-webkit-fill-available'
-                            : undefined,
                       }}
                     >
-                      <div className="absolute flex flex-col items-center justify-center gap-4 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
+                      <div className="absolute flex flex-col items-center justify-center gap-4 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse px-4">
                         <div className="flex items-center justify-center gap-2">
                           <TaskStatusBadge
                             status={item.status}
