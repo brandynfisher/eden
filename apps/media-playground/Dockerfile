@@ -26,7 +26,9 @@ RUN apk add --update --no-cache \
     g++ \
     build-base \
     python3 \
+    python3-dev \
     pkgconfig \
+    libpng-dev \
     cairo-dev \
     pango-dev \
     jpeg-dev \
@@ -40,7 +42,9 @@ RUN apk add --update --no-cache \
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/yarn.lock ./yarn.lock
-RUN yarn install
+# Inline builds so native output streams to console (helps debug canvas)
+# CXXFLAGS forces inclusion of <cstdint> to fix canvas@3.2.0 build with newer gcc
+RUN CXXFLAGS="-include cstdint" YARN_ENABLE_INLINE_BUILDS=1 yarn install --inline-builds
 
 # Build the project
 COPY --from=builder /app/out/full/ .
@@ -125,7 +129,9 @@ RUN apk add --update --no-cache \
     g++ \
     build-base \
     python3 \
+    python3-dev \
     pkgconfig \
+    libpng-dev \
     cairo-dev \
     pango-dev \
     jpeg-dev \
