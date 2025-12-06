@@ -35,6 +35,7 @@ import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-quer
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
@@ -762,6 +763,8 @@ const SidebarUserProfile = ({
   const pathname = usePathname()
   const { unreadCount } = useNotificationContext()
 
+  const isNativeWebview = useNativeWebview()
+
   // Track if component has mounted to avoid hydration mismatch
   const [hasMounted, setHasMounted] = useState(false)
   useEffect(() => {
@@ -793,8 +796,7 @@ const SidebarUserProfile = ({
     if (isSignedIn) {
       await signOut()
 
-      // Check if we're in a React Native WebView and send logout message
-      if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+      if (isNativeWebview) {
         window.ReactNativeWebView.postMessage(
           JSON.stringify({
             type: 'LOGOUT',
