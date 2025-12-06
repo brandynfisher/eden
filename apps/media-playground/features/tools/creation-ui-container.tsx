@@ -1,6 +1,5 @@
 'use client'
 
-import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import ParameterField from '@/features/tools/parameters/parameter-field'
@@ -20,6 +20,8 @@ import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-
 import ToolSelectorModal from '@/features/tools/tool-selector-modal'
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { trackTaskCreate } from '@/lib/analytics'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
@@ -44,8 +46,12 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
+
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const presetResolutions = tool?.resolutions
@@ -528,28 +534,28 @@ const CreationUIContainer = ({ tool }: Props) => {
                   {/* Public/Private toggle */}
                   <FormField
                     name="makePublic"
-                    render={({ field, fieldState }) => {
-                      const currentValue =
-                        field.value === undefined ? true : field.value
-                      return (
-                        <FormItem className="flex items-center gap-2 space-y-0">
-                          <FormLabel className="text-xs text-muted-foreground !mt-0">
-                            Public
-                          </FormLabel>
-                          <FormControl className="mt-0 flex">
-                            <GatedPrivacySwitch
-                              checked={currentValue}
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <div className="flex items-center gap-2">
+                          <FormControl id={field.name} className="mt-0">
+                            <Switch
+                              checked={
+                                field.value === undefined ? true : field.value
+                              }
                               onCheckedChange={field.onChange}
-                              disabled={isSubmitting}
-                              entityLabel="creations"
+                              disabled={!isAllowedPrivacy}
                             />
                           </FormControl>
-                          <FormMessage className="text-xs">
-                            {fieldState.error?.message}
-                          </FormMessage>
-                        </FormItem>
-                      )
-                    }}
+                          <FormLabel
+                            htmlFor={field.name}
+                            className="text-xs text-muted-foreground !mt-0"
+                          >
+                            Public
+                          </FormLabel>
+                        </div>
+                        <FormMessage>{fieldState.error?.message}</FormMessage>
+                      </FormItem>
+                    )}
                   />
 
                   {/* Create button */}
@@ -618,34 +624,31 @@ const CreationUIContainer = ({ tool }: Props) => {
 
                   <FormField
                     name="makePublic"
-                    render={({ field, fieldState }) => {
-                      const currentValue =
-                        field.value === undefined ? true : field.value
-                      return (
-                        <FormItem
-                          data-test-id={'makePublic'}
-                          className="flex items-center gap-3 space-y-0"
-                        >
+                    render={({ field, fieldState }) => (
+                      <FormItem
+                        data-test-id={'makePublic'}
+                        className="flex items-center gap-2 space-y-0 relative"
+                      >
+                        <div className={'flex items-center gap-2'}>
+                          <FormControl id={field.name} className="mt-0">
+                            <Switch
+                              checked={
+                                field.value === undefined ? true : field.value
+                              }
+                              onCheckedChange={field.onChange}
+                              disabled={!isAllowedPrivacy}
+                            />
+                          </FormControl>
                           <FormLabel
                             htmlFor={field.name}
-                            className="text-muted-foreground !mt-0"
+                            className={'text-muted-foreground !mt-0'}
                           >
                             Public
                           </FormLabel>
-                          <FormControl id={field.name} className="mt-0 flex">
-                            <GatedPrivacySwitch
-                              checked={currentValue}
-                              onCheckedChange={field.onChange}
-                              disabled={isSubmitting}
-                              entityLabel="creations"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs">
-                            {fieldState.error?.message}
-                          </FormMessage>
-                        </FormItem>
-                      )
-                    }}
+                        </div>
+                        <FormMessage>{fieldState.error?.message}</FormMessage>
+                      </FormItem>
+                    )}
                   />
 
                   {isSignedIn && !hasEnoughBalance && (
