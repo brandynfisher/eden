@@ -70,7 +70,10 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
       </div>
 
       {/* Tool form: CreationUiContainer renders desktop panel + mobile overlay */}
-      <div className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col justify-start items-start lg:self-start lg:h-full">
+      <div
+        className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col justify-start items-start lg:self-start lg:sticky lg:top-0 lg:max-h-[100vh] lg:overflow-y-auto"
+        data-test-id="workspace-tool-column"
+      >
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <ErrorBoundary>
             <CreationUiContainer key={presetKey} tool={tool} />
