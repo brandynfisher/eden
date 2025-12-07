@@ -51,13 +51,21 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
 
   const tool = toolClientData || toolSSRData
 
-  // Dynamically size the tool column to the remaining viewport height so the footer stays visible
+  // Dynamically size the tool column to remaining viewport height on desktop only
   const toolColumnRef = useRef<HTMLDivElement>(null)
   const [toolColumnHeight, setToolColumnHeight] = useState<number>()
+  const [isDesktop, setIsDesktop] = useState(false)
 
   useLayoutEffect(() => {
     const updateHeight = () => {
-      if (!toolColumnRef.current) return
+      const desktop = window.innerWidth >= 1024
+      setIsDesktop(desktop)
+
+      if (!desktop || !toolColumnRef.current) {
+        setToolColumnHeight(undefined)
+        return
+      }
+
       const top = toolColumnRef.current.getBoundingClientRect().top
       const height = window.innerHeight - top
       setToolColumnHeight(height > 0 ? height : undefined)
@@ -95,7 +103,7 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
       <div
         ref={toolColumnRef}
         style={
-          toolColumnHeight
+          isDesktop && toolColumnHeight
             ? { height: toolColumnHeight, maxHeight: toolColumnHeight }
             : undefined
         }
