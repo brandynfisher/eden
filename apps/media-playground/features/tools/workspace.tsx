@@ -7,7 +7,7 @@ import CreationUiContainer from '@/features/tools/creation-ui-container'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 type Props = {
   toolKey: ToolV2['key']
@@ -51,6 +51,28 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
 
   const tool = toolClientData || toolSSRData
 
+  // Dynamically size the tool column to the remaining viewport height so the footer stays visible
+  const toolColumnRef = useRef<HTMLDivElement>(null)
+  const [toolColumnHeight, setToolColumnHeight] = useState<number>()
+
+  useLayoutEffect(() => {
+    const updateHeight = () => {
+      if (!toolColumnRef.current) return
+      const top = toolColumnRef.current.getBoundingClientRect().top
+      const height = window.innerHeight - top
+      setToolColumnHeight(height > 0 ? height : undefined)
+    }
+
+    updateHeight()
+    window.addEventListener('resize', updateHeight)
+    window.addEventListener('scroll', updateHeight, { passive: true })
+
+    return () => {
+      window.removeEventListener('resize', updateHeight)
+      window.removeEventListener('scroll', updateHeight)
+    }
+  }, [])
+
   if (!tool) {
     return null
   }
@@ -71,8 +93,13 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
 
       {/* Tool form: CreationUiContainer renders desktop panel + mobile overlay */}
       <div
-        className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col min-h-0 lg:self-start lg:sticky lg:top-[var(--tool-offset)] lg:h-[calc(100vh-var(--tool-offset))] lg:max-h-[calc(100vh-var(--tool-offset))] lg:overflow-y-auto lg:overflow-x-hidden lg:pb-4"
-        style={{ ['--tool-offset' as string]: '64px' }}
+        ref={toolColumnRef}
+        style={
+          toolColumnHeight
+            ? { height: toolColumnHeight, maxHeight: toolColumnHeight }
+            : undefined
+        }
+        className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col min-h-0 lg:self-start lg:sticky lg:top-0 lg:overflow-hidden"
         data-test-id="workspace-tool-column"
       >
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
