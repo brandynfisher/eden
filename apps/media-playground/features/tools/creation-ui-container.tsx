@@ -341,16 +341,17 @@ const CreationUIContainer = ({ tool }: Props) => {
       <div
         data-test-id="tool-form"
         className={cn([
-          'flex flex-col items-start justify-start bg-muted-darker rounded-md h-full w-full',
+          'relative flex h-full min-h-0 w-full flex-col rounded-md bg-muted-darker shadow-sm',
           // On mobile: hidden by default, only show as overlay when clicked
           isMobile && !mobileIsFormVisible && 'hidden',
           // Mobile overlay mode
-          mobileIsFormVisible && 'fixed inset-0 z-50',
+          mobileIsFormVisible &&
+            'fixed inset-0 z-50 h-dvh max-h-dvh overflow-hidden',
         ])}
       >
         <Form {...form}>
-          <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
-            <div className="flex items-start justify-between gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+          <form className="flex h-full min-h-0 w-full flex-col">
+            <div className="flex items-start justify-between gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700 flex-shrink-0">
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <TypographyH4 className="text-sm lg:text-base">
@@ -388,7 +389,7 @@ const CreationUIContainer = ({ tool }: Props) => {
               )}
             </div>
 
-            <div className="px-3 pb-3 pt-3 border-b border-secondary bg-muted-darker">
+            <div className="px-3 pb-3 pt-3 border-b border-secondary bg-muted-darker flex-shrink-0">
               <Button
                 type="button"
                 variant="secondary"
@@ -400,7 +401,7 @@ const CreationUIContainer = ({ tool }: Props) => {
               </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
+            <div className="flex-1 min-h-0 p-3 pb-4 flex flex-col gap-2 overflow-y-auto">
               <div
                 data-test-id="tool-form-settings-required"
                 className="flex flex-col gap-2"
@@ -510,7 +511,7 @@ const CreationUIContainer = ({ tool }: Props) => {
             {/* Footer - Clean mobile layout */}
             <div
               className={cn([
-                'flex items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700',
+                'sticky bottom-0 left-0 right-0 flex items-center gap-2 border border-t-gray-300 bg-secondary/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-secondary/80 dark:border-t-gray-700 flex-shrink-0',
                 isMobile && mobileIsFormVisible
                   ? 'justify-between'
                   : 'justify-between',

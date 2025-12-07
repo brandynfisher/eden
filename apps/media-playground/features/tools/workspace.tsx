@@ -71,7 +71,8 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
 
       {/* Tool form: CreationUiContainer renders desktop panel + mobile overlay */}
       <div
-        className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col justify-start items-start lg:self-start lg:sticky lg:top-0 lg:max-h-[100vh] lg:overflow-y-auto"
+        className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col min-h-0 lg:self-start lg:sticky lg:top-[var(--tool-offset)] lg:h-[calc(100vh-var(--tool-offset))] lg:max-h-[calc(100vh-var(--tool-offset))] lg:overflow-y-auto lg:overflow-x-hidden lg:pb-4"
+        style={{ ['--tool-offset' as string]: '64px' }}
         data-test-id="workspace-tool-column"
       >
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
