@@ -341,7 +341,7 @@ const CreationUIContainer = ({ tool }: Props) => {
       <div
         data-test-id="tool-form"
         className={cn([
-          'relative flex h-full min-h-0 w-full flex-col rounded-md bg-muted-darker shadow-sm',
+          'relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-md bg-muted-darker shadow-sm',
           // On mobile: hidden by default, only show as overlay when clicked
           isMobile && !mobileIsFormVisible && 'hidden',
           // Mobile overlay mode
