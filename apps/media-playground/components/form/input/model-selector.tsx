@@ -48,7 +48,7 @@ const ModelSelector = ({ base_model, onChange, value }: Props) => {
       <ModelSelectorModal
         className="p-4 md:p-8 w-full"
         title="Select model"
-        description="Pick a model to use as a lora"
+        description=" "
         base_model={base_model}
         currentValue={value}
         onChange={onChange}

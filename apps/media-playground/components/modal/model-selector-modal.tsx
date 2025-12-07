@@ -17,7 +17,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/navigation'
-import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
+import { PropsWithChildren, ReactNode, useMemo, useRef, useState } from 'react'
 
 type Props = {
   title?: ReactNode
@@ -51,13 +51,24 @@ const ModelSelectorModal = ({
     setOpen(false)
   }
 
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const dialogContentRef = useRef<HTMLDivElement>(null)
+  const feedScrollRef = useRef<HTMLDivElement>(null)
+  const effectiveDescription = useMemo(() => {
+    if (description) return description
+    return 'Pick a model to use as a LoRA or browse public ones.'
+  }, [description])
   const userModelsEmptyState = (
-    <div className="flex flex-col items-center gap-3 text-center py-10">
-      <p className="text-sm text-muted-foreground">
-        You don't have any custom models yet.
-      </p>
-      <div className="flex gap-2 justify-center">
+    <div className="flex flex-col items-center justify-center gap-3 text-center py-16 min-h-[360px]">
+      <div className="grid place-items-center size-11 rounded-full bg-muted/30 border border-border/40 text-muted-foreground">
+        <span className="text-base">∅</span>
+      </div>
+      <div className="space-y-1 max-w-sm">
+        <p className="text-base font-semibold">No models found</p>
+        <p className="text-sm text-muted-foreground">
+          Start by training a custom model or browse the public library.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2 justify-center">
         <Button
           type="button"
           onClick={() => router.push('/studio/lora/flux_trainer')}
@@ -69,7 +80,7 @@ const ModelSelectorModal = ({
           variant="outline"
           onClick={() => setCurrentTab('public')}
         >
-          View public models
+          Browse public models
         </Button>
       </div>
     </div>
@@ -92,63 +103,82 @@ const ModelSelectorModal = ({
         )}
       </DialogTrigger>
       <DialogContentScrollable
-        ref={scrollRef}
-        className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
+        ref={dialogContentRef}
+        className={cn(
+          'overflow-hidden flex flex-col w-[min(880px,88vw)] max-h-[80vh] min-h-[420px] p-5 md:p-7 gap-5 rounded-2xl border border-border/60 bg-background/95 backdrop-blur shadow-2xl',
+          className,
+        )}
       >
-        <DialogHeader className="mt-4">
-          <div className="flex gap-4 items-center">
-            <DialogTitle className="py-2">{title}</DialogTitle>
-            {base_model && (
-              <Badge variant="secondary">
-                {Array.isArray(base_model) ? base_model.join(', ') : base_model}
-              </Badge>
-            )}
+        <DialogHeader className="mt-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <DialogTitle className="text-xl md:text-2xl">{title}</DialogTitle>
+              {base_model && (
+                <Badge variant="secondary">
+                  {Array.isArray(base_model)
+                    ? base_model.join(', ')
+                    : base_model}
+                </Badge>
+              )}
+            </div>
           </div>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription className="text-sm text-muted-foreground">
+            {effectiveDescription}
+          </DialogDescription>
         </DialogHeader>
-        <div>
-          <div className="flex flex-col sm:flex-row gap-4 w-full mb-4">
-            <Tabs
-              value={currentTab}
-              onValueChange={value => setCurrentTab(value as 'user' | 'public')}
-              className="w-full max-w-full"
-            >
-              <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
-                <TabsTrigger value="user" className="w-full">
-                  My Models
-                </TabsTrigger>
-                <TabsTrigger value="public" className="w-full">
-                  Public Models
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <FeedSearchForm handleSearch={setSearchQuery} />
+
+        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between rounded-xl border border-border/60 bg-muted/10 px-3 py-3">
+              <Tabs
+                value={currentTab}
+                onValueChange={value =>
+                  setCurrentTab(value as 'user' | 'public')
+                }
+                className="w-full md:w-auto"
+              >
+                <TabsList className="grid grid-cols-2 w-full md:w-auto md:min-w-[280px]">
+                  <TabsTrigger value="user">My Models</TabsTrigger>
+                  <TabsTrigger value="public">Public Models</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <FeedSearchForm
+                handleSearch={setSearchQuery}
+                className="md:ml-auto w-full md:w-[300px]"
+              />
+            </div>
           </div>
 
-          {currentTab === 'user' ? (
-            <ModelsFeed
-              query={{ base_model, user: user?._id, search: searchQuery }}
-              minCols={2}
-              maxCols={5}
-              onClick={handleOnChange}
-              isSelectable={true}
-              showFooterItems={{ name: true, actions: false }}
-              scrollRef={scrollRef}
-              selectedIds={selectedIds}
-              emptyState={userModelsEmptyState}
-            />
-          ) : (
-            <ModelsFeed
-              query={{ base_model, search: searchQuery }}
-              minCols={2}
-              maxCols={5}
-              onClick={handleOnChange}
-              isSelectable={true}
-              showFooterItems={{ name: true, actions: false }}
-              scrollRef={scrollRef}
-              selectedIds={selectedIds}
-            />
-          )}
+          <div
+            ref={feedScrollRef}
+            className="flex-1 overflow-y-auto rounded-xl border border-border/60 bg-muted/10 px-2 md:px-3 pb-3 min-h-[420px]"
+          >
+            {currentTab === 'user' ? (
+              <ModelsFeed
+                query={{ base_model, user: user?._id, search: searchQuery }}
+                minCols={2}
+                maxCols={4}
+                onClick={handleOnChange}
+                isSelectable={true}
+                showFooterItems={{ name: true, actions: false }}
+                scrollRef={feedScrollRef}
+                selectedIds={selectedIds}
+                emptyState={userModelsEmptyState}
+              />
+            ) : (
+              <ModelsFeed
+                query={{ base_model, search: searchQuery }}
+                minCols={2}
+                maxCols={4}
+                onClick={handleOnChange}
+                isSelectable={true}
+                showFooterItems={{ name: true, actions: false }}
+                scrollRef={feedScrollRef}
+                selectedIds={selectedIds}
+              />
+            )}
+          </div>
         </div>
       </DialogContentScrollable>
     </Dialog>
