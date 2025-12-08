@@ -1,4 +1,5 @@
-import BottomTabsNavigator from './bottom-tabs'
+import BottomTabsNavigator, { BottomTabsParamList } from './bottom-tabs'
+import NotificationPreferences from '@/screens/notification-preferences'
 import Onboarding from '@/screens/onboarding'
 import Permissions from '@/screens/permissions'
 import Splash from '@/screens/splash'
@@ -16,6 +17,7 @@ export type RootStackParamList = {
         screen?: keyof BottomTabsParamList
         params?: BottomTabsParamList[keyof BottomTabsParamList]
       }
+  NotificationPreferences: undefined
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -33,6 +35,10 @@ export default function Navigator() {
       <Stack.Screen name="Onboarding" component={Onboarding} />
       <Stack.Screen name="Permissions" component={Permissions} />
       <Stack.Screen name="BottomTabs" component={BottomTabsNavigator} />
+      <Stack.Screen
+        name="NotificationPreferences"
+        component={NotificationPreferences}
+      />
     </Stack.Navigator>
   )
 }
