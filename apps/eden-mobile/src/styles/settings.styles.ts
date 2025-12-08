@@ -12,40 +12,39 @@ export default (theme: 'light' | 'dark') =>
     },
     list: {
       flex: 1,
-      paddingTop: Platform.OS === 'ios' ? 14 : Spacing.xl,
+      paddingTop: 14,
     },
     listContent: {
-      paddingTop: Platform.OS === 'ios' ? 8 : Spacing.xl,
-      paddingBottom: Platform.OS === 'ios' ? 32 : Spacing.lg,
-      paddingHorizontal: Platform.OS === 'ios' ? 16 : 0,
+      paddingTop: 8,
+      paddingBottom: 32,
+      paddingHorizontal: 16,
     },
     sectionHeader: {
-      paddingHorizontal: Platform.OS === 'ios' ? 16 : Spacing.xl,
-      paddingTop: Platform.OS === 'ios' ? 32 : Spacing.lg,
-      paddingBottom: Platform.OS === 'ios' ? 6 : Spacing.xs,
+      paddingHorizontal: 16,
+      paddingTop: 32,
+      paddingBottom: 6,
     },
     sectionHeaderText: {
-      fontSize:
-        Platform.OS === 'ios' ? Typography.fontSize.sm : Typography.fontSize.xs,
+      fontSize: Typography.fontSize.sm,
       fontFamily: Typography.fontFamily.medium,
       color: Colors[theme].textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: Platform.OS === 'ios' ? -0.08 : 0.5,
+      letterSpacing: -0.08,
     },
     sectionFooter: {
-      height: Platform.OS === 'ios' ? 32 : 0,
+      height: 32,
     },
     settingItem: {
       backgroundColor:
         Platform.OS === 'ios'
           ? PlatformColor('secondarySystemGroupedBackground')
           : Colors[theme].surface,
-      paddingHorizontal: Platform.OS === 'ios' ? 16 : Spacing.xl,
-      paddingVertical: Platform.OS === 'ios' ? 11 : 16,
+      paddingHorizontal: 16,
+      paddingVertical: 11,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      minHeight: Platform.OS === 'ios' ? 44 : 48,
+      minHeight: 44,
     },
     settingItemIOS: {
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -85,7 +84,7 @@ export default (theme: 'light' | 'dark') =>
           ? Typography.fontFamily.regular
           : Typography.fontFamily.medium,
       color: Colors[theme].textPrimary,
-      marginBottom: Platform.OS === 'ios' ? 2 : Spacing.xs,
+      marginBottom: 2,
     },
     settingDescription: {
       fontSize:
@@ -98,7 +97,7 @@ export default (theme: 'light' | 'dark') =>
         Platform.OS === 'ios'
           ? Typography.fontSize.base * Typography.lineHeight.normal
           : Typography.fontSize.sm * Typography.lineHeight.normal,
-      marginTop: Platform.OS === 'ios' ? 2 : 0,
+      marginTop: 2,
     },
     separator: {
       height: StyleSheet.hairlineWidth,

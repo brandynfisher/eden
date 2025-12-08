@@ -9,6 +9,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
+import { useNativeWebview } from '@/hooks/use-native-webview'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -129,6 +130,7 @@ const AppShell = ({ children }: PropsWithChildren) => {
   // to avoid hydration mismatch
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const isNativeWebview = useNativeWebview()
 
   // Read sidebar collapsed state from localStorage after mount
   useEffect(() => {
@@ -163,6 +165,23 @@ const AppShell = ({ children }: PropsWithChildren) => {
     window.addEventListener('toggle-sidebar', handleToggle)
     return () => window.removeEventListener('toggle-sidebar', handleToggle)
   }, [])
+
+  // Listen for close-sidebar event from React Native WebView (swipe gestures)
+  useEffect(() => {
+    if (!isNativeWebview || typeof window === 'undefined') {
+      return
+    }
+
+    const handleCloseSidebar = () => {
+      closeMobileSidebar()
+    }
+
+    window.addEventListener('close-sidebar', handleCloseSidebar)
+
+    return () => {
+      window.removeEventListener('close-sidebar', handleCloseSidebar)
+    }
+  }, [closeMobileSidebar, isNativeWebview])
 
   useEffect(() => {
     if (!config.showShell) {

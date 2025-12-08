@@ -21,6 +21,19 @@ import {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
+type NotificationPreferenceKey =
+  | 'new_creation'
+  | 'new_message'
+  | 'session_permissions'
+  | 'agent_permissions'
+
+const NOTIFICATION_KEY_MAP: Record<string, NotificationPreferenceKey> = {
+  'new-creation': 'new_creation',
+  'new-message': 'new_message',
+  'session-permissions': 'session_permissions',
+  'agent-permissions': 'agent_permissions',
+}
+
 export default function NotificationPreferences() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
@@ -81,7 +94,7 @@ export default function NotificationPreferences() {
   }
 
   const updateNotificationPreference = async (
-    key: keyof typeof notificationPreferences,
+    key: NotificationPreferenceKey,
     value: boolean,
   ) => {
     if (!isSignedIn) {
@@ -213,13 +226,7 @@ export default function NotificationPreferences() {
     const isDisabled = item.disabled || false
     const handleToggle = (value: boolean) => {
       if (isDisabled) return
-      const keyMap: Record<string, keyof typeof notificationPreferences> = {
-        'new-creation': 'new_creation',
-        'new-message': 'new_message',
-        'session-permissions': 'session_permissions',
-        'agent-permissions': 'agent_permissions',
-      }
-      const key = keyMap[item.id]
+      const key = NOTIFICATION_KEY_MAP[item.id]
       if (key) {
         updateNotificationPreference(key, value)
       }
