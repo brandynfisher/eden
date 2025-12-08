@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import { CompositeNavigationProp } from '@react-navigation/native'
 import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
 import * as StoreReview from 'expo-store-review'
@@ -83,11 +84,6 @@ export default function Settings() {
       console.error('Error requesting review:', error)
       Alert.alert('Error', 'Failed to open review dialog.')
     }
-  }
-
-  const handleResetWebview = () => {
-    const resetToken = Date.now()
-    navigation.navigate('Webview', { resetToken })
   }
 
   const handleResetWebview = () => {
