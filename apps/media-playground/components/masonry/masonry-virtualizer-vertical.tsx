@@ -33,6 +33,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 
 const MASONRY_GUTTER = 16
@@ -70,6 +71,7 @@ type Props = {
   onScrollRestored?: () => void
   showSkeleton?: boolean
   emptyState?: ReactNode
+  debugLabel?: string
 }
 
 export const MasonrySkeleton = () => {
@@ -134,10 +136,35 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       onScrollRestored,
       showSkeleton = false,
       emptyState,
+      debugLabel,
     },
     ref,
   ) => {
-    // Log prop value on render - REMOVED
+    const debugLog = useCallback(
+      (event: string, data?: Record<string, unknown>) => {
+        if (!debugLabel) return
+        // eslint-disable-next-line no-console
+        console.info(`[MasonryDebug:${debugLabel}] ${event}`, data ?? {})
+      },
+      [debugLabel],
+    )
+
+    useEffect(() => {
+      if (!debugLabel) return
+
+      const timeout = setTimeout(() => {
+        debugLog('init', {
+          usingElementScroll: Boolean(scrollRef),
+          scrollRefAttached: Boolean(scrollRef?.current),
+          scrollHeight: scrollRef?.current?.scrollHeight,
+          clientHeight: scrollRef?.current?.clientHeight,
+          queryKey,
+          limit,
+        })
+      }, 150)
+
+      return () => clearTimeout(timeout)
+    }, [debugLog, scrollRef, queryKey, limit])
 
     const { ref: masonryWrapRef, width: masonryWrapWidth } =
       useElementSize<HTMLDivElement>()
@@ -319,6 +346,9 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       return Array.from(uniqueMap.values())
     }, [data])
 
+    const pages = data?.pages ?? []
+    const pageCount = pages.length
+
     // --- Calculations needed for virtualizer ---
     const previousRowCount = useRef(allRows.length)
     useEffect(() => {
@@ -344,6 +374,60 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       },
       scrollRef,
     )
+
+    useEffect(() => {
+      if (!debugLabel) return
+      const scrollEl = scrollRef?.current
+      const contains =
+        scrollEl?.contains(masonryWrapRef.current || null) ?? false
+      debugLog('scroll-ref-check', {
+        containsFeed: contains,
+        scrollElTag: scrollEl?.tagName,
+        scrollElClass: scrollEl?.className,
+      })
+    }, [debugLabel, scrollRef, masonryWrapRef, debugLog])
+
+    useEffect(() => {
+      if (!debugLabel || !pageCount) return
+
+      const lastCursor = pages?.[pageCount - 1]?.nextCursor ?? null
+      const totalDocs = allRows.length
+
+      debugLog('page-update', {
+        pageCount,
+        totalDocs,
+        hasNextPage,
+        isFetchingNextPage,
+        lastCursor,
+        totalSize: virtualizer?.getTotalSize?.(),
+        columnCount: MASONRY_COLUMN_COUNT,
+      })
+
+      // Geometry snapshot to compare scrollable height vs. virtual size
+      const innerH = innerRef.current?.getBoundingClientRect()?.height ?? null
+      const wrapH =
+        masonryWrapRef.current?.getBoundingClientRect()?.height ?? null
+      const scrollEl = scrollRef?.current
+      debugLog('geometry', {
+        innerH,
+        wrapH,
+        scrollHeight: scrollEl?.scrollHeight ?? null,
+        clientHeight: scrollEl?.clientHeight ?? null,
+      })
+    }, [
+      debugLabel,
+      pageCount,
+      hasNextPage,
+      isFetchingNextPage,
+      pages,
+      allRows.length,
+      debugLog,
+      virtualizer,
+      MASONRY_COLUMN_COUNT,
+      innerRef,
+      masonryWrapRef,
+      scrollRef,
+    ])
 
     // --- Expose getTopmostVisibleIndex via ref ---
     const getTopmostVisibleIndex = useCallback(() => {
@@ -395,12 +479,30 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
 
     const fetchNextForExternal = useCallback(async () => {
       if (hasNextPage) {
+        debugLog('fetch-next-external-start', {
+          pageCount,
+          rowCount: allRows.length,
+        })
+
         const result = await fetchNextPage()
-        return result.data?.pages[result.data.pages.length - 1] ?? { docs: [] }
+        const resolvedPage = result.data?.pages[
+          result.data.pages.length - 1
+        ] ?? { docs: [] }
+
+        debugLog('fetch-next-external-done', {
+          pageCount: result.data?.pages?.length,
+          returnedDocs: (resolvedPage as { docs?: RowItem[] })?.docs?.length,
+          nextCursor:
+            result.data?.pages?.[result.data.pages.length - 1]?.nextCursor ??
+            null,
+        })
+
+        return resolvedPage
       }
 
+      debugLog('fetch-next-external-skip', { hasNextPage })
       return { docs: [] }
-    }, [fetchNextPage, hasNextPage])
+    }, [fetchNextPage, hasNextPage, debugLog, pageCount, allRows.length])
 
     useEffect(() => {
       if (setFetchNextPage) {
@@ -426,11 +528,20 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       if (initialScrollIndex >= allRows.length) {
         // If we can fetch more and aren't currently fetching, do it.
         if (hasNextPage && !isFetchingNextPage) {
+          debugLog('scroll-restore-fetch', {
+            initialScrollIndex,
+            currentRows: allRows.length,
+          })
           fetchNextPage()
           // Effect will re-run when data or fetching state changes.
         } else if (!hasNextPage) {
           // Cannot fetch more, restoration to this index is impossible.
           initialScrollAttempted.current = true // Mark as attempted (failed)
+          debugLog('scroll-restore-abort', {
+            reason: 'no-next-page',
+            initialScrollIndex,
+            currentRows: allRows.length,
+          })
           onScrollRestored?.() // Signal completion (failure)
         } else {
           // Currently fetching, wait for it to complete.
@@ -446,6 +557,10 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
           requestAnimationFrame(() => {
             setTimeout(() => {
               if (virtualizer.getVirtualItems().length > 0) {
+                debugLog('scroll-restore-apply', {
+                  initialScrollIndex,
+                  totalVirtualItems: virtualizer.getVirtualItems().length,
+                })
                 virtualizer.scrollToIndex(initialScrollIndex, {
                   align: 'start',
                   behavior: 'auto',
@@ -471,18 +586,99 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       status,
       fetchNextPage,
       onScrollRestored,
-      scrollRef,
+      debugLog,
       // Removed isRestoringScroll, forceMeasureUpdate
     ])
 
     const virtualItems = virtualizer.getVirtualItems()
     const lastItem = virtualItems[virtualItems.length - 1]
+    const totalSize = virtualizer.getTotalSize()
+
+    const [forceSpacer, setForceSpacer] = useState(false)
+
+    // If for any reason the scroll container fails to expand to the full virtual height,
+    // inject a spacer to force layout height so scrolling works.
+    useEffect(() => {
+      if (!scrollRef?.current) return
+      const scrollEl = scrollRef.current
+      const scrollH = scrollEl.scrollHeight
+      if (scrollH + 48 < totalSize) {
+        setForceSpacer(true)
+        debugLog('force-spacer', {
+          scrollHeight: scrollH,
+          clientHeight: scrollEl.clientHeight,
+          totalSize,
+        })
+      } else {
+        setForceSpacer(false)
+      }
+    }, [scrollRef, totalSize, virtualizerCount, debugLog])
+
+    // Track visible range progression to see if virtualizer stops advancing.
+    const lastIndexRef = useRef<number | null>(null)
+    useEffect(() => {
+      if (!debugLabel) return
+
+      const currentLastIndex = lastItem?.index ?? null
+      if (currentLastIndex === lastIndexRef.current) return
+      lastIndexRef.current = currentLastIndex
+
+      debugLog('visible-range', {
+        lastIndex: currentLastIndex,
+        rowCount: allRows.length,
+        totalSize: virtualizer.getTotalSize(),
+        scrollTop: scrollRef?.current?.scrollTop ?? null,
+        scrollHeight: scrollRef?.current?.scrollHeight ?? null,
+        clientHeight: scrollRef?.current?.clientHeight ?? null,
+      })
+    }, [lastItem, allRows.length, debugLabel, debugLog, virtualizer, scrollRef])
+
+    const nearEndReasonRef = useRef<string>('')
 
     useEffect(() => {
-      if (!lastItem || hasNextPage === undefined || isFetchingNextPage) return
+      const reason = !lastItem
+        ? 'no-last-item'
+        : hasNextPage === undefined
+        ? 'hasNext-undefined'
+        : isFetchingNextPage
+        ? 'fetch-inflight'
+        : lastItem.index >= allRows.length - 20
+        ? 'trigger-fetch'
+        : 'not-near-end'
 
-      if (lastItem.index >= allRows.length - 20) {
-        fetchNextPage()
+      if (debugLabel && reason !== nearEndReasonRef.current) {
+        nearEndReasonRef.current = reason
+        debugLog('near-end-check', {
+          reason,
+          lastIndex: lastItem?.index ?? null,
+          rowCount: allRows.length,
+          hasNextPage,
+          isFetchingNextPage,
+          scrollTop: scrollRef?.current?.scrollTop ?? null,
+          scrollHeight: scrollRef?.current?.scrollHeight ?? null,
+          clientHeight: scrollRef?.current?.clientHeight ?? null,
+        })
+      }
+
+      if (reason === 'trigger-fetch') {
+        const scrollEl = scrollRef?.current
+        const hasOverflow = scrollEl
+          ? scrollEl.scrollHeight > scrollEl.clientHeight + 16
+          : true
+
+        debugLog('fetch-next-trigger', {
+          lastIndex: lastItem?.index ?? null,
+          rowCount: allRows.length,
+          pageCount,
+          scrollTop: scrollEl?.scrollTop ?? null,
+          scrollHeight: scrollEl?.scrollHeight ?? null,
+          clientHeight: scrollEl?.clientHeight ?? null,
+          hasOverflow,
+        })
+
+        if (hasOverflow) {
+          fetchNextPage()
+        }
       }
     }, [
       lastItem,
@@ -490,6 +686,41 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       hasNextPage,
       isFetchingNextPage,
       fetchNextPage,
+      debugLabel,
+      debugLog,
+      pageCount,
+    ])
+
+    // Fallback trigger based on scroll position if index-based trigger stalls
+    useEffect(() => {
+      if (!scrollRef?.current || !hasNextPage || isFetchingNextPage) return
+
+      const el = scrollRef.current
+      const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+
+      // Guard: only trigger when there is actually scrollable overflow
+      const hasOverflow = el.scrollHeight > el.clientHeight + 16
+      if (!hasOverflow) return
+
+      if (distanceToBottom < 800) {
+        debugLog('fetch-next-trigger-scroll', {
+          distanceToBottom,
+          scrollTop: el.scrollTop,
+          scrollHeight: el.scrollHeight,
+          clientHeight: el.clientHeight,
+          rowCount: allRows.length,
+          pageCount,
+        })
+        fetchNextPage()
+      }
+    }, [
+      scrollRef,
+      hasNextPage,
+      isFetchingNextPage,
+      fetchNextPage,
+      debugLog,
+      allRows.length,
+      pageCount,
     ])
 
     const renderItem = useCallback(
@@ -542,7 +773,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
             ref={innerRef}
             data-test-id="masonry-virtualizer-vertical-content"
             style={{
-              height: `${virtualizer.getTotalSize()}px`,
+              height: `${totalSize}px`,
               width: '100%',
               position: 'relative',
             }}
@@ -572,6 +803,13 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
             ) : null}
           </div>
         </div>
+        {forceSpacer ? (
+          <div
+            aria-hidden
+            className="pointer-events-none w-full"
+            style={{ height: `${totalSize}px` }}
+          />
+        ) : null}
         <MultiSelectToolbar queryKey={queryKey} />
       </MultiSelectProvider>
     )

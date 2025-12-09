@@ -57,6 +57,7 @@ const ProfileTabs = () => {
           query={baseQuery}
           maxCols={7}
           multiselect={isOwnProfile}
+          debugLabel={`profile/creations:${creator.username || creator._id}`}
         />
       ),
       actionButton: isOwnProfile ? (

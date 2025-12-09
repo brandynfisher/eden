@@ -467,7 +467,12 @@ const ExplorePage = () => {
           )}
 
           {contentType === 'creations' && (
-            <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
+            <CreationsFeed
+              query={creationsQuery}
+              minCols={2}
+              maxCols={8}
+              debugLabel="explore/creations"
+            />
           )}
 
           {contentType === 'models' && (

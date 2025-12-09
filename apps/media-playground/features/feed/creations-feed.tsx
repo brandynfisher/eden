@@ -16,6 +16,7 @@ import {
   RefObject,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -32,6 +33,7 @@ type Props = {
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
   showSkeleton?: boolean
+  debugLabel?: string
 }
 
 const DEFAULT_CREATIONS_BREAKPOINTS: BreakpointConfig[] = [
@@ -60,6 +62,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       initialScrollIndex,
       onScrollRestored,
       showSkeleton = true,
+      debugLabel,
     }: Props,
     ref,
   ) => {
@@ -76,6 +79,21 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       }),
       [],
     )
+
+    useEffect(() => {
+      if (!debugLabel) return
+
+      const source = scrollRef ? 'prop' : layoutScrollRef ? 'context' : 'none'
+      const timeout = setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.info(`[CreationsFeed:${debugLabel}] scrollRef`, {
+          source,
+          attached: Boolean((scrollRef ?? layoutScrollRef)?.current),
+        })
+      }, 120)
+
+      return () => clearTimeout(timeout)
+    }, [debugLabel, layoutScrollRef, scrollRef])
 
     const query = useMemo(() => {
       return { ...defaultQuery, ...queryProp }
@@ -188,6 +206,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
         initialScrollIndex={effectiveScrollIndex}
         onScrollRestored={handleScrollRestored}
         showSkeleton={showSkeleton}
+        debugLabel={debugLabel}
         render={(item: RowItem, onUpdate, index) => (
           <CreationCard
             onUpdate={onUpdate}

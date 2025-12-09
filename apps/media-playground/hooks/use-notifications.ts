@@ -38,8 +38,13 @@ export const useNotifications = (
 
       const response = await fetcher<NotificationsListResponse>(url.toString())
 
+      // Mobile-only push notifications shouldn't appear in web dropdown
+      const filteredNotifications = response.notifications.filter(
+        notification => notification.type !== 'session_complete',
+      )
+
       const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000
-      const recentNotifications = response.notifications
+      const recentNotifications = filteredNotifications
         .filter(notification => {
           const createdAt = new Date(notification.createdAt).getTime()
           if (!notification.read) {
@@ -60,7 +65,8 @@ export const useNotifications = (
         })
 
       setNotifications(recentNotifications)
-      setUnreadCount(response.unread_count)
+      // Keep unread badge consistent with filtered list
+      setUnreadCount(filteredNotifications.filter(n => !n.read).length)
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
       setIsError(true)
