@@ -108,6 +108,20 @@ const getDefaultConfig = (pathname?: string | null): AppShellConfig => ({
   sidebarVariant: isChatVariantRoute(pathname) ? 'chat' : 'sessions',
 })
 
+const shallowEqualConfig = (
+  a: Partial<AppShellConfig>,
+  b: Partial<AppShellConfig>,
+) => {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+  if (aKeys.length !== bKeys.length) return false
+  for (const key of aKeys) {
+    // @ts-ignore - dynamic key access
+    if (a[key] !== b[key]) return false
+  }
+  return true
+}
+
 const AppShell = ({ children }: PropsWithChildren) => {
   const pathname = usePathname()
   const defaultConfig = useMemo(() => getDefaultConfig(pathname), [pathname])
@@ -151,11 +165,19 @@ const AppShell = ({ children }: PropsWithChildren) => {
   }, [])
 
   const setConfig = useCallback((value: Partial<AppShellConfig>) => {
-    setOverrides(prev => ({ ...prev, ...value }))
+    setOverrides(prev => {
+      const next = { ...prev, ...value }
+      // Avoid needless state updates to prevent render loops
+      if (shallowEqualConfig(prev, next)) return prev
+      return next
+    })
   }, [])
 
   const resetConfig = useCallback(() => {
-    setOverrides({})
+    setOverrides(prev => {
+      if (Object.keys(prev).length === 0) return prev
+      return {}
+    })
   }, [])
 
   useEffect(() => {
@@ -199,88 +221,87 @@ const AppShell = ({ children }: PropsWithChildren) => {
 
   return (
     <AppShellContext.Provider value={providerValue}>
-      {config.showShell ? (
-        <>
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetContent
-              side="left"
-              className="flex h-full max-h-full flex-col pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
-            >
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
-              {headerRenderer({ close: closeMobileSidebar })}
-              <div className="flex-1 overflow-y-auto pl-3">
-                <SessionsSidebarContent
-                  onItemClick={() => setIsSheetOpen(false)}
-                  isChat={config.sidebarVariant === 'chat'}
-                  isMobileSidebar={true}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          <div className="flex flex-1 min-h-0 h-full flex-col md:flex-row overflow-hidden">
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="flex-1 min-h-0 h-full !overflow-y-hidden"
-            >
-              <ResizablePanel
-                defaultSize={20}
-                minSize={isSidebarCollapsed ? 0 : 15}
-                maxSize={30}
-                collapsible={false}
-                className={cn(
-                  'hidden h-full min-h-0 md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-                  isSidebarCollapsed
-                    ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-                    : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-                )}
-              >
-                {isSidebarCollapsed ? (
-                  <SessionsSidebarContent
-                    onSidebarToggle={() => setIsSidebarCollapsed(false)}
-                    isCollapsed={true}
-                    isChat={config.sidebarVariant === 'chat'}
-                  />
-                ) : (
-                  <SessionsSidebarContent
-                    onSidebarToggle={() => setIsSidebarCollapsed(true)}
-                    isChat={config.sidebarVariant === 'chat'}
-                  />
-                )}
-              </ResizablePanel>
-
-              <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-              <ResizablePanel
-                defaultSize={80}
-                className="relative flex flex-1 min-h-0 h-full flex-col bg-background -ml-px"
-              >
-                <ScrollContainerProvider value={scrollRef}>
-                  <div className="flex flex-col h-full min-h-0 overflow-hidden">
-                    <div
-                      ref={scrollRef}
-                      className="mx-auto flex flex-col h-full w-full min-h-0 overflow-y-auto"
-                    >
-                      {children}
-                    </div>
-                  </div>
-                </ScrollContainerProvider>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
-        </>
-      ) : (
-        // When the shell is disabled, still provide a scroll container so pages
-        // can scroll (body is overflow-hidden globally).
-        <ScrollContainerProvider value={scrollRef}>
-          <div
-            ref={scrollRef}
-            className="flex flex-col min-h-screen w-full overflow-y-auto"
+      {config.showShell && (
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent
+            side="left"
+            className="flex h-full max-h-full flex-col pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
           >
-            {children}
-          </div>
-        </ScrollContainerProvider>
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            {headerRenderer({ close: closeMobileSidebar })}
+            <div className="flex-1 overflow-y-auto pl-3">
+              <SessionsSidebarContent
+                onItemClick={() => setIsSheetOpen(false)}
+                isChat={config.sidebarVariant === 'chat'}
+                isMobileSidebar={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       )}
+
+      <div className="flex flex-1 min-h-0 h-full flex-col md:flex-row overflow-hidden">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 min-h-0 h-full !overflow-y-hidden"
+        >
+          {config.showShell && (
+            <ResizablePanel
+              key="sidebar"
+              defaultSize={20}
+              minSize={isSidebarCollapsed ? 0 : 15}
+              maxSize={30}
+              collapsible={false}
+              className={cn(
+                'hidden h-full min-h-0 md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
+                isSidebarCollapsed
+                  ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
+                  : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
+              )}
+            >
+              {isSidebarCollapsed ? (
+                <SessionsSidebarContent
+                  onSidebarToggle={() => setIsSidebarCollapsed(false)}
+                  isCollapsed={true}
+                  isChat={config.sidebarVariant === 'chat'}
+                />
+              ) : (
+                <SessionsSidebarContent
+                  onSidebarToggle={() => setIsSidebarCollapsed(true)}
+                  isChat={config.sidebarVariant === 'chat'}
+                />
+              )}
+            </ResizablePanel>
+          )}
+
+          {config.showShell && (
+            <ResizableHandle
+              key="handle"
+              className="hidden md:flex w-2 bg-transparent"
+            />
+          )}
+
+          <ResizablePanel
+            key="content"
+            defaultSize={config.showShell ? 80 : 100}
+            className="relative flex flex-1 min-h-0 h-full flex-col bg-background -ml-px"
+          >
+            <ScrollContainerProvider value={scrollRef}>
+              <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className={cn(
+                    'flex flex-col w-full min-h-0 overflow-y-auto',
+                    config.showShell ? 'mx-auto h-full' : 'min-h-screen',
+                  )}
+                >
+                  {children}
+                </div>
+              </div>
+            </ScrollContainerProvider>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </AppShellContext.Provider>
   )
 }
