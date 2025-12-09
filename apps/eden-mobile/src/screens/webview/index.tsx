@@ -11,11 +11,13 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   AppState,
+  Dimensions,
   NativeModules,
+  PanResponder,
   Pressable,
   Text,
   TouchableOpacity,
@@ -91,6 +93,66 @@ export default function Webview() {
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
   const lastResetToken = useRef<number | undefined>(undefined)
+
+  // PanResponder for swipe gestures to open/close sidebar
+  const panResponder = useMemo(() => {
+    const screenWidth = Dimensions.get('window').width
+    const EDGE_ZONE_WIDTH = screenWidth * 0.15 // 15% of screen width from left
+
+    return PanResponder.create({
+      onStartShouldSetPanResponder: evt => {
+        // Only start from left 15% of screen
+        const { pageX } = evt.nativeEvent
+        return pageX < EDGE_ZONE_WIDTH
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal swipes that started from left edge
+        const { pageX } = evt.nativeEvent
+        const screenWidth = Dimensions.get('window').width
+        const EDGE_ZONE_WIDTH = screenWidth * 0.15
+
+        // Calculate starting position from current position and gesture delta
+        const startX = pageX - gestureState.dx
+        const startedFromEdge = startX < EDGE_ZONE_WIDTH
+
+        const isHorizontal =
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+          Math.abs(gestureState.dx) > 10
+
+        // Only respond if it's horizontal AND started from edge zone
+        return isHorizontal && startedFromEdge
+      },
+      onPanResponderRelease: (_evt, gestureState) => {
+        const SWIPE_THRESHOLD = 50 // Minimum distance for a swipe
+        const VELOCITY_THRESHOLD = 0.5 // Minimum velocity for a swipe
+
+        // Swipe right (open sidebar) - positive dx
+        if (
+          gestureState.dx > SWIPE_THRESHOLD ||
+          gestureState.vx > VELOCITY_THRESHOLD
+        ) {
+          webRef.current?.injectJavaScript(`
+            (function() {
+              window.dispatchEvent(new Event('toggle-sidebar'));
+              true;
+            })();
+          `)
+        }
+        // Swipe left (close sidebar) - negative dx
+        else if (
+          gestureState.dx < -SWIPE_THRESHOLD ||
+          gestureState.vx < -VELOCITY_THRESHOLD
+        ) {
+          webRef.current?.injectJavaScript(`
+            (function() {
+              window.dispatchEvent(new CustomEvent('close-sidebar'));
+              true;
+            })();
+          `)
+        }
+      },
+    })
+  }, [])
 
   const checkNetworkStatus = async () => {
     try {
@@ -196,8 +258,6 @@ export default function Webview() {
         await signOut()
         return
       }
-
-      console.log('📱 Message from WebView:', msg)
     } catch (err) {
       console.error('Failed to handle WebView message', err)
     }
@@ -342,22 +402,24 @@ export default function Webview() {
               />
             </Pressable>
           </View>
-          <WebView
-            ref={webRef}
-            source={{ uri: initialUrl }}
-            onMessage={handleMessage}
-            onNavigationStateChange={state => {
-              setCurrentUrl(state.url)
-              setCanGoBack(state.canGoBack)
-              setCanGoForward(state.canGoForward)
-            }}
-            javaScriptEnabled
-            domStorageEnabled
-            sharedCookiesEnabled
-            thirdPartyCookiesEnabled
-            cacheEnabled={false}
-            incognito={false}
-          />
+          <View style={styles.webviewContainer} {...panResponder.panHandlers}>
+            <WebView
+              ref={webRef}
+              source={{ uri: initialUrl }}
+              onMessage={handleMessage}
+              onNavigationStateChange={state => {
+                setCurrentUrl(state.url)
+                setCanGoBack(state.canGoBack)
+                setCanGoForward(state.canGoForward)
+              }}
+              javaScriptEnabled
+              domStorageEnabled
+              sharedCookiesEnabled
+              thirdPartyCookiesEnabled
+              cacheEnabled={false}
+              incognito={false}
+            />
+          </View>
         </View>
       ) : (
         <View style={styles.content}>
