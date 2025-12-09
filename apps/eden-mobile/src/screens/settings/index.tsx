@@ -1,13 +1,15 @@
 import { ONBOARDING_COMPLETE_KEY } from '@/constants/storage'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { usePushNotifications } from '@/hooks/use-push-notifications'
 import { RootStackParamList } from '@/navigator'
 import { BottomTabsParamList } from '@/navigator/bottom-tabs'
 import createStyles from '@/styles/settings.styles'
+import { useAuth } from '@clerk/clerk-expo'
 import { Ionicons } from '@expo/vector-icons'
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
+import { CompositeNavigationProp } from '@react-navigation/native'
 import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
 import * as StoreReview from 'expo-store-review'
@@ -24,7 +26,10 @@ import {
   View,
 } from 'react-native'
 
-type NavigationProp = BottomTabNavigationProp<BottomTabsParamList>
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<BottomTabsParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>
 
 export default function Settings() {
   const colorScheme = useColorScheme()
@@ -32,9 +37,11 @@ export default function Settings() {
   const styles = createStyles(theme)
   const navigation = useNavigation<NavigationProp>()
   const colors = Colors[theme]
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const { expoPushToken } = usePushNotifications()
+
+  const { isSignedIn } = useAuth()
 
   useEffect(() => {
     checkNotificationPermission()
@@ -79,58 +86,6 @@ export default function Settings() {
     }
   }
 
-  const handleTestNotification = async () => {
-    if (!expoPushToken) {
-      Alert.alert(
-        'No Push Token',
-        'Push token is not available. Make sure notifications are enabled and you are signed in.',
-        [{ text: 'OK' }],
-      )
-      return
-    }
-
-    try {
-      const response = await fetch('https://exp.host/--/api/v2/push/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: expoPushToken,
-          title: 'Test Notification',
-          body: 'This is a test notification from the app! 🎉',
-          data: { test: true, timestamp: Date.now() },
-          sound: 'default',
-        }),
-      })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        Alert.alert(
-          'Notification Sent!',
-          'Check your device - you should receive a notification shortly.',
-          [{ text: 'OK' }],
-        )
-      } else {
-        Alert.alert(
-          'Error',
-          `Failed to send notification: ${
-            result.error?.message || 'Unknown error'
-          }`,
-          [{ text: 'OK' }],
-        )
-      }
-    } catch (error) {
-      console.error('Error sending test notification:', error)
-      Alert.alert(
-        'Error',
-        'Failed to send test notification. Please check your connection.',
-        [{ text: 'OK' }],
-      )
-    }
-  }
-
   const handleResetWebview = () => {
     const resetToken = Date.now()
     navigation.navigate('Webview', { resetToken })
@@ -148,6 +103,10 @@ export default function Settings() {
       console.error('Error resetting onboarding:', error)
       Alert.alert('Error', 'Failed to reset onboarding state.')
     }
+  }
+
+  const handleNotificationPreferences = () => {
+    navigation.getParent()?.navigate('NotificationPreferences')
   }
 
   const handleNotificationToggle = async (value: boolean) => {
@@ -215,6 +174,7 @@ export default function Settings() {
     onPress?: () => void
     value?: boolean
     icon?: keyof typeof Ionicons.glyphMap
+    disabled?: boolean
   }
 
   type SettingSection = {
@@ -232,8 +192,20 @@ export default function Settings() {
             'Receive notifications about new creations, collaborations, and important updates.',
           type: 'switch',
           value: notificationsEnabled,
-          onPress: () => {},
         },
+        ...(notificationsEnabled
+          ? [
+              {
+                id: 'notification-preferences',
+                title: 'Notification Preferences',
+                description: `Customize which types of notifications you want to receive. ${
+                  isSignedIn ? '' : '(Login required)'
+                }`,
+                type: 'action' as const,
+                onPress: handleNotificationPreferences,
+              },
+            ]
+          : []),
         {
           id: 'rate-app',
           title: 'Rate App',
@@ -241,13 +213,6 @@ export default function Settings() {
             'Help us improve by rating your experience in the App Store or Play Store.',
           type: 'action',
           onPress: handleRequestReview,
-        },
-        {
-          id: 'test-notification',
-          title: 'Test Notification',
-          description: 'Send a test push notification to this device.',
-          type: 'action',
-          onPress: handleTestNotification,
         },
       ],
     },
@@ -297,6 +262,11 @@ export default function Settings() {
     ]
 
     if (item.type === 'switch') {
+      const isMainNotificationToggle = item.id === 'notifications'
+      const handleToggle = isMainNotificationToggle
+        ? handleNotificationToggle
+        : () => {}
+
       return (
         <View style={itemStyle}>
           <View style={styles.settingContent}>
@@ -306,10 +276,7 @@ export default function Settings() {
             )}
           </View>
           {!isLoading && (
-            <Switch
-              value={item.value}
-              onValueChange={handleNotificationToggle}
-            />
+            <Switch value={item.value} onValueChange={handleToggle} />
           )}
         </View>
       )
