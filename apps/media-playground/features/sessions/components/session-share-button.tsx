@@ -146,6 +146,17 @@ export const SessionShareButton = ({
     }
   }
 
+  const copyPublicSessionLink = async () => {
+    try {
+      const publicUrl = `${window.location.origin}/sessions/${sessionId}`
+      await navigator.clipboard.writeText(publicUrl)
+      toast.success('Public session link copied to clipboard!')
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error)
+      toast.error('Failed to copy link')
+    }
+  }
+
   const togglePublicSession = async (checked: boolean) => {
     setIsUpdatingPublic(true)
     try {
@@ -209,41 +220,6 @@ export const SessionShareButton = ({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-4">
-          {!shareId && (
-            <div className="space-y-2">
-              <Label htmlFor="title">Title (optional)</Label>
-              <Input
-                id="title"
-                placeholder="Add a title for your shared conversation"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                maxLength={200}
-              />
-            </div>
-          )}
-
-          {shareId && (
-            <div className="space-y-2">
-              <Label>Share link</Label>
-              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border min-w-0">
-                <div className="flex-1 min-w-0 overflow-hidden">
-                  <div className="text-sm font-mono text-foreground truncate">
-                    {`${window.location.host}/sessions/share/${shareId}`}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={copyShareLink}
-                  className="flex-shrink-0 gap-2"
-                >
-                  <Copy className="h-4 w-4" />
-                  Copy
-                </Button>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-center justify-between">
             <div className="space-y-0.5 flex-1">
               <Label htmlFor="public-toggle" className="text-base">
@@ -261,31 +237,91 @@ export const SessionShareButton = ({
             />
           </div>
 
-          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
-            {isPublicSession ? (
-              <>
-                This session is now public. Anyone with the link can view all
+          {isPublicSession && (
+            <div className="space-y-2">
+              <Label>Public session link</Label>
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="text-sm font-mono text-foreground truncate">
+                    {`${window.location.host}/sessions/${sessionId}`}
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={copyPublicSessionLink}
+                  className="flex-shrink-0 gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
+                This session is public. Anyone with the link can view all
                 messages, including any new messages you send.
-              </>
-            ) : (
-              <>
+              </div>
+            </div>
+          )}
+
+          {!isPublicSession && (
+            <>
+              {!shareId && (
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title (optional)</Label>
+                  <Input
+                    id="title"
+                    placeholder="Add a title for your shared conversation"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    maxLength={200}
+                  />
+                </div>
+              )}
+
+              {shareId && (
+                <div className="space-y-2">
+                  <Label>Snapshot link</Label>
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border min-w-0">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="text-sm font-mono text-foreground truncate">
+                        {`${window.location.host}/sessions/share/${shareId}`}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={copyShareLink}
+                      className="flex-shrink-0 gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
                 This will create a permanent snapshot of {messages.length}{' '}
                 message
                 {messages.length !== 1 ? 's' : ''}. The snapshot won't update
                 with new messages.
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter className="flex-shrink-0">
-          {!shareId ? (
+          {isPublicSession ? (
+            <Button onClick={resetDialog} className="w-full">
+              Done
+            </Button>
+          ) : !shareId ? (
             <>
               <Button variant="outline" onClick={resetDialog}>
                 Cancel
               </Button>
               <Button onClick={createShare} disabled={isCreating}>
-                {isCreating ? 'Creating...' : 'Create share link'}
+                {isCreating ? 'Creating...' : 'Create snapshot link'}
               </Button>
             </>
           ) : (

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
@@ -60,6 +61,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const [search, setSearch] = useState('')
   const [isTabChanging, setIsTabChanging] = useState(false)
   const tabChangeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const contentScrollRef = useRef<HTMLDivElement>(null)
 
   // Filters management
   const [globalFilterQuery, setGlobalFilterQuery] = useState<
@@ -226,110 +228,122 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   }, [tabs, activeTab])
 
   return (
-    <Tabs
-      value={activeTab}
-      defaultValue={defaultTabName}
-      onValueChange={handleTabChange}
-      className="w-full max-w-full"
-    >
-      <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4 sm:justify-between">
-        <div className="flex flex-wrap flex-col sm:flex-row gap-4 flex-1">
-          {/* Mobile: Use Select when there are 4+ tabs */}
-          {tabs.length >= 4 ? (
-            <>
-              <Select value={activeTab} onValueChange={handleTabChange}>
-                <SelectTrigger className="w-full sm:hidden">
-                  <SelectValue>
-                    {tabs.find(tab => tab.key === activeTab)?.title}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {tabs.map(tab => (
-                    <SelectItem key={tab.key} value={tab.key}>
-                      {tab.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* Desktop: Keep original TabsList */}
-              <TabsList className="hidden sm:flex justify-stretch w-auto min-w-[420px]">
-                {tabs.map(tab => (
-                  <TabsTrigger
-                    key={tab.key}
-                    value={tab.key}
-                    className="flex-1 min-w-fit whitespace-nowrap"
-                  >
-                    {tab.title}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </>
-          ) : (
-            /* Use TabsList for both mobile and desktop when 3 or fewer tabs */
-            <TabsList className="flex justify-stretch w-full md:w-auto md:min-w-[420px] overflow-x-auto">
-              {tabs.map(tab => (
-                <TabsTrigger
-                  key={tab.key}
-                  value={tab.key}
-                  className="flex-1 min-w-fit whitespace-nowrap"
-                >
-                  {tab.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          )}
-
-          {activeRouterTab?.filterMenu ? (
-            <activeRouterTab.filterMenu
-              initialFilter={
-                activeRouterTab.initialFilter ||
-                tabCaches[activeTab]?.filterQuery
-              }
-              onChange={handleTabFilterChange}
-              excludeFromCount={baseQuery ? Object.keys(baseQuery) : []}
-            />
-          ) : null}
-
-          {activeRouterTab?.sortMenu ? (
-            <activeRouterTab.sortMenu
-              initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
-              onChange={handleTabSortChange}
-            />
-          ) : null}
-
-          {sharedFilterMenu
-            ? sharedFilterMenu({
-                initialFilter: baseQuery,
-                onChange: handleGlobalFilterChange,
-              })
-            : null}
-
-          {activeRouterTab?.canSearch ? (
-            <FeedSearchForm handleSearch={handleSearch} />
-          ) : null}
-        </div>
-
-        {activeRouterTab?.actionButton && (
-          <div className="flex-shrink-0">{activeRouterTab.actionButton}</div>
-        )}
-      </div>
-
-      {tabs.map(tab => (
-        <TabsContent
-          key={tab.key}
-          value={tab.key}
-          className="!ring-0 !ring-offset-0"
+    <ScrollContainerProvider value={contentScrollRef}>
+      <div className="flex flex-col min-h-0 w-full max-w-full">
+        <div
+          ref={contentScrollRef}
+          className="w-full min-h-0 flex-1 overflow-y-auto"
+          style={{ height: 'calc(100vh - 200px)' }}
         >
-          {isTabChanging || !tabCaches[tab.key] ? (
-            // Show loading indicator during tab transitions or until content is cached
-            <MasonrySkeleton />
-          ) : (
-            // Render cached content if available and not transitioning
-            tabCaches[tab.key].content
-          )}
-        </TabsContent>
-      ))}
-    </Tabs>
+          <Tabs
+            value={activeTab}
+            defaultValue={defaultTabName}
+            onValueChange={handleTabChange}
+            className="flex flex-col min-h-0 w-full max-w-full"
+          >
+            <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4 sm:justify-between">
+              <div className="flex flex-wrap flex-col sm:flex-row gap-4 flex-1">
+                {/* Mobile: Use Select when there are 4+ tabs */}
+                {tabs.length >= 4 ? (
+                  <>
+                    <Select value={activeTab} onValueChange={handleTabChange}>
+                      <SelectTrigger className="w-full sm:hidden">
+                        <SelectValue>
+                          {tabs.find(tab => tab.key === activeTab)?.title}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tabs.map(tab => (
+                          <SelectItem key={tab.key} value={tab.key}>
+                            {tab.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {/* Desktop: Keep original TabsList */}
+                    <TabsList className="hidden sm:flex justify-stretch w-auto min-w-[420px]">
+                      {tabs.map(tab => (
+                        <TabsTrigger
+                          key={tab.key}
+                          value={tab.key}
+                          className="flex-1 min-w-fit whitespace-nowrap"
+                        >
+                          {tab.title}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </>
+                ) : (
+                  /* Use TabsList for both mobile and desktop when 3 or fewer tabs */
+                  <TabsList className="flex justify-stretch w-full md:w-auto md:min-w-[420px] overflow-x-auto">
+                    {tabs.map(tab => (
+                      <TabsTrigger
+                        key={tab.key}
+                        value={tab.key}
+                        className="flex-1 min-w-fit whitespace-nowrap"
+                      >
+                        {tab.title}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                )}
+
+                {activeRouterTab?.filterMenu ? (
+                  <activeRouterTab.filterMenu
+                    initialFilter={
+                      activeRouterTab.initialFilter ||
+                      tabCaches[activeTab]?.filterQuery
+                    }
+                    onChange={handleTabFilterChange}
+                    excludeFromCount={baseQuery ? Object.keys(baseQuery) : []}
+                  />
+                ) : null}
+
+                {activeRouterTab?.sortMenu ? (
+                  <activeRouterTab.sortMenu
+                    initialSort={
+                      tabCaches[activeTab]?.filterQuery?.sort as string
+                    }
+                    onChange={handleTabSortChange}
+                  />
+                ) : null}
+
+                {sharedFilterMenu
+                  ? sharedFilterMenu({
+                      initialFilter: baseQuery,
+                      onChange: handleGlobalFilterChange,
+                    })
+                  : null}
+
+                {activeRouterTab?.canSearch ? (
+                  <FeedSearchForm handleSearch={handleSearch} />
+                ) : null}
+              </div>
+
+              {activeRouterTab?.actionButton && (
+                <div className="flex-shrink-0">
+                  {activeRouterTab.actionButton}
+                </div>
+              )}
+            </div>
+
+            {tabs.map(tab => (
+              <TabsContent
+                key={tab.key}
+                value={tab.key}
+                className="!ring-0 !ring-offset-0"
+              >
+                {isTabChanging || !tabCaches[tab.key] ? (
+                  <MasonrySkeleton />
+                ) : (
+                  tabCaches[tab.key].content
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </div>
+    </ScrollContainerProvider>
   )
 }
 

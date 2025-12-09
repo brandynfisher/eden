@@ -15,6 +15,7 @@ export enum GatedResource {
   AgentPermissions = 'AgentPermissions',
   Deployments = 'Deployments',
   ApiKeys = 'ApiKeys',
+  GigabrainTools = 'GigabrainTools',
 }
 
 type LockedBehavior = 'hide' | 'modal'
@@ -89,6 +90,12 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
     type: 'preview',
     featureFlag: FeatureFlag.ApiKeyAccess,
     additionalFeatureFlags: [FeatureFlag.EdenAdmin],
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.GigabrainTools]: {
+    type: 'subscription',
+    featureName: 'Gigabrain tools',
+    minimumSubscriptionTier: SubscriptionTier.Pro,
     lockedBehavior: 'modal',
   },
 }

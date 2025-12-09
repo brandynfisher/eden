@@ -1,18 +1,25 @@
 'use client'
 
 import SessionsHeader from '@/components/header/sessions-header'
-import { useAppShell } from '@/components/layout/app-shell'
+import { type AppShellConfig, useAppShell } from '@/components/layout/app-shell'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { EditIcon } from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
-import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname()
-  const router = useRouter()
   const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -23,37 +30,36 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
     [forceHideSidebar, isShareRoute],
   )
 
+  const mobileSidebarHeader = useCallback<
+    NonNullable<AppShellConfig['mobileSidebarHeader']>
+  >(
+    ({ close }) => (
+      <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+        <Link href="/" className="flex items-center gap-2" onClick={close}>
+          <EdenLogoBw className="w-[28px]" />
+        </Link>
+        <Link
+          href="/sessions/new"
+          onClick={close}
+          className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+          aria-label="New Session"
+        >
+          <EditIcon className="w-5 h-5 text-muted-foreground" />
+        </Link>
+      </div>
+    ),
+    [],
+  )
+
   useEffect(() => {
     setConfig({
       sidebarVariant: 'sessions',
       showShell: canShowSidebar,
-      mobileSidebarHeader: ({ close }) => (
-        <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
-          <button
-            onClick={() => {
-              close()
-              router.push('/')
-            }}
-            className="flex items-center gap-2"
-          >
-            <EdenLogoBw className="w-[28px]" />
-          </button>
-          <button
-            onClick={() => {
-              close()
-              router.push('/sessions/new')
-            }}
-            className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
-            aria-label="New Session"
-          >
-            <EditIcon className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-      ),
+      mobileSidebarHeader,
     })
 
     return () => resetConfig()
-  }, [canShowSidebar, resetConfig, router, setConfig])
+  }, [canShowSidebar, mobileSidebarHeader, resetConfig, setConfig])
 
   const handleChatClick = () => {
     if (!canShowSidebar) {

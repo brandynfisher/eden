@@ -123,6 +123,9 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   // Track last user activity to implement delayed refetch
   const lastActivityTimeRef = useRef<number>(Date.now())
 
+  // Track whether the form has been initialized to prevent resetting during edits
+  const hasFormInitialized = useRef(false)
+
   // Refetch agent data only if user was inactive for 5+ minutes
   useEffect(() => {
     if (!open) return
@@ -166,10 +169,13 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
     useState(false)
 
-  // Reset active tab when modal opens
+  // Reset active tab and form initialization flag when modal opens/closes
   useEffect(() => {
     if (open) {
       setActiveTab(effectiveInitialTab)
+    } else {
+      // Reset initialization flag when modal closes so form will reinitialize on next open
+      hasFormInitialized.current = false
     }
   }, [open, effectiveInitialTab])
 
@@ -211,9 +217,10 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     return () => subscription.unsubscribe()
   }, [form])
 
-  // Update form when agent data changes
+  // Update form when agent data changes - only on first load to prevent overwriting user edits
   useEffect(() => {
-    if (agent) {
+    if (agent && !hasFormInitialized.current) {
+      hasFormInitialized.current = true
       form.reset({
         name: agent.name,
         key: agent.username,
