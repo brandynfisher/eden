@@ -41,6 +41,7 @@ export type RouterTab = {
   sortMenu?: (props: SortMenuProps) => ReactElement
   canSearch?: boolean
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  initialSort?: string
   actionButton?: ReactElement
 }
 
@@ -71,7 +72,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     FeedCursorRouteQueryParams['filter'] | undefined
   >(() => {
     const activeTab = tabs.find(t => t.key === initialTab)
-    return activeTab?.initialFilter || baseQuery || {}
+    return {
+      ...(activeTab?.initialFilter || baseQuery || {}),
+      ...(activeTab?.initialSort ? { sort: activeTab.initialSort } : {}),
+    }
   })
 
   const [tabCaches, setTabCaches] = useState<{
@@ -118,7 +122,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
 
     // Reset tab-specific filters when changing tabs
     const newTab = tabs.find(t => t.key === value)
-    setTabFilterQuery(newTab?.initialFilter || {})
+    setTabFilterQuery({
+      ...(newTab?.initialFilter || {}),
+      ...(newTab?.initialSort ? { sort: newTab.initialSort } : {}),
+    })
 
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)

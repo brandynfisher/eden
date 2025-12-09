@@ -45,8 +45,13 @@ const ProfileTabs = () => {
     {
       key: 'creations',
       title: 'Creations',
+      initialSort: isOwnProfile ? 'createdAt;-1' : 'likeCount|createdAt;-1',
       sortMenu: props => (
-        <SortMenu {...props} variant="creation" initialSort="createdAt;-1" />
+        <SortMenu
+          {...props}
+          variant="creation"
+          initialSort={isOwnProfile ? 'createdAt;-1' : 'likeCount|createdAt;-1'}
+        />
       ),
       filterMenu: ProfileCreationsFilter,
       canSearch: true,
