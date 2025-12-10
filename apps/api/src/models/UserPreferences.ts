@@ -4,6 +4,12 @@ export interface UserPreferencesSchema {
   user: Schema.Types.ObjectId
   last_agents: Schema.Types.ObjectId[]
   pinned_agents: Schema.Types.ObjectId[]
+  notification_preferences?: {
+    new_creation: boolean
+    new_message: boolean
+    session_permissions: boolean
+    agent_permissions: boolean
+  }
   createdAt?: Date
   updatedAt?: Date
 }
@@ -36,6 +42,32 @@ const userPreferencesSchema = new Schema<UserPreferencesDocument>(
       type: [Schema.Types.ObjectId],
       ref: 'users3',
       default: [],
+    },
+    notification_preferences: {
+      type: {
+        new_creation: {
+          type: Boolean,
+          default: true,
+        },
+        new_message: {
+          type: Boolean,
+          default: true,
+        },
+        session_permissions: {
+          type: Boolean,
+          default: true,
+        },
+        agent_permissions: {
+          type: Boolean,
+          default: true,
+        },
+      },
+      default: () => ({
+        new_creation: true,
+        new_message: true,
+        session_permissions: true,
+        agent_permissions: true,
+      }),
     },
   },
   {

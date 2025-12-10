@@ -1,8 +1,9 @@
 import { Agent } from '../models/Agent'
 import { DeviceToken } from '../models/DeviceToken'
-import { Notification } from '../models/Notification'
+import { Notification, NotificationType } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
+import { UserPreferences } from '../models/UserPreferences'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import { sendPushNotification } from '../services/pushNotificationService'
 import {
@@ -88,43 +89,90 @@ export const createNotification = async (
     // Send push notifications if 'push' is in channels
     if (channels.includes('push')) {
       try {
-        // Get user's device tokens
-        const deviceTokens = await DeviceToken.find({
+        // Check user's notification preferences
+        const userPreferences = await UserPreferences.findOne({
           user: user_id,
-          active: true,
-        })
+        }).lean()
 
-        if (deviceTokens.length > 0) {
-          const pushPromises = deviceTokens.map(token =>
-            sendPushNotification(server, token.push_token, title, message, {
-              notification_id: notification._id.toString(),
-              type,
-              session_id,
-              ...metadata,
-            }),
-          )
+        // Default preferences (all enabled)
+        const defaultPreferences = {
+          new_creation: true,
+          new_message: true,
+          session_permissions: true,
+          agent_permissions: true,
+        }
 
-          const results = await Promise.allSettled(pushPromises)
+        const notificationPrefs =
+          userPreferences?.notification_preferences || defaultPreferences
 
-          // Check results and update delivered_channels
-          const successful = results.filter(
-            r => r.status === 'fulfilled' && r.value.success,
-          )
-          if (successful.length > 0) {
-            notification.delivered_channels.push('push')
-          }
+        // Map notification type to preference category
+        // Cast to NotificationType to include all possible types from the model
+        const notificationType = type as NotificationType
+        let shouldSendPush = true
+        if (
+          notificationType === 'trigger_complete' ||
+          notificationType === 'trigger_started' ||
+          notificationType === 'trigger_failed'
+        ) {
+          shouldSendPush = notificationPrefs.new_creation
+        } else if (notificationType === 'session_message') {
+          shouldSendPush = notificationPrefs.new_message
+        } else if (
+          notificationType === 'session_permission_added' ||
+          notificationType === 'session_permission_removed'
+        ) {
+          shouldSendPush = notificationPrefs.session_permissions
+        } else if (
+          notificationType === 'agent_permission_added' ||
+          notificationType === 'agent_permission_removed'
+        ) {
+          shouldSendPush = notificationPrefs.agent_permissions
+        }
+        // For other types (system_alert, agent_mentioned, etc.), always send if push is enabled
 
-          // Mark failed tokens as inactive if needed
-          results.forEach((result, index) => {
-            if (
-              result.status === 'rejected' ||
-              (result.status === 'fulfilled' && !result.value.success)
-            ) {
-              server.log.warn(
-                `Failed to send push to token ${deviceTokens[index].push_token}`,
-              )
-            }
+        if (shouldSendPush) {
+          // Get user's device tokens
+          const deviceTokens = await DeviceToken.find({
+            user: user_id,
+            active: true,
           })
+
+          if (deviceTokens.length > 0) {
+            const pushPromises = deviceTokens.map(token =>
+              sendPushNotification(server, token.push_token, title, message, {
+                notification_id: notification._id.toString(),
+                type,
+                session_id,
+                ...metadata,
+              }),
+            )
+
+            const results = await Promise.allSettled(pushPromises)
+
+            // Check results and update delivered_channels
+            const successful = results.filter(
+              r => r.status === 'fulfilled' && r.value.success,
+            )
+            if (successful.length > 0) {
+              notification.delivered_channels.push('push')
+            }
+
+            // Mark failed tokens as inactive if needed
+            results.forEach((result, index) => {
+              if (
+                result.status === 'rejected' ||
+                (result.status === 'fulfilled' && !result.value.success)
+              ) {
+                server.log.warn(
+                  `Failed to send push to token ${deviceTokens[index].push_token}`,
+                )
+              }
+            })
+          }
+        } else {
+          server.log.info(
+            `[NOTIFICATIONS] Push notification skipped for user ${user_id} due to preferences (type: ${type})`,
+          )
         }
 
         notification.delivery_attempted_at = new Date()

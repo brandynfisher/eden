@@ -32,6 +32,10 @@ export default function CreationDetailModal({
   useEffect(() => {
     if (creationId) {
       setCurrentId(creationId)
+      // Reset scroll when creationId changes (e.g., clicking a creation in the feed)
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0
+      }
     }
   }, [creationId])
 

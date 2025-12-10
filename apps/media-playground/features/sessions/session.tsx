@@ -316,8 +316,10 @@ const Session = ({
     if (!sessionsLayoutContext) {
       return
     }
-    sessionsLayoutContext.setForceHideSidebar(isReadOnlySession)
-  }, [sessionsLayoutContext, isReadOnlySession])
+
+    const shouldHideSidebar = isReadOnlySession && !isSignedIn
+    sessionsLayoutContext.setForceHideSidebar(shouldHideSidebar)
+  }, [sessionsLayoutContext, isReadOnlySession, isSignedIn])
 
   useEffect(() => {
     return () => {

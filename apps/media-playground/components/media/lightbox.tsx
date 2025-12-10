@@ -389,13 +389,12 @@ export function LightboxImageTrigger({
   const height = hasKnownDimensions ? ignoredHeight : 1024
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
   const [isHighResLoaded, setIsHighResLoaded] = React.useState(false)
+  const [isThumbnailLoaded, setIsThumbnailLoaded] = React.useState(false)
 
   React.useEffect(() => {
     setIsHighResLoaded(false)
+    setIsThumbnailLoaded(false)
   }, [src])
-
-  const placeholderSrc = lowResSrc || blurDataUrl || undefined
-  const showPlaceholder = Boolean(placeholderSrc)
 
   // When dimensions are unknown, render a simple img tag that sizes naturally
   if (!hasKnownDimensions) {
@@ -417,24 +416,45 @@ export function LightboxImageTrigger({
       style={{ aspectRatio: `${width}/${height}` }}
     >
       <div className="absolute inset-0">
-        {showPlaceholder ? (
+        {/* Layer 1: Blurhash - instant placeholder, fades out when thumbnail or high-res loads */}
+        {blurDataUrl ? (
           <img
-            src={placeholderSrc}
-            alt={alt}
+            src={blurDataUrl}
+            alt=""
             className={cn(
-              'absolute inset-0 object-contain w-full h-full bg-muted/10 pointer-events-none',
-              isHighResLoaded ? 'opacity-0' : 'opacity-100',
+              'absolute inset-0 object-contain w-full h-full bg-muted/10 pointer-events-none transition-opacity duration-200',
+              isThumbnailLoaded || isHighResLoaded
+                ? 'opacity-0'
+                : 'opacity-100',
             )}
             draggable={false}
           />
         ) : null}
+        {/* Layer 2: Thumbnail - loads after blurhash, fades out when high-res loads */}
+        {lowResSrc ? (
+          <img
+            src={lowResSrc}
+            alt={alt}
+            className={cn(
+              'absolute inset-0 object-contain w-full h-full bg-muted/10 pointer-events-none transition-opacity duration-200',
+              isHighResLoaded
+                ? 'opacity-0'
+                : isThumbnailLoaded
+                ? 'opacity-100'
+                : 'opacity-0',
+            )}
+            draggable={false}
+            onLoad={() => setIsThumbnailLoaded(true)}
+          />
+        ) : null}
+        {/* Layer 3: High-res image - final layer */}
         <NextImage
           loader={!customLoader ? undefined : customImageLoader}
           src={src}
           alt={alt}
           className={cn(
-            'absolute inset-0 object-contain w-full h-full !bg-contain',
-            isHighResLoaded ? 'opacity-100' : 'opacity-0',
+            'absolute inset-0 object-contain w-full h-full !bg-contain transition-opacity duration-200',
+            isHighResLoaded ? 'opacity-100' : 'opacity-0 invisible',
           )}
           fill
           sizes="100vw"

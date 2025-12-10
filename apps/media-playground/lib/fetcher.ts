@@ -242,7 +242,25 @@ export const createCursorPaginationRoute = (
   // }
 
   if (query.sort) {
-    params.sort = query.sort
+    // Support pipe-separated sort values (e.g., 'likeCount|createdAt;-1')
+    // The first part before | can be a filter trigger (like 'likeCount')
+    // which adds a filter for items with likeCount > 0
+    if (typeof query.sort === 'string' && query.sort.includes('|')) {
+      const parts = query.sort.split('|')
+      // Check if first part is a filter trigger (no semicolon = no direction = filter only)
+      const filterTriggers = parts.filter(p => !p.includes(';'))
+      const sortParts = parts.filter(p => p.includes(';'))
+
+      // Add filter for likeCount if it's a filter trigger
+      if (filterTriggers.includes('likeCount')) {
+        filters.push({ likeCount: '1' })
+      }
+
+      // Use remaining parts as actual sort
+      params.sort = sortParts.length === 1 ? sortParts[0] : sortParts
+    } else {
+      params.sort = query.sort
+    }
   }
 
   let queryStringArray: string[] = []

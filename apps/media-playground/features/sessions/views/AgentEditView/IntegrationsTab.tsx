@@ -1,6 +1,7 @@
 'use client'
 
 import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
+import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
@@ -17,7 +18,8 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, BookTextIcon, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import {
   forwardRef,
   useCallback,
@@ -292,9 +294,22 @@ export const IntegrationsTab = forwardRef<
   return (
     <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-lg font-medium text-foreground">
-          Social Platforms
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium text-foreground">
+            Social Platforms
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/70 text-purple-300"
+          >
+            <Link href="https://docs.eden.art/integrations" target="_blank">
+              <BookTextIcon className="size-4 mr-2" />
+              Integration Guide
+            </Link>
+          </Button>
+        </div>
         <div className="space-y-4">
           <DiscordDeploymentForm
             agentId={agent._id}

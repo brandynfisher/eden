@@ -7,6 +7,9 @@ export default (theme: 'light' | 'dark') =>
       flex: 1,
       backgroundColor: Colors[theme].background,
     },
+    webviewContainer: {
+      flex: 1,
+    },
     content: {
       flex: 1,
       backgroundColor: Colors[theme].background,

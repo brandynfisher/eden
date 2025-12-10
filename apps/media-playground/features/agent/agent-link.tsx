@@ -19,7 +19,7 @@ const AgentLink: FC<{
         className,
       )}
       title="View Agent profile"
-      href={`/chat/${agent?.username}`}
+      href={`/agents/${agent?.username}`}
     >
       <Avatar
         className={cn(
