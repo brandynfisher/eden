@@ -148,7 +148,7 @@ const ToolCard = ({
             'ring-2 ring-primary/60 ring-offset-2 ring-offset-background border-primary/60 hover:border-primary/80',
         )}
       >
-        <div className="relative aspect-[5/3] w-full overflow-hidden isolate">
+        <div className="relative aspect-[4/3] w-full overflow-hidden isolate">
           <ToolCardMedia
             mediaUrl={image}
             title={title}
@@ -156,7 +156,7 @@ const ToolCard = ({
             variant="full"
             isNativeWebview={isNativeWebview}
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/5 via-black/65 to-black/95 transition-opacity duration-500 group-hover:via-black/60 group-hover:to-black/90 group-focus:via-black/60 group-focus:to-black/90 z-0" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-50% to-black/90 transition-opacity duration-500 group-hover:to-black/85 group-focus:to-black/85 z-0" />
           <div className="pointer-events-none absolute inset-0 flex flex-col justify-between px-4 pt-4 pb-2 z-10">
             <div className="flex flex-wrap gap-2"></div>
             <div className="space-y-1.5">
