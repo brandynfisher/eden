@@ -56,7 +56,7 @@ function ChatSessionContent({ config, useStore }: ChatSessionPageProps) {
   if (isLoading && sessionId !== 'new') {
     return (
       <div className="h-full bg-black flex items-center justify-center">
-        <LoadingIndicator className="w-10 h-10 text-yellow-400" />
+        <LoadingIndicator className="w-10 h-10 text-violet-400" />
       </div>
     )
   }

@@ -158,7 +158,7 @@ export function FinishPage({
       <div
         className={`flex-[0.3] flex flex-col items-center justify-center px-6 py-12 transition-all duration-1000 ${
           isComplete
-            ? 'bg-gradient-to-br from-yellow-400/20 via-purple-400/20 to-black'
+            ? 'bg-gradient-to-br from-violet-500/20 via-fuchsia-500/20 to-black'
             : 'bg-black'
         }`}
       >
@@ -169,8 +169,8 @@ export function FinishPage({
               <div
                 className={`h-full ${
                   isComplete
-                    ? 'bg-gradient-to-r from-yellow-400 to-purple-400'
-                    : 'bg-gradient-to-r from-yellow-400 to-purple-400'
+                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
+                    : 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
                 }`}
                 style={{
                   width: `${progress}%`,
@@ -179,7 +179,7 @@ export function FinishPage({
               />
             </div>
             {/* Progress percentage */}
-            <div className="absolute -top-8 right-0 text-yellow-400/60 text-sm font-medium">
+            <div className="absolute -top-8 right-0 text-violet-400/60 text-sm font-medium">
               {Math.round(progress)}%
             </div>
           </div>
@@ -189,7 +189,7 @@ export function FinishPage({
             <h2
               className={`text-3xl md:text-4xl font-bold transition-all duration-500 ${
                 isComplete
-                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-purple-400 scale-110'
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 scale-110'
                   : 'text-white'
               }`}
             >
@@ -200,7 +200,7 @@ export function FinishPage({
               <div className="animate-fade-in space-y-6">
                 <div className="inline-block">
                   <svg
-                    className="w-16 h-16 text-yellow-400 animate-bounce-slow"
+                    className="w-16 h-16 text-violet-400 animate-bounce-slow"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -221,7 +221,7 @@ export function FinishPage({
                       onClick={handleChatWithAgent}
                       className="inline-flex items-center justify-center rounded-lg px-8 py-4 text-lg font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                       style={{
-                        background: 'linear-gradient(135deg, #e6a825, #7c8aff)',
+                        background: 'linear-gradient(135deg, #8b5cf6, #d946ef)',
                         textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
                       }}
                     >
@@ -240,9 +240,9 @@ export function FinishPage({
                 key={index}
                 className={`h-2 rounded-full transition-all duration-500 ${
                   index < currentStepIndex
-                    ? 'w-8 bg-gradient-to-r from-yellow-400 to-purple-400'
+                    ? 'w-8 bg-gradient-to-r from-violet-500 to-fuchsia-500'
                     : index === currentStepIndex
-                    ? 'w-12 bg-yellow-400/60 animate-pulse'
+                    ? 'w-12 bg-violet-400/60 animate-pulse'
                     : 'w-2 bg-gray-700'
                 }`}
               />
@@ -256,29 +256,29 @@ export function FinishPage({
         <div className="max-w-7xl mx-auto h-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
             {/* Card 1 - Chat */}
-            <div className="bg-black/60 rounded-xl border border-yellow-400/20 backdrop-blur-sm p-4 flex flex-col">
-              <h3 className="text-xl font-bold text-yellow-400 mb-4 text-center">
+            <div className="bg-black/60 rounded-xl border border-violet-400/20 backdrop-blur-sm p-4 flex flex-col">
+              <h3 className="text-xl font-bold text-violet-400 mb-4 text-center">
                 Chat with your {finishTitle}
               </h3>
               <div className="flex-1 flex items-center justify-center overflow-hidden">
                 <img
                   src="/agent_builder_assets/chat.webp"
                   alt="Chat interface"
-                  className="w-full h-full object-contain rounded-lg border border-yellow-400/10"
+                  className="w-full h-full object-contain rounded-lg border border-violet-400/10"
                 />
               </div>
             </div>
 
             {/* Card 2 - Integrations */}
-            <div className="bg-black/60 rounded-xl border border-yellow-400/20 backdrop-blur-sm p-4 flex flex-col">
-              <h3 className="text-xl font-bold text-yellow-400 mb-4 text-center">
+            <div className="bg-black/60 rounded-xl border border-violet-400/20 backdrop-blur-sm p-4 flex flex-col">
+              <h3 className="text-xl font-bold text-violet-400 mb-4 text-center">
                 Deploy your {finishTitle} to social clients
               </h3>
               <div className="flex-1 flex items-center justify-center overflow-hidden">
                 <img
                   src="/agent_builder_assets/integrations.webp"
                   alt="Social integrations"
-                  className="w-full h-full object-contain rounded-lg border border-yellow-400/10"
+                  className="w-full h-full object-contain rounded-lg border border-violet-400/10"
                 />
               </div>
             </div>

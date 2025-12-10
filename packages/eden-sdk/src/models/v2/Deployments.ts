@@ -26,6 +26,7 @@ export type DeploymentSettingsDiscord = {
   oauth_url?: string
   channel_allowlist?: DiscordAllowlistItem[]
   read_access_channels?: DiscordAllowlistItem[]
+  enable_discord_dm?: boolean
 }
 
 export type DeploymentSecretsDiscord = {

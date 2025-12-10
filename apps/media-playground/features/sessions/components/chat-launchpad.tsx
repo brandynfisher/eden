@@ -674,7 +674,7 @@ const ChatLaunchpad = () => {
                     </button>
                     <button
                       type="button"
-                      className={`session-mode-segment ${
+                      className={`session-mode-segment session-mode-segment-automatic ${
                         sessionSettings.type === 'automatic' ? 'active' : ''
                       }`}
                       onClick={() =>
@@ -685,6 +685,7 @@ const ChatLaunchpad = () => {
                       }
                     >
                       Automatic
+                      <span className="beta-tag">BETA</span>
                     </button>
                   </div>
 
@@ -1802,6 +1803,26 @@ const ChatLaunchpad = () => {
             box-shadow: 0 1px 4px hsl(0 0% 0% / 0.2),
               inset 0 1px 0 hsl(var(--foreground) / 0.05);
             font-weight: 600;
+          }
+
+          .session-mode-segment-automatic {
+            white-space: nowrap;
+          }
+
+          .beta-tag {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.375rem;
+            padding: 0.125rem 0.375rem;
+            font-size: 0.625rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.15);
+            border: 1px solid hsl(var(--primary) / 0.3);
+            border-radius: 0.25rem;
+            line-height: 1.2;
           }
 
           .session-mode-meta {

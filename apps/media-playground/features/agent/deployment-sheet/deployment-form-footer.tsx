@@ -103,10 +103,25 @@ export const DeploymentFormFooter = ({
     try {
       let config = {}
       if (platform === 'discord') {
+        // Split unified channels into allowed and read-only lists
+        const allowedChannels = (data.channels || [])
+          .filter((ch: { readOnly?: boolean }) => !ch.readOnly)
+          .map((ch: { id: string; note?: string }) => ({
+            id: ch.id,
+            note: ch.note,
+          }))
+        const readAccessChannels = (data.channels || [])
+          .filter((ch: { readOnly?: boolean }) => ch.readOnly)
+          .map((ch: { id: string; note?: string }) => ({
+            id: ch.id,
+            note: ch.note,
+          }))
+
         config = {
           discord: {
-            channel_allowlist: data.allowedChannels,
-            read_access_channels: data.readAccessChannels,
+            channel_allowlist: allowedChannels,
+            read_access_channels: readAccessChannels,
+            enable_discord_dm: data.enableDiscordDm ?? false,
           },
         }
       } else if (platform === 'telegram') {
