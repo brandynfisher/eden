@@ -37,6 +37,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
   EditIcon,
+  ExternalLink,
   HelpCircle,
   MenuIcon,
   PenLine,
@@ -44,6 +45,7 @@ import {
   Settings,
   X,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -107,6 +109,22 @@ const SelectedAgentCard = ({
           </Button>
         )}
 
+        {/* View agent profile button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          className="agent-profile-btn absolute top-3 right-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+          title="View Agent Profile"
+        >
+          <Link
+            href={`/agents/${agent.username}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </Button>
+
         {/* Avatar */}
         <div className="agent-avatar-wrapper">
           <div className="agent-avatar-glow" />
@@ -126,7 +144,18 @@ const SelectedAgentCard = ({
         <div className="agent-info">
           <h2 className="agent-name">{agent.name}</h2>
           <p className="agent-creator">
-            by @{agent.owner?.username || 'anonymous'}
+            by{' '}
+            {agent.owner?.username ? (
+              <Link
+                href={`/creators/${agent.owner.username}`}
+                onClick={e => e.stopPropagation()}
+                className="hover:text-foreground hover:underline transition-colors"
+              >
+                @{agent.owner.username}
+              </Link>
+            ) : (
+              '@anonymous'
+            )}
           </p>
         </div>
       </div>
@@ -1896,6 +1925,10 @@ const ChatLaunchpad = () => {
             }
 
             .agent-settings-btn {
+              opacity: 1 !important;
+            }
+
+            .agent-profile-btn {
               opacity: 1 !important;
             }
           }
