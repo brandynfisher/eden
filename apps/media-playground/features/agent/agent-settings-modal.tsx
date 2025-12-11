@@ -249,47 +249,50 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     }
   }, [agent, form])
 
-  const handleSubmit = async (data: AgentFormDto) => {
-    if (!agent) return
+  const handleSubmit = useCallback(
+    async (data: AgentFormDto) => {
+      if (!agent) return
 
-    try {
-      // Handle image field
-      let imageToSend = data.image
-      if (data.image && agent.userImage) {
-        const originalImageUrl = getCloudfrontOriginalUrl(agent.userImage)
-        if (data.image === originalImageUrl) {
-          imageToSend = agent.userImage
+      try {
+        // Handle image field
+        let imageToSend = data.image
+        if (data.image && agent.userImage) {
+          const originalImageUrl = getCloudfrontOriginalUrl(agent.userImage)
+          if (data.image === originalImageUrl) {
+            imageToSend = agent.userImage
+          }
         }
+
+        await axios.patch(`/api/agents/${agent._id}`, {
+          ...data,
+          image: imageToSend,
+        })
+        // Reset form with current values to clear dirty state
+        form.reset(data)
+        toast.success('Agent updated successfully', {
+          description: `"${data.name}" has been updated successfully`,
+          richColors: true,
+          dismissible: true,
+        })
+      } catch (error) {
+        const errorMessage =
+          (error as AxiosError<{ message?: string }>).response?.data?.message ||
+          (error as AxiosError).message ||
+          'Please try again later.'
+        const description =
+          errorMessage === 'An agent with this key already exists'
+            ? 'This username is taken. Please try another.'
+            : errorMessage
+
+        toast.error('Agent update failed', {
+          description,
+          richColors: true,
+          dismissible: true,
+        })
       }
-
-      await axios.patch(`/api/agents/${agent._id}`, {
-        ...data,
-        image: imageToSend,
-      })
-      // Reset form with current values to clear dirty state
-      form.reset(data)
-      toast.success('Agent updated successfully', {
-        description: `"${data.name}" has been updated successfully`,
-        richColors: true,
-        dismissible: true,
-      })
-    } catch (error) {
-      const errorMessage =
-        (error as AxiosError<{ message?: string }>).response?.data?.message ||
-        (error as AxiosError).message ||
-        'Please try again later.'
-      const description =
-        errorMessage === 'An agent with this key already exists'
-          ? 'This username is taken. Please try another.'
-          : errorMessage
-
-      toast.error('Agent update failed', {
-        description,
-        richColors: true,
-        dismissible: true,
-      })
-    }
-  }
+    },
+    [agent, form],
+  )
 
   const handleDeleteAgent = async () => {
     if (!agent) return
@@ -416,7 +419,26 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         setIsSpecialTabSaving(false)
       }
     } else {
-      await form.handleSubmit(handleSubmit)()
+      await form.handleSubmit(
+        data => {
+          return handleSubmit(data)
+        },
+        errors => {
+          // Build a user-friendly error message from validation errors
+          const errorMessages = Object.entries(errors)
+            .map(([field, error]) => {
+              const fieldName = field.charAt(0).toUpperCase() + field.slice(1)
+              return `${fieldName}: ${error?.message || 'Invalid value'}`
+            })
+            .join('\n')
+
+          toast.error('Validation failed', {
+            description: errorMessages,
+            richColors: true,
+            dismissible: true,
+          })
+        },
+      )()
     }
   }, [activeTab, form, handleSubmit])
 
@@ -723,6 +745,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                     )}
                   </div>
                   <Button
+                    type="button"
                     onClick={handleSaveAction}
                     disabled={isSaving || isDeleting}
                     className="w-full md:w-auto"

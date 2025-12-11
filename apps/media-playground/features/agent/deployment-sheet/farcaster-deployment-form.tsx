@@ -292,7 +292,7 @@ export const FarcasterDeploymentForm = ({
                   </Button>
                   <FormDescription className="text-center">
                     Creates a managed signer. You'll need to approve in
-                    Warpcast.
+                    Farcaster.
                   </FormDescription>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export const FarcasterDeploymentForm = ({
                   <div className="space-y-2">
                     <p className="text-sm font-medium">
                       Scan this QR code or click the link to approve in
-                      Warpcast:
+                      Farcaster:
                     </p>
                     <div className="flex justify-center p-4 bg-white rounded-lg">
                       <QRCodeSVG value={signerApprovalUrl} size={200} />

@@ -490,17 +490,19 @@ const SessionListItem: FC<SessionListItemProps> = ({
                 </>
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2"
-              onSelect={() => {
-                setIsEditing(true)
-                setNewTitle(optimisticTitle || '')
-              }}
-              disabled={!canManageSession || isDeleting}
-            >
-              <PencilIcon className="size-4" />
-              Rename
-            </DropdownMenuItem>
+            {!platform && (
+              <DropdownMenuItem
+                className="flex items-center gap-2"
+                onSelect={() => {
+                  setIsEditing(true)
+                  setNewTitle(optimisticTitle || '')
+                }}
+                disabled={!canManageSession || isDeleting}
+              >
+                <PencilIcon className="size-4" />
+                Rename
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="flex items-center gap-2 text-destructive hover:!text-destructive focus:!text-destructive focus:!bg-destructive/10"
               onSelect={e => {

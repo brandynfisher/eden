@@ -65,7 +65,10 @@ export const agentSchema = z.object({
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS),
+  description: z
+    .string()
+    .max(AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS)
+    .optional(),
   greeting: z.string().max(AGENT_FIELD_LIMITS.GREETING_MAX_CHARS).optional(),
   voice: z.string().optional(),
   models: z

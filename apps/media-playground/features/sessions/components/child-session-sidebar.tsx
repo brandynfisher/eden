@@ -41,10 +41,12 @@ export const ChildSessionSidebar = ({
     }
   }, [session?.messages])
 
-  // Show avatars if more than 2 participants
-  const totalParticipants =
-    (session?.users?.length || 0) + (session?.agents?.length || 0)
-  const showAvatars = totalParticipants > 2
+  // Hide avatars only if there's exactly 1 agent, exactly 1 user, and that user is you
+  const showAvatars = !(
+    session?.agents?.length === 1 &&
+    session?.users?.length === 1 &&
+    session?.users?.[0]?._id === user?._id
+  )
 
   const messages = session?.messages || []
 

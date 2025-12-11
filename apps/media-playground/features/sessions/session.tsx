@@ -1908,10 +1908,11 @@ const Session = ({
               </div>
             ) : (
               (() => {
-                // Show avatars if there are more than 2 participants (users + agents)
-                const totalParticipants =
-                  (session?.users?.length || 0) + (session?.agents?.length || 0)
-                const isSingleAgentSession = totalParticipants <= 2
+                // Hide avatars only if there's exactly 1 agent, exactly 1 user, and that user is you
+                const isSingleAgentSession =
+                  session?.agents?.length === 1 &&
+                  session?.users?.length === 1 &&
+                  session?.users?.[0]?._id === user?._id
 
                 // Check if this is a newly created session waiting for first response
                 const isNewSession =

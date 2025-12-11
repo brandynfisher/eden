@@ -551,45 +551,6 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               )}
             </div>
 
-            {/* Subtool Navigation */}
-            {hasSubtools && (
-              <div className="flex flex-row items-center gap-2 flex-wrap">
-                <ToggleGroup
-                  type="single"
-                  value={selectedArgsIndex.toString()}
-                  onValueChange={value => {
-                    if (value) setSelectedArgsIndex(parseInt(value))
-                  }}
-                  className="flex flex-row items-center gap-2 justify-start flex-wrap"
-                >
-                  <ToggleGroupItem
-                    value="0"
-                    variant="outline"
-                    size="sm"
-                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
-                  >
-                    {(item as CreationV2).tool}
-                  </ToggleGroupItem>
-                  {subtoolCalls.length > 0 && (
-                    <span className="text-muted-foreground text-xs px-1">
-                      →
-                    </span>
-                  )}
-                  {subtoolCalls.map((subtool, index) => (
-                    <ToggleGroupItem
-                      key={index}
-                      value={(index + 1).toString()}
-                      variant="outline"
-                      size="sm"
-                      className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      {subtool.tool}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              </div>
-            )}
-
             {/* Parameters Collapsible */}
             <Collapsible
               open={isDetailsOpen}
@@ -608,7 +569,45 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="pb-4">
+                <div className="pb-4 space-y-3">
+                  {/* Subtool Navigation - inside parameters */}
+                  {hasSubtools && (
+                    <div className="flex flex-row items-center gap-2 flex-wrap">
+                      <ToggleGroup
+                        type="single"
+                        value={selectedArgsIndex.toString()}
+                        onValueChange={value => {
+                          if (value) setSelectedArgsIndex(parseInt(value))
+                        }}
+                        className="flex flex-row items-center gap-2 justify-start flex-wrap"
+                      >
+                        <ToggleGroupItem
+                          value="0"
+                          variant="outline"
+                          size="sm"
+                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
+                        >
+                          {(item as CreationV2).tool}
+                        </ToggleGroupItem>
+                        <span className="text-muted-foreground text-xs px-1">
+                          →
+                        </span>
+                        {subtoolCalls.map((subtool, index) => (
+                          <ToggleGroupItem
+                            key={index}
+                            value={(index + 1).toString()}
+                            variant="outline"
+                            size="sm"
+                            className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
+                          >
+                            {subtool.tool}
+                          </ToggleGroupItem>
+                        ))}
+                      </ToggleGroup>
+                    </div>
+                  )}
+
+                  {/* Parameter Table */}
                   {item && currentRemainingArgs ? (
                     <ParameterTable
                       taskId={
