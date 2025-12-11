@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "eden-mobile",
-    "slug": "edenart.eden",
+    "slug": "eden",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
