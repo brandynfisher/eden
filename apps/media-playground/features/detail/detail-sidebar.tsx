@@ -531,108 +531,107 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        {/* Technical Details - Collapsible for creations */}
+        {/* Tool and Parameters - for creations */}
         {type === 'creation' ? (
-          <Collapsible
-            open={isDetailsOpen}
-            onOpenChange={setIsDetailsOpen}
-            className="w-full mt-2"
-          >
-            <CollapsibleTrigger asChild>
-              <button className="flex items-center justify-between w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors group">
-                <span>Technical Details</span>
-                <ChevronDownIcon
-                  className={cn(
-                    'h-4 w-4 transition-transform duration-200',
-                    isDetailsOpen && 'rotate-180',
+          <div className="w-full mt-2 space-y-2">
+            {/* Tool display */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Tool:</span>
+              {item && (item as CreationV2).tool ? (
+                <Link
+                  href={`/studio/${getFileTypeByMimeType(
+                    (item as CreationV2).mediaAttributes?.mimeType,
+                  )}/${(item as CreationV2).tool}`}
+                  className="text-foreground hover:text-primary transition-colors"
+                >
+                  {(item as CreationV2).tool}
+                </Link>
+              ) : (
+                <Skeleton className="h-5 w-[100px]" />
+              )}
+            </div>
+
+            {/* Subtool Navigation */}
+            {hasSubtools && (
+              <div className="flex flex-row items-center gap-2 flex-wrap">
+                <ToggleGroup
+                  type="single"
+                  value={selectedArgsIndex.toString()}
+                  onValueChange={value => {
+                    if (value) setSelectedArgsIndex(parseInt(value))
+                  }}
+                  className="flex flex-row items-center gap-2 justify-start flex-wrap"
+                >
+                  <ToggleGroupItem
+                    value="0"
+                    variant="outline"
+                    size="sm"
+                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    {(item as CreationV2).tool}
+                  </ToggleGroupItem>
+                  {subtoolCalls.length > 0 && (
+                    <span className="text-muted-foreground text-xs px-1">
+                      →
+                    </span>
                   )}
-                />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="pb-4 space-y-4">
-                {/* Tool */}
-                <div className="text-sm">
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    Tool
-                  </div>
-                  {item && (item as CreationV2).tool ? (
-                    <Link
-                      href={`/studio/${getFileTypeByMimeType(
-                        (item as CreationV2).mediaAttributes?.mimeType,
-                      )}/${(item as CreationV2).tool}`}
-                      className="text-foreground hover:text-primary transition-colors"
+                  {subtoolCalls.map((subtool, index) => (
+                    <ToggleGroupItem
+                      key={index}
+                      value={(index + 1).toString()}
+                      variant="outline"
+                      size="sm"
+                      className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
                     >
-                      {(item as CreationV2).tool}
-                    </Link>
+                      {subtool.tool}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
+            )}
+
+            {/* Parameters Collapsible */}
+            <Collapsible
+              open={isDetailsOpen}
+              onOpenChange={setIsDetailsOpen}
+              className="w-full"
+            >
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center justify-between w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <span>Parameters</span>
+                  <ChevronDownIcon
+                    className={cn(
+                      'h-4 w-4 transition-transform duration-200',
+                      isDetailsOpen && 'rotate-180',
+                    )}
+                  />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="pb-4">
+                  {item && currentRemainingArgs ? (
+                    <ParameterTable
+                      taskId={
+                        selectedArgsIndex === 0
+                          ? item.task._id?.toString()
+                          : undefined
+                      }
+                      cost={
+                        selectedArgsIndex === 0 ? item.task.cost : undefined
+                      }
+                      args={currentRemainingArgs}
+                    />
                   ) : (
-                    <Skeleton className="h-5 w-[125px]" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-5 w-[250px]" />
+                      <Skeleton className="h-5 w-[250px]" />
+                      <Skeleton className="h-5 w-[200px]" />
+                    </div>
                   )}
                 </div>
-
-                {/* Subtool Navigation */}
-                {hasSubtools && (
-                  <div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
-                      Pipeline
-                    </div>
-                    <ToggleGroup
-                      type="single"
-                      value={selectedArgsIndex.toString()}
-                      onValueChange={value => {
-                        if (value) setSelectedArgsIndex(parseInt(value))
-                      }}
-                      className="flex flex-row items-center gap-2 justify-start flex-wrap"
-                    >
-                      <ToggleGroupItem
-                        value="0"
-                        variant="outline"
-                        size="sm"
-                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
-                      >
-                        {(item as CreationV2).tool}
-                      </ToggleGroupItem>
-                      {subtoolCalls.length > 0 && (
-                        <span className="text-muted-foreground text-xs px-1">
-                          →
-                        </span>
-                      )}
-                      {subtoolCalls.map((subtool, index) => (
-                        <ToggleGroupItem
-                          key={index}
-                          value={(index + 1).toString()}
-                          variant="outline"
-                          size="sm"
-                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
-                        >
-                          {subtool.tool}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </div>
-                )}
-
-                {/* Parameters */}
-                {item && currentRemainingArgs ? (
-                  <ParameterTable
-                    taskId={
-                      selectedArgsIndex === 0
-                        ? item.task._id?.toString()
-                        : undefined
-                    }
-                    cost={selectedArgsIndex === 0 ? item.task.cost : undefined}
-                    args={currentRemainingArgs}
-                  />
-                ) : (
-                  <div className="space-y-1">
-                    <Skeleton className="h-5 w-[250px]" />
-                    <Skeleton className="h-5 w-[250px]" />
-                    <Skeleton className="h-5 w-[200px]" />
-                  </div>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         ) : (
           <div className="w-full">
             {item && currentRemainingArgs ? (

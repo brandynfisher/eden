@@ -64,7 +64,7 @@ export default function SessionsList() {
             Manage your conversations and collaborative sessions
           </p>
         </div>
-        <Link href="/sessions/new">
+        <Link href="/chat">
           <Button className="flex items-center gap-2">
             <PlusIcon className="w-4 h-4" />
             New Session
@@ -94,7 +94,7 @@ export default function SessionsList() {
           <p className="text-muted-foreground mb-6">
             Start your first conversation or collaborative session
           </p>
-          <Link href="/sessions/new">
+          <Link href="/chat">
             <Button className="flex items-center gap-2">
               <PlusIcon className="w-4 h-4" />
               Create New Session

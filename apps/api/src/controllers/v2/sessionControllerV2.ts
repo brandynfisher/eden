@@ -971,7 +971,7 @@ export const listSessions = async (
   try {
     const queryOptions: QueryOptions = {
       select:
-        '_id title name owner createdAt updatedAt trigger agents users pinned session_type parent_session',
+        '_id title name owner createdAt updatedAt trigger agents users pinned session_type parent_session platform',
       limit,
       page,
       sort: {

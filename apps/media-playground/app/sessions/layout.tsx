@@ -39,7 +39,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           <EdenLogoBw className="w-[28px]" />
         </Link>
         <Link
-          href="/sessions/new"
+          href="/chat"
           onClick={close}
           className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
           aria-label="New Session"

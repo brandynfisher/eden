@@ -213,7 +213,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
         if (isChat && params?.agentId) {
           router.push(`/chat/${params.agentId}`, { scroll: false })
         } else {
-          router.push('/sessions/new', { scroll: false })
+          router.push('/chat', { scroll: false })
         }
       }
 

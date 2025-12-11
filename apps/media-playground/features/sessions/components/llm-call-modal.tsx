@@ -299,17 +299,42 @@ const ContentBlock = ({
 
   // Image content
   if (block.type === 'image' && block.source) {
-    const src =
-      block.source.type === 'base64'
-        ? `data:${block.source.media_type};base64,${block.source.data}`
-        : block.source.url
+    // Prefer url field if available (original image)
+    if (block.source.url) {
+      return (
+        <div className="my-2">
+          <img
+            src={block.source.url}
+            alt="Attached image"
+            className="max-w-full max-h-48 rounded border object-contain"
+          />
+        </div>
+      )
+    }
+
+    // Fall back to base64 data if it exists and isn't truncated
+    // Truncated data is typically very short or doesn't have valid base64 content
+    const hasValidBase64 =
+      block.source.data &&
+      block.source.data.length > 100 &&
+      !block.source.data.includes('[truncated]')
+
+    if (hasValidBase64) {
+      return (
+        <div className="my-2">
+          <img
+            src={`data:${block.source.media_type};base64,${block.source.data}`}
+            alt="Attached image"
+            className="max-w-full max-h-48 rounded border object-contain"
+          />
+        </div>
+      )
+    }
+
+    // No valid image source available
     return (
-      <div className="my-2">
-        <img
-          src={src}
-          alt="Attached image"
-          className="max-w-full max-h-48 rounded border object-contain"
-        />
+      <div className="my-2 rounded border border-dashed border-muted-foreground/30 bg-muted/20 p-3 text-center text-sm text-muted-foreground">
+        Image attachment unavailable (data truncated)
       </div>
     )
   }
