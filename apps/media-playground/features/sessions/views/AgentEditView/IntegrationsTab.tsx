@@ -8,6 +8,7 @@ import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
+import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
@@ -261,6 +262,9 @@ export const IntegrationsTab = forwardRef<
   const emailDeployment = effectiveDeployments?.find(
     deployment => deployment.platform === 'email',
   )
+  const googleCalendarDeployment = effectiveDeployments?.find(
+    deployment => deployment.platform === 'google_calendar',
+  )
 
   if (!deploymentsGate.isAllowed) {
     return (
@@ -345,6 +349,11 @@ export const IntegrationsTab = forwardRef<
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <h2 className="text-lg font-medium text-foreground">Utilities</h2>
           <div className="space-y-4">
+            <GoogleCalendarDeploymentForm
+              agentId={agent._id}
+              key={`google_calendar-${googleCalendarDeployment?._id || 'new'}`}
+              deployment={googleCalendarDeployment}
+            />
             <ShopifyDeploymentForm
               agentId={agent._id}
               key={`shopify-${shopifyDeployment?._id || 'new'}`}

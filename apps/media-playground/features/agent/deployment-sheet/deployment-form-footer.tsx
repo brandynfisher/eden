@@ -163,6 +163,16 @@ export const DeploymentFormFooter = ({
                 : undefined,
           },
         }
+      } else if (platform === 'google_calendar') {
+        config = {
+          google_calendar: {
+            calendar_id: data.calendarId,
+            calendar_name: data.calendarName,
+            allow_write: data.allowWrite ?? false,
+            allow_delete: data.allowDelete ?? false,
+            time_zone: data.timeZone,
+          },
+        }
       }
 
       if (isDeployed) {
@@ -234,6 +244,20 @@ export const DeploymentFormFooter = ({
               webhook_signing_key: data.domain.webhook_signing_key,
             },
           }
+        } else if (platform === 'google_calendar' && data.credentials) {
+          payload.secrets = {
+            google_calendar: {
+              access_token: data.credentials.access_token,
+              refresh_token: data.credentials.refresh_token,
+              token_uri: data.credentials.token_uri,
+              client_id: data.credentials.client_id,
+              client_secret: data.credentials.client_secret,
+              scopes: data.credentials.scopes,
+              expires_at: data.credentials.expires_at,
+              google_user_id: data.credentials.google_user_id,
+              google_email: data.credentials.google_email,
+            },
+          }
         }
 
         await axios.patch(`/api/agents/${agentId}/deployments`, payload)
@@ -303,6 +327,20 @@ export const DeploymentFormFooter = ({
               inbound_route_expression: data.domain.inbound_route_expression,
               forwarding_address: data.domain.forwarding_address,
               webhook_signing_key: data.domain.webhook_signing_key,
+            },
+          }
+        } else if (platform === 'google_calendar' && data.credentials) {
+          payload.secrets = {
+            google_calendar: {
+              access_token: data.credentials.access_token,
+              refresh_token: data.credentials.refresh_token,
+              token_uri: data.credentials.token_uri,
+              client_id: data.credentials.client_id,
+              client_secret: data.credentials.client_secret,
+              scopes: data.credentials.scopes,
+              expires_at: data.credentials.expires_at,
+              google_user_id: data.credentials.google_user_id,
+              google_email: data.credentials.google_email,
             },
           }
         }
@@ -418,7 +456,16 @@ export const DeploymentFormFooter = ({
             valid !== false && (
               <Button
                 type="submit"
-                onClick={form.handleSubmit(handleSubmit)}
+                onClick={form.handleSubmit(handleSubmit, errors => {
+                  console.error('Form validation errors:', errors)
+                  const firstError = Object.values(errors)[0]
+                  if (firstError?.message) {
+                    toast.error(`Validation error: ${firstError.message}`, {
+                      richColors: true,
+                      dismissible: true,
+                    })
+                  }
+                })}
                 disabled={isDeploying || !form.formState.isDirty || !canSubmit}
               >
                 {isDeployed ? (

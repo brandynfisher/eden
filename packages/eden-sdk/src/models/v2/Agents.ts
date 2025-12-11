@@ -115,6 +115,7 @@ export type AgentClientType =
   | 'shopify'
   | 'gmail'
   | 'email'
+  | 'google_calendar'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -274,6 +275,26 @@ interface EmailDeploymentSecrets {
   webhook_signing_key?: string
 }
 
+interface GoogleCalendarDeploymentConfig {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+}
+
+interface GoogleCalendarDeploymentSecrets {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: string
+  google_user_id?: string
+  google_email: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -290,6 +311,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     printify?: PrintifyDeploymentConfig
     captions?: CaptionsDeploymentConfig
     email?: EmailDeploymentConfig
+    google_calendar?: GoogleCalendarDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -300,6 +322,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
+    google_calendar?: GoogleCalendarDeploymentSecrets
   }
 }
 
@@ -313,6 +336,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     twitter?: TwitterDeploymentConfig
     shopify?: ShopifyDeploymentConfig
     email?: EmailDeploymentConfig
+    google_calendar?: GoogleCalendarDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -323,6 +347,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
+    google_calendar?: GoogleCalendarDeploymentSecrets
   }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {

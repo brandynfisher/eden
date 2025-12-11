@@ -12,6 +12,7 @@ export type ClientType =
   | 'tiktok'
   | 'gmail'
   | 'email'
+  | 'google_calendar'
 
 export type AllowlistItem = {
   id: string
@@ -147,6 +148,36 @@ export type DeploymentSecretsGmail = {
   reply_alias?: string
 }
 
+// Google Calendar Types
+export type DeploymentSettingsGoogleCalendar = {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+}
+
+export type DeploymentSecretsGoogleCalendar = {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: Date | string
+  google_user_id?: string
+  google_email: string
+}
+
+export type GoogleCalendarInfo = {
+  id: string
+  name: string
+  primary: boolean
+  accessRole: string
+  backgroundColor?: string
+  timeZone?: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
@@ -159,6 +190,7 @@ export type DeploymentSecrets = {
   tiktok?: DeploymentSecretsTiktok
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
+  google_calendar?: DeploymentSecretsGoogleCalendar
 }
 
 export type DeploymentConfig = {
@@ -172,6 +204,7 @@ export type DeploymentConfig = {
   tiktok?: DeploymentSettingsTiktok
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
+  google_calendar?: DeploymentSettingsGoogleCalendar
 }
 
 export type Deployment = {
