@@ -10,10 +10,11 @@
     "scheme": "edenmobile",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.eden.art",
+      "bundleIdentifier": "art.eden.eden",
       "infoPlist": {
         "NSCameraUsageDescription": "Eden app needs access to your camera to capture photos and videos.",
-        "NSPhotoLibraryUsageDescription": "Eden app needs access to your photo library to select images and videos."
+        "NSPhotoLibraryUsageDescription": "Eden app needs access to your photo library to select images and videos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -23,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.eden.art",
+      "package": "art.eden.eden",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",

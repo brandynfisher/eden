@@ -18,6 +18,7 @@ export type SiteConfig = {
   }
   ogImage: string
   mediaErrorUrl: string
+  emptyCollectionPlaceholderUrl: string
   publicRoutes: string[]
   featured: {
     tools: string[]

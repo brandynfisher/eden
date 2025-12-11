@@ -15288,6 +15288,7 @@ __metadata:
     babel-plugin-module-resolver: "npm:^5.0.0"
     babel-preset-expo: "npm:~54.0.6"
     expo: "npm:~54.0.20"
+    expo-application: "npm:~7.0.7"
     expo-auth-session: "npm:^7.0.8"
     expo-font: "npm:~14.0.9"
     expo-image-picker: "npm:^17.0.8"
