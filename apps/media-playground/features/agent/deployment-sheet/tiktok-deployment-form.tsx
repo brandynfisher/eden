@@ -111,7 +111,7 @@ export const TiktokDeploymentForm = ({
     setIsConnecting(true)
     const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
-    const scope = 'user.info.basic,video.publish'
+    const scope = 'user.info.basic,video.publish,video.list'
 
     // Pass agentId in state so OAuth callback knows which agent to associate with
     // Add disable_auto_auth=1 to force account selection even if user was previously authenticated

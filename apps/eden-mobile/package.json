@@ -11,7 +11,8 @@
     "build:android:staging": "JAVA_HOME=$(/usr/libexec/java_home -v 17) && ENV_JS_FILE=.env.staging && bash ./scripts/build-android-release.sh",
     "android:clean": "rm -rf android/app/build android/app/.cxx android/.gradle .gradle-cache && echo 'Cleaned local Android build artifacts.'",
     "android:version:bump": "node ./scripts/bump-android-version.js",
-    "ios:archive:staging": "ENV_JS_FILE=.env.staging ./scripts/ios-archive-staging.sh",
+    "ios:archive:staging": "ENV_JS_FILE=.env.staging ./scripts/ios-archive.sh",
+    "ios:archive:production": "ENV_JS_FILE=.env.production ./scripts/ios-archive.sh",
     "ios:clean": "./scripts/ios-clean.sh"
   },
   "dependencies": {
