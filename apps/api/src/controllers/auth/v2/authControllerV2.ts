@@ -392,6 +392,60 @@ export const tiktokOAuth = async (
     error?: string
   }
 
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>TikTok Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0f172a; color:#e2e8f0; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#111827; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#06b6d4; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing TikTok connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'TikTok connected!' : 'Unable to connect TikTok');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'tiktok-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
   // State contains the agentId
   const agentId = state
 
@@ -401,16 +455,25 @@ export const tiktokOAuth = async (
     const agent = await Agent.findById(agentId)
     if (agent) {
       const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
-      return reply.redirect(redirectUrl)
+      return sendPopupResponse({
+        success: false,
+        message: error || 'OAuth cancelled or failed',
+        redirectUrl,
+        type: 'tiktok-link',
+      })
     }
-    return reply.status(400).send({
-      message: 'OAuth cancelled or failed',
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled or failed',
+      type: 'tiktok-link',
     })
   }
 
   if (!state) {
-    return reply.status(400).send({
+    return sendPopupResponse({
+      success: false,
       message: 'Missing state parameter',
+      type: 'tiktok-link',
     })
   }
 
@@ -418,8 +481,10 @@ export const tiktokOAuth = async (
     // Get agent to find the owner
     const agent = await Agent.findById(agentId)
     if (!agent) {
-      return reply.status(404).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Agent not found',
+        type: 'tiktok-link',
       })
     }
 
@@ -451,8 +516,10 @@ export const tiktokOAuth = async (
       )
       console.error('Access token:', access_token)
       console.error('Open ID:', open_id)
-      return reply.status(400).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Invalid credentials received from TikTok',
+        type: 'tiktok-link',
       })
     }
 
@@ -507,12 +574,23 @@ export const tiktokOAuth = async (
     // Redirect back to agent settings
     const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
 
-    return reply.redirect(redirectUrl)
+    return sendPopupResponse({
+      success: true,
+      message: 'TikTok connected successfully',
+      type: 'tiktok-link',
+      redirectUrl,
+      payload: {
+        username,
+        agentId,
+      },
+    })
   } catch (error) {
     console.error('TikTok OAuth error:', error)
-    return reply
-      .status(500)
-      .send({ message: 'Failed to connect TikTok account' })
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect TikTok account',
+      type: 'tiktok-link',
+    })
   }
 }
 
@@ -557,6 +635,60 @@ export const twitterIntegrationOAuth = async (
     error?: string
   }
 
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Twitter Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0b1220; color:#e5e7eb; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#0f172a; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#1d9bf0; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing Twitter connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'Twitter connected!' : 'Unable to connect Twitter');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'twitter-integration-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
   // State contains the agentId
   const agentId = state
 
@@ -566,16 +698,25 @@ export const twitterIntegrationOAuth = async (
     const agent = await Agent.findById(agentId)
     if (agent) {
       const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
-      return reply.redirect(redirectUrl)
+      return sendPopupResponse({
+        success: false,
+        message: error || 'OAuth cancelled or failed',
+        redirectUrl,
+        type: 'twitter-integration-link',
+      })
     }
-    return reply.status(400).send({
-      message: 'OAuth cancelled or failed',
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled or failed',
+      type: 'twitter-integration-link',
     })
   }
 
   if (!state) {
-    return reply.status(400).send({
+    return sendPopupResponse({
+      success: false,
       message: 'Missing state parameter',
+      type: 'twitter-integration-link',
     })
   }
 
@@ -583,8 +724,10 @@ export const twitterIntegrationOAuth = async (
     // Get agent to find the owner
     const agent = await Agent.findById(agentId)
     if (!agent) {
-      return reply.status(404).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Agent not found',
+        type: 'twitter-integration-link',
       })
     }
 
@@ -622,8 +765,10 @@ export const twitterIntegrationOAuth = async (
     const twitterId = userResponse.data.data.id
 
     if (!twitterHandle || !twitterId) {
-      return reply.status(400).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Twitter username or ID not found',
+        type: 'twitter-integration-link',
       })
     }
 
@@ -656,15 +801,26 @@ export const twitterIntegrationOAuth = async (
     // Redirect back to agent settings
     const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
 
-    return reply.redirect(redirectUrl)
+    return sendPopupResponse({
+      success: true,
+      message: 'Twitter connected successfully',
+      type: 'twitter-integration-link',
+      redirectUrl,
+      payload: {
+        twitterHandle,
+        agentId,
+      },
+    })
   } catch (error) {
     console.error(
       'Twitter Integration OAuth error:',
       (error as any).response?.data || error,
     )
-    return reply
-      .status(500)
-      .send({ message: 'Failed to connect Twitter account for integration' })
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Twitter account for integration',
+      type: 'twitter-integration-link',
+    })
   }
 }
 

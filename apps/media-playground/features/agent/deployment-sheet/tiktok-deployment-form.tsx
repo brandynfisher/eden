@@ -9,9 +9,10 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -30,6 +31,9 @@ export const TiktokDeploymentForm = ({
   deployment,
 }: TiktokDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const popupRef = useRef<Window | null>(null)
+  const queryClient = useQueryClient()
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -52,16 +56,82 @@ export const TiktokDeploymentForm = ({
   const isConnected = deployment?.secrets?.tiktok?.access_token ? true : false
   const tiktokUsername = deployment?.secrets?.tiktok?.username
 
+  const cleanupPopup = useCallback(() => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close()
+    }
+    popupRef.current = null
+    setIsConnecting(false)
+  }, [])
+
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (
+        !event.data ||
+        typeof event.data !== 'object' ||
+        event.data.type !== 'tiktok-link'
+      ) {
+        return
+      }
+
+      cleanupPopup()
+
+      if (event.data.success) {
+        const username =
+          event.data.payload?.username || tiktokUsername || undefined
+
+        toast.success('TikTok connected', {
+          description: username ? `Connected as @${username}` : undefined,
+        })
+
+        await queryClient.invalidateQueries({
+          queryKey: ['agents', agentId, 'deployments'],
+        })
+      } else {
+        toast.error(event.data.message ?? 'Failed to connect TikTok account')
+      }
+    }
+
+    const interval = window.setInterval(() => {
+      if (popupRef.current && popupRef.current.closed) {
+        cleanupPopup()
+      }
+    }, 500)
+
+    window.addEventListener('message', handleMessage)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      window.clearInterval(interval)
+      cleanupPopup()
+    }
+  }, [agentId, cleanupPopup, queryClient, tiktokUsername])
+
   const handleConnect = async () => {
+    setIsConnecting(true)
     const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
     const scope = 'user.info.basic,video.publish'
 
     // Pass agentId in state so OAuth callback knows which agent to associate with
     // Add disable_auto_auth=1 to force account selection even if user was previously authenticated
-    window.location.href = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
+    const oauthUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
       redirectUri,
     )}&state=${agentId}&disable_auto_auth=1`
+
+    const popup = window.open(
+      oauthUrl,
+      'tiktok-oauth',
+      'width=600,height=700,scrollbars=yes',
+    )
+
+    if (!popup) {
+      // Popup blocked – fall back to redirect
+      window.location.href = oauthUrl
+      return
+    }
+
+    popupRef.current = popup
   }
 
   const handleDisconnect = async () => {
@@ -118,8 +188,9 @@ export const TiktokDeploymentForm = ({
                     type="button"
                     onClick={handleConnect}
                     className="w-full"
+                    disabled={isConnecting}
                   >
-                    Connect TikTok Account
+                    {isConnecting ? 'Connecting...' : 'Connect TikTok Account'}
                   </Button>
                 </>
               ) : (

@@ -201,6 +201,12 @@ const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children }) => {
               {...props}
             />
           ),
+          em: ({ className, ...props }) => (
+            <em className={cn('not-italic', className)} {...props} />
+          ),
+          i: ({ className, ...props }) => (
+            <i className={cn('not-italic', className)} {...props} />
+          ),
           sup: ({ className, ...props }) => (
             <sup
               className={cn('[&>a]:text-xs [&>a]:no-underline', className)}

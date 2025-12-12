@@ -18,9 +18,10 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -42,6 +43,9 @@ export const TwitterDeploymentForm = ({
   deployment,
 }: TwitterDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const popupRef = useRef<Window | null>(null)
+  const queryClient = useQueryClient()
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -87,7 +91,59 @@ export const TwitterDeploymentForm = ({
   const isConnected = Boolean(deployment)
   const twitterUsername = deployment?.config?.twitter?.username
 
+  const cleanupPopup = useCallback(() => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close()
+    }
+    popupRef.current = null
+    setIsConnecting(false)
+  }, [])
+
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (
+        !event.data ||
+        typeof event.data !== 'object' ||
+        event.data.type !== 'twitter-integration-link'
+      ) {
+        return
+      }
+
+      cleanupPopup()
+
+      if (event.data.success) {
+        const handle =
+          event.data.payload?.twitterHandle || twitterUsername || undefined
+
+        toast.success('Twitter connected', {
+          description: handle ? `Connected as @${handle}` : undefined,
+        })
+
+        await queryClient.invalidateQueries({
+          queryKey: ['agents', agentId, 'deployments'],
+        })
+      } else {
+        toast.error(event.data.message ?? 'Failed to connect Twitter account')
+      }
+    }
+
+    const interval = window.setInterval(() => {
+      if (popupRef.current && popupRef.current.closed) {
+        cleanupPopup()
+      }
+    }, 500)
+
+    window.addEventListener('message', handleMessage)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      window.clearInterval(interval)
+      cleanupPopup()
+    }
+  }, [agentId, cleanupPopup, queryClient, twitterUsername])
+
   const handleConnect = async () => {
+    setIsConnecting(true)
     const clientId = process.env.NEXT_PUBLIC_TWITTER_INTEGRATIONS_CLIENT_ID
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/integrations/twitter/callback`
     const state = agentId // Pass agent ID as state
@@ -105,8 +161,19 @@ export const TwitterDeploymentForm = ({
     authUrl.searchParams.append('code_challenge', 'challenge')
     authUrl.searchParams.append('code_challenge_method', 'plain')
 
-    // Redirect to Twitter OAuth
-    window.location.href = authUrl.toString()
+    // Open popup for OAuth (fallback to redirect if blocked)
+    const popup = window.open(
+      authUrl.toString(),
+      'twitter-integration-oauth',
+      'width=600,height=700,scrollbars=yes',
+    )
+
+    if (!popup) {
+      window.location.href = authUrl.toString()
+      return
+    }
+
+    popupRef.current = popup
   }
 
   const handleDisconnect = async () => {
@@ -164,8 +231,9 @@ export const TwitterDeploymentForm = ({
                     onClick={handleConnect}
                     className="w-full"
                     title="Twitter will use your currently logged-in account. To switch accounts, first log out at twitter.com/logout"
+                    disabled={isConnecting}
                   >
-                    Connect Twitter Account
+                    {isConnecting ? 'Connecting...' : 'Connect Twitter Account'}
                   </Button>
                 </>
               ) : (
