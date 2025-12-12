@@ -9,7 +9,6 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -33,7 +32,6 @@ export const TiktokDeploymentForm = ({
   const [isOpen, setIsOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
-  const queryClient = useQueryClient()
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -52,9 +50,11 @@ export const TiktokDeploymentForm = ({
     wasDeployed.current = isDeployed
   }, [isDeployed])
 
-  // Check if TikTok is connected by looking at deployment secrets
-  const isConnected = deployment?.secrets?.tiktok?.access_token ? true : false
-  const tiktokUsername = deployment?.secrets?.tiktok?.username
+  // Treat any existing deployment as connected (secrets are not exposed to frontend)
+  const isConnected = Boolean(deployment)
+  const tiktokUsername =
+    deployment?.config?.tiktok?.username ||
+    deployment?.secrets?.tiktok?.username
 
   const cleanupPopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -84,9 +84,7 @@ export const TiktokDeploymentForm = ({
           description: username ? `Connected as @${username}` : undefined,
         })
 
-        await queryClient.invalidateQueries({
-          queryKey: ['agents', agentId, 'deployments'],
-        })
+        window.location.reload()
       } else {
         toast.error(event.data.message ?? 'Failed to connect TikTok account')
       }
@@ -105,13 +103,14 @@ export const TiktokDeploymentForm = ({
       window.clearInterval(interval)
       cleanupPopup()
     }
-  }, [agentId, cleanupPopup, queryClient, tiktokUsername])
+  }, [agentId, cleanupPopup, tiktokUsername])
 
   const handleConnect = async () => {
     setIsConnecting(true)
     const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
-    const scope = 'user.info.basic,video.publish'
+    // Need user.info.profile to fetch username; video.publish is for posting
+    const scope = 'user.info.basic,user.info.profile,video.publish'
 
     // Pass agentId in state so OAuth callback knows which agent to associate with
     // Add disable_auto_auth=1 to force account selection even if user was previously authenticated
@@ -172,7 +171,10 @@ export const TiktokDeploymentForm = ({
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500" />
                     <span className="text-sm">
-                      Connected {tiktokUsername ? `as @${tiktokUsername}` : ''}
+                      Connected{' '}
+                      {tiktokUsername
+                        ? `as @${tiktokUsername}`
+                        : '(handle unavailable yet)'}
                     </span>
                   </div>
                 </div>

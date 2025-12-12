@@ -102,7 +102,9 @@ export type DeploymentSecretsCaptions = {
 }
 
 // TikTok Types
-export type DeploymentSettingsTiktok = Record<string, never>
+export interface DeploymentSettingsTiktok {
+  username?: string
+}
 
 export type DeploymentSecretsTiktok = {
   access_token: string

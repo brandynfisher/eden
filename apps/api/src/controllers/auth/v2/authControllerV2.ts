@@ -523,7 +523,7 @@ export const tiktokOAuth = async (
       })
     }
 
-    // Get user info to get username
+    // Get user info to get username / handle
     let username = ''
     try {
       const userInfoResponse = await axios.get(
@@ -533,13 +533,23 @@ export const tiktokOAuth = async (
             Authorization: `Bearer ${access_token}`,
           },
           params: {
-            fields: 'display_name,username',
+            fields: 'display_name,username,profile_deep_link,union_id',
           },
         },
       )
 
       if (userInfoResponse.data?.data?.user) {
-        username = userInfoResponse.data.data.user.username
+        const userData = userInfoResponse.data.data.user
+        // Prefer explicit username; fall back to unique_id/profile_deep_link/display_name
+        username =
+          userData.username ||
+          userData.unique_id ||
+          (typeof userData.profile_deep_link === 'string'
+            ? userData.profile_deep_link.split('@').pop()?.split('?')[0] ||
+              userData.profile_deep_link.split('/').filter(Boolean).pop()
+            : '') ||
+          userData.display_name ||
+          ''
       }
     } catch (error) {
       // Username is optional, continue without it
@@ -561,7 +571,7 @@ export const tiktokOAuth = async (
         user: agent.owner,
         platform: 'tiktok',
         secrets: { tiktok: tiktokSecrets },
-        config: { tiktok: {} },
+        config: { tiktok: { username } },
       },
     }
 
@@ -570,6 +580,19 @@ export const tiktokOAuth = async (
         Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
       },
     })
+
+    // Persist username into deployment config/secrets for UI display
+    if (username) {
+      await Deployment.updateOne(
+        { agent: agentId, platform: 'tiktok' },
+        {
+          $set: {
+            'config.tiktok.username': username,
+            'secrets.tiktok.username': username,
+          },
+        },
+      )
+    }
 
     // Redirect back to agent settings
     const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`

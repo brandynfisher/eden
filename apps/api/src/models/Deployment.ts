@@ -102,7 +102,9 @@ export interface DeploymentSecretsCaptions {
 }
 
 // TikTok Types
-export interface DeploymentSettingsTiktok {}
+export interface DeploymentSettingsTiktok {
+  username?: string
+}
 
 export interface DeploymentSecretsTiktok {
   access_token: string

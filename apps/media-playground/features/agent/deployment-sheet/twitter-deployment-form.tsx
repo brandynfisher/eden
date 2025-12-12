@@ -18,7 +18,6 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -45,7 +44,6 @@ export const TwitterDeploymentForm = ({
   const [isOpen, setIsOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
-  const queryClient = useQueryClient()
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -119,9 +117,7 @@ export const TwitterDeploymentForm = ({
           description: handle ? `Connected as @${handle}` : undefined,
         })
 
-        await queryClient.invalidateQueries({
-          queryKey: ['agents', agentId, 'deployments'],
-        })
+        window.location.reload()
       } else {
         toast.error(event.data.message ?? 'Failed to connect Twitter account')
       }
@@ -140,7 +136,7 @@ export const TwitterDeploymentForm = ({
       window.clearInterval(interval)
       cleanupPopup()
     }
-  }, [agentId, cleanupPopup, queryClient, twitterUsername])
+  }, [agentId, cleanupPopup, twitterUsername])
 
   const handleConnect = async () => {
     setIsConnecting(true)

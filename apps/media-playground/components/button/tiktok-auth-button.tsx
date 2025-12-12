@@ -21,7 +21,8 @@ const TiktokAuthButton = ({ agentId, isConnected }: TiktokAuthButtonProps) => {
     } else {
       const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
       const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
-      const scope = 'user.info.basic,video.publish'
+      // Need user.info.profile so we can fetch the username/handle
+      const scope = 'user.info.basic,user.info.profile,video.publish'
 
       // Redirect to OAuth
       window.location.href = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
