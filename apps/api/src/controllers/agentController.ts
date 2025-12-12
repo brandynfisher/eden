@@ -33,18 +33,13 @@ import {
 } from './agentMemoryController'
 // Import functions from specialized controllers for re-export
 import {
-  createAgentTrigger as _createAgentTrigger,
   deleteAgentDeployment as _deleteAgentDeployment,
-  deleteAgentTrigger as _deleteAgentTrigger,
   deployAgent as _deployAgent,
-  executeAgentTrigger as _executeAgentTrigger,
   getAgentDeployments as _getAgentDeployments,
-  getAgentTriggers as _getAgentTriggers,
   getAllUserDeployments as _getAllUserDeployments,
   getAllUserTriggers as _getAllUserTriggers,
   getDashboardData as _getDashboardData,
   updateAgentDeployment as _updateAgentDeployment,
-  updateAgentTrigger as _updateAgentTrigger,
 } from './agentServicesController'
 import {
   AgentGetArguments,
@@ -107,11 +102,6 @@ const deliverAgentPermissionPush = async (
 
 // Re-export functions from agentServicesController
 export {
-  _getAgentTriggers as getAgentTriggers,
-  _createAgentTrigger as createAgentTrigger,
-  _updateAgentTrigger as updateAgentTrigger,
-  _deleteAgentTrigger as deleteAgentTrigger,
-  _executeAgentTrigger as executeAgentTrigger,
   _getAgentDeployments as getAgentDeployments,
   _deployAgent as deployAgent,
   _updateAgentDeployment as updateAgentDeployment,

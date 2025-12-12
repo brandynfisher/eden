@@ -1412,7 +1412,10 @@ const Session = ({
     !isPendingTransition &&
     !pendingMessage
 
-  const handleSaveSettings = async (settings: SessionSettings) => {
+  const handleSaveSettings = async (
+    settings: SessionSettings,
+    agents?: Agent[],
+  ) => {
     try {
       // Build request body exactly like EditSessionModal and /sessions/new
       const requestBody: {
@@ -1431,6 +1434,7 @@ const Session = ({
         extras?: {
           exclude_memory?: boolean
         }
+        agent_ids?: string[]
       } = {
         session_type:
           settings.type === 'natural'
@@ -1470,6 +1474,11 @@ const Session = ({
         requestBody.extras = {
           exclude_memory: true,
         }
+      }
+
+      // Add agent_ids if agents were changed
+      if (agents && agents.length > 0) {
+        requestBody.agent_ids = agents.map(a => a._id)
       }
 
       // Saving session settings
@@ -2461,6 +2470,7 @@ const Session = ({
           onSettingsChange={setSessionSettings}
           agents={session.agents}
           sessionId={sessionId}
+          sessionTitle={session.title}
           onSave={handleSaveSettings}
           minimal={false}
         />

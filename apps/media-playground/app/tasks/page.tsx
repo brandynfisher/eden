@@ -2,20 +2,17 @@
 
 import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { useAppShell } from '@/components/layout/app-shell'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -26,14 +23,12 @@ import {
   ChevronDownIcon,
   ClockIcon,
   EditIcon,
-  Eye,
   Loader2,
   MenuIcon,
   PlayIcon,
   PlusIcon,
   Trash2,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -41,26 +36,15 @@ import { toast } from 'sonner'
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
 
-interface TriggerWithAgent extends Trigger {
-  agent: {
-    _id: string
-    name: string
-    username: string
-    userImage?: string
-  }
-  last_run_time?: Date
-}
-
 const TaskItem: FC<{
-  trigger: TriggerWithAgent
-  onEdit: (trigger: TriggerWithAgent) => void
+  trigger: Trigger
+  onEdit: (trigger: Trigger) => void
   onDelete: (triggerId: string) => void
   isFinished?: boolean
   timezone: string
 }> = ({ trigger, onEdit, onDelete, isFinished = false, timezone }) => {
   const [isExecuting, setIsExecuting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const router = useRouter()
 
   const scheduleDescription = useMemo(() => {
     if (!trigger.schedule) return 'No schedule configured'
@@ -107,9 +91,7 @@ const TaskItem: FC<{
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await axios.delete(
-        `/api/agents/${trigger.agent._id}/triggers/${trigger._id}`,
-      )
+      await axios.delete(`/api/triggers/${trigger._id}`)
       onDelete(trigger._id)
       toast.success('Task deleted successfully')
     } catch (error) {
@@ -144,36 +126,18 @@ const TaskItem: FC<{
 
   return (
     <div className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        {/* Agent Avatar */}
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage
-            src={
-              trigger.agent.userImage
-                ? getCloudfrontOriginalUrl(trigger.agent.userImage)
-                : undefined
-            }
-            alt={trigger.agent.name}
-            className="object-cover"
-          />
-          <AvatarFallback className="bg-muted text-xs font-medium">
-            {trigger.agent.name?.slice(0, 2).toUpperCase() || 'AG'}
-          </AvatarFallback>
-        </Avatar>
-
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate">
-            {trigger.name || trigger.trigger_prompt}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {nextRunDisplay}
-          </div>
-          {!isFinished && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Last run: {formatLastRunTime(trigger.last_run_time)}
-            </div>
-          )}
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm truncate">
+          {trigger.name || trigger.prompt}
         </div>
+        <div className="text-xs text-muted-foreground mt-1">
+          {nextRunDisplay}
+        </div>
+        {!isFinished && (
+          <div className="text-xs text-muted-foreground mt-1">
+            Last run: {formatLastRunTime(trigger.last_run_time)}
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2">
         {/* Run Now button - only for active tasks */}
@@ -191,25 +155,6 @@ const TaskItem: FC<{
             ) : (
               <PlayIcon className="h-4 w-4" />
             )}
-          </Button>
-        )}
-
-        {/* View session button - for all tasks */}
-        {trigger.session && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              router.push(
-                `/chat/${trigger.agent.username || trigger.agent._id}/${
-                  trigger.session
-                }`,
-              )
-            }
-            className="h-8 w-8 p-0"
-            title="View session where results are routed"
-          >
-            <Eye className="h-4 w-4" />
           </Button>
         )}
 
@@ -255,9 +200,8 @@ const TasksPage = () => {
     return 'UTC'
   }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<TriggerWithAgent | null>(null)
+  const [editingTask, setEditingTask] = useState<Trigger | null>(null)
   const [showFinished, setShowFinished] = useState(false)
-  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const tasksGate = useGatedResource(GatedResource.Tasks, {
     lockedBehavior: 'modal',
   })
@@ -297,7 +241,7 @@ const TasksPage = () => {
       return true
     })
 
-    const sortByNextRun = (a: TriggerWithAgent, b: TriggerWithAgent) => {
+    const sortByNextRun = (a: Trigger, b: Trigger) => {
       if (!a.next_scheduled_run && !b.next_scheduled_run) {
         const aDate = new Date(a.updatedAt || a.createdAt)
         const bDate = new Date(b.updatedAt || b.createdAt)
@@ -327,7 +271,7 @@ const TasksPage = () => {
     setIsModalOpen(true)
   }, [tasksGate])
 
-  const handleEdit = (trigger: TriggerWithAgent) => {
+  const handleEdit = (trigger: Trigger) => {
     setEditingTask(trigger)
     setIsModalOpen(true)
   }
@@ -539,15 +483,6 @@ const TasksPage = () => {
                 open={isModalOpen}
                 onOpenChange={handleModalClose}
                 onSave={handleSave}
-              />
-
-              {/* Agent Selector Modal */}
-              <SingleAgentSelectorModal
-                open={isAgentSelectorOpen}
-                onOpenChange={setIsAgentSelectorOpen}
-                onSelect={() => {
-                  setIsAgentSelectorOpen(false)
-                }}
               />
             </>
           )}

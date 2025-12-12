@@ -5,15 +5,16 @@ import {
 } from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { EmailDomain } from '../models/EmailDomain'
+import {
+  SessionPermission,
+  SessionPermissionLevel,
+} from '../models/SessionPermission'
 import { Trigger } from '../models/Trigger'
 import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
-  AgentsCreateTriggerArguments,
-  AgentsCreateTriggerResponse,
-  AgentsDeleteTriggerResponse,
   AgentsDeployArguments,
   AgentsDeployResponse,
   AgentsStopDeploymentArguments,
@@ -48,85 +49,6 @@ const hasOwnerPermissions = async (
   return !!permission
 }
 
-const calculateNextScheduledRun = (schedule: any): Date | null => {
-  if (!schedule) return null
-
-  const now = new Date()
-
-  // For one-time tasks (start_date equals end_date)
-  if (schedule.start_date && schedule.end_date) {
-    const startDate = new Date(schedule.start_date)
-    const endDate = new Date(schedule.end_date)
-
-    if (startDate.getTime() === endDate.getTime()) {
-      // One-time task
-      return startDate > now ? startDate : null
-    }
-  }
-
-  // For hourly tasks (hour is '*')
-  if (schedule.hour === '*' && schedule.minute !== undefined) {
-    const nextRun = new Date()
-    const targetMinute = parseInt(schedule.minute.toString(), 10)
-
-    // Set to the target minute in the current hour
-    nextRun.setMinutes(targetMinute)
-    nextRun.setSeconds(0)
-    nextRun.setMilliseconds(0)
-
-    // If that time has already passed in this hour, move to the next hour
-    if (nextRun <= now) {
-      nextRun.setHours(nextRun.getHours() + 1)
-    }
-
-    return nextRun
-  }
-
-  // For recurring tasks, calculate next run based on current time
-  if (schedule.hour !== undefined && schedule.minute !== undefined) {
-    const nextRun = new Date()
-    nextRun.setHours(parseInt(schedule.hour.toString(), 10))
-    nextRun.setMinutes(parseInt(schedule.minute.toString(), 10))
-    nextRun.setSeconds(0)
-    nextRun.setMilliseconds(0)
-
-    // If the time today has passed, move to next occurrence based on schedule
-    if (nextRun <= now) {
-      if (schedule.day_of_week === '*') {
-        // Daily - add 1 day
-        nextRun.setDate(nextRun.getDate() + 1)
-      } else if (schedule.day_of_week) {
-        // Weekly - find next occurrence of the day
-        const targetDay = parseInt(schedule.day_of_week.toString(), 10)
-        const currentDay = nextRun.getDay()
-        let daysUntilNext = targetDay - currentDay
-        if (daysUntilNext <= 0) daysUntilNext += 7
-        nextRun.setDate(nextRun.getDate() + daysUntilNext)
-      } else if (schedule.month && schedule.day) {
-        // Annually - find next occurrence
-        const targetMonth = parseInt(schedule.month.toString(), 10) - 1 // 0-indexed
-        const targetDay = parseInt(schedule.day.toString(), 10)
-        nextRun.setMonth(targetMonth)
-        nextRun.setDate(targetDay)
-        if (nextRun <= now) {
-          nextRun.setFullYear(nextRun.getFullYear() + 1)
-        }
-      } else if (schedule.day) {
-        // Monthly - find next occurrence of the day
-        const targetDay = parseInt(schedule.day.toString(), 10)
-        nextRun.setDate(targetDay)
-        if (nextRun <= now) {
-          nextRun.setMonth(nextRun.getMonth() + 1)
-        }
-      }
-    }
-
-    return nextRun
-  }
-
-  return null
-}
-
 const validateAgentAccess = async (agentId: string) => {
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
@@ -144,327 +66,7 @@ const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
     : new mongoose.Types.ObjectId(agentDoc._id)
 }
 
-export const getAgentTriggers = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { agentId } = request.params as { agentId: string }
-  const currentUserId = request.user.userId
-  const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
-
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
-  }
-
-  if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
-  ) {
-    return reply.status(401).send({
-      error: 'User not authorized to view triggers for this agent',
-    })
-  }
-
-  const triggers = await Trigger.find({
-    agent: agentId,
-    $or: [{ deleted: { $exists: false } }, { deleted: false }],
-  })
-
-  return reply.status(200).send({
-    triggers,
-  })
-}
-
-export const getAgentTrigger = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { agentId, triggerId } = request.params as {
-    agentId: string
-    triggerId: string
-  }
-  const currentUserId = request.user.userId
-  const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
-
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
-  }
-
-  if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
-  ) {
-    return reply.status(401).send({
-      error: 'User not authorized to view triggers for this agent',
-    })
-  }
-
-  const trigger = await Trigger.findOne({
-    _id: triggerId,
-    agent: agentId,
-    $or: [{ deleted: { $exists: false } }, { deleted: false }],
-  })
-
-  if (!trigger) {
-    return reply.status(404).send({
-      error: 'Trigger not found',
-    })
-  }
-
-  return reply.status(200).send({
-    trigger,
-  })
-}
-
-export const createAgentTrigger = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { agentId } = request.params as { agentId: string }
-  const {
-    name,
-    context,
-    trigger_prompt,
-    session_type,
-    session,
-    schedule,
-    posting_instructions,
-  } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
-  const currentUserId = request.user.userId
-  const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
-
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
-  }
-
-  if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
-  ) {
-    return reply.status(401).send({
-      error: 'User not authorized to create triggers for this agent',
-    })
-  }
-
-  const updateData = {
-    agent: agentId,
-    user: currentUserId,
-    name,
-    context,
-    trigger_prompt,
-    session_type,
-    session,
-    schedule,
-    posting_instructions: posting_instructions || [],
-  }
-
-  const edenComputeRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/create`,
-    data: updateData,
-  }
-
-  const edenComputeResponse = await axios.post(
-    edenComputeRequest.endpoint,
-    edenComputeRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-      },
-    },
-  )
-
-  const response = edenComputeResponse.data as AgentsCreateTriggerResponse
-
-  // NOTE: Mongo save is handled downstream in the compute API, not here
-  // // Save the trigger locally with the name field
-  // const localTriggerData = {
-  //   agent: agentId,
-  //   user: currentUserId,
-  //   name,
-  //   context,
-  //   trigger_prompt,
-  //   session_type,
-  //   session,
-  //   schedule,
-  //   posting_instructions,
-  // }
-
-  // const localTrigger = new Trigger(localTriggerData)
-  // await localTrigger.save()
-
-  return reply.status(200).send({
-    triggerId: response.trigger_id,
-  })
-}
-
-export const updateAgentTrigger = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { agentId, triggerId } = request.params as {
-    agentId: string
-    triggerId: string
-  }
-  const {
-    name,
-    context,
-    trigger_prompt,
-    session_type,
-    session,
-    schedule,
-    status,
-    posting_instructions,
-  } = request.body as {
-    name?: string
-    context?: string
-    trigger_prompt?: any
-    session_type?: 'new' | 'another'
-    session?: string | null
-    schedule?: any
-    status?: 'active' | 'paused' | 'finished'
-    posting_instructions?: any
-  }
-  const currentUserId = request.user.userId
-
-  const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
-
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
-  }
-
-  if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
-  ) {
-    return reply.status(401).send({
-      error: 'User not authorized to update triggers for this agent',
-    })
-  }
-
-  // Find the trigger to update
-  const trigger = await Trigger.findById(triggerId)
-
-  if (!trigger) {
-    return reply.status(404).send({
-      error: 'Trigger not found',
-    })
-  }
-
-  // Verify the trigger belongs to the agent
-  if (trigger.agent.toString() !== agentId) {
-    return reply.status(401).send({
-      error: 'Trigger does not belong to this agent',
-    })
-  }
-
-  // Validate schedule if provided
-  if (schedule !== undefined) {
-    const nextRun = calculateNextScheduledRun(schedule)
-    if (nextRun) {
-      const now = new Date()
-      const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000)
-
-      if (nextRun < twoMinutesFromNow) {
-        return reply.status(400).send({
-          error: 'Next scheduled run must be at least 2 minutes in the future',
-        })
-      }
-    }
-  }
-
-  // Build update data - only include fields that are provided
-  // IMPORTANT: Never update the 'user' field - it should only be set on creation
-  const updateData: any = {}
-
-  if (name !== undefined) updateData.name = name
-  if (context !== undefined) updateData.context = context
-  if (trigger_prompt !== undefined) updateData.trigger_prompt = trigger_prompt
-  if (session_type !== undefined) updateData.session_type = session_type
-  if (session !== undefined) updateData.session = session
-  if (schedule !== undefined) {
-    updateData.schedule = schedule
-    // Calculate and update next_scheduled_run when schedule is updated
-    updateData.next_scheduled_run = calculateNextScheduledRun(schedule)
-  }
-  if (status !== undefined) updateData.status = status
-  if (posting_instructions !== undefined)
-    updateData.posting_instructions = posting_instructions
-
-  // do not overwrite the original user who owns that Trigger
-  delete updateData.user
-
-  // Update the trigger
-  const updatedTrigger = await Trigger.findByIdAndUpdate(
-    triggerId,
-    updateData,
-    { new: true },
-  )
-
-  return reply.status(200).send({
-    trigger: updatedTrigger,
-  })
-}
-
-export const deleteAgentTrigger = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { agentId, triggerId } = request.params as {
-    agentId: string
-    triggerId: string
-  }
-  const currentUserId = request.user.userId
-
-  const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
-
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
-  }
-
-  if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
-  ) {
-    return reply.status(401).send({
-      error: 'User not authorized to delete triggers for this agent',
-    })
-  }
-
-  const edenComputeRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/delete`,
-    data: { id: triggerId },
-  }
-
-  const edenComputeResponse = await axios.post(
-    edenComputeRequest.endpoint,
-    edenComputeRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-      },
-    },
-  )
-
-  const response = edenComputeResponse.data as AgentsDeleteTriggerResponse
-
-  return reply.status(200).send({
-    success: response.success,
-  })
-}
-
-export const executeAgentTrigger = async (
+export const executeTrigger = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
@@ -478,7 +80,6 @@ export const executeAgentTrigger = async (
     })
   }
 
-  // First, get the trigger to check ownership
   const trigger = await Trigger.findById(trigger_id)
   if (!trigger) {
     return reply.status(404).send({
@@ -486,19 +87,15 @@ export const executeAgentTrigger = async (
     })
   }
 
-  // Check if the user owns the agent that this trigger belongs to
-  const agent = await Agent.findById(trigger.agent)
-  if (!agent) {
-    return reply.status(404).send({
-      message: 'Agent not found',
-    })
-  }
-
+  // Check session-based permissions
   if (
-    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+    !(await canEditSession(
+      trigger.session.toString(),
+      currentUserId.toString(),
+    ))
   ) {
     return reply.status(403).send({
-      message: 'User not authorized to execute triggers for this agent',
+      message: 'User not authorized to execute this trigger',
     })
   }
 
@@ -960,54 +557,21 @@ export const deleteAgentDeployment = async (
 }
 
 export const getAllUserTriggers = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
 
   try {
-    // Get all user's agents
-    const agents = await Agent.find({
-      owner: currentUserId,
-      deleted: false,
-    }).select('_id name username userImage')
-
-    const agentIds = agents.map(agent => agent._id)
-
-    if (agentIds.length === 0) {
-      return reply.status(200).send({
-        triggers: [],
-      })
-    }
-
-    type TriggerWithAgent = typeof Trigger & {
-      agent: {
-        _id: string
-        name: string
-        username: string
-        userImage: string
-      }
-    }
-
-    // Get all triggers for user's agents
-    const triggers = (await Trigger.find({
-      agent: { $in: agentIds },
+    // Get all triggers owned by the user
+    const triggers = await Trigger.find({
+      user: currentUserId,
       $or: [{ deleted: { $exists: false } }, { deleted: false }],
     }).populate({
-      path: 'agent',
-      select: '_id name username userImage',
-      model: Agent,
-    })) as TriggerWithAgent[]
-
-    // Force cloudfront URLs for agent images
-    triggers.forEach(trigger => {
-      if (trigger.agent && trigger.agent.userImage) {
-        trigger.agent.userImage = forceCloudfrontUrl(
-          server,
-          trigger.agent.userImage,
-        )
-      }
+      path: 'session',
+      select: '_id name',
+      model: Session,
     })
 
     return reply.status(200).send({
@@ -1406,5 +970,210 @@ export const getDashboardData = async (
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error',
     })
+  }
+}
+
+// Helper to check if user can edit a session (owner or editor)
+const canEditSession = async (
+  sessionId: string,
+  userId: string,
+): Promise<boolean> => {
+  const sessionDoc = await Session.findById(sessionId)
+  if (!sessionDoc) return false
+
+  // Check if user is session owner
+  if (sessionDoc.owner.toString() === userId) return true
+
+  // Check if user has editor or owner permission
+  const permission = await SessionPermission.findOne({
+    session: sessionId,
+    user: userId,
+    level: {
+      $in: [SessionPermissionLevel.Owner, SessionPermissionLevel.Editor],
+    },
+  })
+
+  return !!permission
+}
+
+// Session-based trigger functions
+
+export const createTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { name, prompt, session, schedule } = request.body as {
+    name: string
+    prompt: string
+    session: string
+    schedule: any
+  }
+  const currentUserId = request.user.userId
+
+  server.log.info({ session, name }, '[createTrigger] Creating trigger')
+
+  const sessionDoc = await Session.findById(session)
+  if (!sessionDoc) {
+    return reply.status(404).send({ error: 'Session not found' })
+  }
+
+  if (!(await canEditSession(session, currentUserId.toString()))) {
+    return reply
+      .status(401)
+      .send({ error: 'Not authorized to create triggers for this session' })
+  }
+
+  const triggerData = {
+    user: currentUserId,
+    session,
+    name,
+    prompt,
+    schedule,
+  }
+
+  server.log.info({ triggerData }, '[createTrigger] Sending to compute API')
+
+  try {
+    const response = await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/triggers/create`,
+      triggerData,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info(
+      { trigger: response.data },
+      '[createTrigger] Compute API response',
+    )
+    return reply.status(200).send({ trigger: response.data })
+  } catch (error) {
+    server.log.error({ err: error }, '[createTrigger] Error from compute API')
+    throw error
+  }
+}
+
+export const updateTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { triggerId } = request.params as { triggerId: string }
+  const { name, prompt, schedule, status } = request.body as {
+    name?: string
+    prompt?: string
+    schedule?: any
+    status?: 'active' | 'paused' | 'finished'
+  }
+  const currentUserId = request.user.userId
+
+  server.log.info({ triggerId }, '[updateTrigger] Updating trigger')
+
+  const trigger = await Trigger.findById(triggerId)
+  if (!trigger) {
+    return reply.status(404).send({ error: 'Trigger not found' })
+  }
+
+  if (!trigger.session) {
+    return reply
+      .status(400)
+      .send({ error: 'Trigger has no associated session' })
+  }
+
+  if (
+    !(await canEditSession(
+      trigger.session.toString(),
+      currentUserId.toString(),
+    ))
+  ) {
+    return reply
+      .status(401)
+      .send({ error: 'Not authorized to update this trigger' })
+  }
+
+  const updateData: any = { id: triggerId }
+  if (name !== undefined) updateData.name = name
+  if (prompt !== undefined) updateData.prompt = prompt
+  if (schedule !== undefined) updateData.schedule = schedule
+  if (status !== undefined) updateData.status = status
+
+  server.log.info({ updateData }, '[updateTrigger] Sending to compute API')
+
+  try {
+    const response = await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/triggers/update`,
+      updateData,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info(
+      { trigger: response.data },
+      '[updateTrigger] Compute API response',
+    )
+    return reply.status(200).send({ trigger: response.data })
+  } catch (error) {
+    server.log.error({ err: error }, '[updateTrigger] Error from compute API')
+    throw error
+  }
+}
+
+export const deleteTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { triggerId } = request.params as { triggerId: string }
+  const currentUserId = request.user.userId
+
+  server.log.info({ triggerId }, '[deleteTrigger] Deleting trigger')
+
+  const trigger = await Trigger.findById(triggerId)
+  if (!trigger) {
+    return reply.status(404).send({ error: 'Trigger not found' })
+  }
+
+  if (!trigger.session) {
+    return reply
+      .status(400)
+      .send({ error: 'Trigger has no associated session' })
+  }
+
+  if (
+    !(await canEditSession(
+      trigger.session.toString(),
+      currentUserId.toString(),
+    ))
+  ) {
+    return reply
+      .status(401)
+      .send({ error: 'Not authorized to delete this trigger' })
+  }
+
+  try {
+    const response = await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/triggers/delete`,
+      { id: triggerId },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info(
+      { response: response.data },
+      '[deleteTrigger] Compute API response',
+    )
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error({ err: error }, '[deleteTrigger] Error from compute API')
+    throw error
   }
 }

@@ -116,12 +116,6 @@ const AgentActionsMenu = ({
   //  )
   //}
 
-  //const handleConfigureTasks = (evt: React.MouseEvent<HTMLButtonElement>) => {
-  //  evt.preventDefault()
-  //  setIsOpen(false)
-  //  dispatch(updateAgentTriggerFormSheet({ isOpen: true, agentId: agent._id }))
-  //}
-
   return (
     <ActionsDropdown
       open={isOpen}

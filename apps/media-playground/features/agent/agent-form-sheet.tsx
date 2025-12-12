@@ -32,7 +32,7 @@ import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader
 import { AGENT_FIELD_LIMITS } from '@/features/sessions/views/agent-constants'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
+import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { cn } from '@/lib/utils'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -135,8 +135,7 @@ const AgentFormSheet = () => {
     enabled: activeTab === 'deployments' && isOpen,
   })
 
-  const triggersQuery = useAgentTriggersQuery({
-    key: agentId || '',
+  const triggersQuery = useUserTriggersQuery({
     enabled: activeTab === 'tasks' && isOpen,
   })
 
@@ -865,7 +864,7 @@ const AgentFormSheet = () => {
                                     <div className="flex items-center justify-between">
                                       <div>
                                         <h4 className="font-medium">
-                                          {trigger.trigger_prompt}
+                                          {trigger.name || trigger.prompt}
                                         </h4>
                                       </div>
                                       <Button
@@ -884,15 +883,17 @@ const AgentFormSheet = () => {
                         )}
                       </div>
 
-                      {agentQuery.agent && (
-                        <TaskFormModal
-                          agent={agentQuery.agent}
-                          editingTask={editingTask}
-                          open={isTaskModalOpen}
-                          onOpenChange={handleTaskModalClose}
-                          onSave={handleTaskSave}
-                        />
-                      )}
+                      <TaskFormModal
+                        sessionId={
+                          typeof editingTask?.session === 'string'
+                            ? editingTask.session
+                            : editingTask?.session?._id
+                        }
+                        editingTask={editingTask}
+                        open={isTaskModalOpen}
+                        onOpenChange={handleTaskModalClose}
+                        onSave={handleTaskSave}
+                      />
                     </div>
                   )}
 

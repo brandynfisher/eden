@@ -8,7 +8,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
-import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
+import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { Agent, Trigger } from '@edenlabs/eden-sdk'
@@ -41,12 +41,11 @@ interface TriggerWithLastRun extends Trigger {
 
 const TaskItem: FC<{
   trigger: TriggerWithLastRun
-  agentId: string
   onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
   isFinished?: boolean
   timezone: string
-}> = ({ trigger, agentId, onEdit, onDelete, isFinished = false, timezone }) => {
+}> = ({ trigger, onEdit, onDelete, isFinished = false, timezone }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
@@ -68,11 +67,10 @@ const TaskItem: FC<{
     return scheduleDescription
   }, [trigger.next_scheduled_run, timezone, scheduleDescription])
 
-  // const handleDelete = async () => {
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
+      await axios.delete(`/api/triggers/${trigger._id}`)
       onDelete(trigger._id)
       toast.success('Task deleted successfully')
     } catch (error) {
@@ -135,7 +133,7 @@ const TaskItem: FC<{
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <div className="font-medium text-sm truncate">
-            {trigger.name || trigger.trigger_prompt}
+            {trigger.name || trigger.prompt}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
             {nextRunDisplay}
@@ -171,7 +169,13 @@ const TaskItem: FC<{
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push(`/chat/${agentId}/${trigger.session}`)}
+            onClick={() => {
+              const sessionId =
+                typeof trigger.session === 'string'
+                  ? trigger.session
+                  : trigger.session._id
+              router.push(`/sessions/${sessionId}`)
+            }}
             className="h-8 w-8 p-0"
             title="View session where results are routed"
           >
@@ -235,8 +239,7 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
     lockedBehavior: 'modal',
   })
 
-  const triggersQuery = useAgentTriggersQuery({
-    key: agent._id,
+  const triggersQuery = useUserTriggersQuery({
     enabled: tasksGate.isAllowed && !isModalOpen, // Disable refetching while modal is open or gated
   })
 
@@ -370,7 +373,11 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
           <>
             {/* Task Modal */}
             <TaskFormModal
-              agent={agent}
+              sessionId={
+                typeof editingTask?.session === 'string'
+                  ? editingTask.session
+                  : editingTask?.session?._id
+              }
               editingTask={editingTask}
               open={isModalOpen}
               onOpenChange={handleModalClose}
@@ -423,7 +430,6 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
-                        agentId={agent._id}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         isFinished={false}
@@ -463,7 +469,6 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
                             <TaskItem
                               key={trigger._id}
                               trigger={trigger}
-                              agentId={agent._id}
                               onEdit={handleEdit}
                               onDelete={handleDelete}
                               isFinished={true}

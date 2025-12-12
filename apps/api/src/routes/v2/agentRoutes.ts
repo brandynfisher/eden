@@ -1,20 +1,16 @@
 import { paginatedResponse, paginationProperties } from '..'
 import {
   createAgent,
-  createAgentTrigger,
   createMemoryAgent,
   deleteAgent,
   deleteAgentDeployment,
-  deleteAgentTrigger,
   deployAgent,
-  executeAgentTrigger,
   getAgent,
   getAgentCreations,
   getAgentDeployments,
   getAgentMemory,
   getAgentMemoryContext,
   getAgentPermissions,
-  getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
   getDashboardData,
@@ -31,7 +27,6 @@ import {
   updateAgent,
   updateAgentDeployment,
   updateAgentPermissions,
-  updateAgentTrigger,
   updateMemoryAgent,
   updateMemorySession,
   updateMemoryUser,
@@ -41,7 +36,12 @@ import {
   getAgentRealtimeSettings,
   updateAgentRealtimeSettings,
 } from '../../controllers/agentRealtimeController'
-import { getAgentTrigger } from '../../controllers/agentServicesController'
+import {
+  createTrigger,
+  deleteTrigger,
+  executeTrigger,
+  updateTrigger,
+} from '../../controllers/agentServicesController'
 import {
   createEmailDomain,
   deleteEmailDomain,
@@ -349,60 +349,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
     ) => deleteEmailDomain(server, request, reply),
   })
 
-  server.get('/v2/agents/:agentId/triggers', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Get Agent Triggers',
-      description:
-        'Retrieve all automated triggers configured for a specific agent.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getAgentTriggers(request, reply),
-  })
-
-  server.post('/v2/agents/:agentId/triggers', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Create Agent Trigger',
-      description:
-        'Create a new automated trigger that activates the agent under specific conditions.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createAgentTrigger(server, request, reply),
-  })
-
-  server.get('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Get Single Trigger',
-      description: 'Retrieve a specific trigger by its ID.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getAgentTrigger(request, reply),
-  })
-
-  server.patch('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Update Agent Trigger',
-      description:
-        'Modify the configuration or conditions of an existing agent trigger.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateAgentTrigger(request, reply),
-  })
-
-  server.delete('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Delete Agent Trigger',
-      description:
-        'Remove an automated trigger from an agent, stopping its activation.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => deleteAgentTrigger(server, request, reply),
-  })
-
   server.post('/v2/triggers/run', {
     schema: {
       tags: ['Triggers'],
@@ -439,7 +385,111 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => executeAgentTrigger(server, request, reply),
+    handler: (request, reply) => executeTrigger(server, request, reply),
+  })
+
+  // Session-based trigger routes (without agent requirement)
+  server.post('/v2/triggers', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Create Trigger',
+      description: 'Create a new trigger for a session.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        name: Type.String(),
+        prompt: Type.String(),
+        session: Type.String(),
+        schedule: Type.Any(),
+      }),
+      response: {
+        200: Type.Object({
+          trigger: Type.Any(),
+        }),
+        400: Type.Object({
+          error: Type.String(),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createTrigger(server, request, reply),
+  })
+
+  server.patch('/v2/triggers/:triggerId', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Update Trigger',
+      description: 'Update an existing trigger.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      body: Type.Object({
+        name: Type.Optional(Type.String()),
+        prompt: Type.Optional(Type.String()),
+        schedule: Type.Optional(Type.Any()),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('active'),
+            Type.Literal('paused'),
+            Type.Literal('finished'),
+          ]),
+        ),
+      }),
+      response: {
+        200: Type.Any(),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateTrigger(server, request, reply),
+  })
+
+  server.delete('/v2/triggers/:triggerId', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Delete Trigger',
+      description: 'Delete a trigger.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteTrigger(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/deployments', {
