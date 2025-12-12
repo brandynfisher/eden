@@ -878,3 +878,317 @@ export const getFarcasterSignerStatus = async (
     return reply.status(500).send({ message: 'Failed to get signer status' })
   }
 }
+
+// Google Calendar OAuth scopes
+const GOOGLE_CALENDAR_SCOPES = [
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/calendar.events',
+]
+
+export const googleCalendarOAuthInit = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    const clientId = server.config.GOOGLE_CALENDAR_CLIENT_ID
+    if (!clientId) {
+      return reply.status(500).send({
+        message: 'Google Calendar OAuth not configured',
+      })
+    }
+
+    // Verify agent exists and user owns it
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Unauthorized',
+      })
+    }
+
+    // Build Google OAuth URL
+    const redirectUri = `${server.config.API_URL}/v2/auth/google-calendar/callback`
+    const state = agentId // Pass agentId in state
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+    authUrl.searchParams.set('client_id', clientId)
+    authUrl.searchParams.set('redirect_uri', redirectUri)
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('scope', GOOGLE_CALENDAR_SCOPES.join(' '))
+    authUrl.searchParams.set('access_type', 'offline')
+    authUrl.searchParams.set('prompt', 'consent')
+    authUrl.searchParams.set('state', state)
+
+    return reply.status(200).send({
+      authorization_url: authUrl.toString(),
+    })
+  } catch (error) {
+    console.error('Google Calendar OAuth init error:', error)
+    return reply.status(500).send({
+      message: 'Failed to initialize Google Calendar OAuth',
+    })
+  }
+}
+
+export const googleCalendarOAuthCallback = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { code, state, error } = request.query as {
+    code?: string
+    state: string
+    error?: string
+  }
+
+  const agentId = state
+
+  // Helper to send popup response
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    result?: unknown
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Calendar Connection</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #1a1a2e;
+      color: white;
+    }
+    .container { text-align: center; padding: 2rem; }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>${data.success ? 'Connected successfully!' : 'Processing...'}</p>
+    ${
+      data.message && !data.success
+        ? `<p class="error">${data.message}</p>`
+        : ''
+    }
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      if (window.opener) {
+        window.opener.postMessage({ type: 'google-calendar-link', ...data }, '*');
+        setTimeout(() => window.close(), 1500);
+      } else {
+        document.querySelector('.container').innerHTML =
+          '<p class="' + (data.success ? 'success' : 'error') + '">' +
+          (data.success ? 'Google Calendar connected!' : (data.message || 'Failed')) +
+          '</p><p>You can close this window.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
+  // Check if user cancelled the OAuth flow
+  if (error || !code) {
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled',
+    })
+  }
+
+  if (!state) {
+    return sendPopupResponse({
+      success: false,
+      message: 'Missing state parameter',
+    })
+  }
+
+  try {
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Agent not found',
+      })
+    }
+
+    const clientId = server.config.GOOGLE_CALENDAR_CLIENT_ID
+    const clientSecret = server.config.GOOGLE_CALENDAR_CLIENT_SECRET
+
+    if (!clientId || !clientSecret) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Google Calendar OAuth not configured',
+      })
+    }
+
+    // Exchange code for tokens
+    const tokenResponse = await axios.post(
+      'https://oauth2.googleapis.com/token',
+      new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: `${server.config.API_URL}/v2/auth/google-calendar/callback`,
+        grant_type: 'authorization_code',
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    const { access_token, refresh_token, expires_in, scope } =
+      tokenResponse.data
+
+    // Get user's Google account info
+    let googleEmail = ''
+    let googleUserId = ''
+    try {
+      const userInfoResponse = await axios.get(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      googleEmail = userInfoResponse.data.email
+      googleUserId = userInfoResponse.data.id
+    } catch {
+      // Continue without user info
+    }
+
+    // Fetch calendar list
+    let calendars: Array<{
+      id: string
+      name: string
+      primary: boolean
+      timeZone?: string
+    }> = []
+    try {
+      const calendarListResponse = await axios.get(
+        'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      calendars = (calendarListResponse.data.items || []).map(
+        (cal: {
+          id: string
+          summary: string
+          primary?: boolean
+          timeZone?: string
+        }) => ({
+          id: cal.id,
+          name: cal.summary,
+          primary: cal.primary || false,
+          timeZone: cal.timeZone,
+        }),
+      )
+    } catch (err) {
+      console.error('Failed to fetch calendar list:', err)
+    }
+
+    // Return credentials and calendars to frontend via postMessage
+    // The frontend will then let user select a calendar and save
+    const credentials = {
+      access_token,
+      refresh_token,
+      token_uri: 'https://oauth2.googleapis.com/token',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scopes: scope ? scope.split(' ') : GOOGLE_CALENDAR_SCOPES,
+      expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
+      google_user_id: googleUserId,
+      google_email: googleEmail,
+    }
+
+    return sendPopupResponse({
+      success: true,
+      result: {
+        google_email: googleEmail,
+        credentials,
+        calendars,
+        agent_id: agentId,
+        user_id: agent.owner.toString(),
+      },
+    })
+  } catch (error) {
+    console.error(
+      'Google Calendar OAuth callback error:',
+      (error as any).response?.data || error,
+    )
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Google Calendar',
+    })
+  }
+}
+
+export const disconnectGoogleCalendar = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    // Remove Google Calendar deployment
+    await Deployment.deleteOne({
+      agent: agentId,
+      platform: 'google_calendar',
+    })
+
+    return reply.status(200).send({
+      message: 'Google Calendar disconnected successfully',
+    })
+  } catch (error) {
+    console.error('Google Calendar disconnect error:', error)
+    return reply.status(500).send({
+      message: 'Failed to disconnect Google Calendar',
+    })
+  }
+}

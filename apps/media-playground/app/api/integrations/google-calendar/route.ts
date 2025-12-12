@@ -3,6 +3,9 @@ import { getAuth } from '@clerk/nextjs/server'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Google Calendar OAuth goes through Fastify API (same as Twitter/TikTok integrations)
+const EDEN_API_URL = process.env.EDEN_API_URL || 'http://localhost:5050'
+
 export async function DELETE(request: NextRequest) {
   const { getToken, userId } = await getAuth(request)
 
@@ -24,10 +27,11 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    // Delete the Google Calendar deployment via the deployments API
+    // Disconnect Google Calendar via Fastify API
     const response = await axios.delete(
-      `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/agents/${agentId}/deployments/google_calendar`,
+      `${EDEN_API_URL}/v2/auth/google-calendar/disconnect`,
       {
+        params: { agentId },
         headers: {
           'Content-Type': 'application/json',
           Authorization: authToken ? `Bearer ${authToken}` : undefined,

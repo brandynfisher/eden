@@ -478,12 +478,14 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   }
 
   // Determine if save button should show for current tab
+  // Note: 'integrations' is excluded because each integration has its own Deploy/Update buttons
   const showSaveButton =
     activeTab !== 'tasks' &&
     activeTab !== 'memories' &&
     activeTab !== 'concepts' &&
     activeTab !== 'manage' &&
-    activeTab !== 'dashboard'
+    activeTab !== 'dashboard' &&
+    activeTab !== 'integrations'
 
   // Determine if save is in progress
   const isSaving =

@@ -1,17 +1,10 @@
 import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Google Calendar OAuth endpoints are on the Eve (Python) backend, not Fastify.
-// Local: http://localhost:8000
-// Production: https://edenartlab--api-prod-fastapi-app.modal.run
-// Staging: https://edenartlab--api-stage-fastapi-app.modal.run
-const EVE_API_URL = process.env.EVE_API_URL || 'http://localhost:8000'
-
-// Eve backend requires admin key for this endpoint
-const EDEN_ADMIN_KEY = process.env.EDEN_ADMIN_KEY
+// Google Calendar OAuth goes through Fastify API (same as Twitter/TikTok integrations)
+const EDEN_API_URL = process.env.EDEN_API_URL || 'http://localhost:5050'
 
 export async function GET(request: NextRequest) {
   const authToken = await getAuthToken(request)
@@ -20,14 +13,6 @@ export async function GET(request: NextRequest) {
     return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
     })
-  }
-
-  if (!EDEN_ADMIN_KEY) {
-    console.error('EDEN_ADMIN_KEY is not configured')
-    return new NextResponse(
-      JSON.stringify({ error: 'Server configuration error' }),
-      { status: 500 },
-    )
   }
 
   const searchParams = request.nextUrl.searchParams
@@ -41,41 +26,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get the Eden user ID using the same pattern as /api/users/me
-    const eden = new EdenClient({
-      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken,
-    })
-
-    const userResponse = await eden.creators.meV2()
-    const edenUserId = userResponse.creator?._id
-
-    if (!edenUserId) {
-      console.error('Could not get Eden user ID:', userResponse)
-      return new NextResponse(
-        JSON.stringify({ error: 'Could not determine user ID' }),
-        { status: 400 },
-      )
-    }
-
-    // Build the redirect URI for after OAuth completion
-    // This should point to our Next.js callback route
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const redirectUri = `${appUrl}/api/integrations/google-calendar/callback`
-
-    // Call Eve backend to get Google OAuth URL
-    // Eve requires EDEN_ADMIN_KEY for this endpoint
+    // Call Fastify API to get Google OAuth URL
     const response = await axios.get(
-      `${EVE_API_URL}/v2/auth/google-calendar/init`,
+      `${EDEN_API_URL}/v2/auth/google-calendar/init`,
       {
         params: {
-          agent_id: agentId,
-          user_id: edenUserId,
-          redirect_uri: redirectUri,
+          agentId,
         },
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${EDEN_ADMIN_KEY}`,
+          Authorization: `Bearer ${authToken}`,
         },
       },
     )

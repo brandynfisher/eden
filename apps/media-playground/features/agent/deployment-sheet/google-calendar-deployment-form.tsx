@@ -103,11 +103,12 @@ export const GoogleCalendarDeploymentForm = ({
     wasDeployed.current = isDeployed
   }, [isDeployed])
 
-  // Check if Google Calendar is connected by looking at deployment secrets
-  const isConnected = deployment?.secrets?.google_calendar?.access_token
+  // Check if Google Calendar is connected by looking at deployment config
+  // (secrets are encrypted and not available to frontend)
+  const isConnected = deployment?.config?.google_calendar?.calendar_id
     ? true
     : false
-  const connectedEmail = deployment?.secrets?.google_calendar?.google_email
+  const connectedEmail = deployment?.config?.google_calendar?.google_email
   const calendarName = deployment?.config?.google_calendar?.calendar_name
 
   // Cleanup popup on unmount

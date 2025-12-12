@@ -186,6 +186,7 @@ export const DeploymentFormFooter = ({
             allow_write: data.allowWrite ?? false,
             allow_delete: data.allowDelete ?? false,
             time_zone: data.timeZone,
+            google_email: data.credentials?.google_email,
           },
         }
       }

@@ -2,11 +2,14 @@ import {
   DiscordOAuthQuery,
   createFarcasterManagedSigner,
   createWebviewSignInToken,
+  disconnectGoogleCalendar,
   disconnectTikTok,
   disconnectTwitter,
   disconnectTwitterIntegration,
   discordOAuth,
   getFarcasterSignerStatus,
+  googleCalendarOAuthCallback,
+  googleCalendarOAuthInit,
   tiktokOAuth,
   twitterIntegrationOAuth,
   twitterOAuth,
@@ -177,6 +180,53 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) =>
       createWebviewSignInToken(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.get('/v2/auth/google-calendar/init', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Initialize Google Calendar OAuth',
+      description:
+        'Returns the Google OAuth URL to redirect the user to for calendar access.',
+      hide: true,
+      querystring: Type.Object({
+        agentId: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      googleCalendarOAuthInit(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.get('/v2/auth/google-calendar/callback', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Google Calendar OAuth Callback',
+      description:
+        'Handle Google OAuth callback, exchange code for tokens, and create deployment.',
+      hide: true,
+      querystring: Type.Object({
+        code: Type.Optional(Type.String()),
+        state: Type.String(),
+        error: Type.Optional(Type.String()),
+      }),
+    },
+    handler: (request, reply) =>
+      googleCalendarOAuthCallback(server, request, reply),
+  })
+
+  server.delete('/v2/auth/google-calendar/disconnect', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Disconnect Google Calendar',
+      description: 'Remove Google Calendar integration from an agent.',
+      hide: true,
+      querystring: Type.Object({
+        agentId: Type.String(),
+      }),
+    },
+    handler: (request, reply) => disconnectGoogleCalendar(request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }

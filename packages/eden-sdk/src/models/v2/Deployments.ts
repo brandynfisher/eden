@@ -156,6 +156,7 @@ export type DeploymentSettingsGoogleCalendar = {
   allow_write?: boolean
   allow_delete?: boolean
   time_zone?: string
+  google_email?: string
 }
 
 export type DeploymentSecretsGoogleCalendar = {
