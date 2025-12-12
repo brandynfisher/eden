@@ -85,7 +85,10 @@ export function useSessionQuery({
     },
     enabled: enabled && !!sessionId,
     staleTime: 1000, // 1 second - allow frequent refetches during active conversation
-    refetchInterval: data => (data ? 2000 : false), // Poll only when we have session data
+    refetchInterval: data => {
+      // Only poll for the active session to avoid flooding
+      return data ? 2000 : false
+    }, // Poll only when we have session data
     refetchOnWindowFocus: query => !!query.state.data,
     retry: (failureCount, error) => {
       if (axios.isAxiosError(error)) {

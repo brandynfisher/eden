@@ -262,33 +262,40 @@ const Session = ({
   }, [isSignedIn, queryClient, session, sessionId, updateUserPreferences])
 
   // Update session settings when session data loads
+  // IMPORTANT: Only sync from server when modal is CLOSED to avoid resetting user edits
+  const hasInitializedSettings = useRef(false)
+
   useEffect(() => {
     if (session) {
-      // Loading session settings from session
+      // Only sync settings from server if:
+      // 1. This is the initial load (hasn't been initialized yet), OR
+      // 2. The modal is closed (user isn't actively editing)
+      if (!hasInitializedSettings.current || !isSessionSettingsOpen) {
+        hasInitializedSettings.current = true
 
-      // Map session_type, defaulting to 'natural' if undefined or 'passive'
-      let sessionType: 'natural' | 'automatic' = 'natural'
-      if (session.session_type === 'automatic') {
-        sessionType = 'automatic'
+        // Map session_type, defaulting to 'natural' if undefined or 'passive'
+        let sessionType: 'natural' | 'automatic' = 'natural'
+        if (session.session_type === 'automatic') {
+          sessionType = 'automatic'
+        }
+
+        setSessionSettings({
+          type: sessionType,
+          context: session.context || '',
+          conductor_prompt: session.settings?.conductor_prompt || '',
+          delay_interval: session.settings?.delay_interval || 0,
+          mention_force_reply: session.settings?.mention_force_reply || false,
+          manna_budget_unlimited: !session.budget?.manna_budget,
+          manna_budget: session.budget?.manna_budget,
+          token_budget_unlimited: !session.budget?.token_budget,
+          token_budget: session.budget?.token_budget,
+          turn_budget_unlimited: !session.budget?.turn_budget,
+          turn_budget: session.budget?.turn_budget,
+          exclude_memory: session.extras?.exclude_memory || false,
+        })
       }
-      // 'passive' and undefined map to 'natural'
-
-      setSessionSettings({
-        type: sessionType,
-        context: session.context || '',
-        conductor_prompt: session.settings?.conductor_prompt || '',
-        delay_interval: session.settings?.delay_interval || 0,
-        mention_force_reply: session.settings?.mention_force_reply || false,
-        manna_budget_unlimited: !session.budget?.manna_budget,
-        manna_budget: session.budget?.manna_budget,
-        token_budget_unlimited: !session.budget?.token_budget,
-        token_budget: session.budget?.token_budget,
-        turn_budget_unlimited: !session.budget?.turn_budget,
-        turn_budget: session.budget?.turn_budget,
-        exclude_memory: session.extras?.exclude_memory || false,
-      })
     }
-  }, [session])
+  }, [session, isSessionSettingsOpen])
 
   const sessionsLayoutContext = useSessionsLayoutContext()
   const isOwner = useMemo(() => {

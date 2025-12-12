@@ -16,7 +16,9 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { SessionType } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -81,24 +83,34 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   })
 
   // Update session settings when session data loads
+  // IMPORTANT: Only sync from server when modal is CLOSED to avoid resetting user edits
+  const hasInitializedSettings = useRef(false)
+
   useEffect(() => {
     if (session) {
-      setSessionSettings({
-        type: session.session_type === 'automatic' ? 'automatic' : 'natural',
-        context: session.context || '',
-        conductor_prompt: session.settings?.conductor_prompt || '',
-        delay_interval: session.settings?.delay_interval || 0,
-        mention_force_reply: session.settings?.mention_force_reply || false,
-        manna_budget_unlimited: !session.budget?.manna_budget,
-        manna_budget: session.budget?.manna_budget,
-        token_budget_unlimited: !session.budget?.token_budget,
-        token_budget: session.budget?.token_budget,
-        turn_budget_unlimited: !session.budget?.turn_budget,
-        turn_budget: session.budget?.turn_budget,
-        exclude_memory: session.extras?.exclude_memory || false,
-      })
+      // Only sync settings from server if:
+      // 1. This is the initial load (hasn't been initialized yet), OR
+      // 2. The modal is closed (user isn't actively editing)
+      if (!hasInitializedSettings.current || !isSettingsModalOpen) {
+        hasInitializedSettings.current = true
+
+        setSessionSettings({
+          type: session.session_type === 'automatic' ? 'automatic' : 'natural',
+          context: session.context || '',
+          conductor_prompt: session.settings?.conductor_prompt || '',
+          delay_interval: session.settings?.delay_interval || 0,
+          mention_force_reply: session.settings?.mention_force_reply || false,
+          manna_budget_unlimited: !session.budget?.manna_budget,
+          manna_budget: session.budget?.manna_budget,
+          token_budget_unlimited: !session.budget?.token_budget,
+          token_budget: session.budget?.token_budget,
+          turn_budget_unlimited: !session.budget?.turn_budget,
+          turn_budget: session.budget?.turn_budget,
+          exclude_memory: session.extras?.exclude_memory || false,
+        })
+      }
     }
-  }, [session])
+  }, [session, isSettingsModalOpen])
 
   const handleNewSession = () => {
     // Create URL with current session's agents
