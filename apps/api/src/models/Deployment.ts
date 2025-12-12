@@ -11,6 +11,7 @@ export enum ClientType {
   TIKTOK = 'tiktok',
   GMAIL = 'gmail',
   EMAIL = 'email',
+  GOOGLE_CALENDAR = 'google_calendar',
 }
 
 // Allowlist item base interface
@@ -150,6 +151,27 @@ export interface DeploymentSecretsGmail {
   reply_alias?: string
 }
 
+// Google Calendar Types
+export interface DeploymentSettingsGoogleCalendar {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+}
+
+export interface DeploymentSecretsGoogleCalendar {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: Date | string
+  google_user_id?: string
+  google_email: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
@@ -162,6 +184,7 @@ export interface DeploymentSecrets {
   tiktok?: DeploymentSecretsTiktok
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
+  google_calendar?: DeploymentSecretsGoogleCalendar
 }
 
 export interface DeploymentConfig {
@@ -175,6 +198,7 @@ export interface DeploymentConfig {
   tiktok?: DeploymentSettingsTiktok
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
+  google_calendar?: DeploymentSettingsGoogleCalendar
 }
 
 export interface DeploymentSchema {
