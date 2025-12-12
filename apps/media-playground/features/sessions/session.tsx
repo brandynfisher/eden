@@ -1705,27 +1705,18 @@ const Session = ({
                   </button>
                 </AgentAvatarsMenu>
 
-                {/* Session title - clickable for settings */}
+                {/* Session title - static display */}
                 {session.title && (
-                  <button
-                    onClick={() =>
-                      canOpenSessionSettings && setIsSessionSettingsOpen(true)
-                    }
-                    className={cn(
-                      'text-base font-semibold truncate flex-1 max-w-[400px] text-left ml-2 flex items-center gap-2',
-                      canOpenSessionSettings
-                        ? 'text-foreground hover:text-foreground transition-colors'
-                        : 'text-muted-foreground',
-                    )}
+                  <div
+                    className="text-base font-semibold truncate flex-1 max-w-[400px] text-left ml-2 flex items-center gap-2 text-foreground"
                     title={session.title}
-                    disabled={!canOpenSessionSettings}
                   >
                     <span className="truncate">{session.title}</span>
                     {/* Platform icon */}
                     {session.platform && (
                       <PlatformIcon platform={session.platform} />
                     )}
-                  </button>
+                  </div>
                 )}
               </>
             )}
@@ -1770,6 +1761,18 @@ const Session = ({
                 ) : (
                   <BrainIcon className="h-3.5 w-3.5" />
                 )}
+              </button>
+            )}
+
+            {/* Session Settings button - show for sessions routes (not chat) */}
+            {!ischatRoute && canOpenSessionSettings && (
+              <button
+                onClick={() => setIsSessionSettingsOpen(true)}
+                className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
+                title="Settings"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                Settings
               </button>
             )}
 

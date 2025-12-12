@@ -14,9 +14,11 @@ import { SessionStatusToggle } from '@/features/sessions/components/session-stat
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { SessionType } from '@edenlabs/eden-sdk'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -247,13 +249,12 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
                 </button>
               </AgentAvatarsMenu>
               {session.title && (
-                <button
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors"
+                <div
+                  className="text-sm text-foreground truncate flex-1 text-left"
                   title={session.title}
                 >
                   {session.title}
-                </button>
+                </div>
               )}
             </>
           ) : null}
@@ -273,6 +274,22 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
                 onStatusChange={() => {}}
                 iconOnly
               />
+            )}
+
+          {/* Settings button - icon only, show for owner */}
+          {!isShareRoute &&
+            session &&
+            session.owner._id === user?._id &&
+            sessionId !== 'new' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="h-9 w-9"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
             )}
 
           {/* Share button - icon only, hide on share route */}
