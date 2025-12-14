@@ -571,8 +571,12 @@ export const getAllUserTriggers = async (
       $or: [{ deleted: { $exists: false } }, { deleted: false }],
     }).populate({
       path: 'session',
-      select: '_id name',
+      select: '_id title agents',
       model: Session,
+      populate: {
+        path: 'agents',
+        select: '_id username userImage name',
+      },
     })
 
     return reply.status(200).send({

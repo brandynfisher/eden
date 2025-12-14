@@ -4,66 +4,141 @@ import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
 import { useAppShell } from '@/components/layout/app-shell'
 import { Button } from '@/components/ui/button'
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import TaskFormModal from '@/features/sessions/components/task-form-modal'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { Trigger } from '@edenlabs/eden-sdk'
+import { cn } from '@/lib/utils'
+import {
+  Trigger,
+  TriggerRun,
+  TriggerSession,
+  TriggerSessionAgent,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import timezonePlugin from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import {
   AlertCircle,
-  ChevronDownIcon,
+  ArchiveIcon,
+  ChevronRightIcon,
   ClockIcon,
-  EditIcon,
+  HistoryIcon,
   Loader2,
   MenuIcon,
+  MoreVerticalIcon,
+  PauseIcon,
+  PencilIcon,
   PlayIcon,
-  PlusIcon,
-  Trash2,
+  RotateCcwIcon,
+  Trash2Icon,
 } from 'lucide-react'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import * as React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
+dayjs.extend(relativeTime)
 
-const TaskItem: FC<{
+// Helper to extract session info from trigger
+const getSessionInfo = (
+  trigger: Trigger,
+): { id: string; title: string; agents: TriggerSessionAgent[] } => {
+  if (typeof trigger.session === 'string') {
+    return { id: trigger.session, title: 'Session', agents: [] }
+  }
+  const session = trigger.session as TriggerSession
+  return {
+    id: session._id,
+    title: session.title || 'Untitled Session',
+    agents: session.agents || [],
+  }
+}
+
+const GlobalTaskItem: FC<{
   trigger: Trigger
-  onEdit: (trigger: Trigger) => void
+  onArchive: (triggerId: string) => void
+  onReactivate: (triggerId: string) => void
+  onPause: (triggerId: string) => void
+  onResume: (triggerId: string) => void
   onDelete: (triggerId: string) => void
+  onRunComplete?: (triggerId: string) => void
   isFinished?: boolean
   timezone: string
-}> = ({ trigger, onEdit, onDelete, isFinished = false, timezone }) => {
+}> = ({
+  trigger,
+  onArchive,
+  onReactivate,
+  onPause,
+  onResume,
+  onDelete,
+  onRunComplete,
+  isFinished = false,
+  timezone,
+}) => {
+  const router = useRouter()
   const [isExecuting, setIsExecuting] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [isReactivating, setIsReactivating] = useState(false)
+  const [isPausing, setIsPausing] = useState(false)
+  const [isResuming, setIsResuming] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showRuns, setShowRuns] = useState(false)
 
-  const scheduleDescription = useMemo(() => {
-    if (!trigger.schedule) return 'No schedule configured'
+  const sessionInfo = useMemo(() => getSessionInfo(trigger), [trigger])
+
+  const scheduleDisplay = useMemo(() => {
+    if (!trigger.schedule) return null
+
+    // Show "Paused" for paused tasks
+    if (trigger.status === 'paused') {
+      return 'Paused'
+    }
+
     const scheduleWithTimezone = {
       ...trigger.schedule,
       timezone: timezone,
     }
-    return formatCronSchedule(scheduleWithTimezone)
-  }, [trigger.schedule, timezone])
+    const description = formatCronSchedule(scheduleWithTimezone)
 
-  const nextRunDisplay = useMemo(() => {
+    // Show next run time if available
     if (trigger.next_scheduled_run) {
       const zonedTime = dayjs(trigger.next_scheduled_run).tz(timezone)
-      return zonedTime.format('MMM D [at] h:mma')
-    }
-    return scheduleDescription
-  }, [trigger.next_scheduled_run, timezone, scheduleDescription])
+      const now = dayjs().tz(timezone)
+      const tomorrow = now.add(1, 'day')
 
-  const handleExecuteNow = async () => {
+      let dateStr: string
+      if (zonedTime.isSame(now, 'day')) {
+        dateStr = 'Today'
+      } else if (zonedTime.isSame(tomorrow, 'day')) {
+        dateStr = 'Tomorrow'
+      } else {
+        dateStr = zonedTime.format('MMM D')
+      }
+
+      return `Next: ${dateStr} at ${zonedTime.format('h:mma')}`
+    }
+
+    return description
+  }, [trigger.schedule, trigger.next_scheduled_run, trigger.status, timezone])
+
+  const runs = useMemo(() => {
+    return (trigger.runs || []).slice().reverse() // Most recent first
+  }, [trigger.runs])
+
+  const handleExecuteNow = async (e: React.MouseEvent) => {
+    e.stopPropagation()
     setIsExecuting(true)
     try {
       const response = await axios.post('/api/triggers/run', {
@@ -71,20 +146,73 @@ const TaskItem: FC<{
       })
 
       if (response.data.executed) {
-        toast.success('Task started successfully', {
-          description: 'Your task is now running',
+        toast.success('Task started', {
+          description: 'Running now',
+          action: {
+            label: 'View Session',
+            onClick: () => router.push(`/sessions/${sessionInfo.id}`),
+          },
         })
+        onRunComplete?.(trigger._id)
       } else {
-        toast.error('Failed to start task', {
-          description: 'Task could not be executed at this time',
-        })
+        toast.error('Failed to start task')
       }
-    } catch (error) {
-      toast.error('Failed to trigger task', {
-        description: 'There was an error starting the task',
-      })
+    } catch {
+      toast.error('Failed to run task')
     } finally {
       setIsExecuting(false)
+    }
+  }
+
+  const handleArchive = async () => {
+    setIsArchiving(true)
+    try {
+      await axios.patch(`/api/triggers/${trigger._id}`, { status: 'finished' })
+      onArchive(trigger._id)
+      toast.success('Task archived')
+    } catch {
+      toast.error('Failed to archive task')
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
+  const handleReactivate = async () => {
+    setIsReactivating(true)
+    try {
+      await axios.patch(`/api/triggers/${trigger._id}`, { status: 'active' })
+      onReactivate(trigger._id)
+      toast.success('Task reactivated')
+    } catch {
+      toast.error('Failed to reactivate task')
+    } finally {
+      setIsReactivating(false)
+    }
+  }
+
+  const handlePause = async () => {
+    setIsPausing(true)
+    try {
+      await axios.patch(`/api/triggers/${trigger._id}`, { status: 'paused' })
+      onPause(trigger._id)
+      toast.success('Schedule paused')
+    } catch {
+      toast.error('Failed to pause schedule')
+    } finally {
+      setIsPausing(false)
+    }
+  }
+
+  const handleResume = async () => {
+    setIsResuming(true)
+    try {
+      await axios.patch(`/api/triggers/${trigger._id}`, { status: 'active' })
+      onResume(trigger._id)
+      toast.success('Schedule resumed')
+    } catch {
+      toast.error('Failed to resume schedule')
+    } finally {
+      setIsResuming(false)
     }
   }
 
@@ -93,202 +221,350 @@ const TaskItem: FC<{
     try {
       await axios.delete(`/api/triggers/${trigger._id}`)
       onDelete(trigger._id)
-      toast.success('Task deleted successfully')
-    } catch (error) {
+      toast.success('Task deleted')
+    } catch {
       toast.error('Failed to delete task')
     } finally {
       setIsDeleting(false)
     }
   }
 
-  const formatLastRunTime = (lastRunTime?: Date) => {
-    if (!lastRunTime) return 'Never run'
-
-    const date = new Date(lastRunTime)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffDays = Math.floor(diffHours / 24)
-
-    if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
-    } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-    } else {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60))
-      if (diffMinutes > 0) {
-        return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`
-      } else {
-        return 'Just now'
-      }
-    }
+  const handleNavigateToRun = (messageId: string) => {
+    // Navigate to session with message anchor
+    router.push(`/sessions/${sessionInfo.id}?message=${messageId}`)
   }
 
   return (
-    <div className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm truncate">
-          {trigger.name || trigger.prompt}
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          {nextRunDisplay}
-        </div>
+    <div className="group">
+      <div className="flex items-center gap-3 px-4 py-3">
+        {/* Play Button - Prominent */}
         {!isFinished && (
-          <div className="text-xs text-muted-foreground mt-1">
-            Last run: {formatLastRunTime(trigger.last_run_time)}
-          </div>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        {/* Run Now button - only for active tasks */}
-        {!isFinished && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleExecuteNow}
             disabled={isExecuting}
-            className="h-8 w-8 p-0"
-            title="Run task now"
+            className={cn(
+              'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
+              'bg-primary/10 hover:bg-primary/20 active:scale-95',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
+            title="Run now"
           >
             {isExecuting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
-              <PlayIcon className="h-4 w-4" />
+              <PlayIcon className="h-4 w-4 text-primary fill-primary" />
             )}
-          </Button>
+          </button>
         )}
 
-        {/* Edit button - only for active tasks */}
-        {!isFinished && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(trigger)}
-            className="h-8 w-8 p-0"
+        {/* Task Info */}
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-sm truncate">
+            {trigger.name || trigger.prompt}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            {/* Session info with avatars */}
+            <Link
+              href={`/sessions/${sessionInfo.id}`}
+              className="flex items-center gap-1.5 hover:underline"
+              onClick={e => e.stopPropagation()}
+            >
+              {sessionInfo.agents.length > 0 && (
+                <AgentAvatars
+                  agents={sessionInfo.agents}
+                  className="scale-75 origin-left -ml-1"
+                />
+              )}
+              <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                {sessionInfo.title}
+              </span>
+            </Link>
+            {scheduleDisplay && (
+              <>
+                <span className="text-muted-foreground/30">·</span>
+                <div className="flex items-center gap-1">
+                  <ClockIcon className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="text-xs text-muted-foreground">
+                    {scheduleDisplay}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Runs Toggle Button */}
+        {runs.length > 0 && (
+          <button
+            onClick={() => setShowRuns(!showRuns)}
+            className={cn(
+              'h-7 px-2 rounded-md text-xs flex items-center gap-1.5 transition-colors',
+              showRuns
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+            )}
           >
-            <EditIcon className="h-4 w-4" />
-          </Button>
+            <HistoryIcon className="h-3.5 w-3.5" />
+            <span>{runs.length}</span>
+          </button>
         )}
 
-        {/* Delete button - available for all tasks */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="h-8 w-8 p-0 text-destructive"
-          title="Delete task"
-        >
-          {isDeleting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
-          )}
-        </Button>
+        {/* Context Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+            >
+              <MoreVerticalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            {!isFinished ? (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href={`/sessions/${sessionInfo.id}?settings=tasks`}>
+                    <PencilIcon className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                {/* Pause/Resume for scheduled tasks */}
+                {trigger.schedule && (
+                  <>
+                    <DropdownMenuSeparator />
+                    {trigger.status === 'paused' ? (
+                      <DropdownMenuItem
+                        onClick={handleResume}
+                        disabled={isResuming}
+                      >
+                        {isResuming ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <PlayIcon className="h-4 w-4 mr-2" />
+                        )}
+                        Resume schedule
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={handlePause}
+                        disabled={isPausing}
+                      >
+                        {isPausing ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <PauseIcon className="h-4 w-4 mr-2" />
+                        )}
+                        Pause schedule
+                      </DropdownMenuItem>
+                    )}
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleArchive}
+                  disabled={isArchiving}
+                >
+                  {isArchiving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ArchiveIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Archive
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem
+                  onClick={handleReactivate}
+                  disabled={isReactivating}
+                >
+                  {isReactivating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RotateCcwIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Reactivate
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="text-destructive focus:text-destructive"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Trash2Icon className="h-4 w-4 mr-2" />
+                  )}
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {/* Expandable Run History */}
+      {showRuns && runs.length > 0 && (
+        <div className="px-4 pb-2">
+          <div className="ml-[52px] pl-3 border-l border-muted">
+            <div className="max-h-[180px] overflow-y-auto -space-y-0.5">
+              {runs.map((run, index) => {
+                const ranAt = dayjs(run.ran_at)
+                return (
+                  <button
+                    key={`${run.message_id}-${index}`}
+                    onClick={() => handleNavigateToRun(run.message_id)}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 rounded-md transition-colors group/run"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 group-hover/run:bg-primary transition-colors" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs text-muted-foreground group-hover/run:text-foreground transition-colors">
+                        {ranAt.fromNow()}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/60 opacity-0 group-hover/run:opacity-100 transition-opacity">
+                      {ranAt.format('MMM D, YYYY [at] h:mm A')}
+                    </span>
+                    <ChevronRightIcon className="h-3 w-3 text-muted-foreground/40 opacity-0 group-hover/run:opacity-100 transition-opacity" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+// Recent run item for the consolidated recent runs section
+type RecentRunItem = {
+  trigger: Trigger
+  run: TriggerRun
 }
 
 const TasksPage = () => {
   const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
   const { isLoading: isAuthLoading } = useAuthState()
+  const router = useRouter()
+
   const userTimezone = useMemo(() => {
     if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
     }
     return 'UTC'
   }, [])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Trigger | null>(null)
-  const [showFinished, setShowFinished] = useState(false)
+
+  const [activeTab, setActiveTab] = useState<'active' | 'archive'>('active')
+
   const tasksGate = useGatedResource(GatedResource.Tasks, {
     lockedBehavior: 'modal',
   })
 
   const triggersQuery = useUserTriggersQuery({
-    enabled: tasksGate.isAllowed && !isModalOpen, // Disable refetching while modal is open or gated
+    enabled: tasksGate.isAllowed,
   })
 
-  const { activeTriggers, finishedTriggers } = useMemo(() => {
-    const allTriggers = triggersQuery.triggers || []
+  const { manualTriggers, scheduledTriggers, archivedTriggers, recentRuns } =
+    useMemo(() => {
+      const allTriggers = (triggersQuery.triggers || []) as Trigger[]
 
-    const finished = allTriggers.filter(trigger => {
-      if (trigger.status === 'finished') {
-        return true
-      }
+      const archived = allTriggers.filter(trigger => {
+        if (trigger.status === 'finished') {
+          return true
+        }
 
-      if (trigger.schedule?.end_date) {
-        const endDate = new Date(trigger.schedule.end_date)
-        const currentDate = new Date()
-        return endDate <= currentDate
-      }
+        if (!trigger.schedule) {
+          return false
+        }
 
-      return false
-    })
+        if (trigger.schedule.end_date) {
+          const endDate = new Date(trigger.schedule.end_date)
+          const currentDate = new Date()
+          return endDate <= currentDate
+        }
 
-    const active = allTriggers.filter(trigger => {
-      if (trigger.status === 'finished') {
         return false
-      }
+      })
 
-      if (trigger.schedule?.end_date) {
-        const endDate = new Date(trigger.schedule.end_date)
-        const currentDate = new Date()
-        return endDate > currentDate
-      }
+      const active = allTriggers.filter(trigger => {
+        if (trigger.status === 'finished') {
+          return false
+        }
 
-      return true
-    })
+        if (!trigger.schedule) {
+          return true
+        }
 
-    const sortByNextRun = (a: Trigger, b: Trigger) => {
-      if (!a.next_scheduled_run && !b.next_scheduled_run) {
+        if (trigger.status === 'active' || trigger.status === 'paused') {
+          if (trigger.schedule.end_date) {
+            const endDate = new Date(trigger.schedule.end_date)
+            const currentDate = new Date()
+            return endDate > currentDate
+          }
+          return true
+        }
+
+        return false
+      })
+
+      const manual = active.filter(trigger => !trigger.schedule)
+      const scheduled = active.filter(trigger => !!trigger.schedule)
+
+      const sortByUpdated = (a: Trigger, b: Trigger) => {
         const aDate = new Date(a.updatedAt || a.createdAt)
         const bDate = new Date(b.updatedAt || b.createdAt)
         return bDate.getTime() - aDate.getTime()
       }
 
-      if (!a.next_scheduled_run) return 1
-      if (!b.next_scheduled_run) return -1
+      const sortByNextRun = (a: Trigger, b: Trigger) => {
+        if (!a.next_scheduled_run && !b.next_scheduled_run) {
+          return sortByUpdated(a, b)
+        }
 
-      const aNextRun = new Date(a.next_scheduled_run).getTime()
-      const bNextRun = new Date(b.next_scheduled_run).getTime()
-      return aNextRun - bNextRun
-    }
+        if (!a.next_scheduled_run) return 1
+        if (!b.next_scheduled_run) return -1
 
-    return {
-      activeTriggers: active.sort(sortByNextRun),
-      finishedTriggers: finished.sort(sortByNextRun),
-    }
-  }, [triggersQuery.triggers])
+        const aNextRun = new Date(a.next_scheduled_run).getTime()
+        const bNextRun = new Date(b.next_scheduled_run).getTime()
+        return aNextRun - bNextRun
+      }
 
-  const handleCreateNew = useCallback(() => {
-    if (!tasksGate.isAllowed) {
-      tasksGate.openGate()
-      return
-    }
-    setEditingTask(null)
-    setIsModalOpen(true)
-  }, [tasksGate])
+      // Collect all runs from all triggers and sort by most recent
+      const allRuns: RecentRunItem[] = []
+      allTriggers.forEach(trigger => {
+        if (trigger.runs) {
+          trigger.runs.forEach(run => {
+            allRuns.push({ trigger, run })
+          })
+        }
+      })
+      allRuns.sort(
+        (a, b) =>
+          new Date(b.run.ran_at).getTime() - new Date(a.run.ran_at).getTime(),
+      )
 
-  const handleEdit = (trigger: Trigger) => {
-    setEditingTask(trigger)
-    setIsModalOpen(true)
-  }
+      return {
+        manualTriggers: manual.sort(sortByUpdated),
+        scheduledTriggers: scheduled.sort(sortByNextRun),
+        archivedTriggers: archived.sort(sortByNextRun),
+        recentRuns: allRuns.slice(0, 15), // Show last 15 runs globally
+      }
+    }, [triggersQuery.triggers])
 
-  const handleSave = () => {
-    setEditingTask(null)
-  }
-
-  const handleModalClose = (open: boolean) => {
-    setIsModalOpen(open)
-    if (!open) {
-      setEditingTask(null)
-    }
-  }
-
-  const handleDelete = () => {
+  const handleRunComplete = useCallback(() => {
     triggersQuery.invalidate()
+  }, [triggersQuery])
+
+  const handleTaskChange = useCallback(() => {
+    triggersQuery.invalidate()
+  }, [triggersQuery])
+
+  const handleNavigateToRun = (trigger: Trigger, messageId: string) => {
+    const sessionInfo = getSessionInfo(trigger)
+    router.push(`/sessions/${sessionInfo.id}?message=${messageId}`)
   }
 
   useEffect(() => {
@@ -303,16 +579,6 @@ const TasksPage = () => {
             className="flex items-center gap-2"
           >
             <span className="text-lg font-semibold">Tasks</span>
-          </button>
-          <button
-            onClick={() => {
-              close()
-              handleCreateNew()
-            }}
-            className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
-            aria-label="New Task"
-          >
-            <PlusIcon className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       ),
@@ -341,35 +607,16 @@ const TasksPage = () => {
           <MenuIcon className="w-5 h-5 text-muted-foreground" />
         </button>
         <h1 className="text-xl font-bold">Tasks</h1>
-        {tasksGate.isAllowed && (
-          <div className="ml-auto">
-            <button
-              onClick={handleCreateNew}
-              className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
-              aria-label="New task"
-            >
-              <PlusIcon className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
         <div className="w-full max-w-4xl mx-auto px-4 py-6 flex-1 min-h-0">
-          {/* Header (desktop only to avoid duplicate hero on mobile) */}
-          <div className="hidden md:flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold">Tasks</h2>
-              <p className="text-muted-foreground">
-                Schedule automated tasks for all your agents
-              </p>
-            </div>
-            {tasksGate.isAllowed && (
-              <Button onClick={handleCreateNew} className="gap-2">
-                <PlusIcon className="w-4 h-4" />
-                Create Task
-              </Button>
-            )}
+          {/* Header */}
+          <div className="hidden md:block mb-6">
+            <h2 className="text-2xl font-semibold">Tasks</h2>
+            <p className="text-muted-foreground">
+              Schedule automated tasks for your agents.
+            </p>
           </div>
 
           {!tasksGate.isAllowed ? (
@@ -379,112 +626,200 @@ const TasksPage = () => {
               description="Automate your agents with scheduled tasks by upgrading your plan."
             />
           ) : (
-            <>
-              {/* Tasks List */}
-              <div className="space-y-6">
-                {triggersQuery.isPending ? (
-                  <div className="bg-background rounded-lg border">
-                    <div className="flex items-center justify-center p-8">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    </div>
+            <div className="space-y-4">
+              {/* Header with Tabs */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+                  <button
+                    onClick={() => setActiveTab('active')}
+                    className={cn(
+                      'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                      activeTab === 'active'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Active
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('archive')}
+                    className={cn(
+                      'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                      activeTab === 'archive'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Archive
+                    {archivedTriggers.length > 0 && (
+                      <span className="ml-1.5 text-xs text-muted-foreground">
+                        ({archivedTriggers.length})
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Tasks Content */}
+              {triggersQuery.isPending ? (
+                <div className="bg-background rounded-lg border">
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   </div>
-                ) : triggersQuery.isError ? (
-                  <div className="bg-background rounded-lg border">
-                    <div className="flex items-center justify-center gap-2 p-8 text-destructive">
-                      <AlertCircle className="w-5 h-5" />
-                      <p>Failed to load tasks. Please try again later.</p>
-                    </div>
+                </div>
+              ) : triggersQuery.isError ? (
+                <div className="bg-background rounded-lg border">
+                  <div className="flex items-center justify-center gap-2 p-8 text-destructive">
+                    <AlertCircle className="w-5 h-5" />
+                    <p>Failed to load tasks. Please try again later.</p>
                   </div>
-                ) : activeTriggers.length === 0 &&
-                  finishedTriggers.length === 0 ? (
-                  <div className="bg-background rounded-lg border">
-                    <div className="text-center p-8 text-muted-foreground">
-                      <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">
-                        No scheduled tasks
-                      </p>
-                      <p className="text-sm">
-                        Create your first automated task to get started.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Active Tasks */}
+                </div>
+              ) : activeTab === 'active' ? (
+                <>
+                  {/* Empty state when no tasks at all */}
+                  {manualTriggers.length === 0 &&
+                  scheduledTriggers.length === 0 ? (
                     <div className="bg-background rounded-lg border">
-                      <div className="p-4 border-b">
-                        <h3 className="font-semibold">Active Tasks</h3>
+                      <div className="text-center p-8 text-muted-foreground">
+                        <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium mb-2">
+                          No active tasks
+                        </p>
+                        <p className="text-sm">
+                          Create tasks from within a session to automate your
+                          agents.
+                        </p>
                       </div>
-                      {activeTriggers.length === 0 ? (
-                        <div className="text-center p-8 text-muted-foreground">
-                          <p className="text-sm">No active tasks</p>
-                        </div>
-                      ) : (
-                        <div className="divide-y">
-                          {activeTriggers.map(trigger => (
-                            <TaskItem
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Manual Tasks (no schedule) */}
+                      {manualTriggers.length > 0 && (
+                        <div className="bg-background rounded-lg border divide-y">
+                          {manualTriggers.map(trigger => (
+                            <GlobalTaskItem
                               key={trigger._id}
                               trigger={trigger}
-                              onEdit={handleEdit}
-                              onDelete={handleDelete}
+                              onArchive={handleTaskChange}
+                              onReactivate={handleTaskChange}
+                              onPause={handleTaskChange}
+                              onResume={handleTaskChange}
+                              onDelete={handleTaskChange}
+                              onRunComplete={handleRunComplete}
                               isFinished={false}
                               timezone={userTimezone}
                             />
                           ))}
                         </div>
                       )}
+
+                      {/* Scheduled Tasks */}
+                      {scheduledTriggers.length > 0 && (
+                        <div>
+                          <div className="mb-2 px-1">
+                            <span className="text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+                              Scheduled
+                            </span>
+                          </div>
+                          <div className="bg-background rounded-lg border divide-y">
+                            {scheduledTriggers.map(trigger => (
+                              <GlobalTaskItem
+                                key={trigger._id}
+                                trigger={trigger}
+                                onArchive={handleTaskChange}
+                                onReactivate={handleTaskChange}
+                                onPause={handleTaskChange}
+                                onResume={handleTaskChange}
+                                onDelete={handleTaskChange}
+                                onRunComplete={handleRunComplete}
+                                isFinished={false}
+                                timezone={userTimezone}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  )}
 
-                    {/* Finished Tasks - Collapsible Section */}
-                    {finishedTriggers.length > 0 && (
-                      <div className="bg-background rounded-lg border">
-                        <Collapsible
-                          open={showFinished}
-                          onOpenChange={setShowFinished}
-                        >
-                          <CollapsibleTrigger asChild>
-                            <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <h3 className="font-semibold">
-                                  Finished Tasks ({finishedTriggers.length})
-                                </h3>
-                                <ChevronDownIcon
-                                  className={`h-4 w-4 transition-transform ${
-                                    showFinished ? 'rotate-180' : ''
-                                  }`}
-                                />
-                              </div>
-                            </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="divide-y">
-                              {finishedTriggers.map(trigger => (
-                                <TaskItem
-                                  key={trigger._id}
-                                  trigger={trigger}
-                                  onEdit={handleEdit}
-                                  onDelete={handleDelete}
-                                  isFinished={true}
-                                  timezone={userTimezone}
-                                />
-                              ))}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
+                  {/* Recent Section */}
+                  {recentRuns.length > 0 && (
+                    <div className="mt-6">
+                      <div className="mb-2 px-1">
+                        <span className="text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+                          Recent
+                        </span>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Task Modal */}
-              <TaskFormModal
-                editingTask={editingTask}
-                open={isModalOpen}
-                onOpenChange={handleModalClose}
-                onSave={handleSave}
-              />
-            </>
+                      <div className="space-y-0.5">
+                        {recentRuns.map((item, index) => {
+                          const ranAt = dayjs(item.run.ran_at)
+                          const sessionInfo = getSessionInfo(item.trigger)
+                          return (
+                            <button
+                              key={`${item.run.message_id}-${index}`}
+                              onClick={() =>
+                                handleNavigateToRun(
+                                  item.trigger,
+                                  item.run.message_id,
+                                )
+                              }
+                              className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg hover:bg-muted/50"
+                            >
+                              <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                              <div className="flex-1 min-w-0 flex items-center gap-2">
+                                {sessionInfo.agents.length > 0 && (
+                                  <AgentAvatars
+                                    agents={sessionInfo.agents}
+                                    className="scale-[0.6] origin-left -ml-1 -mr-2"
+                                  />
+                                )}
+                                <span className="text-[13px] truncate text-foreground/80">
+                                  {item.trigger.name || item.trigger.prompt}
+                                </span>
+                              </div>
+                              <span className="text-[11px] tabular-nums text-muted-foreground/50">
+                                {ranAt.fromNow()}
+                              </span>
+                              <ChevronRightIcon className="h-3 w-3 text-muted-foreground/30" />
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : /* Archive Tab */
+              archivedTriggers.length === 0 ? (
+                <div className="bg-background rounded-lg border">
+                  <div className="text-center p-8 text-muted-foreground">
+                    <HistoryIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">
+                      No archived tasks
+                    </p>
+                    <p className="text-sm">
+                      Completed or expired tasks will appear here.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-background rounded-lg border divide-y">
+                  {archivedTriggers.map(trigger => (
+                    <GlobalTaskItem
+                      key={trigger._id}
+                      trigger={trigger}
+                      onArchive={handleTaskChange}
+                      onReactivate={handleTaskChange}
+                      onPause={handleTaskChange}
+                      onResume={handleTaskChange}
+                      onDelete={handleTaskChange}
+                      onRunComplete={handleRunComplete}
+                      isFinished={true}
+                      timezone={userTimezone}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

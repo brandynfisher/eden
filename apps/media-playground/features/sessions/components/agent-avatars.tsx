@@ -5,7 +5,7 @@ import { FC } from 'react'
 interface AgentAvatarsProps {
   agents: Array<{
     _id: string
-    userImage: string
+    userImage?: string
     username: string
     name?: string
   }>

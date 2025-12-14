@@ -19,10 +19,23 @@ export type TriggerRun = {
   ran_at: Date
 }
 
+export type TriggerSessionAgent = {
+  _id: string
+  username: string
+  name?: string
+  userImage?: string
+}
+
+export type TriggerSession = {
+  _id: string
+  title?: string
+  agents?: TriggerSessionAgent[]
+}
+
 export type Trigger = {
   _id: string
   user: Creator
-  session: string | { _id: string; name?: string }
+  session: string | TriggerSession
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string

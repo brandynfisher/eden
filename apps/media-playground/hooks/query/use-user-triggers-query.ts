@@ -27,6 +27,8 @@ export const useUserTriggersQuery = ({ enabled = true }: Props = {}) => {
     enabled,
     queryKey,
     queryFn: () => fetcher<TriggersResponse>('/api/triggers'),
+    refetchOnWindowFocus: query => !!query.state.data, // Only refetch if data exists (prevents blank flash)
+    placeholderData: prev => prev, // Keep previous data during refetch
   })
 
   const queryClient = useQueryClient()

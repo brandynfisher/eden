@@ -7,9 +7,32 @@ interface EdenMessageProps {
 }
 
 export const EdenMessage = ({ message }: EdenMessageProps) => {
-  if (!message.eden_message_data) return null
+  const { eden_message_data, content } = message
 
-  const { message_type, agents, error } = message.eden_message_data
+  // Handle trigger messages with SESSION CONTEXT style
+  if (eden_message_data?.message_type === 'trigger' && content) {
+    const trimmedContent = content.trim()
+    return (
+      <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)]">
+        <div className="max-w-[42rem]">
+          <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
+            TRIGGER
+          </div>
+          <div className="bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3">
+            <div className="text-base text-blue-900/70 dark:text-blue-100/60">
+              <pre className="whitespace-pre-wrap font-sans">
+                {trimmedContent}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!eden_message_data) return null
+
+  const { message_type, agents, error } = eden_message_data
 
   if (message_type === 'rate_limit') {
     const errorText =
