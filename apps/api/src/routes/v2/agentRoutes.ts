@@ -40,6 +40,8 @@ import {
   createTrigger,
   deleteTrigger,
   executeTrigger,
+  getDiscordChannels,
+  refreshDiscordChannels,
   updateTrigger,
 } from '../../controllers/agentServicesController'
 import {
@@ -403,7 +405,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         name: Type.String(),
         prompt: Type.String(),
         session: Type.String(),
-        schedule: Type.Any(),
+        schedule: Type.Optional(Type.Any()), // Optional - tasks without schedules run manually only
       }),
       response: {
         200: Type.Object({
@@ -549,6 +551,87 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => deleteAgentDeployment(server, request, reply),
   })
 
+  // Discord channel management routes
+  server.get('/v2/agents/:agentId/deployments/discord/channels', {
+    schema: {
+      tags: ['Agents - Deployments'],
+      summary: 'Get Discord Channels',
+      description:
+        'Retrieve available Discord guilds and channels for an agent with a Discord deployment.',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          guilds: Type.Array(
+            Type.Object({
+              id: Type.String(),
+              name: Type.String(),
+              icon: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+              member_count: Type.Optional(
+                Type.Union([Type.Number(), Type.Null()]),
+              ),
+              channels: Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  name: Type.String(),
+                  type: Type.Number(),
+                  type_name: Type.String(),
+                  category_id: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                  category_name: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                  position: Type.Optional(Type.Number()),
+                }),
+              ),
+            }),
+          ),
+          last_refreshed_at: Type.Optional(
+            Type.Union([Type.String(), Type.Null()]),
+          ),
+        }),
+        401: Type.Object({ error: Type.String() }),
+        404: Type.Object({ error: Type.String() }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getDiscordChannels(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments/discord/refresh', {
+    schema: {
+      tags: ['Agents - Deployments'],
+      summary: 'Refresh Discord Channels',
+      description:
+        'Refresh the list of available Discord guilds and channels from the Discord API.',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          guilds_count: Type.Number(),
+          channels_count: Type.Number(),
+          guilds: Type.Array(
+            Type.Object({
+              id: Type.String(),
+              name: Type.String(),
+              channel_count: Type.Number(),
+            }),
+          ),
+        }),
+        401: Type.Object({ error: Type.String() }),
+        404: Type.Object({ error: Type.String() }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => refreshDiscordChannels(server, request, reply),
+  })
+
   server.delete('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
@@ -636,12 +719,11 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => unlikeAgent(server, request, reply),
   })
 
-  server.get('/v2/agents/triggers', {
+  server.get('/v2/triggers', {
     schema: {
-      tags: ['Agents - Triggers'],
+      tags: ['Triggers'],
       summary: 'Get User Triggers',
-      description:
-        'Retrieve all triggers across all agents owned by the authenticated user.',
+      description: 'Retrieve all triggers owned by the authenticated user.',
       security: [
         {
           apiKey: [],

@@ -1,3 +1,4 @@
+import { calculateNextScheduledRun } from '../lib/calculateNextScheduledRun'
 import { Agent } from '../models/Agent'
 import {
   AgentPermission,
@@ -585,6 +586,37 @@ export const getAllUserTriggers = async (
   }
 }
 
+export const getSessionTriggers = async (
+  _server: FastifyInstance,
+  request: FastifyRequest<{ Params: { sessionId: string } }>,
+  reply: FastifyReply,
+) => {
+  const { sessionId } = request.params
+  const currentUserId = request.user.userId
+
+  try {
+    // Verify user has access to the session
+    if (!(await canViewSession(sessionId, currentUserId.toString()))) {
+      return reply
+        .status(401)
+        .send({ error: 'Not authorized to view this session' })
+    }
+
+    // Get all non-deleted triggers for this session
+    const triggers = await Trigger.find({
+      session: sessionId,
+      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+    })
+
+    return reply.status(200).send({ triggers })
+  } catch (error) {
+    console.error('Error getting session triggers:', error)
+    return reply.status(500).send({
+      error: 'Failed to get session triggers',
+    })
+  }
+}
+
 export const getAllUserDeployments = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -996,68 +1028,114 @@ const canEditSession = async (
   return !!permission
 }
 
+// Helper to check if user can view a session (owner, editor, or viewer)
+const canViewSession = async (
+  sessionId: string,
+  userId: string,
+): Promise<boolean> => {
+  const sessionDoc = await Session.findById(sessionId)
+  if (!sessionDoc) return false
+
+  // Check if user is session owner
+  if (sessionDoc.owner.toString() === userId) return true
+
+  // Check if user has any permission level
+  const permission = await SessionPermission.findOne({
+    session: sessionId,
+    user: userId,
+    level: {
+      $in: [
+        SessionPermissionLevel.Owner,
+        SessionPermissionLevel.Editor,
+        SessionPermissionLevel.Viewer,
+      ],
+    },
+  })
+
+  return !!permission
+}
+
 // Session-based trigger functions
 
 export const createTrigger = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  console.log(
+    '[createTrigger] Request body:',
+    JSON.stringify(request.body, null, 2),
+  )
+
   const { name, prompt, session, schedule } = request.body as {
     name: string
     prompt: string
     session: string
-    schedule: any
+    schedule?: any // Optional - tasks without schedules run manually only
   }
   const currentUserId = request.user.userId
 
-  server.log.info({ session, name }, '[createTrigger] Creating trigger')
+  console.log('[createTrigger] Parsed values:', {
+    name,
+    prompt,
+    session,
+    schedule,
+    currentUserId,
+  })
 
+  // Validate session exists
   const sessionDoc = await Session.findById(session)
   if (!sessionDoc) {
     return reply.status(404).send({ error: 'Session not found' })
   }
 
+  // Check permissions
   if (!(await canEditSession(session, currentUserId.toString()))) {
     return reply
       .status(401)
       .send({ error: 'Not authorized to create triggers for this session' })
   }
 
-  const triggerData = {
+  // Calculate next scheduled run (only if schedule is provided)
+  let next_scheduled_run: Date | null = null
+  if (schedule) {
+    console.log(
+      '[createTrigger] Calculating next scheduled run for schedule:',
+      JSON.stringify(schedule),
+    )
+    next_scheduled_run = calculateNextScheduledRun(schedule)
+    console.log('[createTrigger] next_scheduled_run:', next_scheduled_run)
+    if (!next_scheduled_run) {
+      console.log(
+        '[createTrigger] ERROR: Schedule validation failed - no next run calculated',
+      )
+      return reply
+        .status(400)
+        .send({ error: 'Invalid schedule or schedule has already ended' })
+    }
+  } else {
+    console.log(
+      '[createTrigger] No schedule provided - task will run manually only',
+    )
+  }
+
+  // Save directly to MongoDB
+  const trigger = new Trigger({
     user: currentUserId,
     session,
     name,
     prompt,
-    schedule,
-  }
+    ...(schedule && { schedule }),
+    status: 'active',
+    ...(next_scheduled_run && { next_scheduled_run }),
+  })
+  await trigger.save()
 
-  server.log.info({ triggerData }, '[createTrigger] Sending to compute API')
-
-  try {
-    const response = await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/triggers/create`,
-      triggerData,
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
-
-    server.log.info(
-      { trigger: response.data },
-      '[createTrigger] Compute API response',
-    )
-    return reply.status(200).send({ trigger: response.data })
-  } catch (error) {
-    server.log.error({ err: error }, '[createTrigger] Error from compute API')
-    throw error
-  }
+  return reply.status(200).send({ trigger })
 }
 
 export const updateTrigger = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -1069,8 +1147,6 @@ export const updateTrigger = async (
     status?: 'active' | 'paused' | 'finished'
   }
   const currentUserId = request.user.userId
-
-  server.log.info({ triggerId }, '[updateTrigger] Updating trigger')
 
   const trigger = await Trigger.findById(triggerId)
   if (!trigger) {
@@ -1094,45 +1170,55 @@ export const updateTrigger = async (
       .send({ error: 'Not authorized to update this trigger' })
   }
 
-  const updateData: any = { id: triggerId }
+  // Build update object
+  const updateData: Record<string, unknown> = {}
   if (name !== undefined) updateData.name = name
   if (prompt !== undefined) updateData.prompt = prompt
-  if (schedule !== undefined) updateData.schedule = schedule
   if (status !== undefined) updateData.status = status
 
-  server.log.info({ updateData }, '[updateTrigger] Sending to compute API')
-
-  try {
-    const response = await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/triggers/update`,
-      updateData,
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
-
-    server.log.info(
-      { trigger: response.data },
-      '[updateTrigger] Compute API response',
-    )
-    return reply.status(200).send({ trigger: response.data })
-  } catch (error) {
-    server.log.error({ err: error }, '[updateTrigger] Error from compute API')
-    throw error
+  // If schedule changed, recalculate next_scheduled_run
+  if (schedule !== undefined) {
+    updateData.schedule = schedule
+    const next_scheduled_run = calculateNextScheduledRun(schedule)
+    if (next_scheduled_run) {
+      updateData.next_scheduled_run = next_scheduled_run
+    } else {
+      // Schedule has ended or is invalid
+      updateData.status = 'finished'
+      updateData.next_scheduled_run = null
+    }
   }
+
+  // If resuming from paused, recalculate next_scheduled_run
+  if (status === 'active' && trigger.status === 'paused') {
+    const next_scheduled_run = calculateNextScheduledRun(
+      schedule ?? trigger.schedule,
+    )
+    if (next_scheduled_run) {
+      updateData.next_scheduled_run = next_scheduled_run
+      // Reset error count when resuming
+      updateData.error_count = 0
+      updateData.last_error = null
+    }
+  }
+
+  // Update directly in MongoDB
+  const updatedTrigger = await Trigger.findByIdAndUpdate(
+    triggerId,
+    { $set: updateData },
+    { new: true },
+  )
+
+  return reply.status(200).send({ trigger: updatedTrigger })
 }
 
 export const deleteTrigger = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { triggerId } = request.params as { triggerId: string }
   const currentUserId = request.user.userId
-
-  server.log.info({ triggerId }, '[deleteTrigger] Deleting trigger')
 
   const trigger = await Trigger.findById(triggerId)
   if (!trigger) {
@@ -1156,24 +1242,147 @@ export const deleteTrigger = async (
       .send({ error: 'Not authorized to delete this trigger' })
   }
 
+  // Soft delete directly in MongoDB
+  await Trigger.findByIdAndUpdate(triggerId, { deleted: true })
+
+  return reply.status(200).send({ success: true })
+}
+
+// Discord channel management
+
+export const getDiscordChannels = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+
+  server.log.info(
+    { agentId, currentUserId },
+    '[getDiscordChannels] Request received',
+  )
+
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    server.log.warn({ agentId }, '[getDiscordChannels] Agent not found')
+    return reply.status(404).send({ error: 'Agent not found' })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    server.log.warn(
+      { agentId, currentUserId },
+      '[getDiscordChannels] User not authorized',
+    )
+    return reply.status(401).send({
+      error: 'User not authorized to view channels for this agent',
+    })
+  }
+
+  // Find Discord deployment for this agent
+  const deployment = await Deployment.findOne({
+    agent: agent._id,
+    platform: 'discord',
+  })
+
+  if (!deployment) {
+    server.log.warn(
+      { agentId },
+      '[getDiscordChannels] Discord deployment not found',
+    )
+    return reply.status(404).send({ error: 'Discord deployment not found' })
+  }
+
+  server.log.info(
+    { deploymentId: deployment._id },
+    '[getDiscordChannels] Found deployment, calling Eve API',
+  )
+
+  try {
+    const url = `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/${deployment._id}/discord-channels`
+    server.log.info({ url }, '[getDiscordChannels] Calling Eve API')
+
+    const response = await axios.get(url, {
+      params: { user_id: currentUserId },
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    })
+
+    server.log.info(
+      { guildsCount: response.data?.guilds?.length },
+      '[getDiscordChannels] Eve API response',
+    )
+    return reply.status(200).send(response.data)
+  } catch (error: any) {
+    server.log.error(
+      { err: error, response: error.response?.data },
+      '[getDiscordChannels] Error from Eve API',
+    )
+    return reply.status(error.response?.status || 500).send({
+      error: error.response?.data?.message || 'Failed to get Discord channels',
+    })
+  }
+}
+
+export const refreshDiscordChannels = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    return reply.status(404).send({ error: 'Agent not found' })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    return reply.status(401).send({
+      error: 'User not authorized to refresh channels for this agent',
+    })
+  }
+
+  // Find Discord deployment for this agent
+  const deployment = await Deployment.findOne({
+    agent: agent._id,
+    platform: 'discord',
+  })
+
+  if (!deployment) {
+    return reply.status(404).send({ error: 'Discord deployment not found' })
+  }
+
   try {
     const response = await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/triggers/delete`,
-      { id: triggerId },
+      `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/${deployment._id}/discord-refresh`,
+      {
+        deployment_id: deployment._id.toString(),
+        user_id: currentUserId,
+      },
       {
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
         },
       },
     )
 
-    server.log.info(
-      { response: response.data },
-      '[deleteTrigger] Compute API response',
-    )
-    return reply.status(200).send({ success: true })
-  } catch (error) {
-    server.log.error({ err: error }, '[deleteTrigger] Error from compute API')
-    throw error
+    return reply.status(200).send(response.data)
+  } catch (error: any) {
+    server.log.error({ err: error }, 'Error refreshing Discord channels')
+    return reply.status(error.response?.status || 500).send({
+      error:
+        error.response?.data?.message || 'Failed to refresh Discord channels',
+    })
   }
 }

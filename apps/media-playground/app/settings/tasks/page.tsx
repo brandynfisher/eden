@@ -262,7 +262,9 @@ const TasksPage = () => {
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
-                            {formatCronSchedule(trigger.schedule)}
+                            {trigger.schedule
+                              ? formatCronSchedule(trigger.schedule)
+                              : 'Manual only'}
                           </span>
                         </div>
                       </TableCell>

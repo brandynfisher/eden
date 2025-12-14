@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const edenApiUrl =
       process.env.NEXT_PUBLIC_EDEN_API_URL || 'https://api.eden.art'
 
-    const response = await axios.get(`${edenApiUrl}/v2/agents/triggers`, {
+    const response = await axios.get(`${edenApiUrl}/v2/triggers`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response.data)
   } catch (error) {
+    console.error('[GET /api/triggers] Error:', error)
     const errorMessage = handleAxiosServerError(error)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,

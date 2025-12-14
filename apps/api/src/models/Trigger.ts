@@ -14,16 +14,24 @@ export interface CronSchedule {
   timezone?: string
 }
 
+export interface TriggerRun {
+  message_id: ObjectId
+  ran_at: Date
+}
+
 export interface TriggerSchema {
   user: ObjectId
   session: ObjectId
-  schedule: CronSchedule
+  schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string
   status?: 'active' | 'paused' | 'finished'
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date
+  error_count?: number
+  last_error?: string
+  runs?: TriggerRun[] // Track each run with message_id and timestamp
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -37,12 +45,12 @@ const TriggerSchema = new Schema<TriggerDocument>(
     },
     session: {
       type: Schema.Types.ObjectId,
-      ref: 'sessions_v2',
+      ref: 'sessions',
       required: true,
     },
     schedule: {
       type: Object,
-      required: true,
+      required: false, // Optional - tasks without schedules run manually only
     },
     name: {
       type: String,
@@ -68,6 +76,27 @@ const TriggerSchema = new Schema<TriggerDocument>(
     next_scheduled_run: {
       type: Date,
       required: false,
+    },
+    error_count: {
+      type: Number,
+      default: 0,
+    },
+    last_error: {
+      type: String,
+      required: false,
+    },
+    runs: {
+      type: [
+        {
+          message_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'messages',
+            required: true,
+          },
+          ran_at: { type: Date, required: true },
+        },
+      ],
+      default: [],
     },
   },
   {

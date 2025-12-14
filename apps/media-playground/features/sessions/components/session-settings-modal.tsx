@@ -1,7 +1,6 @@
 'use client'
 
 import { ContextTab, ParticipantsTab, TasksTab } from './session-settings-tabs'
-import TaskFormModal from './task-form-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -23,7 +22,6 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { Agent, SessionPermission } from '@edenlabs/eden-sdk'
-import { Trigger } from '@edenlabs/eden-sdk'
 import {
   AlertTriangle,
   ClockIcon,
@@ -63,6 +61,7 @@ type SessionSettingsModalProps = {
   onAgentsChange?: (agents: Agent[]) => void
   minimal?: boolean // For /chat - only show context field
   initialTab?: SessionSettingsTab
+  onNavigateToMessage?: (messageId: string) => void // Navigate to a message in the session
 }
 
 const sessionTabs: Array<{
@@ -103,6 +102,7 @@ export const SessionSettingsModal = ({
   onAgentsChange,
   minimal = false,
   initialTab = 'participants',
+  onNavigateToMessage,
 }: SessionSettingsModalProps) => {
   const isMultiAgent = agents.length > 1
   const [activeTab, setActiveTab] = useState<SessionSettingsTab>(initialTab)
@@ -114,13 +114,6 @@ export const SessionSettingsModal = ({
   // Agent state for Participants tab
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>(agents)
   const [hasAgentChanges, setHasAgentChanges] = useState(false)
-
-  // Task form modal state (rendered outside Dialog to avoid unmounting)
-  const [isTaskFormOpen, setIsTaskFormOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Trigger | null>(null)
-
-  // Track if we're closing to open task modal (should reopen on Tasks tab)
-  const closingForTaskModal = useRef(false)
 
   // Track initial values for unsaved changes detection
   const initialSettingsRef = useRef<SessionSettings | null>(null)
@@ -137,15 +130,9 @@ export const SessionSettingsModal = ({
   // Reset tab and agent state when modal opens
   useEffect(() => {
     if (open) {
-      // If reopening from task modal, stay on Tasks tab
-      if (closingForTaskModal.current) {
-        setActiveTab('tasks')
-        closingForTaskModal.current = false
-      } else {
-        setActiveTab(initialTab)
-        // Store initial settings for comparison (only on fresh open, not task modal reopen)
-        initialSettingsRef.current = { ...settingsRef.current }
-      }
+      setActiveTab(initialTab)
+      // Store initial settings for comparison
+      initialSettingsRef.current = { ...settingsRef.current }
       setSelectedAgents(agents)
       setHasAgentChanges(false)
     } else {
@@ -279,37 +266,17 @@ export const SessionSettingsModal = ({
     onOpenChange(false)
   }, [onOpenChange])
 
-  // Open task form modal (closes settings modal first)
-  const handleOpenTaskForm = useCallback(
-    (trigger?: Trigger) => {
-      setEditingTask(trigger || null)
-      closingForTaskModal.current = true
+  // Handler for navigating to a message (closes modal first)
+  const handleNavigateToMessage = useCallback(
+    (messageId: string) => {
       onOpenChange(false)
-      // Small delay to ensure settings modal closes before task form opens
+      // Small delay to ensure modal closes before scrolling
       setTimeout(() => {
-        setIsTaskFormOpen(true)
+        onNavigateToMessage?.(messageId)
       }, 100)
     },
-    [onOpenChange],
+    [onOpenChange, onNavigateToMessage],
   )
-
-  // Handle task form modal close (reopens settings modal)
-  const handleTaskFormClose = useCallback(
-    (open: boolean) => {
-      setIsTaskFormOpen(open)
-      if (!open) {
-        setEditingTask(null)
-        // Reopen settings modal on Tasks tab
-        onOpenChange(true)
-      }
-    },
-    [onOpenChange],
-  )
-
-  // Handle task form save
-  const handleTaskFormSave = useCallback(() => {
-    setEditingTask(null)
-  }, [])
 
   // Minimal mode - just show context field (used in /chat launchpad)
   if (minimal) {
@@ -493,7 +460,7 @@ export const SessionSettingsModal = ({
                     <TasksTab
                       isModalOpen={open}
                       sessionId={sessionId}
-                      onOpenTaskForm={handleOpenTaskForm}
+                      onNavigateToMessage={handleNavigateToMessage}
                     />
                   )}
                 </div>
@@ -548,15 +515,6 @@ export const SessionSettingsModal = ({
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Task Form Modal - rendered outside Dialog to avoid unmounting when settings closes */}
-      <TaskFormModal
-        sessionId={sessionId}
-        editingTask={editingTask}
-        open={isTaskFormOpen}
-        onOpenChange={handleTaskFormClose}
-        onSave={handleTaskFormSave}
-      />
 
       {/* Unsaved Changes Confirmation Dialog */}
       <Dialog

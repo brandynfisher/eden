@@ -221,3 +221,34 @@ export type Deployment = {
   createdAt: Date
   updatedAt: Date
 }
+
+// Discord channel types for channel selector
+export type DiscordChannelInfo = {
+  id: string
+  name: string
+  type: number
+  type_name: string
+  category_id?: string | null
+  category_name?: string | null
+  position?: number
+}
+
+export type DiscordGuildInfo = {
+  id: string
+  name: string
+  icon?: string | null
+  member_count?: number | null
+  channels: DiscordChannelInfo[]
+}
+
+export type GetDiscordChannelsResponse = {
+  guilds: DiscordGuildInfo[]
+  last_refreshed_at?: string | null
+}
+
+export type RefreshDiscordChannelsResponse = {
+  success: boolean
+  guilds_count: number
+  channels_count: number
+  guilds: Array<{ id: string; name: string; channel_count: number }>
+}

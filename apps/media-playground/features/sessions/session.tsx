@@ -969,6 +969,25 @@ const Session = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  // Scroll to a specific message by ID
+  const scrollToMessage = useCallback((messageId: string) => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    // Find the message element by data-message-id attribute
+    const messageElement = container.querySelector(
+      `[data-message-id="${messageId}"]`,
+    )
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Add a brief highlight effect
+      messageElement.classList.add('bg-primary/10')
+      setTimeout(() => {
+        messageElement.classList.remove('bg-primary/10')
+      }, 2000)
+    }
+  }, [])
+
   // Track previous message count to detect new messages vs older messages
   const previousMessageCountRef = useRef<number>(0)
 
@@ -1972,38 +1991,54 @@ const Session = ({
                         <div key={group[0]._id}>
                           {group[0].role === 'eden'
                             ? group.map(message => (
-                                <EdenMessage
+                                <div
                                   key={message._id}
-                                  message={message}
-                                />
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <EdenMessage message={message} />
+                                </div>
                               ))
                             : group[0].role === 'system'
                             ? group.map(message => (
-                                <SystemMessage
+                                <div
                                   key={message._id}
-                                  message={message}
-                                />
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <SystemMessage message={message} />
+                                </div>
                               ))
                             : isOwnMessage(group[0].sender?._id)
                             ? group.map(message => (
-                                <UserMessage
+                                <div
                                   key={message._id}
-                                  message={message}
-                                  session={session}
-                                />
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <UserMessage
+                                    message={message}
+                                    session={session}
+                                  />
+                                </div>
                               ))
                             : group
                                 .filter(message => message.role !== 'tool')
                                 .map(message => (
-                                  <AssistantMessage
-                                    sessionId={sessionId as string}
+                                  <div
                                     key={message._id}
-                                    message={message}
-                                    showAvatar={!isSingleAgentSession}
-                                    isStreamingTokens={false}
-                                    isChatRoute={ischatRoute}
-                                    onSessionClick={handleChildSessionClick}
-                                  />
+                                    data-message-id={message._id}
+                                    className="transition-colors duration-500"
+                                  >
+                                    <AssistantMessage
+                                      sessionId={sessionId as string}
+                                      message={message}
+                                      showAvatar={!isSingleAgentSession}
+                                      isStreamingTokens={false}
+                                      isChatRoute={ischatRoute}
+                                      onSessionClick={handleChildSessionClick}
+                                    />
+                                  </div>
                                 ))}
                         </div>
                       ))}
@@ -2233,40 +2268,56 @@ const Session = ({
                       <div key={group[0]._id}>
                         {group[0].role === 'eden'
                           ? group.map(message => (
-                              <EdenMessage
+                              <div
                                 key={message._id}
-                                message={message}
-                              />
+                                data-message-id={message._id}
+                                className="transition-colors duration-500"
+                              >
+                                <EdenMessage message={message} />
+                              </div>
                             ))
                           : group[0].role === 'system'
                           ? group.map(message => (
-                              <SystemMessage
+                              <div
                                 key={message._id}
-                                message={message}
-                              />
+                                data-message-id={message._id}
+                                className="transition-colors duration-500"
+                              >
+                                <SystemMessage message={message} />
+                              </div>
                             ))
                           : isOwnMessage(group[0].sender?._id)
                           ? group.map(message => (
-                              <UserMessage
+                              <div
                                 key={message._id}
-                                message={message}
-                                session={session}
-                              />
+                                data-message-id={message._id}
+                                className="transition-colors duration-500"
+                              >
+                                <UserMessage
+                                  message={message}
+                                  session={session}
+                                />
+                              </div>
                             ))
                           : group
                               .filter(message => message.role !== 'tool')
                               .map((message, index) => (
-                                <AssistantMessage
-                                  sessionId={sessionId as string}
+                                <div
                                   key={message._id}
-                                  message={message}
-                                  isStreamingTokens={false}
-                                  showAvatar={
-                                    !isSingleAgentSession && index === 0
-                                  }
-                                  isChatRoute={ischatRoute}
-                                  onSessionClick={handleChildSessionClick}
-                                />
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <AssistantMessage
+                                    sessionId={sessionId as string}
+                                    message={message}
+                                    isStreamingTokens={false}
+                                    showAvatar={
+                                      !isSingleAgentSession && index === 0
+                                    }
+                                    isChatRoute={ischatRoute}
+                                    onSessionClick={handleChildSessionClick}
+                                  />
+                                </div>
                               ))}
                       </div>
                     ))}
@@ -2473,6 +2524,7 @@ const Session = ({
           sessionTitle={session.title}
           onSave={handleSaveSettings}
           minimal={false}
+          onNavigateToMessage={scrollToMessage}
         />
       )}
 
