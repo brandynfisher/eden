@@ -80,30 +80,22 @@ import {
   userPreferencesGetRequestConfig,
 } from './models'
 import {
-  AgentsCreateTriggerArguments,
-  AgentsCreateTriggerResponse,
   AgentsDeleteDeploymentArguments,
   AgentsDeleteDeploymentResponse,
-  AgentsDeleteTriggerArguments,
-  AgentsDeleteTriggerResponse,
   AgentsDeployArguments,
   AgentsDeployResponse,
   AgentsGetDeploymentsArguments,
   AgentsGetDeploymentsResponse,
-  AgentsGetTriggerArguments,
-  AgentsGetTriggerResponse,
-  AgentsGetTriggersArguments,
-  AgentsGetTriggersResponse,
+  AgentsGetDiscordChannelsArguments,
   AgentsLikeArguments,
   AgentsLikeResponse,
+  AgentsRefreshDiscordChannelsArguments,
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
   AgentsUnlikeArguments,
   AgentsUnlikeResponse,
   AgentsUpdateDeploymentArguments,
   AgentsUpdateDeploymentResponse,
-  AgentsUpdateTriggerArguments,
-  AgentsUpdateTriggerResponse,
   ArtifactsV2AddCreationArguments,
   ArtifactsV2AddCreationResponse,
   ArtifactsV2CreateArguments,
@@ -154,6 +146,7 @@ import {
   CreationsV2UnlikeResponse,
   FeedCreationsV2CursorArguments,
   FeedCreationsV2CursorResponse,
+  GetDiscordChannelsResponse,
   ModelsV2GetArguments,
   ModelsV2GetResponse,
   ModelsV2LikeArguments,
@@ -174,6 +167,7 @@ import {
   NotificationsListResponse,
   NotificationsMarkReadArguments,
   NotificationsMarkReadResponse,
+  RefreshDiscordChannelsResponse,
   SessionsV2CancelArguments,
   SessionsV2CancelResponse,
   SessionsV2CreateArguments,
@@ -226,21 +220,18 @@ import {
   VerdelisSeedsV2GetResponse,
   VerdelisSeedsV2ListArguments,
   VerdelisSeedsV2ListResponse,
-  agentsCreateTriggerRequestConfig,
   agentsDeleteDeploymentRequestConfig,
-  agentsDeleteTriggerRequestConfig,
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
+  agentsGetDiscordChannelsRequestConfig,
   agentsGetPermissionsRequestConfig,
   agentsGetSharedRequestConfig,
-  agentsGetTriggerRequestConfig,
-  agentsGetTriggersRequestConfig,
   agentsLikeRequestConfig,
+  agentsRefreshDiscordChannelsRequestConfig,
   agentsStopDeploymentRequestConfig,
   agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
   agentsUpdatePermissionsRequestConfig,
-  agentsUpdateTriggerRequestConfig,
   artifactsV2AddCreationRequestConfig,
   artifactsV2CreateRequestConfig,
   artifactsV2DeleteRequestConfig,
@@ -600,36 +591,26 @@ export abstract class Methods {
       agentsGetSharedRequestConfig,
     ),
     triggers: {
-      getAll: bindApiCall<
-        AgentsGetTriggersArguments,
-        AgentsGetTriggersResponse
-      >(this, agentsGetTriggersRequestConfig),
       getAllUser: bindApiCall<
         AgentsGetAllTriggersArguments,
         AgentsGetAllTriggersResponse
       >(this, agentsGetAllTriggersRequestConfig),
-      get: bindApiCall<AgentsGetTriggerArguments, AgentsGetTriggerResponse>(
-        this,
-        agentsGetTriggerRequestConfig,
-      ),
-      create: bindApiCall<
-        AgentsCreateTriggerArguments,
-        AgentsCreateTriggerResponse
-      >(this, agentsCreateTriggerRequestConfig),
-      update: bindApiCall<
-        AgentsUpdateTriggerArguments,
-        AgentsUpdateTriggerResponse
-      >(this, agentsUpdateTriggerRequestConfig),
-      delete: bindApiCall<
-        AgentsDeleteTriggerArguments,
-        AgentsDeleteTriggerResponse
-      >(this, agentsDeleteTriggerRequestConfig),
     },
     deployments: {
       getAllUser: bindApiCall<
         AgentsGetAllDeploymentsArguments,
         AgentsGetAllDeploymentsResponse
       >(this, agentsGetAllDeploymentsRequestConfig),
+    },
+    discord: {
+      getChannels: bindApiCall<
+        AgentsGetDiscordChannelsArguments,
+        GetDiscordChannelsResponse
+      >(this, agentsGetDiscordChannelsRequestConfig),
+      refreshChannels: bindApiCall<
+        AgentsRefreshDiscordChannelsArguments,
+        RefreshDiscordChannelsResponse
+      >(this, agentsRefreshDiscordChannelsRequestConfig),
     },
   }
 

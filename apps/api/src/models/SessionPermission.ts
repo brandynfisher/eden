@@ -25,7 +25,7 @@ const SessionPermissionSchema = new Schema<SessionPermissionDocument>(
   {
     session: {
       type: Schema.Types.ObjectId,
-      ref: 'sessions_v2',
+      ref: 'sessions',
       required: true,
     },
     user: {

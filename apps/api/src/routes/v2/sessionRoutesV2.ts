@@ -1,3 +1,4 @@
+import { getSessionTriggers } from '../../controllers/agentServicesController'
 import {
   isSessionActive,
   trackSessionView,
@@ -1077,6 +1078,38 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => addPassiveMessage(server, request, reply),
+  })
+
+  // Get all triggers for a specific session
+  server.get<{
+    Params: { sessionId: string }
+  }>('/v2/sessions/:sessionId/triggers', {
+    schema: {
+      tags: ['Sessions', 'Triggers'],
+      summary: 'Get Session Triggers',
+      description: 'Retrieve all triggers for a specific session.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        sessionId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          triggers: Type.Array(Type.Any()),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        500: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => getSessionTriggers(server, request, reply),
   })
 }
 

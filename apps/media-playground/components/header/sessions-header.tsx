@@ -13,10 +13,12 @@ import { SessionShareButton } from '@/features/sessions/components/session-share
 import { SessionStatusToggle } from '@/features/sessions/components/session-status-toggle'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { SessionType } from '@edenlabs/eden-sdk'
+import { Agent, SessionType } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -124,7 +126,10 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     onChatClick?.()
   }
 
-  const handleSaveSettings = async (settings: SessionSettings) => {
+  const handleSaveSettings = async (
+    settings: SessionSettings,
+    agents?: Agent[],
+  ) => {
     try {
       // Build request body exactly like EditSessionModal and /sessions/new
       const requestBody: {
@@ -143,6 +148,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         extras?: {
           exclude_memory?: boolean
         }
+        agent_ids?: string[]
       } = {
         session_type:
           settings.type === 'natural'
@@ -182,6 +188,11 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         requestBody.extras = {
           exclude_memory: true,
         }
+      }
+
+      // Add agent_ids if agents were changed
+      if (agents && agents.length > 0) {
+        requestBody.agent_ids = agents.map(a => a._id)
       }
 
       const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -331,6 +342,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           onSettingsChange={setSessionSettings}
           agents={session.agents}
           sessionId={sessionId}
+          sessionTitle={session.title}
           onSave={handleSaveSettings}
           minimal={false}
         />

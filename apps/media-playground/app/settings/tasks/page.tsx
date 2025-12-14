@@ -20,29 +20,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import UserAvatar from '@/components/user/user-avatar'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { useMe } from '@/hooks/use-me'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { useAuth } from '@clerk/nextjs'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import {
-  AlertCircle,
-  Calendar,
-  Clock,
-  ExternalLink,
-  Eye,
-  Filter,
-  Search,
-} from 'lucide-react'
-import Link from 'next/link'
+import { AlertCircle, Calendar, Clock, Eye, Filter, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 const TasksPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
-  const [agentFilter, setAgentFilter] = useState<string>('')
   const router = useRouter()
   const { isSignedIn } = useAuth()
   const { user } = useMe({
@@ -52,15 +41,6 @@ const TasksPage = () => {
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const { triggers, isPending, isError, error } = useUserTriggersQuery()
-
-  const uniqueAgents = useMemo(() => {
-    const agents = triggers.map(trigger => trigger.agent)
-    const unique = agents.filter(
-      (agent, index, self) =>
-        index === self.findIndex(a => a._id === agent._id),
-    )
-    return unique
-  }, [triggers])
 
   const formatLastRunTime = (lastRunTime?: Date) => {
     if (!lastRunTime) return 'Never'
@@ -87,21 +67,15 @@ const TasksPage = () => {
 
   const filteredTriggers = useMemo(() => {
     const filtered = triggers.filter(trigger => {
-      const matchesSearch =
-        trigger.trigger_prompt
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        trigger.agent.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch = (trigger.prompt || trigger.name || '')
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
       const matchesStatus =
         !statusFilter ||
         statusFilter === 'all' ||
         trigger.status === statusFilter
-      const matchesAgent =
-        !agentFilter ||
-        agentFilter === 'all' ||
-        trigger.agent._id === agentFilter
 
-      return matchesSearch && matchesStatus && matchesAgent
+      return matchesSearch && matchesStatus
     })
 
     // Sort by next_scheduled_run (most recent/earliest first)
@@ -123,7 +97,7 @@ const TasksPage = () => {
       const bNextRun = new Date(b.next_scheduled_run).getTime()
       return aNextRun - bNextRun
     })
-  }, [triggers, searchTerm, statusFilter, agentFilter])
+  }, [triggers, searchTerm, statusFilter])
 
   if (isPending) {
     return (
@@ -231,22 +205,6 @@ const TasksPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Agent</Label>
-              <Select value={agentFilter} onValueChange={setAgentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All agents" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All agents</SelectItem>
-                  {uniqueAgents.map(agent => (
-                    <SelectItem key={agent._id} value={agent._id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -264,7 +222,6 @@ const TasksPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-[180px]">Task</TableHead>
-                  <TableHead className="min-w-[120px]">Agent</TableHead>
                   <TableHead className="min-w-[80px]">Status</TableHead>
                   <TableHead className="min-w-[120px]">Schedule</TableHead>
                   <TableHead className="min-w-[100px]">Last Run</TableHead>
@@ -275,7 +232,7 @@ const TasksPage = () => {
               <TableBody>
                 {filteredTriggers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       No tasks found.
                     </TableCell>
                   </TableRow>
@@ -285,23 +242,8 @@ const TasksPage = () => {
                       <TableCell className="p-4">
                         <div className="max-w-[250px]">
                           <div className="font-medium text-sm truncate">
-                            {trigger.trigger_prompt}
+                            {trigger.name || trigger.prompt}
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-4">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <UserAvatar
-                            image={trigger.agent.userImage}
-                            name={trigger.agent.name}
-                            className="h-6 w-6 flex-shrink-0"
-                          />
-                          <Link
-                            href={`/agents/${trigger.agent.username}`}
-                            className="text-sm hover:underline truncate"
-                          >
-                            {trigger.agent.name}
-                          </Link>
                         </div>
                       </TableCell>
                       <TableCell className="p-4">
@@ -320,7 +262,9 @@ const TasksPage = () => {
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
-                            {formatCronSchedule(trigger.schedule)}
+                            {trigger.schedule
+                              ? formatCronSchedule(trigger.schedule)
+                              : 'Manual only'}
                           </span>
                         </div>
                       </TableCell>
@@ -336,26 +280,17 @@ const TasksPage = () => {
                       </TableCell>
                       <TableCell className="p-4">
                         <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              router.push(
-                                `/chat/${trigger.agent.username}?page=tasks`,
-                              )
-                            }
-                            className="h-8 w-8 p-0"
-                            title="Manage task"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
                           {trigger.session && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                router.push(`/sessions/${trigger.session}`)
-                              }
+                              onClick={() => {
+                                const sessionId =
+                                  typeof trigger.session === 'string'
+                                    ? trigger.session
+                                    : trigger.session._id
+                                router.push(`/sessions/${sessionId}`)
+                              }}
                               className="h-8 w-8 p-0"
                               title="View session"
                             >

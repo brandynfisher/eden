@@ -1,20 +1,16 @@
 import { paginatedResponse, paginationProperties } from '..'
 import {
   createAgent,
-  createAgentTrigger,
   createMemoryAgent,
   deleteAgent,
   deleteAgentDeployment,
-  deleteAgentTrigger,
   deployAgent,
-  executeAgentTrigger,
   getAgent,
   getAgentCreations,
   getAgentDeployments,
   getAgentMemory,
   getAgentMemoryContext,
   getAgentPermissions,
-  getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
   getDashboardData,
@@ -31,7 +27,6 @@ import {
   updateAgent,
   updateAgentDeployment,
   updateAgentPermissions,
-  updateAgentTrigger,
   updateMemoryAgent,
   updateMemorySession,
   updateMemoryUser,
@@ -41,7 +36,14 @@ import {
   getAgentRealtimeSettings,
   updateAgentRealtimeSettings,
 } from '../../controllers/agentRealtimeController'
-import { getAgentTrigger } from '../../controllers/agentServicesController'
+import {
+  createTrigger,
+  deleteTrigger,
+  executeTrigger,
+  getDiscordChannels,
+  refreshDiscordChannels,
+  updateTrigger,
+} from '../../controllers/agentServicesController'
 import {
   createEmailDomain,
   deleteEmailDomain,
@@ -349,60 +351,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
     ) => deleteEmailDomain(server, request, reply),
   })
 
-  server.get('/v2/agents/:agentId/triggers', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Get Agent Triggers',
-      description:
-        'Retrieve all automated triggers configured for a specific agent.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getAgentTriggers(request, reply),
-  })
-
-  server.post('/v2/agents/:agentId/triggers', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Create Agent Trigger',
-      description:
-        'Create a new automated trigger that activates the agent under specific conditions.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createAgentTrigger(server, request, reply),
-  })
-
-  server.get('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Get Single Trigger',
-      description: 'Retrieve a specific trigger by its ID.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getAgentTrigger(request, reply),
-  })
-
-  server.patch('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Update Agent Trigger',
-      description:
-        'Modify the configuration or conditions of an existing agent trigger.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateAgentTrigger(request, reply),
-  })
-
-  server.delete('/v2/agents/:agentId/triggers/:triggerId', {
-    schema: {
-      tags: ['Agents - Triggers'],
-      summary: 'Delete Agent Trigger',
-      description:
-        'Remove an automated trigger from an agent, stopping its activation.',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => deleteAgentTrigger(server, request, reply),
-  })
-
   server.post('/v2/triggers/run', {
     schema: {
       tags: ['Triggers'],
@@ -439,7 +387,111 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => executeAgentTrigger(server, request, reply),
+    handler: (request, reply) => executeTrigger(server, request, reply),
+  })
+
+  // Session-based trigger routes (without agent requirement)
+  server.post('/v2/triggers', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Create Trigger',
+      description: 'Create a new trigger for a session.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        name: Type.String(),
+        prompt: Type.String(),
+        session: Type.String(),
+        schedule: Type.Optional(Type.Any()), // Optional - tasks without schedules run manually only
+      }),
+      response: {
+        200: Type.Object({
+          trigger: Type.Any(),
+        }),
+        400: Type.Object({
+          error: Type.String(),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createTrigger(server, request, reply),
+  })
+
+  server.patch('/v2/triggers/:triggerId', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Update Trigger',
+      description: 'Update an existing trigger.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      body: Type.Object({
+        name: Type.Optional(Type.String()),
+        prompt: Type.Optional(Type.String()),
+        schedule: Type.Optional(Type.Any()),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('active'),
+            Type.Literal('paused'),
+            Type.Literal('finished'),
+          ]),
+        ),
+      }),
+      response: {
+        200: Type.Any(),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateTrigger(server, request, reply),
+  })
+
+  server.delete('/v2/triggers/:triggerId', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Delete Trigger',
+      description: 'Delete a trigger.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteTrigger(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/deployments', {
@@ -497,6 +549,87 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteAgentDeployment(server, request, reply),
+  })
+
+  // Discord channel management routes
+  server.get('/v2/agents/:agentId/deployments/discord/channels', {
+    schema: {
+      tags: ['Agents - Deployments'],
+      summary: 'Get Discord Channels',
+      description:
+        'Retrieve available Discord guilds and channels for an agent with a Discord deployment.',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          guilds: Type.Array(
+            Type.Object({
+              id: Type.String(),
+              name: Type.String(),
+              icon: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+              member_count: Type.Optional(
+                Type.Union([Type.Number(), Type.Null()]),
+              ),
+              channels: Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  name: Type.String(),
+                  type: Type.Number(),
+                  type_name: Type.String(),
+                  category_id: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                  category_name: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                  position: Type.Optional(Type.Number()),
+                }),
+              ),
+            }),
+          ),
+          last_refreshed_at: Type.Optional(
+            Type.Union([Type.String(), Type.Null()]),
+          ),
+        }),
+        401: Type.Object({ error: Type.String() }),
+        404: Type.Object({ error: Type.String() }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getDiscordChannels(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments/discord/refresh', {
+    schema: {
+      tags: ['Agents - Deployments'],
+      summary: 'Refresh Discord Channels',
+      description:
+        'Refresh the list of available Discord guilds and channels from the Discord API.',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          guilds_count: Type.Number(),
+          channels_count: Type.Number(),
+          guilds: Type.Array(
+            Type.Object({
+              id: Type.String(),
+              name: Type.String(),
+              channel_count: Type.Number(),
+            }),
+          ),
+        }),
+        401: Type.Object({ error: Type.String() }),
+        404: Type.Object({ error: Type.String() }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => refreshDiscordChannels(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId', {
@@ -586,12 +719,11 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => unlikeAgent(server, request, reply),
   })
 
-  server.get('/v2/agents/triggers', {
+  server.get('/v2/triggers', {
     schema: {
-      tags: ['Agents - Triggers'],
+      tags: ['Triggers'],
       summary: 'Get User Triggers',
-      description:
-        'Retrieve all triggers across all agents owned by the authenticated user.',
+      description: 'Retrieve all triggers owned by the authenticated user.',
       security: [
         {
           apiKey: [],
