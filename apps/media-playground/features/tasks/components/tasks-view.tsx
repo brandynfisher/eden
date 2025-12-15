@@ -168,6 +168,10 @@ const TaskItem: FC<{
       return 'Paused'
     }
 
+    if (trigger.status === 'running') {
+      return 'Running...'
+    }
+
     const scheduleWithTimezone = {
       ...trigger.schedule,
       timezone: timezone,
@@ -335,18 +339,22 @@ const TaskItem: FC<{
           <div
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              isExecuting
+              trigger.status === 'running' || isExecuting
                 ? 'bg-primary/10 cursor-default'
                 : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
             )}
-            title={isExecuting ? 'Running...' : 'Run now'}
+            title={
+              trigger.status === 'running' || isExecuting
+                ? 'Running...'
+                : 'Run now'
+            }
           >
-            {isExecuting ? (
+            {trigger.status === 'running' || isExecuting ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
               <button
                 onClick={handleExecuteNow}
-                disabled={isExecuting}
+                disabled={isExecuting || trigger.status === 'running'}
                 className="w-full h-full flex items-center justify-center"
               >
                 <PlayIcon className="h-4 w-4 text-primary fill-primary" />
