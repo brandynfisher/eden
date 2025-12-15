@@ -4,13 +4,6 @@ import { SessionSelector } from './session-selector'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -25,11 +18,8 @@ import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-quer
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent, SessionV2, Trigger } from '@edenlabs/eden-sdk'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 type TaskFormWithSelectorsProps = {
   mode: 'agent' | 'global'
@@ -38,12 +28,6 @@ type TaskFormWithSelectorsProps = {
   onCancel: () => void
   onSave: () => void
 }
-
-const taskSchema = z.object({
-  sessionId: z.string().min(1, 'Please select a session'),
-})
-
-type TaskFormData = z.infer<typeof taskSchema>
 
 export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
   mode,
@@ -228,16 +212,8 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
     enabled: !!agentUsername,
   })
 
-  const form = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
-    defaultValues: {
-      sessionId: selectedSession?._id || '',
-    },
-  })
-
-  // Reset form when sessions change
+  // Reset selection when agent changes
   useEffect(() => {
-    form.setValue('sessionId', '')
     onSessionChange(null)
   }, [agentUsername]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -245,56 +221,43 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
     const session = sessions?.find(s => s?._id === sessionId)
     if (session) {
       onSessionChange(session)
-      form.setValue('sessionId', sessionId)
     }
   }
 
   return (
-    <FormField
-      control={form.control}
-      name="sessionId"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-sm text-muted-foreground">
-            Session *
-          </FormLabel>
-          <FormControl>
-            {isLoading ? (
-              <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Loading sessions...</span>
-              </div>
-            ) : isError ? (
-              <div className="p-2 text-sm text-destructive">
-                Error loading sessions. Please try again.
-              </div>
-            ) : !sessions || sessions.length === 0 ? (
-              <div className="p-2 text-sm text-muted-foreground">
-                No sessions found with this agent. Start a chat to create a
-                session.
-              </div>
-            ) : (
-              <Select
-                onValueChange={handleSessionChange}
-                value={field.value}
-                disabled={!sessions || sessions.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a session" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {sessions.map(session => (
-                    <SelectItem key={session?._id} value={session?._id ?? ''}>
-                      {session?.title || 'Untitled Session'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </FormControl>
-          <FormMessage />
-        </FormItem>
+    <div className="space-y-2">
+      <label className="text-sm text-muted-foreground">Session *</label>
+      {isLoading ? (
+        <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Loading sessions...</span>
+        </div>
+      ) : isError ? (
+        <div className="p-2 text-sm text-destructive">
+          Error loading sessions. Please try again.
+        </div>
+      ) : !sessions || sessions.length === 0 ? (
+        <div className="p-2 text-sm text-muted-foreground">
+          No sessions found with this agent. Start a chat to create a session.
+        </div>
+      ) : (
+        <Select
+          onValueChange={handleSessionChange}
+          value={selectedSession?._id || ''}
+          disabled={!sessions || sessions.length === 0}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a session" />
+          </SelectTrigger>
+          <SelectContent className="max-h-60">
+            {sessions.map(session => (
+              <SelectItem key={session?._id} value={session?._id ?? ''}>
+                {session?.title || 'Untitled Session'}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
-    />
+    </div>
   )
 }
