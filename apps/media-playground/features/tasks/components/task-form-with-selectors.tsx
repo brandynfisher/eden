@@ -84,7 +84,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
     if (!selectedSession) {
       return (
         <SessionSelector
-          agentId={selectedAgent._id}
+          agentId={selectedAgent.username}
           onSelect={setSelectedSession}
           onCancel={handleBack}
         />
