@@ -88,6 +88,7 @@ type RecentRunItem = {
 }
 
 const RECENT_RUNS_PER_PAGE = 10
+const TASKS_PER_PAGE = 5
 
 // Run history item component
 const RunHistoryItem: FC<{
@@ -173,6 +174,11 @@ const TaskItem: FC<{
     }
     const description = formatCronSchedule(scheduleWithTimezone)
 
+    // For archived/finished tasks, just show the recurrence pattern without "Next: X"
+    if (isFinished || trigger.status === 'finished') {
+      return description
+    }
+
     if (trigger.next_scheduled_run) {
       const zonedTime = dayjs(trigger.next_scheduled_run).tz(timezone)
       const now = dayjs().tz(timezone)
@@ -191,7 +197,13 @@ const TaskItem: FC<{
     }
 
     return description
-  }, [trigger.schedule, trigger.next_scheduled_run, trigger.status, timezone])
+  }, [
+    trigger.schedule,
+    trigger.next_scheduled_run,
+    trigger.status,
+    timezone,
+    isFinished,
+  ])
 
   const runs = useMemo(() => {
     return (trigger.runs || []).slice().reverse()
@@ -247,7 +259,13 @@ const TaskItem: FC<{
   const handleReactivate = async () => {
     setIsReactivating(true)
     try {
-      await axios.patch(`/api/triggers/${trigger._id}`, { status: 'active' })
+      // If task has no schedule (one-time task), set status to active with no schedule
+      // If task has a schedule, just set status to active and keep the schedule
+      const payload = trigger.schedule
+        ? { status: 'active' }
+        : { status: 'active', schedule: null }
+
+      await axios.patch(`/api/triggers/${trigger._id}`, payload)
       onReactivate(trigger._id)
       toast.success('Task reactivated')
     } catch {
@@ -312,24 +330,29 @@ const TaskItem: FC<{
   return (
     <div className="group">
       <div className="flex items-center gap-3 px-4 py-3">
-        {/* Play Button */}
+        {/* Play Button / Running Indicator */}
         {!isFinished && (
-          <button
-            onClick={handleExecuteNow}
-            disabled={isExecuting}
+          <div
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              'bg-primary/10 hover:bg-primary/20 active:scale-95',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
+              isExecuting
+                ? 'bg-primary/10 cursor-default'
+                : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
             )}
-            title="Run now"
+            title={isExecuting ? 'Running...' : 'Run now'}
           >
             {isExecuting ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
-              <PlayIcon className="h-4 w-4 text-primary fill-primary" />
+              <button
+                onClick={handleExecuteNow}
+                disabled={isExecuting}
+                className="w-full h-full flex items-center justify-center"
+              >
+                <PlayIcon className="h-4 w-4 text-primary fill-primary" />
+              </button>
             )}
-          </button>
+          </div>
         )}
 
         {/* Task Info */}
@@ -510,6 +533,39 @@ const TaskItem: FC<{
   )
 }
 
+// Generic pagination component
+const Pagination: FC<{
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}> = ({ currentPage, totalPages, onPageChange }) => {
+  return (
+    <div className="flex items-center justify-center gap-2 mt-3 px-3 py-2 bg-muted/20 rounded-md">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 w-7 p-0"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 0}
+      >
+        <ChevronLeftIcon className="h-4 w-4" />
+      </Button>
+      <span className="text-xs text-muted-foreground px-2">
+        {currentPage + 1} / {totalPages}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 w-7 p-0"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages - 1}
+      >
+        <ChevronRightIcon className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
+
 // Recent runs pagination component
 const RecentRunsPagination: FC<{
   currentPage: number
@@ -576,6 +632,9 @@ export const TasksView: FC<TasksViewProps> = ({
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Trigger | null>(null)
   const [recentRunsPage, setRecentRunsPage] = useState(0)
+  const [activeTasksPage, setActiveTasksPage] = useState(0)
+  const [scheduledTasksPage, setScheduledTasksPage] = useState(0)
+  const [archivedTasksPage, setArchivedTasksPage] = useState(0)
 
   const tasksGate = useGatedResource(GatedResource.Tasks, {
     lockedBehavior: 'modal',
@@ -584,6 +643,14 @@ export const TasksView: FC<TasksViewProps> = ({
   const triggersQuery = useUserTriggersQuery({
     enabled: tasksGate.isAllowed && isModalOpen,
   })
+
+  // Reset page numbers when switching tabs or when filters change
+  React.useEffect(() => {
+    setActiveTasksPage(0)
+    setScheduledTasksPage(0)
+    setArchivedTasksPage(0)
+    setRecentRunsPage(0)
+  }, [activeTab, mode, sessionId, agentId])
 
   // Filter triggers based on mode
   const filteredTriggers = useMemo(() => {
@@ -640,7 +707,11 @@ export const TasksView: FC<TasksViewProps> = ({
         if (!trigger.schedule) {
           return true
         }
-        if (trigger.status === 'active' || trigger.status === 'paused') {
+        if (
+          trigger.status === 'active' ||
+          trigger.status === 'paused' ||
+          trigger.status === 'running'
+        ) {
           if (trigger.schedule.end_date) {
             const endDate = new Date(trigger.schedule.end_date)
             const currentDate = new Date()
@@ -713,9 +784,54 @@ export const TasksView: FC<TasksViewProps> = ({
     combinedRecentRuns.length / RECENT_RUNS_PER_PAGE,
   )
 
+  // Paginated manual/active tasks
+  const paginatedManualTasks = useMemo(() => {
+    const start = activeTasksPage * TASKS_PER_PAGE
+    const end = start + TASKS_PER_PAGE
+    return manualTriggers.slice(start, end)
+  }, [manualTriggers, activeTasksPage])
+
+  const totalActiveTasksPages = Math.ceil(
+    manualTriggers.length / TASKS_PER_PAGE,
+  )
+
+  // Paginated scheduled tasks
+  const paginatedScheduledTasks = useMemo(() => {
+    const start = scheduledTasksPage * TASKS_PER_PAGE
+    const end = start + TASKS_PER_PAGE
+    return scheduledTriggers.slice(start, end)
+  }, [scheduledTriggers, scheduledTasksPage])
+
+  const totalScheduledTasksPages = Math.ceil(
+    scheduledTriggers.length / TASKS_PER_PAGE,
+  )
+
+  // Paginated archived tasks
+  const paginatedArchivedTasks = useMemo(() => {
+    const start = archivedTasksPage * TASKS_PER_PAGE
+    const end = start + TASKS_PER_PAGE
+    return archivedTriggers.slice(start, end)
+  }, [archivedTriggers, archivedTasksPage])
+
+  const totalArchivedTasksPages = Math.ceil(
+    archivedTriggers.length / TASKS_PER_PAGE,
+  )
+
   // Reset to first page when filters change
   const handleRecentRunsPageChange = useCallback((page: number) => {
     setRecentRunsPage(page)
+  }, [])
+
+  const handleActiveTasksPageChange = useCallback((page: number) => {
+    setActiveTasksPage(page)
+  }, [])
+
+  const handleScheduledTasksPageChange = useCallback((page: number) => {
+    setScheduledTasksPage(page)
+  }, [])
+
+  const handleArchivedTasksPageChange = useCallback((page: number) => {
+    setArchivedTasksPage(page)
   }, [])
 
   const handleRunComplete = useCallback(
@@ -906,39 +1022,9 @@ export const TasksView: FC<TasksViewProps> = ({
             <div className="space-y-4">
               {/* Manual Tasks (no schedule) */}
               {manualTriggers.length > 0 && (
-                <div className="bg-background rounded-lg border divide-y">
-                  {manualTriggers.map(trigger => (
-                    <TaskItem
-                      key={trigger._id}
-                      trigger={trigger}
-                      onEdit={mode === 'session' ? handleEdit : undefined}
-                      onArchive={handleTaskChange}
-                      onReactivate={handleTaskChange}
-                      onPause={handleTaskChange}
-                      onResume={handleTaskChange}
-                      onDelete={handleTaskChange}
-                      onRunComplete={handleRunComplete}
-                      onNavigateToMessage={onNavigateToMessage}
-                      onNavigateToLatest={handleNavigateToLatest}
-                      isFinished={false}
-                      timezone={userTimezone}
-                      showSessionInfo={showSessionInfo}
-                      mode={mode}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Scheduled Tasks */}
-              {scheduledTriggers.length > 0 && (
                 <div>
-                  <div className="mb-2 px-1">
-                    <span className="text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
-                      Scheduled
-                    </span>
-                  </div>
                   <div className="bg-background rounded-lg border divide-y">
-                    {scheduledTriggers.map(trigger => (
+                    {paginatedManualTasks.map(trigger => (
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
@@ -958,6 +1044,54 @@ export const TasksView: FC<TasksViewProps> = ({
                       />
                     ))}
                   </div>
+                  {/* Pagination */}
+                  {totalActiveTasksPages > 1 && (
+                    <Pagination
+                      currentPage={activeTasksPage}
+                      totalPages={totalActiveTasksPages}
+                      onPageChange={handleActiveTasksPageChange}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Scheduled Tasks */}
+              {scheduledTriggers.length > 0 && (
+                <div>
+                  <div className="mb-2 px-1">
+                    <span className="text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+                      Scheduled
+                    </span>
+                  </div>
+                  <div className="bg-background rounded-lg border divide-y">
+                    {paginatedScheduledTasks.map(trigger => (
+                      <TaskItem
+                        key={trigger._id}
+                        trigger={trigger}
+                        onEdit={mode === 'session' ? handleEdit : undefined}
+                        onArchive={handleTaskChange}
+                        onReactivate={handleTaskChange}
+                        onPause={handleTaskChange}
+                        onResume={handleTaskChange}
+                        onDelete={handleTaskChange}
+                        onRunComplete={handleRunComplete}
+                        onNavigateToMessage={onNavigateToMessage}
+                        onNavigateToLatest={handleNavigateToLatest}
+                        isFinished={false}
+                        timezone={userTimezone}
+                        showSessionInfo={showSessionInfo}
+                        mode={mode}
+                      />
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {totalScheduledTasksPages > 1 && (
+                    <Pagination
+                      currentPage={scheduledTasksPage}
+                      totalPages={totalScheduledTasksPages}
+                      onPageChange={handleScheduledTasksPageChange}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -1051,26 +1185,36 @@ export const TasksView: FC<TasksViewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="bg-background rounded-lg border divide-y">
-          {archivedTriggers.map(trigger => (
-            <TaskItem
-              key={trigger._id}
-              trigger={trigger}
-              onEdit={mode === 'session' ? handleEdit : undefined}
-              onArchive={handleTaskChange}
-              onReactivate={handleTaskChange}
-              onPause={handleTaskChange}
-              onResume={handleTaskChange}
-              onDelete={handleTaskChange}
-              onRunComplete={handleRunComplete}
-              onNavigateToMessage={onNavigateToMessage}
-              onNavigateToLatest={handleNavigateToLatest}
-              isFinished={true}
-              timezone={userTimezone}
-              showSessionInfo={showSessionInfo}
-              mode={mode}
+        <div>
+          <div className="bg-background rounded-lg border divide-y">
+            {paginatedArchivedTasks.map(trigger => (
+              <TaskItem
+                key={trigger._id}
+                trigger={trigger}
+                onEdit={mode === 'session' ? handleEdit : undefined}
+                onArchive={handleTaskChange}
+                onReactivate={handleTaskChange}
+                onPause={handleTaskChange}
+                onResume={handleTaskChange}
+                onDelete={handleTaskChange}
+                onRunComplete={handleRunComplete}
+                onNavigateToMessage={onNavigateToMessage}
+                onNavigateToLatest={handleNavigateToLatest}
+                isFinished={true}
+                timezone={userTimezone}
+                showSessionInfo={showSessionInfo}
+                mode={mode}
+              />
+            ))}
+          </div>
+          {/* Pagination */}
+          {totalArchivedTasksPages > 1 && (
+            <Pagination
+              currentPage={archivedTasksPage}
+              totalPages={totalArchivedTasksPages}
+              onPageChange={handleArchivedTasksPageChange}
             />
-          ))}
+          )}
         </div>
       )}
     </div>

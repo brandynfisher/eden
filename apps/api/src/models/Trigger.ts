@@ -25,7 +25,7 @@ export interface TriggerSchema {
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string
-  status?: 'active' | 'paused' | 'finished'
+  status?: 'active' | 'paused' | 'finished' | 'running'
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date
@@ -62,7 +62,7 @@ const TriggerSchema = new Schema<TriggerDocument>(
     },
     status: {
       type: String,
-      enum: ['active', 'paused', 'finished'],
+      enum: ['active', 'paused', 'finished', 'running'],
       default: 'active',
     },
     deleted: {

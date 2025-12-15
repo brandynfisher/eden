@@ -565,10 +565,44 @@ export const getAllUserTriggers = async (
   const currentUserId = request.user.userId
 
   try {
-    // Get all triggers owned by the user
-    const triggers = await Trigger.find({
+    // Find all sessions where user has edit or owner permissions via SessionPermission
+    const sharedSessionPermissions = await SessionPermission.find({
       user: currentUserId,
-      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+      level: {
+        $in: [SessionPermissionLevel.Owner, SessionPermissionLevel.Editor],
+      },
+    }).select('session')
+
+    const sharedSessionIds = sharedSessionPermissions.map(p => p.session)
+
+    // Find all sessions where user is the owner
+    const ownedSessions = await Session.find({
+      owner: currentUserId,
+    }).select('_id')
+
+    const ownedSessionIds = ownedSessions.map(s => s._id)
+
+    // Combine both lists of session IDs
+    const allAccessibleSessionIds = [...sharedSessionIds, ...ownedSessionIds]
+
+    // Get all triggers where:
+    // 1. User created the trigger, OR
+    // 2. Trigger is in a session owned by user, OR
+    // 3. Trigger is in a session shared with user (with edit/owner permissions)
+    // AND exclude deleted triggers
+    const triggers = await Trigger.find({
+      $and: [
+        {
+          $or: [
+            // Triggers created by user
+            { user: currentUserId },
+            // Triggers in sessions owned or shared with user
+            { session: { $in: allAccessibleSessionIds } },
+          ],
+        },
+        // Exclude deleted triggers
+        { $or: [{ deleted: { $exists: false } }, { deleted: false }] },
+      ],
     }).populate({
       path: 'session',
       select: '_id title agents',

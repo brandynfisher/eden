@@ -6,6 +6,11 @@ import { CronExpressionOptions, CronExpressionParser } from 'cron-parser'
  * Returns null if the schedule has no valid next run (e.g., end_date has passed).
  */
 export function calculateNextScheduledRun(schedule: CronSchedule): Date | null {
+  console.log(
+    '[calculateNextScheduledRun] Input schedule:',
+    JSON.stringify(schedule, null, 2),
+  )
+
   try {
     // Handle one-time schedules (start_date equals end_date)
     // For these, we just return the start_date directly instead of using cron parsing
@@ -41,6 +46,13 @@ export function calculateNextScheduledRun(schedule: CronSchedule): Date | null {
       tz: schedule.timezone || 'UTC',
     }
 
+    console.log('[calculateNextScheduledRun] Cron expression:', cronExpression)
+    console.log('[calculateNextScheduledRun] Timezone:', options.tz)
+    console.log(
+      '[calculateNextScheduledRun] Current date:',
+      options.currentDate,
+    )
+
     // Add end date if specified
     if (schedule.end_date) {
       options.endDate = new Date(schedule.end_date)
@@ -50,7 +62,15 @@ export function calculateNextScheduledRun(schedule: CronSchedule): Date | null {
 
     // Get the next occurrence
     const next = expression.next()
-    return next.toDate()
+    const nextDate = next.toDate()
+
+    console.log('[calculateNextScheduledRun] Calculated next run:', nextDate)
+    console.log(
+      '[calculateNextScheduledRun] Next run ISO:',
+      nextDate.toISOString(),
+    )
+
+    return nextDate
   } catch {
     // This can happen if:
     // - The cron expression is invalid

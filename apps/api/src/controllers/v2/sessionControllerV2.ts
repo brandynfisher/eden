@@ -1660,10 +1660,23 @@ export const deleteSession = async (
     })
   }
 
-  if (session.owner.toString() !== userId.toString()) {
-    return reply.status(401).send({
-      error: 'You are not allowed to delete this session',
+  // Check if user is owner or has editor/owner permissions
+  const isOwner = session.owner.toString() === userId.toString()
+  if (!isOwner) {
+    // Check for Editor or Owner permission
+    const permission = await SessionPermission.findOne({
+      session: session._id,
+      user: userId,
+      level: {
+        $in: [SessionPermissionLevel.Editor, SessionPermissionLevel.Owner],
+      },
     })
+
+    if (!permission) {
+      return reply.status(401).send({
+        error: 'You are not allowed to delete this session',
+      })
+    }
   }
 
   await session.delete()
@@ -1725,10 +1738,23 @@ export const renameSession = async (
     })
   }
 
-  if (session.owner.toString() !== userId.toString()) {
-    return reply.status(401).send({
-      error: 'You are not allowed to modify this session',
+  // Check if user is owner or has editor/owner permissions
+  const isOwner = session.owner.toString() === userId.toString()
+  if (!isOwner) {
+    // Check for Editor or Owner permission
+    const permission = await SessionPermission.findOne({
+      session: session._id,
+      user: userId,
+      level: {
+        $in: [SessionPermissionLevel.Editor, SessionPermissionLevel.Owner],
+      },
     })
+
+    if (!permission) {
+      return reply.status(401).send({
+        error: 'You are not allowed to modify this session',
+      })
+    }
   }
 
   const updateData: any = {}
@@ -1834,10 +1860,23 @@ export const cancelSession = async (
     })
   }
 
-  if (session.owner.toString() !== userId.toString()) {
-    return reply.status(401).send({
-      error: 'You are not allowed to cancel this session',
+  // Check if user is owner or has editor/owner permissions
+  const isOwner = session.owner.toString() === userId.toString()
+  if (!isOwner) {
+    // Check for Editor or Owner permission
+    const permission = await SessionPermission.findOne({
+      session: session._id,
+      user: userId,
+      level: {
+        $in: [SessionPermissionLevel.Editor, SessionPermissionLevel.Owner],
+      },
     })
+
+    if (!permission) {
+      return reply.status(401).send({
+        error: 'You are not allowed to cancel this session',
+      })
+    }
   }
 
   try {
@@ -1919,10 +1958,23 @@ export const createSessionShare = async (
       })
     }
 
-    if (session.owner.toString() !== userId.toString()) {
-      return reply.status(403).send({
-        error: 'Only session owner can create shares',
+    // Check if user is owner or has editor/owner permissions
+    const isOwner = session.owner.toString() === userId.toString()
+    if (!isOwner) {
+      // Check for Editor or Owner permission
+      const permission = await SessionPermission.findOne({
+        session: session._id,
+        user: userId,
+        level: {
+          $in: [SessionPermissionLevel.Editor, SessionPermissionLevel.Owner],
+        },
       })
+
+      if (!permission) {
+        return reply.status(403).send({
+          error: 'Only session owner or editors can create shares',
+        })
+      }
     }
 
     // Verify the message exists and belongs to this session
@@ -2238,10 +2290,13 @@ const hasOwnerPermissions = async (
     return true
   }
 
+  // Check for Owner or Editor permission
   const permission = await SessionPermission.findOne({
     session: sessionId,
     user: userId,
-    level: SessionPermissionLevel.Owner,
+    level: {
+      $in: [SessionPermissionLevel.Owner, SessionPermissionLevel.Editor],
+    },
   })
 
   return !!permission

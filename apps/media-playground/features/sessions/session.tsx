@@ -40,7 +40,12 @@ import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Agent, Message, SessionType } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  Message,
+  SessionPermissionLevel,
+  SessionType,
+} from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { BrainIcon, EditIcon, MenuIcon, Settings } from 'lucide-react'
@@ -301,10 +306,22 @@ const Session = ({
   const isOwner = useMemo(() => {
     return user?._id === session?.owner?._id
   }, [user, session])
-  const canOpenSessionSettings = isOwner && isSessionSettingsAllowed
+  // Check if user can manage session (owner or has editor/owner permissions)
+  const canManageSession = useMemo(() => {
+    return (
+      isOwner ||
+      session?.permission_level_for_user === SessionPermissionLevel.Editor ||
+      session?.permission_level_for_user === SessionPermissionLevel.Owner
+    )
+  }, [isOwner, session?.permission_level_for_user])
+  const canOpenSessionSettings = canManageSession && isSessionSettingsAllowed
   const isPublicSession = session?.extras?.is_public === true
   const isReadOnlySession = Boolean(
-    session && sessionId && sessionId !== 'new' && isPublicSession && !isOwner,
+    session &&
+      sessionId &&
+      sessionId !== 'new' &&
+      isPublicSession &&
+      !canManageSession,
   )
 
   // Agent settings modal state for navbar
@@ -1665,7 +1682,7 @@ const Session = ({
               )}
 
               {/* Share button - icon only */}
-              {isOwner && (
+              {canManageSession && (
                 <SessionShareButton
                   sessionId={sessionId as string}
                   messages={session.messages || []}
@@ -1754,7 +1771,7 @@ const Session = ({
           <div className="flex items-center gap-2">
             {/* Status Toggle - only show for automatic sessions, not chat */}
             {!ischatRoute &&
-              isOwner &&
+              canManageSession &&
               session.session_type === 'automatic' && (
                 <SessionStatusToggle
                   sessionId={sessionId as string}
@@ -1805,7 +1822,7 @@ const Session = ({
             )}
 
             {/* Share button */}
-            {isOwner && (
+            {canManageSession && (
               <SessionShareButton
                 sessionId={sessionId as string}
                 messages={session.messages || []}

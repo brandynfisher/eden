@@ -13,10 +13,22 @@ import { SessionShareButton } from '@/features/sessions/components/session-share
 import { SessionStatusToggle } from '@/features/sessions/components/session-status-toggle'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { Agent, SessionType } from '@edenlabs/eden-sdk'
+import { Agent, SessionPermissionLevel, SessionType } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -85,6 +97,14 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     sessionId: sessionId,
     enabled: !!sessionId && sessionId !== 'new' && !isShareRoute,
   })
+
+  // Helper to check if user can manage session (owner or has editor/owner permissions)
+  const canManageSession =
+    session &&
+    user &&
+    (session.owner._id === user._id ||
+      session.permission_level_for_user === SessionPermissionLevel.Editor ||
+      session.permission_level_for_user === SessionPermissionLevel.Owner)
 
   // Update session settings when session data loads
   // IMPORTANT: Only sync from server when modal is CLOSED to avoid resetting user edits
@@ -273,10 +293,9 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
         {/* Right section - Icon buttons only (hide on share route) */}
         <div className="flex items-center gap-1 shrink-0">
-          {/* Status Toggle - only show for automatic sessions when user is owner */}
+          {/* Status Toggle - only show for automatic sessions when user can manage */}
           {!isShareRoute &&
-            session &&
-            session.owner._id === user?._id &&
+            canManageSession &&
             sessionId !== 'new' &&
             session.session_type === 'automatic' && (
               <SessionStatusToggle
@@ -287,36 +306,30 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
               />
             )}
 
-          {/* Settings button - icon only, show for owner */}
-          {!isShareRoute &&
-            session &&
-            session.owner._id === user?._id &&
-            sessionId !== 'new' && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSettingsModalOpen(true)}
-                className="h-9 w-9"
-                title="Settings"
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            )}
+          {/* Settings button - icon only, show for editors/owners */}
+          {!isShareRoute && canManageSession && sessionId !== 'new' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="h-9 w-9"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          )}
 
-          {/* Share button - icon only, hide on share route */}
-          {!isShareRoute &&
-            session &&
-            session.owner._id === user?._id &&
-            sessionId !== 'new' && (
-              <SessionShareButton
-                sessionId={sessionId}
-                messages={session.messages || []}
-                isOwner={session.owner._id === user?._id}
-                isPublic={session.extras?.is_public}
-                className="h-9 w-9 px-0"
-                hideText
-              />
-            )}
+          {/* Share button - icon only, hide on share route, show for editors/owners */}
+          {!isShareRoute && canManageSession && sessionId !== 'new' && (
+            <SessionShareButton
+              sessionId={sessionId}
+              messages={session.messages || []}
+              isOwner={session.owner._id === user?._id}
+              isPublic={session.extras?.is_public}
+              className="h-9 w-9 px-0"
+              hideText
+            />
+          )}
 
           {/* New Chat button - icon only */}
           {!isShareRoute && (

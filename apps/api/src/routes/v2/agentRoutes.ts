@@ -448,6 +448,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             Type.Literal('active'),
             Type.Literal('paused'),
             Type.Literal('finished'),
+            Type.Literal('running'),
           ]),
         ),
       }),

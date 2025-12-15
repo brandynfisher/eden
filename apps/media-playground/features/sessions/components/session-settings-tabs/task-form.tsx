@@ -381,6 +381,7 @@ export const TaskForm: FC<TaskFormProps> = ({
           session: sessionId,
           ...(schedule && { schedule }),
         }
+
         await axios.post('/api/triggers', requestData)
         toast.success('Task created')
       }
