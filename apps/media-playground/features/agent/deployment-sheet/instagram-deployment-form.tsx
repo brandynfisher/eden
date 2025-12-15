@@ -1,22 +1,23 @@
 'use client'
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
-import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CheckCircle, Clock3 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
+import { CheckCircle, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
-const schema = z.object({
-  // Placeholder for future OAuth/config fields
-})
+const schema = z.object({})
 
 type DeploymentFormDto = z.infer<typeof schema>
 
@@ -30,6 +31,10 @@ export const InstagramDeploymentForm = ({
   deployment,
 }: InstagramDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const queryClient = useQueryClient()
+  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {},
@@ -50,6 +55,59 @@ export const InstagramDeploymentForm = ({
     deployment?.secrets?.instagram?.username
 
   const isConnected = Boolean(deployment)
+
+  const handleConnect = async () => {
+    setIsConnecting(true)
+    try {
+      await axios.post(`/api/agents/${agentId}/deployments`, {
+        platform: 'instagram',
+      })
+      toast.success('Instagram connected (shared token)')
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
+      })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
+      setIsOpen(true)
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to connect Instagram',
+      )
+      setIsConnecting(false)
+    }
+  }
+
+  const handleDisconnect = async () => {
+    if (!deployment) return
+    setIsDisconnecting(true)
+    try {
+      await axios.delete(`/api/agents/${agentId}/deployments`, {
+        data: { platform: 'instagram' },
+      })
+      toast.success('Instagram disconnected')
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
+      })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to disconnect Instagram',
+      )
+    } finally {
+      setIsDisconnecting(false)
+    }
+  }
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
@@ -72,11 +130,16 @@ export const InstagramDeploymentForm = ({
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                <Clock3 className="h-4 w-4" />
-                Instagram posting is in progress. UI and models are ready;
-                connection flow will arrive soon.
-              </div>
+              <Alert className="border border-blue-500/30 bg-blue-500/5">
+                <ShieldCheck className="h-4 w-4 text-blue-400" />
+                <AlertTitle className="text-sm font-medium">
+                  Staging connection
+                </AlertTitle>
+                <AlertDescription className="text-xs text-muted-foreground">
+                  For now this uses the shared staging Instagram token from
+                  server env. Deploying will wire your agent to that account.
+                </AlertDescription>
+              </Alert>
 
               {isConnected && (
                 <div className="space-y-2">
@@ -90,30 +153,37 @@ export const InstagramDeploymentForm = ({
                         : '(handle unavailable yet)'}
                     </span>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleDisconnect}
+                    disabled={isDisconnecting}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Disconnect
+                  </Button>
                 </div>
               )}
 
               {!isConnected && (
                 <>
                   <div className="text-sm text-muted-foreground">
-                    Link your Instagram account to let your agent post stories
-                    and reels. This is a preview-only feature; the connection
-                    flow will be enabled shortly.
+                    Connect to the shared staging Instagram token. Dedicated
+                    per-user OAuth will ship after review.
                   </div>
-                  <Button type="button" className="w-full" disabled>
-                    Coming Soon
+                  <Button
+                    type="button"
+                    className="w-full"
+                    onClick={handleConnect}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting
+                      ? 'Connecting…'
+                      : 'Use shared Instagram connection'}
                   </Button>
                 </>
               )}
-
-              <DeploymentFormFooter
-                agentId={agentId}
-                platform="instagram"
-                form={form}
-                isDeployed={isDeployed}
-                valid={deployment?.valid}
-                canSubmit={false}
-              />
             </div>
           </form>
         </Form>

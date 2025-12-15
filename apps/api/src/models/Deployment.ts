@@ -81,6 +81,7 @@ export interface DeploymentSecretsTwitter {
 // Instagram Types
 export interface DeploymentSettingsInstagram {
   username?: string
+  ig_user_id?: string
 }
 
 export interface DeploymentSecretsInstagram {

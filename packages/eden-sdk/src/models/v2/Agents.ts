@@ -240,6 +240,7 @@ interface TwitterDeploymentSecrets {
 
 interface InstagramDeploymentConfig {
   username?: string
+  ig_user_id?: string
 }
 
 interface InstagramDeploymentSecrets {

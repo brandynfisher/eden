@@ -65,6 +65,7 @@ export type DeploymentSecretsFarcaster = {
 // Instagram Types
 export type DeploymentSettingsInstagram = {
   username?: string
+  ig_user_id?: string
 }
 
 export type DeploymentSecretsInstagram = {

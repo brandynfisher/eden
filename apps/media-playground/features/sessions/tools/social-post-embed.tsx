@@ -15,6 +15,7 @@ export type SocialPostEmbedProps = {
     | 'printify'
     | 'tiktok'
     | 'email'
+    | 'instagram'
 }
 
 export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
@@ -38,6 +39,8 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
       ? 'TikTok'
       : platform === 'email'
       ? 'Email'
+      : platform === 'instagram'
+      ? 'Instagram'
       : platform
 
   const label =
