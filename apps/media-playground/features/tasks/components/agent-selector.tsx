@@ -1,35 +1,15 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useAgentsListQuery } from '@/hooks/query/use-agents-list-query'
+import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeftIcon, Loader2 } from 'lucide-react'
-import { FC } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-
-const agentSchema = z.object({
-  agentId: z.string().min(1, 'Please select an agent'),
-})
-
-type AgentFormData = z.infer<typeof agentSchema>
+import { FC, useEffect, useState } from 'react'
 
 type AgentSelectorProps = {
   onSelect: (agent: Agent) => void
@@ -41,22 +21,32 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
   onCancel,
 }) => {
   const { user } = useAuthState()
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
 
-  const { agents, isLoading, isError } = useAgentsListQuery({
-    owner: user?._id,
-    enabled: !!user?._id,
-    limit: 100,
-  })
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [showAgentModal, setShowAgentModal] = useState(false)
 
-  const form = useForm<AgentFormData>({
-    resolver: zodResolver(agentSchema),
-    defaultValues: {
-      agentId: '',
-    },
-  })
+  // Get the default agent (first from lastAgents)
+  const defaultAgentId = lastAgents?.[0]?._id
+  const { agent: defaultAgent, isLoading: isLoadingDefaultAgent } =
+    useAgentQuery({
+      key: defaultAgentId,
+      enabled: !!defaultAgentId && !selectedAgent,
+    })
 
-  const onSubmit = (values: AgentFormData) => {
-    const selectedAgent = agents?.find(a => a._id === values.agentId)
+  // Set default agent when loaded
+  useEffect(() => {
+    if (defaultAgent && !selectedAgent) {
+      setSelectedAgent(defaultAgent)
+    }
+  }, [defaultAgent, selectedAgent])
+
+  const handleAgentSelect = (agent: Agent) => {
+    setSelectedAgent(agent)
+    setShowAgentModal(false)
+  }
+
+  const handleContinue = () => {
     if (selectedAgent) {
       onSelect(selectedAgent)
     }
@@ -76,68 +66,68 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
         <h3 className="font-medium">Select Agent</h3>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="agentId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm text-muted-foreground">
-                  Agent *
-                </FormLabel>
-                <FormControl>
-                  {isLoading ? (
-                    <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Loading agents...</span>
-                    </div>
-                  ) : isError ? (
-                    <div className="p-2 text-sm text-destructive">
-                      Error loading agents. Please try again.
-                    </div>
-                  ) : !agents || agents.length === 0 ? (
-                    <div className="p-2 text-sm text-muted-foreground">
-                      No agents found. Create an agent first.
-                    </div>
-                  ) : (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!agents || agents.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an agent" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {agents.map(agent => (
-                          <SelectItem key={agent._id} value={agent._id}>
-                            {agent.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || !agents || agents.length === 0}
-            >
-              Continue
-            </Button>
+      {/* Agent Display */}
+      <div className="space-y-2">
+        <label className="text-sm text-muted-foreground">Agent *</label>
+        {isLoadingDefaultAgent && !selectedAgent ? (
+          <div className="flex items-center gap-2 p-4 rounded-lg border bg-muted/30">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Loading agent...</span>
           </div>
-        </form>
-      </Form>
+        ) : selectedAgent ? (
+          <button
+            type="button"
+            onClick={() => setShowAgentModal(true)}
+            className="w-full flex items-center gap-3 p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors text-left"
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={
+                  selectedAgent.userImage
+                    ? getCloudfrontOriginalUrl(selectedAgent.userImage)
+                    : undefined
+                }
+                alt={selectedAgent.name}
+              />
+              <AvatarFallback>
+                {selectedAgent.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="font-medium">{selectedAgent.name}</div>
+              <div className="text-sm text-muted-foreground">
+                @{selectedAgent.username}
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground">Change</div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowAgentModal(true)}
+            className="w-full p-4 rounded-lg border border-dashed bg-muted/30 hover:bg-muted/50 transition-colors text-sm text-muted-foreground"
+          >
+            Click to select an agent
+          </button>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-2 pt-2">
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={handleContinue} disabled={!selectedAgent}>
+          Continue
+        </Button>
+      </div>
+
+      {/* Agent Selector Modal */}
+      <SingleAgentSelectorModal
+        open={showAgentModal}
+        onOpenChange={setShowAgentModal}
+        onSelect={handleAgentSelect}
+      />
     </div>
   )
 }

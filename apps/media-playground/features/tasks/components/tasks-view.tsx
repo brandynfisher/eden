@@ -48,6 +48,10 @@ import { useRouter } from 'next/navigation'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+// Helper to check if trigger status is 'running'
+// Note: SDK includes 'running' status but TS cache may not reflect latest types
+const isRunning = (status: string | undefined): boolean => status === 'running'
+
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
 dayjs.extend(relativeTime)
@@ -169,7 +173,7 @@ const TaskItem: FC<{
       return 'Paused'
     }
 
-    if (trigger.status === 'running') {
+    if (isRunning(trigger.status)) {
       return 'Running...'
     }
 
@@ -340,22 +344,23 @@ const TaskItem: FC<{
           <div
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              trigger.status === 'running' || isExecuting
+              isRunning(trigger.status) || isExecuting
                 ? 'bg-primary/10 cursor-default'
                 : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
             )}
             title={
-              trigger.status === 'running' || isExecuting
+              isRunning(trigger.status) || isExecuting
                 ? 'Running...'
                 : 'Run now'
             }
           >
-            {trigger.status === 'running' || isExecuting ? (
+            {/* Note: trigger.status includes 'running' but TS cache may not reflect latest SDK types */}
+            {isRunning(trigger.status) || isExecuting ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
               <button
                 onClick={handleExecuteNow}
-                disabled={isExecuting || trigger.status === 'running'}
+                disabled={isExecuting || isRunning(trigger.status)}
                 className="w-full h-full flex items-center justify-center"
               >
                 <PlayIcon className="h-4 w-4 text-primary fill-primary" />
@@ -719,7 +724,7 @@ export const TasksView: FC<TasksViewProps> = ({
         if (
           trigger.status === 'active' ||
           trigger.status === 'paused' ||
-          trigger.status === 'running'
+          isRunning(trigger.status)
         ) {
           if (trigger.schedule.end_date) {
             const endDate = new Date(trigger.schedule.end_date)
