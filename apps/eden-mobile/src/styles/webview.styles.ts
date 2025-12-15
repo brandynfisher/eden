@@ -117,24 +117,4 @@ export default (theme: 'light' | 'dark') =>
       fontFamily: Typography.fontFamily.semibold,
       color: Colors[theme].primary,
     },
-    navigationBar: {
-      flexDirection: 'row',
-      backgroundColor: Colors[theme].background,
-      borderBottomWidth: 1,
-      borderBottomColor: Colors[theme].border,
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing.xs,
-      gap: Spacing.xs,
-    },
-    navButton: {
-      padding: Spacing.sm,
-      borderRadius: BorderRadius.sm,
-      minWidth: 44,
-      minHeight: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    navButtonDisabled: {
-      opacity: 0.4,
-    },
   })

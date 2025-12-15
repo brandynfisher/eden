@@ -97,6 +97,15 @@ export default function Permissions() {
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
 
+  const completeOnboarding = async () => {
+    await SecureStore.setItemAsync(ONBOARDING_COMPLETE_KEY, 'true')
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'BottomTabs' }],
+    })
+  }
+
   const handleContinue = async () => {
     setIsLoading(true)
     try {
@@ -117,45 +126,15 @@ export default function Permissions() {
       )
 
       // Check if all permissions were granted
-      const allGranted = permissionResults.every(result => result.granted)
       const deniedPermissions = permissionResults.filter(
         result => !result.granted,
       )
 
-      if (!allGranted) {
-        console.log('Some permissions were denied:', deniedPermissions)
-        const deniedPermissionNames = deniedPermissions
-          .map((result, index) => {
-            const permission = permissions.find(p => p.id === result.id)
-            return `${index + 1}. ${permission?.title ?? result.id}`
-          })
-          .join('\n')
-
-        // Show alert with exact permission names and don't navigate
-        Alert.alert(
-          'Permissions Required',
-          `Please enable the following permissions to continue:\n${deniedPermissionNames}.\nYou can manage them in your device settings.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                isIos
-                  ? Linking.openURL('app-settings:')
-                  : Linking.openSettings()
-              },
-            },
-          ],
-        )
-        return
+      if (deniedPermissions.length) {
+        console.log('Some permissions were denied, continuing anyway:', deniedPermissions)
       }
 
-      // All permissions granted - mark onboarding as complete and navigate
-      await SecureStore.setItemAsync(ONBOARDING_COMPLETE_KEY, 'true')
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'BottomTabs' }],
-      })
+      await completeOnboarding()
     } catch (error) {
       console.error('Error during permission setup:', error)
       // Show error alert and don't navigate

@@ -5,6 +5,7 @@ import Webview from '@/screens/webview'
 import createStyles from '@/styles/bottom-tabs.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type BottomTabsParamList = {
   Webview: { resetToken?: number; targetUrl?: string } | undefined
@@ -17,7 +18,8 @@ export default function BottomTabsNavigator() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const colors = Colors[theme]
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
 
   return (
     <Tab.Navigator
@@ -33,9 +35,9 @@ export default function BottomTabsNavigator() {
         name="Webview"
         component={Webview}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: 'App',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="apps" size={size} color={color} />
           ),
         }}
       />

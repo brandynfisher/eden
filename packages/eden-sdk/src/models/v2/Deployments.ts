@@ -6,6 +6,7 @@ export type ClientType =
   | 'telegram'
   | 'farcaster'
   | 'twitter'
+  | 'instagram'
   | 'shopify'
   | 'printify'
   | 'captions'
@@ -59,6 +60,18 @@ export type DeploymentSecretsFarcaster = {
   mnemonic?: string // For backwards compatibility with direct mnemonic auth
   signer_uuid?: string // For Neynar managed signers
   neynar_webhook_secret?: string
+}
+
+// Instagram Types
+export type DeploymentSettingsInstagram = {
+  username?: string
+}
+
+export type DeploymentSecretsInstagram = {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: Date | string
+  username?: string
 }
 
 // Twitter Types
@@ -188,6 +201,7 @@ export type DeploymentSecrets = {
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  instagram?: DeploymentSecretsInstagram
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
@@ -202,6 +216,7 @@ export type DeploymentConfig = {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  instagram?: DeploymentSettingsInstagram
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions

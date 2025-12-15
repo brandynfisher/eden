@@ -5,6 +5,7 @@ export enum ClientType {
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
   TWITTER = 'twitter',
+  INSTAGRAM = 'instagram',
   SHOPIFY = 'shopify',
   PRINTIFY = 'printify',
   CAPTIONS = 'captions',
@@ -75,6 +76,18 @@ export interface DeploymentSecretsTwitter {
   consumer_secret: string
   access_token: string
   access_token_secret: string
+}
+
+// Instagram Types
+export interface DeploymentSettingsInstagram {
+  username?: string
+}
+
+export interface DeploymentSecretsInstagram {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: Date | string
+  username?: string
 }
 
 // Shopify Types
@@ -180,6 +193,7 @@ export interface DeploymentSecrets {
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  instagram?: DeploymentSecretsInstagram
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
@@ -194,6 +208,7 @@ export interface DeploymentConfig {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  instagram?: DeploymentSettingsInstagram
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions

@@ -113,6 +113,7 @@ export type AgentClientType =
   | 'farcaster'
   | 'web'
   | 'shopify'
+  | 'instagram'
   | 'gmail'
   | 'email'
   | 'google_calendar'
@@ -237,6 +238,17 @@ interface TwitterDeploymentSecrets {
   access_token_secret: string
 }
 
+interface InstagramDeploymentConfig {
+  username?: string
+}
+
+interface InstagramDeploymentSecrets {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: string
+  username?: string
+}
+
 interface ShopifyDeploymentConfig extends Record<string, never> {}
 
 interface ShopifyDeploymentSecrets {
@@ -307,6 +319,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentConfig
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
+    instagram?: InstagramDeploymentConfig
     shopify?: ShopifyDeploymentConfig
     printify?: PrintifyDeploymentConfig
     captions?: CaptionsDeploymentConfig
@@ -318,6 +331,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
+    instagram?: InstagramDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
@@ -334,6 +348,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentConfig
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
+    instagram?: InstagramDeploymentConfig
     shopify?: ShopifyDeploymentConfig
     email?: EmailDeploymentConfig
     google_calendar?: GoogleCalendarDeploymentConfig
@@ -343,6 +358,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
+    instagram?: InstagramDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
