@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { TaskForm } from '@/features/sessions/components/session-settings-tabs/task-form'
+import { TaskFormWithSelectors } from '@/features/tasks/components/task-form-with-selectors'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
@@ -919,8 +920,8 @@ export const TasksView: FC<TasksViewProps> = ({
 
   // Show session info for global and agent modes
   const showSessionInfo = mode !== 'session'
-  // Show create button only for session mode
-  const showCreateButton = mode === 'session' && sessionId
+  // Show create button for session mode (with sessionId) or for agent/global modes
+  const showCreateButton = mode === 'session' ? !!sessionId : true
 
   if (!tasksGate.isAllowed) {
     return (
@@ -932,16 +933,28 @@ export const TasksView: FC<TasksViewProps> = ({
     )
   }
 
-  // Show inline form when creating or editing (only for session mode)
-  if (showForm && mode === 'session') {
-    return (
-      <TaskForm
-        sessionId={sessionId}
-        editingTask={editingTask}
-        onCancel={handleFormCancel}
-        onSave={handleFormSave}
-      />
-    )
+  // Show inline form when creating or editing
+  if (showForm) {
+    if (mode === 'session') {
+      return (
+        <TaskForm
+          sessionId={sessionId}
+          editingTask={editingTask}
+          onCancel={handleFormCancel}
+          onSave={handleFormSave}
+        />
+      )
+    } else {
+      return (
+        <TaskFormWithSelectors
+          mode={mode as 'agent' | 'global'}
+          agentId={agentId}
+          editingTask={editingTask}
+          onCancel={handleFormCancel}
+          onSave={handleFormSave}
+        />
+      )
+    }
   }
 
   return (
