@@ -176,6 +176,7 @@ type TaskFormProps = {
   editingTask?: Trigger | null
   onCancel: () => void
   onSave: () => void
+  hideHeader?: boolean
 }
 
 export const TaskForm: FC<TaskFormProps> = ({
@@ -183,6 +184,7 @@ export const TaskForm: FC<TaskFormProps> = ({
   editingTask,
   onCancel,
   onSave,
+  hideHeader = false,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -414,18 +416,20 @@ export const TaskForm: FC<TaskFormProps> = ({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="p-1.5 -ml-1.5 rounded-md hover:bg-muted"
-        >
-          <ArrowLeftIcon className="w-4 h-4" />
-        </button>
-        <h3 className="font-medium">
-          {editingTask ? 'Edit Task' : 'New Task'}
-        </h3>
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="p-1.5 -ml-1.5 rounded-md hover:bg-muted"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+          </button>
+          <h3 className="font-medium">
+            {editingTask ? 'Edit Task' : 'New Task'}
+          </h3>
+        </div>
+      )}
 
       <Form {...form}>
         <form
