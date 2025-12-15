@@ -177,6 +177,7 @@ type TaskFormProps = {
   onCancel: () => void
   onSave: () => void
   hideHeader?: boolean
+  disabled?: boolean
 }
 
 export const TaskForm: FC<TaskFormProps> = ({
@@ -185,6 +186,7 @@ export const TaskForm: FC<TaskFormProps> = ({
   onCancel,
   onSave,
   hideHeader = false,
+  disabled = false,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -829,7 +831,7 @@ export const TaskForm: FC<TaskFormProps> = ({
               </Button>
               <Button
                 type="submit"
-                disabled={form.formState.isSubmitting || isDeleting}
+                disabled={disabled || form.formState.isSubmitting || isDeleting}
               >
                 {form.formState.isSubmitting ? (
                   <>

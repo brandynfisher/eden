@@ -16,8 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { useAgentSessionListQuery } from '@/hooks/query/use-agent-session-list-query'
-import { SessionV2 } from '@edenlabs/eden-sdk'
+import { SessionV2, TriggerSessionAgent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeftIcon, Loader2 } from 'lucide-react'
 import { FC } from 'react'
@@ -109,14 +110,36 @@ export const SessionSelector: FC<SessionSelectorProps> = ({
                         <SelectValue placeholder="Select a session" />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
-                        {sessions.map(session => (
-                          <SelectItem
-                            key={session?._id}
-                            value={session?._id ?? ''}
-                          >
-                            {session?.title || 'Untitled Session'}
-                          </SelectItem>
-                        ))}
+                        {sessions.map(session => {
+                          const sessionAgents = (
+                            typeof session?.agents !== 'undefined'
+                              ? session.agents
+                              : []
+                          ) as TriggerSessionAgent[]
+
+                          return (
+                            <SelectItem
+                              key={session?._id}
+                              value={session?._id ?? ''}
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                {sessionAgents.length > 0 && (
+                                  <AgentAvatars
+                                    agents={sessionAgents.map(a => ({
+                                      _id: a._id,
+                                      username: a.username,
+                                      name: a.name || a.username,
+                                      userImage: a.userImage,
+                                    }))}
+                                  />
+                                )}
+                                <span className="flex-1">
+                                  {session?.title || 'Untitled Session'}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          )
+                        })}
                       </SelectContent>
                     </Select>
                   )}

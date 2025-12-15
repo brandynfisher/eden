@@ -1,8 +1,6 @@
 'use client'
 
-import { SessionSelector } from './session-selector'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -86,25 +84,30 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
     setShowAgentModal(false)
   }
 
-  // Agent mode flow: Session selector → Task form (separate screens)
+  // Agent mode flow: Session selector + Task form (combined on one screen)
   if (mode === 'agent') {
-    if (!selectedSession) {
-      return (
-        <SessionSelector
-          agentId={agentId!}
-          onSelect={setSelectedSession}
-          onCancel={onCancel}
-        />
-      )
-    }
-
     return (
-      <TaskForm
-        sessionId={selectedSession._id}
-        editingTask={editingTask}
-        onCancel={() => setSelectedSession(null)}
-        onSave={onSave}
-      />
+      <div className="space-y-4">
+        {/* Session Selection */}
+        <div className="space-y-2">
+          <label className="text-sm text-muted-foreground">Session *</label>
+          <SessionSelectorInline
+            agentUsername={agentId!}
+            selectedSession={selectedSession}
+            onSessionChange={setSelectedSession}
+          />
+        </div>
+
+        {/* Task Form - Always visible */}
+        <TaskForm
+          sessionId={selectedSession?._id || ''}
+          editingTask={editingTask}
+          onCancel={onCancel}
+          onSave={onSave}
+          hideHeader={true}
+          disabled={!selectedSession}
+        />
+      </div>
     )
   }
 
@@ -172,24 +175,16 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
           </div>
         )}
 
-        {/* Task Form */}
-        {selectedSession && (
+        {/* Task Form - Always visible when agent is selected */}
+        {currentAgentUsername && (
           <TaskForm
-            sessionId={selectedSession._id}
+            sessionId={selectedSession?._id || ''}
             editingTask={editingTask}
             onCancel={onCancel}
             onSave={onSave}
             hideHeader={true}
+            disabled={!selectedSession}
           />
-        )}
-
-        {/* Cancel Button - Show when no session selected yet */}
-        {!selectedSession && (
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
         )}
 
         {/* Agent Selector Modal */}
