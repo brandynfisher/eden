@@ -48,7 +48,26 @@ export const ChildSessionSidebar = ({
     session?.users?.[0]?._id === user?._id
   )
 
-  const messages = session?.messages || []
+  // Prepend session context as a system message if it exists
+  const messages = (() => {
+    const baseMessages = session?.messages || []
+    if (session?.context && session.context.trim()) {
+      const sessionContextMessage = {
+        _id: `session-context-${sessionId}`,
+        session: sessionId,
+        role: 'system' as const,
+        content: session.context,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+        attachments: [],
+        reactions: {},
+        sender: { _id: 'system', username: 'system', name: 'System' },
+        session_context: true,
+      } as Message & { session_context: boolean }
+      return [sessionContextMessage, ...baseMessages]
+    }
+    return baseMessages
+  })()
 
   return (
     <div
