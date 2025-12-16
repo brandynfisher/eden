@@ -45,6 +45,7 @@ import {
   Message,
   SessionPermissionLevel,
   SessionType,
+  SessionV2,
 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
@@ -403,7 +404,7 @@ const Session = ({
           role: 'user' as const,
           createdAt: new Date(),
           updatedAt: new Date(),
-          session: 'pending',
+          session: [{ _id: 'pending' } as SessionV2],
           reactions: {},
         },
       ],
@@ -558,7 +559,7 @@ const Session = ({
               // Create/update streaming message
               const streamingMessage: Message = {
                 _id: streamState.messageId,
-                session: [sessionId],
+                session: [{ _id: sessionId } as SessionV2],
                 role: 'assistant',
                 content: streamState.accumulatedTokens,
                 sender: streamState.agent,
@@ -1257,7 +1258,7 @@ const Session = ({
     if (triggerData && triggerData.context) {
       const triggerSystemMessage = {
         _id: `trigger-context-${sessionId}`,
-        session: [sessionId],
+        session: [{ _id: sessionId } as SessionV2],
         role: 'system' as const,
         content: triggerData.context,
         createdAt: new Date(0),
@@ -1275,7 +1276,7 @@ const Session = ({
     if (session?.context && session.context.trim()) {
       const sessionContextMessage = {
         _id: `session-context-${sessionId}`,
-        session: [sessionId],
+        session: [{ _id: sessionId } as SessionV2],
         role: 'system' as const,
         content: session.context,
         createdAt: new Date(0),
@@ -2087,7 +2088,7 @@ const Session = ({
                                   },
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: [sessionId],
+                                  session: [{ _id: sessionId } as SessionV2],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2119,7 +2120,7 @@ const Session = ({
                                       : getRespondingAgent(),
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: [sessionId],
+                                  session: [{ _id: sessionId } as SessionV2],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2154,7 +2155,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: [sessionId],
+                              session: [{ _id: sessionId } as SessionV2],
                               role: 'assistant',
                             } as Message
                           }
@@ -2185,7 +2186,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: [sessionId],
+                              session: [{ _id: sessionId } as SessionV2],
                               role: 'assistant',
                             } as Message
                           }
@@ -2366,7 +2367,7 @@ const Session = ({
                                 },
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
-                                session: [sessionId],
+                                session: [{ _id: sessionId } as SessionV2],
                                 role: 'assistant',
                               } as Message
                             }
@@ -2482,7 +2483,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: [sessionId],
+                    session: [{ _id: sessionId } as SessionV2],
                     role: 'user',
                   } as Message
 
@@ -2506,7 +2507,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: [sessionId],
+                    session: [{ _id: sessionId } as SessionV2],
                     role: 'user',
                     attachments: attachments || [],
                   } as Message

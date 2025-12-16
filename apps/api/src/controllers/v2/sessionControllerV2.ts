@@ -1158,6 +1158,12 @@ export const getSession = async (
             { attachments: { $not: { $size: 0 } } },
           ],
         },
+        {
+          $and: [
+            { eden_message_data: { $exists: true } },
+            { eden_message_data: { $ne: null } },
+          ],
+        },
       ],
     })
       .populate({
