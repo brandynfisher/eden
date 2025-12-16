@@ -81,7 +81,7 @@ describe('asset ownership', () => {
     })
 
     const message = await Message.create({
-      session: session._id,
+      session: [session._id],
       sender: user._id,
       role: 'user',
       content: 'hello world',

@@ -3,7 +3,6 @@
 import { OnboardingConfig, OnboardingStore } from '../types'
 import { OnboardingLayout } from './onboarding-layout'
 import LoadingIndicator from '@/components/loading-indicator'
-import { LiveAudioProvider } from '@/features/sessions/live-audio/live-audio-context'
 import Session from '@/features/sessions/session'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { getCloudfrontUrl } from '@/lib/media'
@@ -78,9 +77,5 @@ function ChatSessionContent({ config, useStore }: ChatSessionPageProps) {
 }
 
 export function ChatSessionPage(props: ChatSessionPageProps) {
-  return (
-    <LiveAudioProvider>
-      <ChatSessionContent {...props} />
-    </LiveAudioProvider>
-  )
+  return <ChatSessionContent {...props} />
 }

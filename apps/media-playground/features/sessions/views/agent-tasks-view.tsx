@@ -43,7 +43,7 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
           </div>
         )}
 
-        <TasksView mode="agent" agentId={agent._id} isModalOpen={true} />
+        <TasksView mode="agent" agentId={agent.username} isModalOpen={true} />
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 'use client'
 
-import { useLiveAudio } from '../live-audio/live-audio-context'
-import { LiveAudioManager } from '../live-audio/live-audio-manager'
+import { useTapToRecord } from '../hooks/use-tap-to-record'
 import { Attachment, FileUploadProgress } from './attachment'
 import { MentionInput, MentionInputRef } from './mention-input'
 import { LightboxGallery } from '@/components/media/lightbox'
@@ -23,17 +22,18 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
+import { Agent, SessionPermissionLevel } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
   ClockIcon,
+  LoaderIcon,
   MessageSquareIcon,
   MicIcon,
   PaperclipIcon,
   PencilOffIcon,
   SendIcon,
-  SquareIcon,
+  XIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -55,10 +55,11 @@ type MessageInputProps = {
     attachments?: string[],
     thinking?: boolean,
   ) => void
-  enableLiveAudio?: boolean
+  enableVoiceInput?: boolean
   agent?: Agent // Optional agent prop for welcome screen
   placeholder?: string // Custom placeholder text
   expanded?: boolean // Start with expanded multi-line view
+  onTranscribingChange?: (isTranscribing: boolean) => void // Callback when transcription state changes
 }
 
 type AttachmentDropzoneProps = {
@@ -108,10 +109,11 @@ const getNativeWebViewBridge = () => {
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
-  enableLiveAudio = false,
+  enableVoiceInput = false,
   agent: propAgent,
   placeholder = 'Write a message...',
   expanded = false,
+  onTranscribingChange,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
   const [isMultiline, setIsMultiline] = useState(expanded)
@@ -130,8 +132,6 @@ export const MessageInput = ({
     key: firstAgentId!,
     enabled: !!firstAgentId,
   })
-
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
@@ -151,6 +151,27 @@ export const MessageInput = ({
   // Use prop agent if available (for welcome screen), otherwise use session agent
   const activeAgent = propAgent || fullAgent
   const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
+
+  // Tap-to-record for voice input
+  const handleVoiceTranscription = useCallback(
+    (transcription: string) => {
+      if (onStreamingMessage && transcription.trim()) {
+        // Send the transcription directly as a message
+        onStreamingMessage(transcription.trim(), [], isThinkingEnabled)
+      }
+    },
+    [onStreamingMessage, isThinkingEnabled],
+  )
+
+  const {
+    isRecording: isVoiceRecording,
+    isTranscribing,
+    toggleRecording,
+    cancelRecording,
+  } = useTapToRecord({
+    onTranscription: handleVoiceTranscription,
+    onTranscribingChange,
+  })
 
   // Sync isMultiline with expanded prop when it changes
   useEffect(() => {
@@ -562,36 +583,6 @@ export const MessageInput = ({
     }
   }
 
-  // Always call the hook to avoid conditional hook calls
-  const liveAudioHook = useLiveAudio()
-  const liveAudioState = liveAudioHook?.state ?? {
-    isRecording: false,
-    isProcessing: false,
-    actionIntervalProgress: 0,
-  }
-  const { isRecording, isProcessing, actionIntervalProgress } = liveAudioState
-
-  // Only enable live audio features for preview users
-  const shouldShowLiveAudio = enableLiveAudio && isPreviewUser
-
-  const handleRecordToggle = () => {
-    if (!shouldShowLiveAudio || !liveAudioHook) return
-
-    // This will trigger the modal to open via the LiveAudioManager
-    const managerElement = document.querySelector('[data-live-audio-manager]')
-    const managerWithToggle = managerElement as HTMLElement & {
-      __toggleRecording?: () => void
-    }
-    if (managerElement && managerWithToggle.__toggleRecording) {
-      managerWithToggle.__toggleRecording()
-    }
-  }
-
-  const handleStopRecording = () => {
-    if (!shouldShowLiveAudio || !liveAudioHook) return
-    liveAudioHook.stopLiveAudio()
-  }
-
   useEffect(() => {
     const textarea = textareaRef.current?.textArea
     if (!textarea) return
@@ -671,15 +662,6 @@ export const MessageInput = ({
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
 
-      {/* Live Audio Manager handles recording indicator and modal - only when enabled for preview users */}
-      {shouldShowLiveAudio && (
-        <LiveAudioManager
-          sessionId={sessionId}
-          onStreamingMessage={onStreamingMessage}
-          isSubmitting={isSubmitting}
-        />
-      )}
-
       <div className="relative z-[51] bg-accent w-full">
         <Form {...form}>
           <form
@@ -707,7 +689,7 @@ export const MessageInput = ({
             )}
 
             {/* Conditional layout based on text wrapping */}
-            {!isRecording && (
+            {!isVoiceRecording && !isTranscribing && (
               <div className="px-2.5 py-2">
                 {/* Multi-line layout: text on top, buttons on bottom */}
                 {isMultiline ? (
@@ -838,7 +820,7 @@ export const MessageInput = ({
 
                       {/* Right side buttons */}
                       <div className="flex items-center gap-1 flex-shrink-0">
-                        {shouldShowLiveAudio && (
+                        {enableVoiceInput && (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -848,21 +830,25 @@ export const MessageInput = ({
                                   variant="ghost"
                                   className={cn(
                                     'h-8 w-8',
-                                    isProcessing && 'text-blue-500',
+                                    isTranscribing && 'text-blue-500',
                                   )}
-                                  onClick={handleRecordToggle}
-                                  disabled={isSubmitting || isProcessing}
+                                  onClick={toggleRecording}
+                                  disabled={isSubmitting || isTranscribing}
                                 >
                                   <MicIcon
                                     className={cn(
                                       'w-4 h-4',
-                                      isProcessing && 'animate-spin',
+                                      isTranscribing && 'animate-pulse',
                                     )}
                                   />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Start audio session</p>
+                                <p>
+                                  {isTranscribing
+                                    ? 'Transcribing...'
+                                    : 'Record voice message'}
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -1010,7 +996,7 @@ export const MessageInput = ({
 
                     {/* Right side buttons */}
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {shouldShowLiveAudio && (
+                      {enableVoiceInput && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1020,21 +1006,25 @@ export const MessageInput = ({
                                 variant="ghost"
                                 className={cn(
                                   'h-8 w-8',
-                                  isProcessing && 'text-blue-500',
+                                  isTranscribing && 'text-blue-500',
                                 )}
-                                onClick={handleRecordToggle}
-                                disabled={isSubmitting || isProcessing}
+                                onClick={toggleRecording}
+                                disabled={isSubmitting || isTranscribing}
                               >
                                 <MicIcon
                                   className={cn(
                                     'w-4 h-4',
-                                    isProcessing && 'animate-spin',
+                                    isTranscribing && 'animate-pulse',
                                   )}
                                 />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Start audio session</p>
+                              <p>
+                                {isTranscribing
+                                  ? 'Transcribing...'
+                                  : 'Record voice message'}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -1063,38 +1053,64 @@ export const MessageInput = ({
               </div>
             )}
 
-            {/* Bottom half - recording indicator when recording is active and live audio is enabled for preview users */}
-            {shouldShowLiveAudio && isRecording && (
-              <div className="relative bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 px-4 py-2 overflow-hidden">
-                {/* Progress bar background */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-r from-red-400/50 to-red-200/30 dark:from-red-500/30 dark:to-red-700/15 transition-all duration-100 ease-linear border-r border-red-300/50 dark:border-red-600/30"
-                  style={{ width: `${actionIntervalProgress}%` }}
-                />
-
-                {/* Recording indicator content */}
-                <div className="relative flex items-center justify-between">
+            {/* Recording indicator when voice recording is active */}
+            {enableVoiceInput && isVoiceRecording && (
+              <div className="relative bg-orange-500/10 border-t border-orange-500/30 px-4 py-2">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <MicIcon className="w-5 h-5 text-red-600" />
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                      <MicIcon className="w-5 h-5 text-orange-400" />
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-400 rounded-full animate-pulse" />
                     </div>
-                    <span className="text-sm font-medium text-red-700 dark:text-red-300">
-                      {isProcessing
-                        ? 'Processing audio...'
-                        : 'Agent is listening...'}
+                    <span className="text-sm font-medium text-orange-300">
+                      Recording...
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={cancelRecording}
+                      className="h-7 px-2 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={toggleRecording}
+                      className="h-7 px-3 border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
+                    >
+                      Stop & Send
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transcribing indicator when audio is being transcribed */}
+            {enableVoiceInput && isTranscribing && (
+              <div className="relative bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800 px-4 py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <LoaderIcon className="w-5 h-5 text-blue-600 animate-spin" />
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      Transcribing your message...
                     </span>
                   </div>
 
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
-                    onClick={handleStopRecording}
-                    className="h-7 px-3 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                    variant="ghost"
+                    onClick={cancelRecording}
+                    className="h-7 px-2 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900/30"
                   >
-                    <SquareIcon className="w-3 h-3 mr-1 fill-current" />
-                    Stop
+                    <XIcon className="w-4 h-4 mr-1" />
+                    Cancel
                   </Button>
                 </div>
               </div>

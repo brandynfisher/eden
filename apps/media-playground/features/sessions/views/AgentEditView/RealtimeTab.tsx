@@ -125,8 +125,8 @@ export const RealtimeTab = forwardRef<RealtimeTabHandle, RealtimeTabProps>(
     // State for adding new user input field
     const [newFieldLabel, setNewFieldLabel] = useState('')
 
-    // State for debug mode checkbox (default enabled)
-    const [debugMode, setDebugMode] = useState(true)
+    // State for debug mode checkbox (default disabled)
+    const [debugMode, setDebugMode] = useState(false)
 
     // State for custom voice ID mode
     const [isCustomVoice, setIsCustomVoice] = useState(false)

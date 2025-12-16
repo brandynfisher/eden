@@ -362,6 +362,30 @@ export const DeploymentFormFooter = ({
         }
 
         await axios.post(`/api/agents/${agentId}/deployments`, payload)
+
+        // Auto-enable social media tools when a new integration is deployed
+        try {
+          // First get current agent to preserve existing tools
+          const agentResponse = await axios.get(`/api/agents/${agentId}`)
+          const currentTools = agentResponse.data?.agent?.tools || {}
+
+          // Only update if social_media_tools is not already enabled
+          if (!currentTools.social_media_tools) {
+            await axios.patch(`/api/agents/${agentId}`, {
+              tools: {
+                ...currentTools,
+                social_media_tools: true,
+              },
+            })
+            // Invalidate agent query cache so Tools tab reflects the change
+            await queryClient.invalidateQueries({
+              queryKey: ['agents', agentId],
+            })
+          }
+        } catch (toolsError) {
+          // Don't fail the deployment if tools update fails, just log it
+          console.error('Failed to auto-enable social media tools:', toolsError)
+        }
       }
 
       toast.success(successMessage, {

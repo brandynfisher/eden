@@ -127,7 +127,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           <MessageInput
             sessionId={'new'}
             onStreamingMessage={onSendMessage}
-            enableLiveAudio={true}
+            enableVoiceInput={true}
             agent={agent}
           />
         </div>

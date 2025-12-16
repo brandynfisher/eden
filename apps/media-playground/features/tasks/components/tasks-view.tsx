@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { TaskForm } from '@/features/sessions/components/session-settings-tabs/task-form'
+import { TaskFormWithSelectors } from '@/features/tasks/components/task-form-with-selectors'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
@@ -46,6 +47,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+
+// Helper to check if trigger status is 'running'
+// Note: SDK includes 'running' status but TS cache may not reflect latest types
+const isRunning = (status: string | undefined): boolean => status === 'running'
 
 dayjs.extend(utc)
 dayjs.extend(timezonePlugin)
@@ -166,6 +171,10 @@ const TaskItem: FC<{
 
     if (trigger.status === 'paused') {
       return 'Paused'
+    }
+
+    if (isRunning(trigger.status)) {
+      return 'Running...'
     }
 
     const scheduleWithTimezone = {
@@ -335,18 +344,23 @@ const TaskItem: FC<{
           <div
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              isExecuting
+              isRunning(trigger.status) || isExecuting
                 ? 'bg-primary/10 cursor-default'
                 : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
             )}
-            title={isExecuting ? 'Running...' : 'Run now'}
+            title={
+              isRunning(trigger.status) || isExecuting
+                ? 'Running...'
+                : 'Run now'
+            }
           >
-            {isExecuting ? (
+            {/* Note: trigger.status includes 'running' but TS cache may not reflect latest SDK types */}
+            {isRunning(trigger.status) || isExecuting ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
               <button
                 onClick={handleExecuteNow}
-                disabled={isExecuting}
+                disabled={isExecuting || isRunning(trigger.status)}
                 className="w-full h-full flex items-center justify-center"
               >
                 <PlayIcon className="h-4 w-4 text-primary fill-primary" />
@@ -686,6 +700,10 @@ export const TasksView: FC<TasksViewProps> = ({
   const { manualTriggers, scheduledTriggers, archivedTriggers, allRecentRuns } =
     useMemo(() => {
       const archived = filteredTriggers.filter(trigger => {
+        // Running tasks should never be archived, even if end_date has passed
+        if (isRunning(trigger.status)) {
+          return false
+        }
         if (trigger.status === 'finished') {
           return true
         }
@@ -710,7 +728,7 @@ export const TasksView: FC<TasksViewProps> = ({
         if (
           trigger.status === 'active' ||
           trigger.status === 'paused' ||
-          trigger.status === 'running'
+          isRunning(trigger.status)
         ) {
           if (trigger.schedule.end_date) {
             const endDate = new Date(trigger.schedule.end_date)
@@ -911,8 +929,8 @@ export const TasksView: FC<TasksViewProps> = ({
 
   // Show session info for global and agent modes
   const showSessionInfo = mode !== 'session'
-  // Show create button only for session mode
-  const showCreateButton = mode === 'session' && sessionId
+  // Show create button for session mode (with sessionId) or for agent/global modes
+  const showCreateButton = mode === 'session' ? !!sessionId : true
 
   if (!tasksGate.isAllowed) {
     return (
@@ -924,16 +942,28 @@ export const TasksView: FC<TasksViewProps> = ({
     )
   }
 
-  // Show inline form when creating or editing (only for session mode)
-  if (showForm && mode === 'session') {
-    return (
-      <TaskForm
-        sessionId={sessionId}
-        editingTask={editingTask}
-        onCancel={handleFormCancel}
-        onSave={handleFormSave}
-      />
-    )
+  // Show inline form when creating or editing
+  if (showForm) {
+    if (mode === 'session') {
+      return (
+        <TaskForm
+          sessionId={sessionId}
+          editingTask={editingTask}
+          onCancel={handleFormCancel}
+          onSave={handleFormSave}
+        />
+      )
+    } else {
+      return (
+        <TaskFormWithSelectors
+          mode={mode as 'agent' | 'global'}
+          agentId={agentId}
+          editingTask={editingTask}
+          onCancel={handleFormCancel}
+          onSave={handleFormSave}
+        />
+      )
+    }
   }
 
   return (

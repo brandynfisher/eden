@@ -27,6 +27,7 @@ import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { AssistantMessage } from '@/features/sessions/components/assistant-message'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
+import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
@@ -45,6 +46,7 @@ import {
   Message,
   SessionPermissionLevel,
   SessionType,
+  SessionV2,
 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
@@ -146,6 +148,7 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
     context: '',
@@ -403,7 +406,7 @@ const Session = ({
           role: 'user' as const,
           createdAt: new Date(),
           updatedAt: new Date(),
-          session: 'pending',
+          session: [{ _id: 'pending' } as SessionV2],
           reactions: {},
         },
       ],
@@ -558,7 +561,7 @@ const Session = ({
               // Create/update streaming message
               const streamingMessage: Message = {
                 _id: streamState.messageId,
-                session: sessionId,
+                session: [{ _id: sessionId } as SessionV2],
                 role: 'assistant',
                 content: streamState.accumulatedTokens,
                 sender: streamState.agent,
@@ -1257,7 +1260,7 @@ const Session = ({
     if (triggerData && triggerData.context) {
       const triggerSystemMessage = {
         _id: `trigger-context-${sessionId}`,
-        session: sessionId,
+        session: [{ _id: sessionId } as SessionV2],
         role: 'system' as const,
         content: triggerData.context,
         createdAt: new Date(0),
@@ -1275,7 +1278,7 @@ const Session = ({
     if (session?.context && session.context.trim()) {
       const sessionContextMessage = {
         _id: `session-context-${sessionId}`,
-        session: sessionId,
+        session: [{ _id: sessionId } as SessionV2],
         role: 'system' as const,
         content: session.context,
         createdAt: new Date(0),
@@ -2087,7 +2090,7 @@ const Session = ({
                                   },
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: sessionId,
+                                  session: [{ _id: sessionId } as SessionV2],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2099,6 +2102,22 @@ const Session = ({
                           </div>
                         )
                       })}
+
+                      {/* Show user transcribing indicator when voice is being transcribed */}
+                      {isUserTranscribing && (
+                        <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
+                          <div className="max-w-[42rem] ml-auto flex flex-col items-end">
+                            <div className="flex flex-col items-end gap-2 max-w-[85%]">
+                              <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                  Transcribing
+                                </span>
+                                <TypingIndicator />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Show agent typing indicator only if SSE hasn't confirmed yet and no streaming messages */}
                       {shouldShowLoader &&
@@ -2119,7 +2138,7 @@ const Session = ({
                                       : getRespondingAgent(),
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: sessionId,
+                                  session: [{ _id: sessionId } as SessionV2],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2154,7 +2173,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: sessionId,
+                              session: [{ _id: sessionId } as SessionV2],
                               role: 'assistant',
                             } as Message
                           }
@@ -2185,7 +2204,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: sessionId,
+                              session: [{ _id: sessionId } as SessionV2],
                               role: 'assistant',
                             } as Message
                           }
@@ -2366,7 +2385,7 @@ const Session = ({
                                 },
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
-                                session: sessionId,
+                                session: [{ _id: sessionId } as SessionV2],
                                 role: 'assistant',
                               } as Message
                             }
@@ -2435,7 +2454,7 @@ const Session = ({
           <div className="max-w-[51rem] mx-auto w-full">
             <MessageInput
               sessionId={currentSessionId as string}
-              enableLiveAudio={true}
+              enableVoiceInput={true}
               onStreamingMessage={(content, attachments, thinking) => {
                 clearErrors()
                 setCancelledNotice(false)
@@ -2482,7 +2501,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: sessionId,
+                    session: [{ _id: sessionId } as SessionV2],
                     role: 'user',
                   } as Message
 
@@ -2506,7 +2525,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: sessionId,
+                    session: [{ _id: sessionId } as SessionV2],
                     role: 'user',
                     attachments: attachments || [],
                   } as Message
@@ -2524,6 +2543,7 @@ const Session = ({
                   setTimeout(scrollToBottom, 100)
                 }
               }}
+              onTranscribingChange={setIsUserTranscribing}
             />
           </div>
         </div>

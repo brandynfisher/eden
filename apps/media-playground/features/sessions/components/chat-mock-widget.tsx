@@ -1,6 +1,5 @@
 'use client'
 
-import { LiveAudioProvider } from '../live-audio/live-audio-context'
 import { MessageInput } from './message-input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -201,14 +200,12 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         </div>
         <Separator className="shrink-0" />
         <div className="px-2 md:px-4 p-4 shrink-0">
-          <LiveAudioProvider>
-            <MessageInput
-              sessionId="new"
-              onStreamingMessage={handleSendMessage}
-              enableLiveAudio={true}
-              agent={agent as Agent}
-            />
-          </LiveAudioProvider>
+          <MessageInput
+            sessionId="new"
+            onStreamingMessage={handleSendMessage}
+            enableVoiceInput={true}
+            agent={agent as Agent}
+          />
 
           <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
             <div className="flex flex-wrap gap-2">

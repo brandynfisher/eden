@@ -1,11 +1,17 @@
 'use client'
 
-import { Message } from '@edenlabs/eden-sdk'
 import { sessionConfig } from '@/lib/config'
+import { Message } from '@edenlabs/eden-sdk'
+import { Dispatch, SetStateAction } from 'react'
+
+interface SessionUser {
+  _id: string
+  username: string
+  userImage?: string
+}
 
 interface UseSessionMessageHandlerProps {
-  sessionId: string
-  user: any // Replace with proper user type
+  user: SessionUser | null | undefined
   clearErrors: () => void
   setCancelledNotice: (value: boolean) => void
   getRespondingAgent: () => {
@@ -15,19 +21,18 @@ interface UseSessionMessageHandlerProps {
     userImage?: string | undefined
   }
   scrollToBottom: () => void
-  
+
   // Streaming props
   initializeStreaming?: () => void
   sendStreamingMessage?: (content: string, attachments?: string[]) => void
-  
-  // Non-streaming props  
+
+  // Non-streaming props
   setWaitingForResponse?: (value: boolean) => void
-  setOptimisticMessages?: React.Dispatch<React.SetStateAction<Message[]>>
+  setOptimisticMessages?: Dispatch<SetStateAction<Message[]>>
   sendNonStreamingMessage?: (content: string, attachments?: string[]) => void
 }
 
 export const useSessionMessageHandler = ({
-  sessionId,
   user,
   clearErrors,
   setCancelledNotice,
@@ -45,7 +50,11 @@ export const useSessionMessageHandler = ({
 
     if (sessionConfig.useStreaming) {
       // Streaming mode
-      if (initializeStreaming && sendStreamingMessage && setOptimisticMessages) {
+      if (
+        initializeStreaming &&
+        sendStreamingMessage &&
+        setOptimisticMessages
+      ) {
         initializeStreaming()
         sendStreamingMessage(content, attachments)
 
@@ -63,7 +72,7 @@ export const useSessionMessageHandler = ({
             },
             createdAt: new Date(),
             updatedAt: new Date(),
-            session: sessionId,
+            session: [],
             role: 'user',
           } as Message,
           {
@@ -72,7 +81,7 @@ export const useSessionMessageHandler = ({
             sender: getRespondingAgent(),
             createdAt: new Date(),
             updatedAt: new Date(),
-            session: sessionId,
+            session: [],
             role: 'assistant',
             __optimistic: true,
           } as Message,
@@ -82,7 +91,11 @@ export const useSessionMessageHandler = ({
       }
     } else {
       // Non-streaming mode
-      if (setWaitingForResponse && setOptimisticMessages && sendNonStreamingMessage) {
+      if (
+        setWaitingForResponse &&
+        setOptimisticMessages &&
+        sendNonStreamingMessage
+      ) {
         setWaitingForResponse(true)
 
         const userMessage: Message = {
@@ -96,7 +109,7 @@ export const useSessionMessageHandler = ({
           },
           createdAt: new Date(),
           updatedAt: new Date(),
-          session: sessionId,
+          session: [],
           role: 'user',
           attachments: attachments || [],
         } as Message
