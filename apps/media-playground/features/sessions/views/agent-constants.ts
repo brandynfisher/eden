@@ -3,7 +3,6 @@ import { SubscriptionTier } from '@edenlabs/eden-sdk'
 // Agent form constants and guidance text
 export const AGENT_FIELD_LIMITS = {
   DESCRIPTION_MAX_CHARS: 100,
-  INSTRUCTIONS_MAX_CHARS: 300000, // Max limit (Believer tier)
   NAME_MAX_CHARS: 42,
   GREETING_MAX_CHARS: 140,
 } as const
@@ -36,6 +35,18 @@ export const formatCharacterCount = (count: number): string => {
     return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k`
   }
   return count.toString()
+}
+
+// Get next tier info for upgrade prompt
+export const getNextTierInfo = (currentTier: SubscriptionTier) => {
+  if (currentTier >= SubscriptionTier.Believer) {
+    return null // Already at max tier (excluding Admin)
+  }
+  const nextTier = (currentTier + 1) as SubscriptionTier
+  return {
+    name: SUBSCRIPTION_TIER_NAMES[nextTier],
+    limit: getPersonaCharacterLimit(nextTier),
+  }
 }
 
 export const AGENT_FIELD_GUIDANCE = {

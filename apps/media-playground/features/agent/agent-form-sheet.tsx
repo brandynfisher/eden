@@ -46,6 +46,7 @@ import {
   AGENT_FIELD_LIMITS,
   SUBSCRIPTION_TIER_NAMES,
   formatCharacterCount,
+  getNextTierInfo,
   getPersonaCharacterLimit,
 } from '@/features/sessions/views/agent-constants'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
@@ -101,7 +102,7 @@ export const agentSchema = z.object({
       }),
     )
     .optional(),
-  persona: z.string().max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS).optional(),
+  persona: z.string().optional(),
   public: z.boolean().optional(),
   website: z
     .string()
@@ -190,18 +191,6 @@ function CharacterCount({
       </Tooltip>
     </TooltipProvider>
   )
-}
-
-// Get next tier info for upgrade prompt
-const getNextTierInfo = (currentTier: SubscriptionTier) => {
-  if (currentTier >= SubscriptionTier.Believer) {
-    return null // Already at max tier (excluding Admin)
-  }
-  const nextTier = (currentTier + 1) as SubscriptionTier
-  return {
-    name: SUBSCRIPTION_TIER_NAMES[nextTier],
-    limit: getPersonaCharacterLimit(nextTier),
-  }
 }
 
 const AgentFormSheet = () => {
