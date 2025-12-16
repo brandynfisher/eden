@@ -778,7 +778,7 @@ const ChatLaunchpad = () => {
               <MessageInput
                 sessionId="new"
                 onStreamingMessage={handleSendMessage}
-                enableLiveAudio={true}
+                enableVoiceInput={true}
                 agent={selectedAgents[0]}
                 placeholder={
                   selectedAgents.length > 1

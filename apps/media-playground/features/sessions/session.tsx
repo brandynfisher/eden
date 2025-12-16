@@ -27,6 +27,7 @@ import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { AssistantMessage } from '@/features/sessions/components/assistant-message'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
+import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
@@ -147,6 +148,7 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
     context: '',
@@ -2101,6 +2103,22 @@ const Session = ({
                         )
                       })}
 
+                      {/* Show user transcribing indicator when voice is being transcribed */}
+                      {isUserTranscribing && (
+                        <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
+                          <div className="max-w-[42rem] ml-auto flex flex-col items-end">
+                            <div className="flex flex-col items-end gap-2 max-w-[85%]">
+                              <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                  Transcribing
+                                </span>
+                                <TypingIndicator />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Show agent typing indicator only if SSE hasn't confirmed yet and no streaming messages */}
                       {shouldShowLoader &&
                         agentsWaitingToRespond.size === 0 &&
@@ -2436,7 +2454,7 @@ const Session = ({
           <div className="max-w-[51rem] mx-auto w-full">
             <MessageInput
               sessionId={currentSessionId as string}
-              enableLiveAudio={true}
+              enableVoiceInput={true}
               onStreamingMessage={(content, attachments, thinking) => {
                 clearErrors()
                 setCancelledNotice(false)
@@ -2525,6 +2543,7 @@ const Session = ({
                   setTimeout(scrollToBottom, 100)
                 }
               }}
+              onTranscribingChange={setIsUserTranscribing}
             />
           </div>
         </div>
