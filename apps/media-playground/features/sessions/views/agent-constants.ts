@@ -1,10 +1,42 @@
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
+
 // Agent form constants and guidance text
 export const AGENT_FIELD_LIMITS = {
   DESCRIPTION_MAX_CHARS: 100,
-  INSTRUCTIONS_MAX_CHARS: 30000,
+  INSTRUCTIONS_MAX_CHARS: 300000, // Max limit (Believer tier)
   NAME_MAX_CHARS: 42,
   GREETING_MAX_CHARS: 140,
 } as const
+
+// Persona character limits per subscription tier
+export const PERSONA_CHARACTER_LIMITS: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.Free]: 50000,
+  [SubscriptionTier.Basic]: 100000,
+  [SubscriptionTier.Pro]: 200000,
+  [SubscriptionTier.Believer]: 300000,
+  [SubscriptionTier.Admin]: 400000,
+}
+
+export const SUBSCRIPTION_TIER_NAMES: Record<SubscriptionTier, string> = {
+  [SubscriptionTier.Free]: 'Free',
+  [SubscriptionTier.Basic]: 'Basic',
+  [SubscriptionTier.Pro]: 'Pro',
+  [SubscriptionTier.Believer]: 'Believer',
+  [SubscriptionTier.Admin]: 'Admin',
+}
+
+export const getPersonaCharacterLimit = (
+  tier: SubscriptionTier | undefined,
+): number => {
+  return PERSONA_CHARACTER_LIMITS[tier ?? SubscriptionTier.Free]
+}
+
+export const formatCharacterCount = (count: number): string => {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k`
+  }
+  return count.toString()
+}
 
 export const AGENT_FIELD_GUIDANCE = {
   DESCRIPTION:
