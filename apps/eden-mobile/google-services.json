@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "131259471318",
+    "project_id": "eden-art-mobile",
+    "storage_bucket": "eden-art-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:131259471318:android:421141f4342b2acffdc077",
+        "android_client_info": {
+          "package_name": "app.eden.eden"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsg1ondpkQ8Y12xBcSgBvVlXxKKAUW6cI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

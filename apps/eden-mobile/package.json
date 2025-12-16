@@ -8,12 +8,14 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "dev:eden": "expo start",
+    "build:production": "concurrently \"yarn build:android:production\" \"yarn build:ios:production\"",
     "build:android:staging": "JAVA_HOME=$(/usr/libexec/java_home -v 17) && ENV_JS_FILE=.env.staging && bash ./scripts/build-android-release.sh",
-    "android:clean": "rm -rf android/app/build android/app/.cxx android/.gradle .gradle-cache && echo 'Cleaned local Android build artifacts.'",
-    "android:version:bump": "node ./scripts/bump-android-version.js",
-    "ios:archive:staging": "ENV_JS_FILE=.env.staging ./scripts/ios-archive.sh",
-    "ios:archive:production": "ENV_JS_FILE=.env.production ./scripts/ios-archive.sh",
-    "ios:clean": "./scripts/ios-clean.sh"
+    "build:android:production": "yarn bump:android:version && JAVA_HOME=$(/usr/libexec/java_home -v 17) && ENV_JS_FILE=.env.production && bash ./scripts/build-android-release.sh",
+    "build:ios:staging": "ENV_JS_FILE=.env.staging ./scripts/ios-archive.sh",
+    "build:ios:production": "ENV_JS_FILE=.env.production ./scripts/ios-archive.sh",
+    "bump:android:version": "node ./scripts/bump-android-version.js",
+    "clean:ios": "./scripts/ios-clean.sh",
+    "clean:android": "rm -rf android/app/build android/app/.cxx android/.gradle .gradle-cache && echo 'Cleaned local Android build artifacts.'"
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.17.3",
@@ -50,7 +52,8 @@
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "babel-preset-expo": "~54.0.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "concurrently": "^9.1.2"
   },
   "private": true
 }

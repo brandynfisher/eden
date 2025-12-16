@@ -61,6 +61,7 @@ const DISABLE_PREFIXES = [
   '/gigabrain',
   '/models',
   '/creations',
+  '/native-bridge',
 ]
 const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'

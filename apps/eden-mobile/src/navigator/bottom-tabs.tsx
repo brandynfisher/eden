@@ -23,11 +23,16 @@ export default function BottomTabsNavigator() {
 
   return (
     <Tab.Navigator
+      safeAreaInsets={{ bottom: insets.bottom }}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
-        tabBarStyle: styles.tabBarStyle,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
         tabBarLabelStyle: styles.tabBarLabelStyle,
       }}
     >

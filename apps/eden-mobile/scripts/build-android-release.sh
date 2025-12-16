@@ -99,6 +99,11 @@ fi
 : "${RELEASE_KEY_PASSWORD:?Set RELEASE_KEY_PASSWORD in $ENV_FILE or env}"
 RELEASE_STORE_PASSWORD=${RELEASE_STORE_PASSWORD:-$RELEASE_KEY_PASSWORD}
 
+# Ensure native project is generated with latest config (google-services.json, etc.)
+echo "ℹ️  Running expo prebuild..."
+cd "$ROOT_DIR"
+npx expo prebuild --platform android --clean
+
 cd "$ANDROID_DIR"
 
 ./gradlew clean \

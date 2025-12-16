@@ -44,6 +44,7 @@ const ConditionalHeader = () => {
     pathname?.startsWith('/tasks') ||
     pathname?.startsWith('/new') ||
     pathname?.startsWith('/train') ||
+    pathname?.startsWith('/native-bridge') ||
     pathname === '/'
   ) {
     return null

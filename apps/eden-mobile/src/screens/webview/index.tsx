@@ -23,6 +23,7 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 
 const WEB_DEV_PORT = 3000
@@ -78,7 +79,8 @@ export default function Webview() {
     useNavigation<BottomTabNavigationProp<BottomTabsParamList, 'Webview'>>()
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
 
   const [initialUrl, setInitialUrl] = useState(WEB_URL)
   const [currentUrl, setCurrentUrl] = useState<string>(WEB_URL)

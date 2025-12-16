@@ -1,7 +1,7 @@
 import { BorderRadius, Colors, Spacing, Typography } from '@/constants/theme'
 import { StyleSheet } from 'react-native'
 
-export default (theme: 'light' | 'dark') =>
+export default (theme: 'light' | 'dark', bottomInset: number = 0) =>
   StyleSheet.create({
     webview: {
       flex: 1,
@@ -16,6 +16,7 @@ export default (theme: 'light' | 'dark') =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
+      paddingBottom: bottomInset,
       gap: Spacing.xl,
     },
     description: {
@@ -53,6 +54,7 @@ export default (theme: 'light' | 'dark') =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
+      paddingBottom: bottomInset,
       gap: Spacing.xl,
     },
     notConnectedContent: {

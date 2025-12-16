@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "eden-mobile",
+    "name": "Eden",
     "slug": "eden",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,9 +23,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./google-services.json",
       "package": "art.eden.eden",
       "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",

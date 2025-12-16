@@ -2,7 +2,7 @@ import { BorderRadius, Colors, Spacing, Typography } from '@/constants/theme'
 import { wp } from '@/utils/responsive'
 import { StyleSheet } from 'react-native'
 
-export default (theme: 'light' | 'dark') =>
+export default (theme: 'light' | 'dark', bottomInset: number = 0) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -10,6 +10,7 @@ export default (theme: 'light' | 'dark') =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
+      paddingBottom: Spacing.lg + bottomInset,
     },
     content: {
       alignItems: 'center',

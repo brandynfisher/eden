@@ -3,7 +3,6 @@ import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { RootStackParamList } from '@/navigator'
 import createStyles from '@/styles/permissions.styles'
-import { isIos } from '@/utils/responsive'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as ImagePicker from 'expo-image-picker'
@@ -13,12 +12,12 @@ import { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -93,7 +92,8 @@ const permissions: PermissionItem[] = [
 export default function Permissions() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
 
