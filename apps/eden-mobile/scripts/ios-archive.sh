@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+ROOT_DIR="$(pwd)"
 
 # Load EXPO_PUBLIC_* for the JS bundle (override with ENV_JS_FILE if set)
 ENV_JS_FILE=${ENV_JS_FILE:-.env.staging}
@@ -14,27 +15,44 @@ else
   echo "⚠️  $ENV_JS_FILE not found; continuing without injecting EXPO_PUBLIC_* envs"
 fi
 
-TEAM_ID="V58985DFSU"
-ROOT_DIR="$(pwd)"
+# Determine build type from env file name
+if [[ "$ENV_JS_FILE" == *"production"* ]]; then
+  BUILD_TYPE="production"
+else
+  BUILD_TYPE="staging"
+fi
 
+TEAM_ID="V58985DFSU"
 SIGN_STYLE=Manual
 SIGN_ID="Apple Distribution"
 PROFILE_SPECIFIER="jmill-provisioning"
 
-# Ensure pods/codegen outputs are present (regenerates build/generated/ios if missing)
+# App name from app.json
+APP_NAME="Eden"
+SCHEME="Eden"
+
+# Ensure native project is generated with latest config
+echo "ℹ️  Running expo prebuild..."
+npx expo prebuild --platform ios --clean
+
+# Ensure pods are installed
 pushd ios >/dev/null
 pod install
 popd >/dev/null
 
+echo "ℹ️  Building $APP_NAME ($BUILD_TYPE)..."
+
 xcodebuild \
-  -workspace "$ROOT_DIR/ios/edenmobile.xcworkspace" \
-  -scheme edenmobile \
+  -workspace "$ROOT_DIR/ios/$APP_NAME.xcworkspace" \
+  -scheme "$SCHEME" \
   -configuration Release \
   -destination "generic/platform=iOS" \
-  -archivePath "$ROOT_DIR/build/edenmobile-staging.xcarchive" \
+  -archivePath "$ROOT_DIR/build/$APP_NAME-$BUILD_TYPE.xcarchive" \
   DEVELOPMENT_TEAM="$TEAM_ID" \
   CODE_SIGN_STYLE="$SIGN_STYLE" \
   CODE_SIGN_IDENTITY="$SIGN_ID" \
   PROVISIONING_PROFILE_SPECIFIER="$PROFILE_SPECIFIER" \
   -allowProvisioningUpdates \
   archive
+
+echo "✅ Archive created: $ROOT_DIR/build/$APP_NAME-$BUILD_TYPE.xcarchive"

@@ -1,19 +1,38 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
-const gradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
-const gradle = fs.readFileSync(gradlePath, 'utf8');
+const versionFile = path.join(__dirname, '..', 'android-version.json')
 
-const match = gradle.match(/versionCode\s+(\d+)/);
-if (!match) {
-  console.error('versionCode not found in android/app/build.gradle');
-  process.exit(1);
+// Read current version
+let data = { versionCode: 0 }
+if (fs.existsSync(versionFile)) {
+  data = JSON.parse(fs.readFileSync(versionFile, 'utf8'))
 }
 
-const current = parseInt(match[1], 10);
-const next = current + 1;
-const updated = gradle.replace(/versionCode\s+\d+/, `versionCode ${next}`);
+// Check for --set flag to manually set version
+const setArg = process.argv.find(arg => arg.startsWith('--set='))
+if (setArg) {
+  const newVersion = parseInt(setArg.split('=')[1], 10)
+  if (isNaN(newVersion) || newVersion < 1) {
+    console.error('Invalid version number. Use --set=<number>')
+    process.exit(1)
+  }
+  data.versionCode = newVersion
+  fs.writeFileSync(versionFile, JSON.stringify(data, null, 2) + '\n')
+  console.log(`Set versionCode to ${newVersion}`)
+  process.exit(0)
+}
 
-fs.writeFileSync(gradlePath, updated);
-console.log(`Bumped versionCode: ${current} -> ${next}`);
+// Check for --get flag to just print current version
+if (process.argv.includes('--get')) {
+  console.log(data.versionCode)
+  process.exit(0)
+}
+
+// Default: bump version
+const current = data.versionCode
+const next = current + 1
+data.versionCode = next
+fs.writeFileSync(versionFile, JSON.stringify(data, null, 2) + '\n')
+console.log(`Bumped versionCode: ${current} -> ${next}`)

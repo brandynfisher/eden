@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:131259471318:android:421141f4342b2acffdc077",
+        "mobilesdk_app_id": "1:131259471318:android:9d08da1ece99f6b9fdc077",
         "android_client_info": {
-          "package_name": "app.eden.eden"
+          "package_name": "art.eden.eden"
         }
       },
       "oauth_client": [],

@@ -104,6 +104,20 @@ echo "ℹ️  Running expo prebuild..."
 cd "$ROOT_DIR"
 npx expo prebuild --platform android --clean
 
+# Inject versionCode from android-version.json (survives prebuild --clean)
+VERSION_FILE="$ROOT_DIR/android-version.json"
+if [[ -f "$VERSION_FILE" ]]; then
+  VERSION_CODE=$(node -e "console.log(require('$VERSION_FILE').versionCode)")
+  GRADLE_FILE="$ANDROID_DIR/app/build.gradle"
+  if [[ -f "$GRADLE_FILE" ]]; then
+    sed -i.bak "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$GRADLE_FILE"
+    rm -f "$GRADLE_FILE.bak"
+    echo "ℹ️  Set versionCode to $VERSION_CODE"
+  fi
+else
+  echo "⚠️  android-version.json not found, using default versionCode"
+fi
+
 cd "$ANDROID_DIR"
 
 ./gradlew clean \
