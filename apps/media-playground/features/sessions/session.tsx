@@ -558,7 +558,7 @@ const Session = ({
               // Create/update streaming message
               const streamingMessage: Message = {
                 _id: streamState.messageId,
-                session: sessionId,
+                session: [sessionId],
                 role: 'assistant',
                 content: streamState.accumulatedTokens,
                 sender: streamState.agent,
@@ -1257,7 +1257,7 @@ const Session = ({
     if (triggerData && triggerData.context) {
       const triggerSystemMessage = {
         _id: `trigger-context-${sessionId}`,
-        session: sessionId,
+        session: [sessionId],
         role: 'system' as const,
         content: triggerData.context,
         createdAt: new Date(0),
@@ -1275,7 +1275,7 @@ const Session = ({
     if (session?.context && session.context.trim()) {
       const sessionContextMessage = {
         _id: `session-context-${sessionId}`,
-        session: sessionId,
+        session: [sessionId],
         role: 'system' as const,
         content: session.context,
         createdAt: new Date(0),
@@ -2087,7 +2087,7 @@ const Session = ({
                                   },
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: sessionId,
+                                  session: [sessionId],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2119,7 +2119,7 @@ const Session = ({
                                       : getRespondingAgent(),
                                   createdAt: new Date(),
                                   updatedAt: new Date(),
-                                  session: sessionId,
+                                  session: [sessionId],
                                   role: 'assistant',
                                 } as Message
                               }
@@ -2154,7 +2154,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: sessionId,
+                              session: [sessionId],
                               role: 'assistant',
                             } as Message
                           }
@@ -2185,7 +2185,7 @@ const Session = ({
                               sender: getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
-                              session: sessionId,
+                              session: [sessionId],
                               role: 'assistant',
                             } as Message
                           }
@@ -2366,7 +2366,7 @@ const Session = ({
                                 },
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
-                                session: sessionId,
+                                session: [sessionId],
                                 role: 'assistant',
                               } as Message
                             }
@@ -2482,7 +2482,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: sessionId,
+                    session: [sessionId],
                     role: 'user',
                   } as Message
 
@@ -2506,7 +2506,7 @@ const Session = ({
                     },
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    session: sessionId,
+                    session: [sessionId],
                     role: 'user',
                     attachments: attachments || [],
                   } as Message

@@ -54,7 +54,7 @@ export const ChildSessionSidebar = ({
     if (session?.context && session.context.trim()) {
       const sessionContextMessage = {
         _id: `session-context-${sessionId}`,
-        session: sessionId,
+        session: [sessionId],
         role: 'system' as const,
         content: session.context,
         createdAt: new Date(0),
