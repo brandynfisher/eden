@@ -13,7 +13,7 @@ import { Schema, model } from 'mongoose'
 
 export interface MessageSchema {
   _id: string
-  session: SessionDocument
+  session: SessionDocument[]
   sender: UserDocument | AgentDocument
   eden_user_id?: Schema.Types.ObjectId | null
   triggering_user?: Schema.Types.ObjectId | null
@@ -41,11 +41,13 @@ export interface MessageDocument extends MessageSchema {}
 
 const messageSchema = new Schema<MessageDocument>(
   {
-    session: {
-      type: Schema.Types.ObjectId,
-      ref: 'sessions',
-      required: true,
-    },
+    session: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'sessions',
+        required: true,
+      },
+    ],
     sender: {
       type: Schema.Types.ObjectId,
       ref: 'users3',

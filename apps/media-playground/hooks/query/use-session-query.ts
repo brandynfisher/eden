@@ -134,7 +134,7 @@ export function useSessionQuery({
       const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
       const optimisticMessage: Message & { __optimistic: boolean } = {
         _id: optimisticId,
-        session: sessionId,
+        session: [sessionId] as unknown as SessionV2[],
         role: 'user',
         createdAt: new Date(),
         updatedAt: new Date(),

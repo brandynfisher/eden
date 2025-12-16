@@ -41,7 +41,7 @@ export type Thought = {
 
 export type Message = {
   _id: string
-  session: SessionV2
+  session: SessionV2[]
   sender: Creator | Agent
   eden_user_id?: string
   triggering_user?: string

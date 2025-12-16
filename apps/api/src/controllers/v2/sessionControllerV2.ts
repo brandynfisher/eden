@@ -40,7 +40,7 @@ const createEdenMessage = async (
   agents: any[],
 ) => {
   const edenMessage = new Message({
-    session: sessionId,
+    session: [sessionId],
     sender: new ObjectId('000000000000000000000000'), // System sender
     role: 'eden',
     content: '',
@@ -1426,9 +1426,9 @@ export const addSessionMessageReaction = async (
     })
   }
 
-  // Find the session to check access
+  // Find a session the user might have access to (message can belong to multiple sessions)
   const session = await Session.findOne({
-    _id: message.session,
+    _id: { $in: message.session },
   })
 
   if (!session) {
@@ -1534,9 +1534,9 @@ export const addSessionToolCallReaction = async (
     })
   }
 
-  // Find the session to check access
+  // Find a session the user might have access to (message can belong to multiple sessions)
   const session = await Session.findOne({
-    _id: message.session,
+    _id: { $in: message.session },
   })
 
   if (!session) {
@@ -2714,7 +2714,7 @@ export const addPassiveMessage = async (
 
     // Create and save the message directly to MongoDB
     const message = new Message({
-      session: new ObjectId(session_id),
+      session: [new ObjectId(session_id)],
       sender: senderId,
       eden_user_id: new ObjectId(user_id),
       role: role,

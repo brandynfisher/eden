@@ -700,6 +700,10 @@ export const TasksView: FC<TasksViewProps> = ({
   const { manualTriggers, scheduledTriggers, archivedTriggers, allRecentRuns } =
     useMemo(() => {
       const archived = filteredTriggers.filter(trigger => {
+        // Running tasks should never be archived, even if end_date has passed
+        if (isRunning(trigger.status)) {
+          return false
+        }
         if (trigger.status === 'finished') {
           return true
         }
