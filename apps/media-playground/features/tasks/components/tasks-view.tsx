@@ -1032,6 +1032,13 @@ export const TasksView: FC<TasksViewProps> = ({
     onTasksChange?.()
   }, [triggersQuery, onTasksChange])
 
+  const handleReactivateTask = useCallback(() => {
+    triggersQuery.invalidate()
+    onTasksChange?.()
+    // Switch to active tab when reactivating
+    setActiveTab('active')
+  }, [triggersQuery, onTasksChange])
+
   const handleNavigateToRun = (trigger: Trigger, messageId: string) => {
     const sessionInfo = getSessionInfo(trigger)
     // Can't navigate to runs if session doesn't exist yet
@@ -1175,13 +1182,9 @@ export const TasksView: FC<TasksViewProps> = ({
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
-                        onEdit={
-                          mode === 'session' || mode === 'agent'
-                            ? handleEdit
-                            : undefined
-                        }
+                        onEdit={handleEdit}
                         onArchive={handleTaskChange}
-                        onReactivate={handleTaskChange}
+                        onReactivate={handleReactivateTask}
                         onPause={handleTaskChange}
                         onResume={handleTaskChange}
                         onDelete={handleTaskChange}
@@ -1218,13 +1221,9 @@ export const TasksView: FC<TasksViewProps> = ({
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
-                        onEdit={
-                          mode === 'session' || mode === 'agent'
-                            ? handleEdit
-                            : undefined
-                        }
+                        onEdit={handleEdit}
                         onArchive={handleTaskChange}
-                        onReactivate={handleTaskChange}
+                        onReactivate={handleReactivateTask}
                         onPause={handleTaskChange}
                         onResume={handleTaskChange}
                         onDelete={handleTaskChange}
@@ -1344,11 +1343,7 @@ export const TasksView: FC<TasksViewProps> = ({
               <TaskItem
                 key={trigger._id}
                 trigger={trigger}
-                onEdit={
-                  mode === 'session' || mode === 'agent'
-                    ? handleEdit
-                    : undefined
-                }
+                onEdit={handleEdit}
                 onArchive={handleTaskChange}
                 onReactivate={handleTaskChange}
                 onPause={handleTaskChange}

@@ -19,6 +19,10 @@ export type EdenMessageType =
   | 'agent_remove'
   | 'rate_limit'
   | 'trigger'
+  | 'conductor_init'
+  | 'conductor_turn'
+  | 'conductor_hint'
+  | 'conductor_finish'
 
 export type EdenMessageAgentData = {
   id: string
