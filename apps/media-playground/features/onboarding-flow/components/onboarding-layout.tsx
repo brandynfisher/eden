@@ -50,7 +50,7 @@ export function OnboardingLayout({
       {/* Progress Bar - Fixed to top */}
       <div className="w-full bg-gray-900 h-2 flex-shrink-0">
         <div
-          className="h-full bg-gradient-to-r from-yellow-400 to-purple-400 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -73,7 +73,7 @@ export function OnboardingLayout({
             {previousRoute && currentStep > 1 && (
               <button
                 onClick={handleBack}
-                className="text-yellow-400 hover:text-yellow-300 transition-colors text-sm font-medium flex items-center gap-2"
+                className="text-violet-400 hover:text-violet-300 transition-colors text-sm font-medium flex items-center gap-2"
               >
                 <svg
                   className="w-4 h-4"
@@ -95,7 +95,7 @@ export function OnboardingLayout({
 
           {/* Center: Step Indicator */}
           <div className="flex justify-center">
-            <h2 className="text-[15px] font-bold text-yellow-400/60 whitespace-nowrap">
+            <h2 className="text-[15px] font-bold text-violet-400/60 whitespace-nowrap">
               Step {currentStep}/{totalSteps}
             </h2>
           </div>
@@ -105,7 +105,7 @@ export function OnboardingLayout({
             {progressText && (
               <span
                 className={`text-xs font-medium ${
-                  canContinue ? 'text-purple-400' : 'text-orange-400'
+                  canContinue ? 'text-fuchsia-400' : 'text-violet-400/60'
                 }`}
               >
                 {progressText}
@@ -126,7 +126,7 @@ export function OnboardingLayout({
                 `}
                 style={{
                   background: canContinue
-                    ? 'linear-gradient(135deg, #e6a825, #7c8aff)'
+                    ? 'linear-gradient(135deg, #8b5cf6, #d946ef)'
                     : '#374151',
                 }}
               >
@@ -164,7 +164,7 @@ export function OnboardingLayout({
             {previousRoute && currentStep > 1 ? (
               <button
                 onClick={handleBack}
-                className="text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-medium flex items-center gap-1 flex-shrink-0"
+                className="text-violet-400 hover:text-violet-300 transition-colors text-xs font-medium flex items-center gap-1 flex-shrink-0"
               >
                 <svg
                   className="w-3 h-3"
@@ -186,13 +186,13 @@ export function OnboardingLayout({
             ) : null}
           </div>
           <div className="flex flex-col items-center flex-1">
-            <h2 className="text-[11px] font-bold text-yellow-400/60 whitespace-nowrap">
+            <h2 className="text-[11px] font-bold text-violet-400/60 whitespace-nowrap">
               Step {currentStep}/{totalSteps}
             </h2>
             {progressText && (
               <span
                 className={`text-[10px] font-medium whitespace-nowrap ${
-                  canContinue ? 'text-purple-400' : 'text-orange-400'
+                  canContinue ? 'text-fuchsia-400' : 'text-violet-400/60'
                 }`}
               >
                 {progressText}
@@ -210,7 +210,7 @@ export function OnboardingLayout({
               `}
               style={{
                 background: canContinue
-                  ? 'linear-gradient(135deg, #e6a825, #7c8aff)'
+                  ? 'linear-gradient(135deg, #8b5cf6, #d946ef)'
                   : '#374151',
               }}
             >

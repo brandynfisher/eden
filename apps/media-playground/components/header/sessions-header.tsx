@@ -13,10 +13,28 @@ import { SessionShareButton } from '@/features/sessions/components/session-share
 import { SessionStatusToggle } from '@/features/sessions/components/session-status-toggle'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { SessionType } from '@edenlabs/eden-sdk'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { Agent, SessionPermissionLevel, SessionType } from '@edenlabs/eden-sdk'
+import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -80,25 +98,43 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     enabled: !!sessionId && sessionId !== 'new' && !isShareRoute,
   })
 
+  // Helper to check if user can manage session (owner or has editor/owner permissions)
+  const canManageSession =
+    session &&
+    user &&
+    (session.owner._id === user._id ||
+      session.permission_level_for_user === SessionPermissionLevel.Editor ||
+      session.permission_level_for_user === SessionPermissionLevel.Owner)
+
   // Update session settings when session data loads
+  // IMPORTANT: Only sync from server when modal is CLOSED to avoid resetting user edits
+  const hasInitializedSettings = useRef(false)
+
   useEffect(() => {
     if (session) {
-      setSessionSettings({
-        type: session.session_type === 'automatic' ? 'automatic' : 'natural',
-        context: session.context || '',
-        conductor_prompt: session.settings?.conductor_prompt || '',
-        delay_interval: session.settings?.delay_interval || 0,
-        mention_force_reply: session.settings?.mention_force_reply || false,
-        manna_budget_unlimited: !session.budget?.manna_budget,
-        manna_budget: session.budget?.manna_budget,
-        token_budget_unlimited: !session.budget?.token_budget,
-        token_budget: session.budget?.token_budget,
-        turn_budget_unlimited: !session.budget?.turn_budget,
-        turn_budget: session.budget?.turn_budget,
-        exclude_memory: session.extras?.exclude_memory || false,
-      })
+      // Only sync settings from server if:
+      // 1. This is the initial load (hasn't been initialized yet), OR
+      // 2. The modal is closed (user isn't actively editing)
+      if (!hasInitializedSettings.current || !isSettingsModalOpen) {
+        hasInitializedSettings.current = true
+
+        setSessionSettings({
+          type: session.session_type === 'automatic' ? 'automatic' : 'natural',
+          context: session.context || '',
+          conductor_prompt: session.settings?.conductor_prompt || '',
+          delay_interval: session.settings?.delay_interval || 0,
+          mention_force_reply: session.settings?.mention_force_reply || false,
+          manna_budget_unlimited: !session.budget?.manna_budget,
+          manna_budget: session.budget?.manna_budget,
+          token_budget_unlimited: !session.budget?.token_budget,
+          token_budget: session.budget?.token_budget,
+          turn_budget_unlimited: !session.budget?.turn_budget,
+          turn_budget: session.budget?.turn_budget,
+          exclude_memory: session.extras?.exclude_memory || false,
+        })
+      }
     }
-  }, [session])
+  }, [session, isSettingsModalOpen])
 
   const handleNewSession = () => {
     // Create URL with current session's agents
@@ -110,7 +146,10 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     onChatClick?.()
   }
 
-  const handleSaveSettings = async (settings: SessionSettings) => {
+  const handleSaveSettings = async (
+    settings: SessionSettings,
+    agents?: Agent[],
+  ) => {
     try {
       // Build request body exactly like EditSessionModal and /sessions/new
       const requestBody: {
@@ -129,6 +168,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         extras?: {
           exclude_memory?: boolean
         }
+        agent_ids?: string[]
       } = {
         session_type:
           settings.type === 'natural'
@@ -168,6 +208,11 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         requestBody.extras = {
           exclude_memory: true,
         }
+      }
+
+      // Add agent_ids if agents were changed
+      if (agents && agents.length > 0) {
+        requestBody.agent_ids = agents.map(a => a._id)
       }
 
       const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -235,13 +280,12 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
                 </button>
               </AgentAvatarsMenu>
               {session.title && (
-                <button
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors"
+                <div
+                  className="text-sm text-foreground truncate flex-1 text-left"
                   title={session.title}
                 >
                   {session.title}
-                </button>
+                </div>
               )}
             </>
           ) : null}
@@ -249,10 +293,9 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
         {/* Right section - Icon buttons only (hide on share route) */}
         <div className="flex items-center gap-1 shrink-0">
-          {/* Status Toggle - only show for automatic sessions when user is owner */}
+          {/* Status Toggle - only show for automatic sessions when user can manage */}
           {!isShareRoute &&
-            session &&
-            session.owner._id === user?._id &&
+            canManageSession &&
             sessionId !== 'new' &&
             session.session_type === 'automatic' && (
               <SessionStatusToggle
@@ -263,20 +306,30 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
               />
             )}
 
-          {/* Share button - icon only, hide on share route */}
-          {!isShareRoute &&
-            session &&
-            session.owner._id === user?._id &&
-            sessionId !== 'new' && (
-              <SessionShareButton
-                sessionId={sessionId}
-                messages={session.messages || []}
-                isOwner={session.owner._id === user?._id}
-                isPublic={session.extras?.is_public}
-                className="h-9 w-9 px-0"
-                hideText
-              />
-            )}
+          {/* Settings button - icon only, show for editors/owners */}
+          {!isShareRoute && canManageSession && sessionId !== 'new' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="h-9 w-9"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          )}
+
+          {/* Share button - icon only, hide on share route, show for editors/owners */}
+          {!isShareRoute && canManageSession && sessionId !== 'new' && (
+            <SessionShareButton
+              sessionId={sessionId}
+              messages={session.messages || []}
+              isOwner={session.owner._id === user?._id}
+              isPublic={session.extras?.is_public}
+              className="h-9 w-9 px-0"
+              hideText
+            />
+          )}
 
           {/* New Chat button - icon only */}
           {!isShareRoute && (
@@ -302,6 +355,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           onSettingsChange={setSessionSettings}
           agents={session.agents}
           sessionId={sessionId}
+          sessionTitle={session.title}
           onSave={handleSaveSettings}
           minimal={false}
         />

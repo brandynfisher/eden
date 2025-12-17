@@ -1,7 +1,7 @@
 import { BorderRadius, Colors, Spacing, Typography } from '@/constants/theme'
 import { StyleSheet } from 'react-native'
 
-export default (theme: 'light' | 'dark') =>
+export default (theme: 'light' | 'dark', bottomInset: number = 0) =>
   StyleSheet.create({
     webview: {
       flex: 1,
@@ -16,6 +16,7 @@ export default (theme: 'light' | 'dark') =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
+      paddingBottom: bottomInset,
       gap: Spacing.xl,
     },
     description: {
@@ -53,6 +54,7 @@ export default (theme: 'light' | 'dark') =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: Spacing.lg,
+      paddingBottom: bottomInset,
       gap: Spacing.xl,
     },
     notConnectedContent: {
@@ -116,25 +118,5 @@ export default (theme: 'light' | 'dark') =>
       fontSize: Typography.fontSize.sm,
       fontFamily: Typography.fontFamily.semibold,
       color: Colors[theme].primary,
-    },
-    navigationBar: {
-      flexDirection: 'row',
-      backgroundColor: Colors[theme].background,
-      borderBottomWidth: 1,
-      borderBottomColor: Colors[theme].border,
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing.xs,
-      gap: Spacing.xs,
-    },
-    navButton: {
-      padding: Spacing.sm,
-      borderRadius: BorderRadius.sm,
-      minWidth: 44,
-      minHeight: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    navButtonDisabled: {
-      opacity: 0.4,
     },
   })

@@ -392,6 +392,60 @@ export const tiktokOAuth = async (
     error?: string
   }
 
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>TikTok Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0f172a; color:#e2e8f0; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#111827; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#06b6d4; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing TikTok connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'TikTok connected!' : 'Unable to connect TikTok');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'tiktok-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
   // State contains the agentId
   const agentId = state
 
@@ -401,16 +455,25 @@ export const tiktokOAuth = async (
     const agent = await Agent.findById(agentId)
     if (agent) {
       const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
-      return reply.redirect(redirectUrl)
+      return sendPopupResponse({
+        success: false,
+        message: error || 'OAuth cancelled or failed',
+        redirectUrl,
+        type: 'tiktok-link',
+      })
     }
-    return reply.status(400).send({
-      message: 'OAuth cancelled or failed',
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled or failed',
+      type: 'tiktok-link',
     })
   }
 
   if (!state) {
-    return reply.status(400).send({
+    return sendPopupResponse({
+      success: false,
       message: 'Missing state parameter',
+      type: 'tiktok-link',
     })
   }
 
@@ -418,8 +481,10 @@ export const tiktokOAuth = async (
     // Get agent to find the owner
     const agent = await Agent.findById(agentId)
     if (!agent) {
-      return reply.status(404).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Agent not found',
+        type: 'tiktok-link',
       })
     }
 
@@ -451,12 +516,14 @@ export const tiktokOAuth = async (
       )
       console.error('Access token:', access_token)
       console.error('Open ID:', open_id)
-      return reply.status(400).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Invalid credentials received from TikTok',
+        type: 'tiktok-link',
       })
     }
 
-    // Get user info to get username
+    // Get user info to get username / handle
     let username = ''
     try {
       const userInfoResponse = await axios.get(
@@ -466,13 +533,23 @@ export const tiktokOAuth = async (
             Authorization: `Bearer ${access_token}`,
           },
           params: {
-            fields: 'display_name,username',
+            fields: 'display_name,username,profile_deep_link,union_id',
           },
         },
       )
 
       if (userInfoResponse.data?.data?.user) {
-        username = userInfoResponse.data.data.user.username
+        const userData = userInfoResponse.data.data.user
+        // Prefer explicit username; fall back to unique_id/profile_deep_link/display_name
+        username =
+          userData.username ||
+          userData.unique_id ||
+          (typeof userData.profile_deep_link === 'string'
+            ? userData.profile_deep_link.split('@').pop()?.split('?')[0] ||
+              userData.profile_deep_link.split('/').filter(Boolean).pop()
+            : '') ||
+          userData.display_name ||
+          ''
       }
     } catch (error) {
       // Username is optional, continue without it
@@ -494,7 +571,7 @@ export const tiktokOAuth = async (
         user: agent.owner,
         platform: 'tiktok',
         secrets: { tiktok: tiktokSecrets },
-        config: { tiktok: {} },
+        config: { tiktok: { username } },
       },
     }
 
@@ -504,15 +581,306 @@ export const tiktokOAuth = async (
       },
     })
 
+    // Persist username into deployment config/secrets for UI display
+    if (username) {
+      await Deployment.updateOne(
+        { agent: agentId, platform: 'tiktok' },
+        {
+          $set: {
+            'config.tiktok.username': username,
+            'secrets.tiktok.username': username,
+          },
+        },
+      )
+    }
+
     // Redirect back to agent settings
     const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
 
-    return reply.redirect(redirectUrl)
+    return sendPopupResponse({
+      success: true,
+      message: 'TikTok connected successfully',
+      type: 'tiktok-link',
+      redirectUrl,
+      payload: {
+        username,
+        agentId,
+      },
+    })
   } catch (error) {
     console.error('TikTok OAuth error:', error)
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect TikTok account',
+      type: 'tiktok-link',
+    })
+  }
+}
+
+export const instagramOAuth = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { code, state, error, error_description } = request.query as {
+    code?: string
+    state: string
+    error?: string
+    error_description?: string
+  }
+
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Instagram Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0f172a; color:#e2e8f0; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#111827; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#f472b6; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing Instagram connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'Instagram connected!' : 'Unable to connect Instagram');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'instagram-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
+  const agentId = state
+
+  if (error || !code) {
+    const agent = await Agent.findById(agentId)
+    const redirectUrl = agent
+      ? `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+      : undefined
+    return sendPopupResponse({
+      success: false,
+      message: error_description || error || 'OAuth cancelled or failed',
+      redirectUrl,
+      type: 'instagram-link',
+    })
+  }
+
+  if (!state) {
+    return sendPopupResponse({
+      success: false,
+      message: 'Missing state parameter',
+      type: 'instagram-link',
+    })
+  }
+
+  if (
+    !server.config.INSTAGRAM_CLIENT_ID ||
+    !server.config.INSTAGRAM_CLIENT_SECRET
+  ) {
+    server.log.error('Missing Instagram OAuth env (INSTAGRAM_CLIENT_ID/SECRET)')
+    return sendPopupResponse({
+      success: false,
+      message: 'Instagram OAuth is not configured',
+      type: 'instagram-link',
+    })
+  }
+
+  try {
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Agent not found',
+        type: 'instagram-link',
+      })
+    }
+
+    const tokenResponse = await axios.post(
+      'https://api.instagram.com/oauth/access_token',
+      new URLSearchParams({
+        client_id: server.config.INSTAGRAM_CLIENT_ID as string,
+        client_secret: server.config.INSTAGRAM_CLIENT_SECRET as string,
+        grant_type: 'authorization_code',
+        redirect_uri: `${server.config.API_URL}/v2/auth/instagram/callback`,
+        code,
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    const { access_token, user_id, expires_in } = tokenResponse.data as {
+      access_token?: string
+      user_id?: string | number
+      expires_in?: number
+    }
+
+    const normalizedAccessToken =
+      typeof access_token === 'string' ? access_token.trim() : access_token
+
+    if (!normalizedAccessToken) {
+      const { access_token: _redacted, ...rest } = tokenResponse.data as Record<
+        string,
+        unknown
+      >
+      server.log.error({ data: rest }, 'Instagram token exchange failed')
+      return sendPopupResponse({
+        success: false,
+        message: 'Invalid credentials received from Instagram',
+        type: 'instagram-link',
+      })
+    }
+
+    let igUserId = user_id ? String(user_id) : ''
+    let username = ''
+
+    try {
+      const meResponse = await axios.get(
+        'https://graph.instagram.com/v24.0/me',
+        {
+          params: {
+            fields: 'user_id,username,id',
+            access_token: normalizedAccessToken,
+          },
+        },
+      )
+
+      const data = meResponse.data as {
+        user_id?: string | number
+        id?: string | number
+        username?: string
+      }
+
+      igUserId = String(data.user_id ?? data.id ?? igUserId)
+      username = data.username ?? username
+    } catch {
+      // Username is optional; continue without it.
+    }
+
+    const expiresAt =
+      typeof expires_in === 'number'
+        ? new Date(Date.now() + expires_in * 1000)
+        : undefined
+
+    const instagramSecrets = {
+      access_token: normalizedAccessToken,
+      refresh_token: null,
+      expires_at: expiresAt,
+      username,
+    }
+
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/create`,
+      data: {
+        agent: agentId,
+        user: agent.owner,
+        platform: 'instagram',
+        secrets: { instagram: instagramSecrets },
+        config: { instagram: { username, ig_user_id: igUserId } },
+      },
+    }
+
+    await axios.post(modalRequest.endpoint, modalRequest.data, {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    })
+
+    await Deployment.updateOne(
+      { agent: agentId, platform: 'instagram' },
+      {
+        $set: {
+          'config.instagram.username': username || undefined,
+          'config.instagram.ig_user_id': igUserId || undefined,
+          'secrets.instagram.username': username || undefined,
+        },
+      },
+    )
+
+    const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+
+    return sendPopupResponse({
+      success: true,
+      message: 'Instagram connected successfully',
+      type: 'instagram-link',
+      redirectUrl,
+      payload: {
+        username,
+        ig_user_id: igUserId,
+        agentId,
+      },
+    })
+  } catch (err) {
+    console.error('Instagram OAuth error:', err)
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Instagram account',
+      type: 'instagram-link',
+    })
+  }
+}
+
+export const disconnectInstagram = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    await Deployment.deleteOne({
+      agent: agentId,
+      platform: 'instagram',
+    })
+
+    return reply.status(200).send({
+      message: 'Instagram account disconnected successfully',
+    })
+  } catch (error) {
+    console.error('Instagram disconnect error:', error)
     return reply
       .status(500)
-      .send({ message: 'Failed to connect TikTok account' })
+      .send({ message: 'Failed to disconnect Instagram account' })
   }
 }
 
@@ -557,6 +925,60 @@ export const twitterIntegrationOAuth = async (
     error?: string
   }
 
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Twitter Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0b1220; color:#e5e7eb; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#0f172a; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#1d9bf0; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing Twitter connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'Twitter connected!' : 'Unable to connect Twitter');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'twitter-integration-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
   // State contains the agentId
   const agentId = state
 
@@ -566,16 +988,25 @@ export const twitterIntegrationOAuth = async (
     const agent = await Agent.findById(agentId)
     if (agent) {
       const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
-      return reply.redirect(redirectUrl)
+      return sendPopupResponse({
+        success: false,
+        message: error || 'OAuth cancelled or failed',
+        redirectUrl,
+        type: 'twitter-integration-link',
+      })
     }
-    return reply.status(400).send({
-      message: 'OAuth cancelled or failed',
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled or failed',
+      type: 'twitter-integration-link',
     })
   }
 
   if (!state) {
-    return reply.status(400).send({
+    return sendPopupResponse({
+      success: false,
       message: 'Missing state parameter',
+      type: 'twitter-integration-link',
     })
   }
 
@@ -583,8 +1014,10 @@ export const twitterIntegrationOAuth = async (
     // Get agent to find the owner
     const agent = await Agent.findById(agentId)
     if (!agent) {
-      return reply.status(404).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Agent not found',
+        type: 'twitter-integration-link',
       })
     }
 
@@ -622,8 +1055,10 @@ export const twitterIntegrationOAuth = async (
     const twitterId = userResponse.data.data.id
 
     if (!twitterHandle || !twitterId) {
-      return reply.status(400).send({
+      return sendPopupResponse({
+        success: false,
         message: 'Twitter username or ID not found',
+        type: 'twitter-integration-link',
       })
     }
 
@@ -656,15 +1091,26 @@ export const twitterIntegrationOAuth = async (
     // Redirect back to agent settings
     const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
 
-    return reply.redirect(redirectUrl)
+    return sendPopupResponse({
+      success: true,
+      message: 'Twitter connected successfully',
+      type: 'twitter-integration-link',
+      redirectUrl,
+      payload: {
+        twitterHandle,
+        agentId,
+      },
+    })
   } catch (error) {
     console.error(
       'Twitter Integration OAuth error:',
       (error as any).response?.data || error,
     )
-    return reply
-      .status(500)
-      .send({ message: 'Failed to connect Twitter account for integration' })
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Twitter account for integration',
+      type: 'twitter-integration-link',
+    })
   }
 }
 
@@ -876,5 +1322,319 @@ export const getFarcasterSignerStatus = async (
   } catch (error) {
     console.error('Get Farcaster signer status error:', error)
     return reply.status(500).send({ message: 'Failed to get signer status' })
+  }
+}
+
+// Google Calendar OAuth scopes
+const GOOGLE_CALENDAR_SCOPES = [
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/calendar.events',
+]
+
+export const googleCalendarOAuthInit = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    const clientId = server.config.GOOGLE_CALENDAR_CLIENT_ID
+    if (!clientId) {
+      return reply.status(500).send({
+        message: 'Google Calendar OAuth not configured',
+      })
+    }
+
+    // Verify agent exists and user owns it
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Unauthorized',
+      })
+    }
+
+    // Build Google OAuth URL
+    const redirectUri = `${server.config.API_URL}/v2/auth/google-calendar/callback`
+    const state = agentId // Pass agentId in state
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+    authUrl.searchParams.set('client_id', clientId)
+    authUrl.searchParams.set('redirect_uri', redirectUri)
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('scope', GOOGLE_CALENDAR_SCOPES.join(' '))
+    authUrl.searchParams.set('access_type', 'offline')
+    authUrl.searchParams.set('prompt', 'consent')
+    authUrl.searchParams.set('state', state)
+
+    return reply.status(200).send({
+      authorization_url: authUrl.toString(),
+    })
+  } catch (error) {
+    console.error('Google Calendar OAuth init error:', error)
+    return reply.status(500).send({
+      message: 'Failed to initialize Google Calendar OAuth',
+    })
+  }
+}
+
+export const googleCalendarOAuthCallback = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { code, state, error } = request.query as {
+    code?: string
+    state: string
+    error?: string
+  }
+
+  const agentId = state
+
+  // Helper to send popup response
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    result?: unknown
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Calendar Connection</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #1a1a2e;
+      color: white;
+    }
+    .container { text-align: center; padding: 2rem; }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color: #22c55e; }
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>${data.success ? 'Connected successfully!' : 'Processing...'}</p>
+    ${
+      data.message && !data.success
+        ? `<p class="error">${data.message}</p>`
+        : ''
+    }
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      if (window.opener) {
+        window.opener.postMessage({ type: 'google-calendar-link', ...data }, '*');
+        setTimeout(() => window.close(), 1500);
+      } else {
+        document.querySelector('.container').innerHTML =
+          '<p class="' + (data.success ? 'success' : 'error') + '">' +
+          (data.success ? 'Google Calendar connected!' : (data.message || 'Failed')) +
+          '</p><p>You can close this window.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
+  // Check if user cancelled the OAuth flow
+  if (error || !code) {
+    return sendPopupResponse({
+      success: false,
+      message: error || 'OAuth cancelled',
+    })
+  }
+
+  if (!state) {
+    return sendPopupResponse({
+      success: false,
+      message: 'Missing state parameter',
+    })
+  }
+
+  try {
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Agent not found',
+      })
+    }
+
+    const clientId = server.config.GOOGLE_CALENDAR_CLIENT_ID
+    const clientSecret = server.config.GOOGLE_CALENDAR_CLIENT_SECRET
+
+    if (!clientId || !clientSecret) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Google Calendar OAuth not configured',
+      })
+    }
+
+    // Exchange code for tokens
+    const tokenResponse = await axios.post(
+      'https://oauth2.googleapis.com/token',
+      new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: `${server.config.API_URL}/v2/auth/google-calendar/callback`,
+        grant_type: 'authorization_code',
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    const { access_token, refresh_token, expires_in, scope } =
+      tokenResponse.data
+
+    // Get user's Google account info
+    let googleEmail = ''
+    let googleUserId = ''
+    try {
+      const userInfoResponse = await axios.get(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      googleEmail = userInfoResponse.data.email
+      googleUserId = userInfoResponse.data.id
+    } catch {
+      // Continue without user info
+    }
+
+    // Fetch calendar list
+    let calendars: Array<{
+      id: string
+      name: string
+      primary: boolean
+      timeZone?: string
+    }> = []
+    try {
+      const calendarListResponse = await axios.get(
+        'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      calendars = (calendarListResponse.data.items || []).map(
+        (cal: {
+          id: string
+          summary: string
+          primary?: boolean
+          timeZone?: string
+        }) => ({
+          id: cal.id,
+          name: cal.summary,
+          primary: cal.primary || false,
+          timeZone: cal.timeZone,
+        }),
+      )
+    } catch (err) {
+      console.error('Failed to fetch calendar list:', err)
+    }
+
+    // Return credentials and calendars to frontend via postMessage
+    // The frontend will then let user select a calendar and save
+    const credentials = {
+      access_token,
+      refresh_token,
+      token_uri: 'https://oauth2.googleapis.com/token',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scopes: scope ? scope.split(' ') : GOOGLE_CALENDAR_SCOPES,
+      expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
+      google_user_id: googleUserId,
+      google_email: googleEmail,
+    }
+
+    return sendPopupResponse({
+      success: true,
+      result: {
+        google_email: googleEmail,
+        credentials,
+        calendars,
+        agent_id: agentId,
+        user_id: agent.owner.toString(),
+      },
+    })
+  } catch (error) {
+    console.error(
+      'Google Calendar OAuth callback error:',
+      (error as any).response?.data || error,
+    )
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Google Calendar',
+    })
+  }
+}
+
+export const disconnectGoogleCalendar = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    // Remove Google Calendar deployment
+    await Deployment.deleteOne({
+      agent: agentId,
+      platform: 'google_calendar',
+    })
+
+    return reply.status(200).send({
+      message: 'Google Calendar disconnected successfully',
+    })
+  } catch (error) {
+    console.error('Google Calendar disconnect error:', error)
+    return reply.status(500).send({
+      message: 'Failed to disconnect Google Calendar',
+    })
   }
 }

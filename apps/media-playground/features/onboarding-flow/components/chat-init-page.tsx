@@ -69,7 +69,7 @@ export function ChatInitPage({ config }: ChatInitPageProps) {
     return (
       <div className="h-full bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <LoadingIndicator className="w-10 h-10 text-yellow-400" />
+          <LoadingIndicator className="w-10 h-10 text-violet-400" />
           <p className="text-gray-300">
             {!isSignedIn ? signInMessage : builderMessage}
           </p>
@@ -81,7 +81,7 @@ export function ChatInitPage({ config }: ChatInitPageProps) {
   return (
     <div className="h-full bg-black flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <LoadingIndicator className="w-10 h-10 text-yellow-400" />
+        <LoadingIndicator className="w-10 h-10 text-violet-400" />
         <p className="text-gray-300">{builderMessage}</p>
       </div>
     </div>

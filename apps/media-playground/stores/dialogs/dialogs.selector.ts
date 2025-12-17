@@ -47,11 +47,6 @@ export const useAgentDeploymentFormSheet = () => {
   return dialogs.agentDeploymentFormSheet
 }
 
-export const useAgentTriggerFormSheet = () => {
-  const dialogs = useAppSelector(selectDialogs)
-  return dialogs.agentTriggerFormSheet
-}
-
 export const useSubscriptionGateModal = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.subscriptionGateModal

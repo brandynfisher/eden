@@ -88,8 +88,8 @@ export function IdentityPage({ config, useStore }: IdentityPageProps) {
     >
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="bg-black/60 rounded-xl p-8 border border-yellow-400/20 backdrop-blur-sm">
-            <h3 className="text-2xl font-bold text-yellow-400 mb-4">
+          <div className="bg-black/60 rounded-xl p-8 border border-violet-400/20 backdrop-blur-sm">
+            <h3 className="text-2xl font-bold text-violet-400 mb-4">
               {identityTitle}
             </h3>
 
@@ -100,7 +100,7 @@ export function IdentityPage({ config, useStore }: IdentityPageProps) {
                 <div className="text-center mb-3">
                   <h4 className="text-sm font-medium text-gray-300">
                     Profile picture
-                    <span className="text-yellow-400 ml-1">*</span>
+                    <span className="text-violet-400 ml-1">*</span>
                   </h4>
                 </div>
                 <ProfileImageUploader
@@ -115,14 +115,14 @@ export function IdentityPage({ config, useStore }: IdentityPageProps) {
                 <div className="space-y-2">
                   <label className="text-base font-medium text-gray-300">
                     Name
-                    <span className="text-yellow-400 ml-1">*</span>
+                    <span className="text-violet-400 ml-1">*</span>
                   </label>
                   <Input
                     type="text"
                     placeholder="Agent display name"
                     value={name}
                     onChange={e => setName(e.target.value.slice(0, 100))}
-                    className="bg-black/40 border-yellow-400/30 text-white placeholder:text-gray-500 focus:border-yellow-400 focus:ring-yellow-400/20"
+                    className="bg-black/40 border-violet-400/30 text-white placeholder:text-gray-500 focus:border-violet-400 focus:ring-violet-400/20"
                   />
                 </div>
 
@@ -130,9 +130,9 @@ export function IdentityPage({ config, useStore }: IdentityPageProps) {
                 <div className="space-y-2">
                   <label className="text-base font-medium text-gray-300">
                     Username
-                    <span className="text-yellow-400 ml-1">*</span>
+                    <span className="text-violet-400 ml-1">*</span>
                   </label>
-                  <div className="[&_input]:bg-black/40 [&_input]:border-yellow-400/30 [&_input]:text-white [&_input]:placeholder:text-gray-500 [&_input]:focus:border-yellow-400 [&_input]:focus:ring-yellow-400/20 [&_button]:border-yellow-400/30 [&_button]:text-yellow-400 [&_button]:hover:bg-yellow-400/10">
+                  <div className="[&_input]:bg-black/40 [&_input]:border-violet-400/30 [&_input]:text-white [&_input]:placeholder:text-gray-500 [&_input]:focus:border-violet-400 [&_input]:focus:ring-violet-400/20 [&_button]:border-violet-400/30 [&_button]:text-violet-400 [&_button]:hover:bg-violet-400/10">
                     <SlickUsernamePicker
                       value={username}
                       onChange={setUsername}
@@ -147,8 +147,8 @@ export function IdentityPage({ config, useStore }: IdentityPageProps) {
           </div>
 
           {/* Visual Knowledge Section */}
-          <div className="bg-black/60 rounded-xl p-8 border border-yellow-400/20 backdrop-blur-sm">
-            <h3 className="text-2xl font-bold text-yellow-400 mb-2">
+          <div className="bg-black/60 rounded-xl p-8 border border-violet-400/20 backdrop-blur-sm">
+            <h3 className="text-2xl font-bold text-violet-400 mb-2">
               Add visual knowledge (optional)
             </h3>
             <p className="text-gray-400 text-sm mb-6">

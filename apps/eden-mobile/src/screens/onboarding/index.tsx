@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -50,7 +51,8 @@ const slides: OnboardingSlide[] = [
 export default function Onboarding() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
   const navigation = useNavigation<NavigationProp>()
   const [currentIndex, setCurrentIndex] = useState(0)
   const flatListRef = useRef<FlatList>(null)

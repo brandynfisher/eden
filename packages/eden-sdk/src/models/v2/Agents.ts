@@ -10,7 +10,7 @@ import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
-import { CronSchedule, Trigger } from 'src/models/v2/Trigger'
+import { Trigger } from 'src/models/v2/Trigger'
 
 export type AgentSuggestion = {
   label: string
@@ -113,8 +113,10 @@ export type AgentClientType =
   | 'farcaster'
   | 'web'
   | 'shopify'
+  | 'instagram'
   | 'gmail'
   | 'email'
+  | 'google_calendar'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -236,6 +238,18 @@ interface TwitterDeploymentSecrets {
   access_token_secret: string
 }
 
+interface InstagramDeploymentConfig {
+  username?: string
+  ig_user_id?: string
+}
+
+interface InstagramDeploymentSecrets {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: string
+  username?: string
+}
+
 interface ShopifyDeploymentConfig extends Record<string, never> {}
 
 interface ShopifyDeploymentSecrets {
@@ -274,6 +288,26 @@ interface EmailDeploymentSecrets {
   webhook_signing_key?: string
 }
 
+interface GoogleCalendarDeploymentConfig {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+}
+
+interface GoogleCalendarDeploymentSecrets {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: string
+  google_user_id?: string
+  google_email: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -286,20 +320,24 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentConfig
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
+    instagram?: InstagramDeploymentConfig
     shopify?: ShopifyDeploymentConfig
     printify?: PrintifyDeploymentConfig
     captions?: CaptionsDeploymentConfig
     email?: EmailDeploymentConfig
+    google_calendar?: GoogleCalendarDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
+    instagram?: InstagramDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
+    google_calendar?: GoogleCalendarDeploymentSecrets
   }
 }
 
@@ -311,18 +349,22 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentConfig
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
+    instagram?: InstagramDeploymentConfig
     shopify?: ShopifyDeploymentConfig
     email?: EmailDeploymentConfig
+    google_calendar?: GoogleCalendarDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
+    instagram?: InstagramDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
+    google_calendar?: GoogleCalendarDeploymentSecrets
   }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
@@ -340,56 +382,8 @@ export interface AgentsDeleteArguments extends WebAPICallOptions {
 }
 
 /***
- * Trigger
+ * Trigger - now session-based (not agent-based)
  */
-export interface AgentsGetTriggersArguments extends WebAPICallOptions {
-  agentId: string
-}
-
-export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
-  agentId: string
-  name: string
-  context: string
-  trigger_prompt: string
-  session_type: 'new' | 'another'
-  session?: string | null
-  schedule: CronSchedule
-  posting_instructions?: {
-    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
-    session_id?: string | null
-    channel_id?: string | null
-    custom_instructions?: string
-  }[]
-}
-
-export interface AgentsUpdateTriggerArguments extends WebAPICallOptions {
-  agentId: string
-  triggerId: string
-  name?: string
-  context?: string
-  trigger_prompt?: string
-  session_type?: 'new' | 'another'
-  session?: string | null
-  schedule?: CronSchedule
-  status?: 'active' | 'paused' | 'finished'
-  posting_instructions?: {
-    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
-    session_id?: string | null
-    channel_id?: string | null
-    custom_instructions?: string
-  }[]
-}
-
-export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
-  agentId: string
-  triggerId: string
-}
-
-export interface AgentsGetTriggerArguments extends WebAPICallOptions {
-  agentId: string
-  triggerId: string
-}
-
 export interface AgentsGetAllTriggersArguments extends WebAPICallOptions {}
 
 export interface AgentsGetAllDeploymentsArguments extends WebAPICallOptions {}
@@ -504,53 +498,6 @@ export const agentsDeleteRequestConfig = (
   }
 }
 
-export const agentsGetTriggersRequestConfig = (
-  args: AgentsGetTriggersArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `v2/agents/${args.agentId}/triggers`,
-  }
-}
-
-export const agentsCreateTriggerRequestConfig = (
-  args: AgentsCreateTriggerArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: `v2/agents/${args.agentId}/triggers`,
-    data: args,
-  }
-}
-
-export const agentsUpdateTriggerRequestConfig = (
-  args: AgentsUpdateTriggerArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'PATCH',
-    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
-    data: args,
-  }
-}
-
-export const agentsDeleteTriggerRequestConfig = (
-  args: AgentsDeleteTriggerArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'DELETE',
-    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
-  }
-}
-
-export const agentsGetTriggerRequestConfig = (
-  args: AgentsGetTriggerArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'GET',
-    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
-  }
-}
-
 export const agentsGetAllTriggersRequestConfig = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _args: AgentsGetAllTriggersArguments,
@@ -641,35 +588,10 @@ export type AgentsDeleteResponse = WebAPICallResult & {
   error?: string
 }
 
-export type AgentsGetTriggersResponse = WebAPICallResult & {
-  triggers: Trigger[]
-  error?: string
-}
-
-export type AgentsCreateTriggerResponse = WebAPICallResult & {
-  triggerId: string
-  error?: string
-}
-
-export type AgentsUpdateTriggerResponse = WebAPICallResult & {
-  trigger: Trigger
-  error?: string
-}
-
-export type AgentsDeleteTriggerResponse = WebAPICallResult & {
-  success: boolean
-  error?: string
-}
-
-export type AgentsGetTriggerResponse = WebAPICallResult & {
-  trigger: Trigger
-  error?: string
-}
-
 export type AgentsGetAllTriggersResponse = WebAPICallResult & {
   triggers: Array<
     Trigger & {
-      agent: { _id: string; name: string; username: string; userImage?: string }
+      session?: { _id: string; name?: string }
     }
   >
   error?: string
@@ -775,5 +697,37 @@ export const agentsGetSharedRequestConfig = (
   return {
     method: 'GET',
     url: 'v2/agents/shared',
+  }
+}
+
+// Discord channel management types
+export interface AgentsGetDiscordChannelsArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsRefreshDiscordChannelsArguments
+  extends WebAPICallOptions {
+  agentId: string
+}
+
+export const agentsGetDiscordChannelsRequestConfig = (
+  args: AgentsGetDiscordChannelsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/deployments/discord/channels`,
+  }
+}
+
+export const agentsRefreshDiscordChannelsRequestConfig = (
+  args: AgentsRefreshDiscordChannelsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/discord/refresh`,
+    data: {},
+    headers: {
+      'Content-Type': 'application/json',
+    },
   }
 }

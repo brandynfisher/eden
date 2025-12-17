@@ -1,23 +1,14 @@
 import { fetcher } from '@/lib/fetcher'
-import { Trigger } from '@edenlabs/eden-sdk'
+import { Agent, GetDiscordChannelsResponse } from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
-interface TriggersResponse {
-  triggers: Trigger[]
-}
-
 type Props = {
-  key: string
-  initialData?: TriggersResponse
+  agentId: Agent['_id']
   enabled?: boolean
 }
 
-export const useAgentTriggersQuery = ({
-  key,
-  initialData,
-  enabled = true,
-}: Props) => {
-  const queryKey: QueryKey = ['agents', key, 'triggers']
+export const useDiscordChannelsQuery = ({ agentId, enabled = true }: Props) => {
+  const queryKey: QueryKey = ['agents', agentId, 'discord-channels']
 
   const {
     data,
@@ -31,15 +22,19 @@ export const useAgentTriggersQuery = ({
     status,
   } = useQuery({
     enabled,
-    initialData,
     queryKey,
-    queryFn: () => fetcher<TriggersResponse>(`/api/agents/${key}/triggers`),
+    queryFn: () =>
+      fetcher<GetDiscordChannelsResponse>(
+        `/api/agents/${agentId}/deployments/discord/channels`,
+      ),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
   const queryClient = useQueryClient()
 
   return {
-    triggers: (data?.triggers as Trigger[]) || [],
+    guilds: data?.guilds ?? [],
+    lastRefreshedAt: data?.last_refreshed_at,
     queryKey,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () => queryClient.fetchQuery({ queryKey }),

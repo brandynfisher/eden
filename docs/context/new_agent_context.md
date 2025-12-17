@@ -139,9 +139,17 @@ const agentSchema = z.object({
 ```typescript
 AGENT_FIELD_LIMITS = {
   DESCRIPTION_MAX_CHARS: 100,
-  INSTRUCTIONS_MAX_CHARS: 30000,
   NAME_MAX_CHARS: 42,
   GREETING_MAX_CHARS: 140,
+}
+
+// Persona/Instructions limits are tier-based:
+PERSONA_CHARACTER_LIMITS = {
+  Free: 50000,
+  Basic: 100000,
+  Pro: 200000,
+  Believer: 300000,
+  Admin: 400000,
 }
 ```
 
@@ -263,12 +271,13 @@ GET /api/agents/check-username?username={value}
 ### Related Routes
 | Route | Purpose |
 |-------|---------|
-| `POST /api/agents/[id]/triggers` | Create scheduled tasks |
-| `GET /api/agents/[id]/triggers` | List agent tasks |
 | `GET /api/agents/[id]/deployments` | List deployments |
 | `PATCH /api/agents/[id]/deployments` | Configure deployments |
 | `GET /api/agents/[id]/memory` | Agent memory management |
 | `GET /api/agents/[id]/dashboard` | Agent analytics |
+| `GET /api/triggers` | List user's scheduled tasks (session-based) |
+| `POST /api/triggers` | Create scheduled task for a session |
+| `DELETE /api/triggers/[id]` | Delete a scheduled task |
 
 ## State Management
 
@@ -287,7 +296,6 @@ agentFormSheet: {
 **Selectors** (`stores/dialogs/dialogs.selector.ts`):
 - `useAgentFormSheet()`: Access form sheet state
 - `useAgentDeploymentFormSheet()`: Deployment config
-- `useAgentTriggerFormSheet()`: Task/trigger management
 
 **Actions:**
 - `updateAgentFormSheet(payload)`: Update form state
@@ -305,13 +313,13 @@ const { agent, queryKey, invalidate, error, isPending } = useAgentQuery({
 // Fetches: /api/agents/${key}
 ```
 
-**useAgentTriggersQuery** (`hooks/query/use-agent-triggers-query.ts`):
+**useUserTriggersQuery** (`hooks/query/use-user-triggers-query.ts`):
 ```typescript
-const { triggers, queryKey, invalidate } = useAgentTriggersQuery({
-  key: agentId,
+const { triggers, queryKey, invalidate } = useUserTriggersQuery({
   enabled?: boolean,
 })
-// Query key: ['agents', key, 'triggers']
+// Query key: ['user', 'triggers']
+// Fetches: /api/triggers (all user's session-based triggers)
 ```
 
 **useAgentDeploymentsQuery** (`hooks/query/use-agent-deployments-query.tsx`):
@@ -338,6 +346,7 @@ Used for editing existing agents. Same schema as create, with additional tabs.
 
 3. **Tasks Tab** (lines 815-893) - Update mode only
    - List/create scheduled tasks via `TaskFormModal`
+   - Tasks are session-based (not agent-based), uses `useUserTriggersQuery`
 
 4. **Deployments Tab** (lines 896-936) - Update mode only
    - Discord, Telegram, Twitter deployment forms
@@ -445,7 +454,7 @@ Choice Page (client component)
 | `apps/media-playground/app/api/agents/check-username/route.ts` | Username check |
 | `apps/media-playground/stores/dialogs/dialogs.slice.ts` | Redux state |
 | `apps/media-playground/hooks/query/use-agent-query.tsx` | Agent fetch hook |
-| `apps/media-playground/hooks/query/use-agent-triggers-query.ts` | Triggers hook |
+| `apps/media-playground/hooks/query/use-user-triggers-query.ts` | User triggers hook (session-based) |
 | `apps/media-playground/hooks/query/use-agent-deployments-query.tsx` | Deployments hook |
 
 ## Type Definitions

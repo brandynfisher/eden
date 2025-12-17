@@ -3,7 +3,6 @@ import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { RootStackParamList } from '@/navigator'
 import createStyles from '@/styles/permissions.styles'
-import { isIos } from '@/utils/responsive'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import * as ImagePicker from 'expo-image-picker'
@@ -13,12 +12,12 @@ import { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 
@@ -93,9 +92,19 @@ const permissions: PermissionItem[] = [
 export default function Permissions() {
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
   const navigation = useNavigation<NavigationProp>()
   const [isLoading, setIsLoading] = useState(false)
+
+  const completeOnboarding = async () => {
+    await SecureStore.setItemAsync(ONBOARDING_COMPLETE_KEY, 'true')
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'BottomTabs' }],
+    })
+  }
 
   const handleContinue = async () => {
     setIsLoading(true)
@@ -117,45 +126,15 @@ export default function Permissions() {
       )
 
       // Check if all permissions were granted
-      const allGranted = permissionResults.every(result => result.granted)
       const deniedPermissions = permissionResults.filter(
         result => !result.granted,
       )
 
-      if (!allGranted) {
-        console.log('Some permissions were denied:', deniedPermissions)
-        const deniedPermissionNames = deniedPermissions
-          .map((result, index) => {
-            const permission = permissions.find(p => p.id === result.id)
-            return `${index + 1}. ${permission?.title ?? result.id}`
-          })
-          .join('\n')
-
-        // Show alert with exact permission names and don't navigate
-        Alert.alert(
-          'Permissions Required',
-          `Please enable the following permissions to continue:\n${deniedPermissionNames}.\nYou can manage them in your device settings.`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                isIos
-                  ? Linking.openURL('app-settings:')
-                  : Linking.openSettings()
-              },
-            },
-          ],
-        )
-        return
+      if (deniedPermissions.length) {
+        console.log('Some permissions were denied, continuing anyway:', deniedPermissions)
       }
 
-      // All permissions granted - mark onboarding as complete and navigate
-      await SecureStore.setItemAsync(ONBOARDING_COMPLETE_KEY, 'true')
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'BottomTabs' }],
-      })
+      await completeOnboarding()
     } catch (error) {
       console.error('Error during permission setup:', error)
       // Show error alert and don't navigate

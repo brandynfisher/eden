@@ -80,6 +80,8 @@ const ConfigSchema = Type.Strict(
     TWITTER_INTEGRATIONS_CLIENT_SECRET: Type.Optional(Type.String()),
     TIKTOK_CLIENT_KEY: Type.Optional(Type.String()),
     TIKTOK_CLIENT_SECRET: Type.Optional(Type.String()),
+    INSTAGRAM_CLIENT_ID: Type.Optional(Type.String()),
+    INSTAGRAM_CLIENT_SECRET: Type.Optional(Type.String()),
     REDIS_URL: Type.Optional(Type.String()),
     NEYNAR_API_KEY: Type.Optional(Type.String()),
     FARCASTER_DEVELOPER_MNEMONIC: Type.Optional(Type.String()),
@@ -88,6 +90,8 @@ const ConfigSchema = Type.Strict(
     MAILGUN_API_BASE_URL: Type.Optional(Type.String()),
     MAILGUN_INBOUND_WEBHOOK_URL: Type.Optional(Type.String()),
     MAILGUN_WEBHOOK_SIGNING_KEY: Type.Optional(Type.String()),
+    GOOGLE_CALENDAR_CLIENT_ID: Type.Optional(Type.String()),
+    GOOGLE_CALENDAR_CLIENT_SECRET: Type.Optional(Type.String()),
   }),
 )
 

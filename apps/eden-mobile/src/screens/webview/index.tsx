@@ -5,7 +5,6 @@ import type { BottomTabsParamList } from '@/navigator/bottom-tabs'
 import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
 import { useAuth, useClerk } from '@clerk/clerk-expo'
-import { Ionicons } from '@expo/vector-icons'
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import Constants from 'expo-constants'
@@ -24,6 +23,7 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView, WebViewMessageEvent } from 'react-native-webview'
 
 const WEB_DEV_PORT = 3000
@@ -79,7 +79,8 @@ export default function Webview() {
     useNavigation<BottomTabNavigationProp<BottomTabsParamList, 'Webview'>>()
   const colorScheme = useColorScheme()
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
-  const styles = createStyles(theme)
+  const insets = useSafeAreaInsets()
+  const styles = createStyles(theme, insets.bottom)
 
   const [initialUrl, setInitialUrl] = useState(WEB_URL)
   const [currentUrl, setCurrentUrl] = useState<string>(WEB_URL)
@@ -87,8 +88,6 @@ export default function Webview() {
   const [error, setError] = useState<string | null>(null)
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
-  const [canGoBack, setCanGoBack] = useState(false)
-  const [canGoForward, setCanGoForward] = useState(false)
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
@@ -101,17 +100,15 @@ export default function Webview() {
 
     return PanResponder.create({
       onStartShouldSetPanResponder: evt => {
-        // Only start from left 15% of screen
         const { pageX } = evt.nativeEvent
+        // Start gesture if near left edge (to open) or anywhere when swiping left (potentially to close)
         return pageX < EDGE_ZONE_WIDTH
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to horizontal swipes that started from left edge
         const { pageX } = evt.nativeEvent
         const screenWidth = Dimensions.get('window').width
         const EDGE_ZONE_WIDTH = screenWidth * 0.15
 
-        // Calculate starting position from current position and gesture delta
         const startX = pageX - gestureState.dx
         const startedFromEdge = startX < EDGE_ZONE_WIDTH
 
@@ -119,8 +116,10 @@ export default function Webview() {
           Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
           Math.abs(gestureState.dx) > 10
 
-        // Only respond if it's horizontal AND started from edge zone
-        return isHorizontal && startedFromEdge
+        const swipingLeft = gestureState.dx < -10
+
+        // Allow: right swipe from edge to open OR any left swipe (for closing)
+        return isHorizontal && (startedFromEdge || swipingLeft)
       },
       onPanResponderRelease: (_evt, gestureState) => {
         const SWIPE_THRESHOLD = 50 // Minimum distance for a swipe
@@ -263,18 +262,6 @@ export default function Webview() {
     }
   }
 
-  const handleGoBack = () => {
-    if (webRef.current && canGoBack) {
-      webRef.current.goBack()
-    }
-  }
-
-  const handleGoForward = () => {
-    if (webRef.current && canGoForward) {
-      webRef.current.goForward()
-    }
-  }
-
   const openWebviewWithSession = async () => {
     if (!isSignedIn) {
       setShowSignInModal(true)
@@ -366,42 +353,6 @@ export default function Webview() {
               </Pressable>
             </View>
           )}
-          {/* Navigation Bar */}
-          <View style={styles.navigationBar}>
-            <Pressable
-              onPress={handleGoBack}
-              disabled={!canGoBack}
-              style={[styles.navButton, !canGoBack && styles.navButtonDisabled]}
-            >
-              <Ionicons
-                name="chevron-back"
-                size={24}
-                color={
-                  canGoBack
-                    ? Colors[theme].textPrimary
-                    : Colors[theme].textTertiary
-                }
-              />
-            </Pressable>
-            <Pressable
-              onPress={handleGoForward}
-              disabled={!canGoForward}
-              style={[
-                styles.navButton,
-                !canGoForward && styles.navButtonDisabled,
-              ]}
-            >
-              <Ionicons
-                name="chevron-forward"
-                size={24}
-                color={
-                  canGoForward
-                    ? Colors[theme].textPrimary
-                    : Colors[theme].textTertiary
-                }
-              />
-            </Pressable>
-          </View>
           <View style={styles.webviewContainer} {...panResponder.panHandlers}>
             <WebView
               ref={webRef}
@@ -409,8 +360,6 @@ export default function Webview() {
               onMessage={handleMessage}
               onNavigationStateChange={state => {
                 setCurrentUrl(state.url)
-                setCanGoBack(state.canGoBack)
-                setCanGoForward(state.canGoForward)
               }}
               javaScriptEnabled
               domStorageEnabled

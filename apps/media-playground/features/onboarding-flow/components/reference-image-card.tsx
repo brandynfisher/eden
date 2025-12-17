@@ -88,9 +88,9 @@ export function ReferenceImageCard({
           className={cn(
             'relative w-40 h-40 rounded-lg border-2 border-dashed cursor-pointer transition-all duration-200 overflow-hidden group',
             isDragging
-              ? 'border-yellow-400 bg-yellow-400/10'
-              : 'border-yellow-400/30 bg-black/40',
-            'hover:border-yellow-400 hover:bg-yellow-400/5',
+              ? 'border-violet-400 bg-violet-400/10'
+              : 'border-violet-400/30 bg-black/40',
+            'hover:border-violet-400 hover:bg-violet-400/5',
             isUploading && 'opacity-50 cursor-not-allowed',
           )}
         >
@@ -110,10 +110,10 @@ export function ReferenceImageCard({
           ) : (
             <div className="flex flex-col items-center justify-center h-full">
               {isUploading ? (
-                <Loader2 className="w-8 h-8 text-yellow-400 animate-spin" />
+                <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
               ) : (
                 <>
-                  <Upload className="w-8 h-8 text-yellow-400/60 mb-2" />
+                  <Upload className="w-8 h-8 text-violet-400/60 mb-2" />
                   <span className="text-xs text-gray-400">Upload image</span>
                 </>
               )}
@@ -148,7 +148,7 @@ export function ReferenceImageCard({
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium text-gray-300">
             Description
-            {imageUrl && <span className="text-yellow-400 ml-1">*</span>}
+            {imageUrl && <span className="text-violet-400 ml-1">*</span>}
           </label>
           <span className="text-xs text-gray-500">
             {(description || '').length}/200
@@ -162,7 +162,7 @@ export function ReferenceImageCard({
             onDescriptionChange(newValue)
           }}
           className={cn(
-            'border-yellow-400/30 text-white placeholder:text-gray-500 focus:border-yellow-400 focus:ring-yellow-400/20 min-h-[80px]',
+            'border-violet-400/30 text-white placeholder:text-gray-500 focus:border-violet-400 focus:ring-violet-400/20 min-h-[80px]',
             !imageUrl
               ? 'bg-gray-800/40 opacity-50 cursor-not-allowed'
               : 'bg-black/40',

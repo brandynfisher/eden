@@ -11921,6 +11921,7 @@ __metadata:
     blurhash: "npm:^2.0.5"
     chromadb: "npm:^1.7.2"
     cloudinary: "npm:^2.2.0"
+    cron-parser: "npm:^5.4.0"
     dotenv: "npm:^16.0.3"
     esbuild: "npm:^0.14.54"
     eslint: "npm:8.56.0"
@@ -14114,7 +14115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"concurrently@npm:9.2.1":
+"concurrently@npm:9.2.1, concurrently@npm:^9.1.2":
   version: 9.2.1
   resolution: "concurrently@npm:9.2.1"
   dependencies:
@@ -14401,6 +14402,15 @@ __metadata:
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
   checksum: 10c0/157cbc59b2430ae9a90034a5f3a1b398b6738bf510f713edc4d4e45e169bc514d3d99dd34d8d01ca7ae7830b5b8b537e46ae8f3c8f932371b0875c0151d7ec91
+  languageName: node
+  linkType: hard
+
+"cron-parser@npm:^5.4.0":
+  version: 5.4.0
+  resolution: "cron-parser@npm:5.4.0"
+  dependencies:
+    luxon: "npm:^3.7.1"
+  checksum: 10c0/665a78e62468e0fccf5e33723bff501b672d42c891c08ae084130bf459212451e6942d3d02a78c3b32ab89c87de3fcbd37c18ae7c291d378d946ce38a937bcbd
   languageName: node
   linkType: hard
 
@@ -15287,7 +15297,9 @@ __metadata:
     "@types/react": "npm:~19.1.0"
     babel-plugin-module-resolver: "npm:^5.0.0"
     babel-preset-expo: "npm:~54.0.6"
+    concurrently: "npm:^9.1.2"
     expo: "npm:~54.0.20"
+    expo-application: "npm:~7.0.7"
     expo-auth-session: "npm:^7.0.8"
     expo-font: "npm:~14.0.9"
     expo-image-picker: "npm:^17.0.8"
@@ -21457,6 +21469,13 @@ __metadata:
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/9cb17bd4e70da4db104874b6b2e9d9c7e2be9438e9d1c0b2565df0c4d0bdd1add41b7dff3cb60840699ecbd29870c453878b42b69a7c46480def0c9370a852a9
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3.7.1":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
   languageName: node
   linkType: hard
 

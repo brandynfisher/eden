@@ -14,80 +14,62 @@ export interface CronSchedule {
   timezone?: string
 }
 
+export interface TriggerRun {
+  message_id: ObjectId
+  ran_at: Date
+}
+
 export interface TriggerSchema {
   user: ObjectId
-  agent: ObjectId
-  session_type: 'new' | 'another'
-  session?: ObjectId
-  schedule: CronSchedule
+  session?: ObjectId | null // Optional - null when "Create new session" is selected
+  agent?: ObjectId | null // Agent reference - required when session is null
+  schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
-  context: string
-  trigger_prompt: string
-  update_config?: any
-  status?: 'active' | 'paused' | 'finished'
-  posting_instructions?: {
-    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
-    session_id?: ObjectId | null
-    channel_id?: string | null
-    custom_instructions?: string
-  }[]
+  prompt: string
+  status?: 'active' | 'paused' | 'finished' | 'running'
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date
+  error_count?: number
+  last_error?: string
+  runs?: TriggerRun[] // Track each run with message_id and timestamp
 }
 
 export interface TriggerDocument extends TriggerSchema {}
 
 const TriggerSchema = new Schema<TriggerDocument>(
   {
-    agent: {
-      type: Schema.Types.ObjectId,
-      ref: 'users3',
-      required: true,
-    },
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
     },
-    session_type: {
-      type: String,
-      enum: ['new', 'another'],
-      default: 'new',
-    },
     session: {
       type: Schema.Types.ObjectId,
       ref: 'sessions',
-      required: false,
+      required: false, // Optional - null when "Create new session" is selected
+    },
+    agent: {
+      type: Schema.Types.ObjectId,
+      ref: 'agent',
+      required: false, // Required when session is null
     },
     schedule: {
       type: Object,
-      required: true,
+      required: false, // Optional - tasks without schedules run manually only
     },
     name: {
       type: String,
       required: true,
     },
-    context: {
-      type: String,
-      required: false,
-    },
-    trigger_prompt: {
+    prompt: {
       type: String,
       required: true,
     },
-    update_config: {
-      type: Object,
-      required: false,
-    },
     status: {
       type: String,
-      enum: ['active', 'paused', 'finished'],
+      enum: ['active', 'paused', 'finished', 'running'],
       default: 'active',
-    },
-    posting_instructions: {
-      type: Array,
-      required: false,
     },
     deleted: {
       type: Boolean,
@@ -101,12 +83,35 @@ const TriggerSchema = new Schema<TriggerDocument>(
       type: Date,
       required: false,
     },
+    error_count: {
+      type: Number,
+      default: 0,
+    },
+    last_error: {
+      type: String,
+      required: false,
+    },
+    runs: {
+      type: [
+        {
+          message_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'messages',
+            required: true,
+          },
+          ran_at: { type: Date, required: true },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,
   },
 )
 
+TriggerSchema.index({ session: 1 })
+TriggerSchema.index({ user: 1 })
 TriggerSchema.index({ agent: 1 })
 
 export const Trigger = model<TriggerDocument>('triggers2', TriggerSchema)

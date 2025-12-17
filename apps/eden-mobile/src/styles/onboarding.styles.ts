@@ -4,7 +4,7 @@ import { Dimensions, StyleSheet } from 'react-native'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
-export default (theme: 'light' | 'dark') =>
+export default (theme: 'light' | 'dark', bottomInset: number = 0) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -73,7 +73,7 @@ export default (theme: 'light' | 'dark') =>
     },
     footer: {
       paddingHorizontal: Spacing.lg,
-      paddingBottom: Spacing.xl,
+      paddingBottom: Spacing.xl + bottomInset,
     },
     nextButton: {
       backgroundColor: Colors[theme].primary,

@@ -6,6 +6,13 @@ import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Form,
   FormControl,
   FormDescription,
@@ -29,27 +36,94 @@ import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader
 import {
   AGENT_FIELD_GUIDANCE,
   AGENT_FIELD_LIMITS,
+  SUBSCRIPTION_TIER_NAMES,
+  formatCharacterCount,
+  getNextTierInfo,
+  getPersonaCharacterLimit,
 } from '@/features/sessions/views/agent-constants'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { openUserSettingsModal } from '@/lib/user-settings'
+import { cn } from '@/lib/utils'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2, XIcon } from 'lucide-react'
+import { AlertTriangleIcon, CrownIcon, Loader2, XIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
-function CharacterCount({ current, max }: { current: number; max: number }) {
+interface CharacterCountProps {
+  current: number
+  max: number
+  isOverLimit?: boolean
+  isNearLimit?: boolean
+  onClick?: () => void
+}
+
+function CharacterCount({
+  current,
+  max,
+  isOverLimit,
+  isNearLimit,
+  onClick,
+}: CharacterCountProps) {
+  const content = (
+    <span
+      className={cn(
+        'ml-auto text-xs flex-shrink-0 text-right tabular-nums',
+        isOverLimit && 'text-red-500 font-medium',
+        isNearLimit && !isOverLimit && 'text-orange-400',
+        !isNearLimit && !isOverLimit && 'text-muted-foreground',
+        onClick && 'cursor-pointer select-none',
+      )}
+      onClick={onClick}
+    >
+      {formatCharacterCount(current)}/{formatCharacterCount(max)} chars
+    </span>
+  )
+
+  if (!onClick) {
+    return <div>{content}</div>
+  }
+
   return (
-    <div className="text-xs text-muted-foreground text-right">
-      {current}/{max}
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent>
+          {isOverLimit ? (
+            <p>
+              Upgrade your{' '}
+              <button
+                className="text-purple-400 underline hover:text-purple-300"
+                onClick={() => openUserSettingsModal('subscription')}
+              >
+                subscription
+              </button>{' '}
+              to increase persona limits
+            </p>
+          ) : (
+            <p>{formatCharacterCount(max - current)} characters remaining</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
 const CreateAgentView = () => {
   const router = useRouter()
+  const [showCharacterLimitModal, setShowCharacterLimitModal] = useState(false)
+
+  // Get user subscription tier
+  const { user } = useAuthState()
+  const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
+  const personaCharacterLimit = getPersonaCharacterLimit(subscriptionTier)
+  const nextTierInfo = getNextTierInfo(subscriptionTier)
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -88,6 +162,12 @@ const CreateAgentView = () => {
   })
 
   const handleSubmit = async (data: AgentFormDto) => {
+    // Check persona character limit
+    if ((data.persona?.length || 0) > personaCharacterLimit) {
+      setShowCharacterLimitModal(true)
+      return
+    }
+
     try {
       const response = await axios.post('/api/agents', data)
       const createdAgent = response.data?.agent || data
@@ -285,42 +365,55 @@ const CreateAgentView = () => {
             <FormField
               control={form.control}
               name="persona"
-              render={({ field }) => (
-                <FormItem className="rounded-xl border border-border bg-card p-6">
-                  <FormLabel className="text-base font-medium">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="cursor-help">
-                            Instructions
-                            <span className="text-red-500 ml-1">*</span>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs whitespace-pre-wrap">
-                            {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </FormLabel>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                      {...field}
-                      className="min-h-[240px]"
-                      variant="xl"
-                    />
-                  </FormControl>
-                  <div className="flex justify-end mt-2">
-                    <CharacterCount
-                      current={field.value?.length || 0}
-                      max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const charCount = field.value?.length || 0
+                const isOverLimit = charCount > personaCharacterLimit
+                const isNearLimit = charCount > personaCharacterLimit * 0.9
+
+                return (
+                  <FormItem className="rounded-xl border border-border bg-card p-6">
+                    <FormLabel className="text-base font-medium">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">
+                              Instructions
+                              <span className="text-red-500 ml-1">*</span>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs whitespace-pre-wrap">
+                              {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </FormLabel>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
+                        {...field}
+                        className="min-h-[240px]"
+                        variant="xl"
+                      />
+                    </FormControl>
+                    <div className="flex justify-end mt-2">
+                      <CharacterCount
+                        current={charCount}
+                        max={personaCharacterLimit}
+                        isOverLimit={isOverLimit}
+                        isNearLimit={isNearLimit}
+                        onClick={
+                          isOverLimit || isNearLimit
+                            ? () => setShowCharacterLimitModal(true)
+                            : undefined
+                        }
+                      />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
 
             <FormField
@@ -552,6 +645,78 @@ const CreateAgentView = () => {
           </form>
         </Form>
       </div>
+
+      {/* Character Limit Warning Modal */}
+      <Dialog
+        open={showCharacterLimitModal}
+        onOpenChange={setShowCharacterLimitModal}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangleIcon className="text-orange-400 h-5 w-5" />
+              Persona Too Long
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="flex flex-col gap-3 pt-4">
+                <p>
+                  Your persona has{' '}
+                  <strong>
+                    {formatCharacterCount(form.watch('persona')?.length || 0)}
+                  </strong>{' '}
+                  characters, which exceeds your limit of{' '}
+                  <strong>{formatCharacterCount(personaCharacterLimit)}</strong>{' '}
+                  characters.
+                </p>
+                <p className="text-muted-foreground">
+                  Your current plan:{' '}
+                  <strong className="capitalize">
+                    {SUBSCRIPTION_TIER_NAMES[subscriptionTier]}
+                  </strong>
+                </p>
+                {nextTierInfo && (
+                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CrownIcon className="text-purple-400 h-4 w-4" />
+                      <span className="font-medium text-purple-300">
+                        Upgrade to {nextTierInfo.name}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Get up to{' '}
+                      <strong>
+                        {formatCharacterCount(nextTierInfo.limit)}
+                      </strong>{' '}
+                      characters for your agent persona and unlock more
+                      features.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowCharacterLimitModal(false)}
+            >
+              Edit Persona
+            </Button>
+            {nextTierInfo && (
+              <Button
+                onClick={() => {
+                  setShowCharacterLimitModal(false)
+                  openUserSettingsModal('subscription')
+                }}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <CrownIcon className="w-4 h-4 mr-2" />
+                Upgrade Plan
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

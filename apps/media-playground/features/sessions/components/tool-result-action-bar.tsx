@@ -240,10 +240,10 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
   const primaryCreationId = creationIds[0]
 
   return (
-    <div className="aui-assistant-action-bar-root flex items-center gap-2 w-full z-10">
+    <div className="aui-assistant-action-bar-root flex flex-wrap items-center gap-2 w-full z-10">
       {primaryCreationId && <ToolActionButton creationId={primaryCreationId} />}
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2 max-w-full min-w-0 justify-end">
         {completedToolCallsWithCreations.map((toolCall, index) => (
           <ToolHoverMenu
             key={`${toolCall.id}-${index}`}

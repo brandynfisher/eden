@@ -93,37 +93,32 @@ const SelectedAgentCard = ({
           </button>
         )}
 
-        {/* Settings button - only show for agents user can edit */}
-        {showSettings && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={e => {
-              e.stopPropagation()
-              onOpenSettings(agent.username || agent._id)
-            }}
-            className="agent-settings-btn absolute top-3 left-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Agent Settings"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        )}
-
-        {/* View agent profile button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          asChild
-          className="agent-profile-btn absolute top-3 right-3 h-8 w-8 rounded-full bg-muted/80 hover:bg-muted z-20 opacity-0 group-hover:opacity-100 transition-opacity"
-          title="View Agent Profile"
-        >
+        {/* Top left action buttons */}
+        <div className="agent-action-buttons">
+          {/* View agent profile button */}
           <Link
             href={`/agents/${agent.username}`}
             onClick={e => e.stopPropagation()}
+            className="agent-action-btn"
+            title="View Agent Profile"
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="w-3 h-3" />
           </Link>
-        </Button>
+
+          {/* Settings button - only show for agents user can edit */}
+          {showSettings && (
+            <button
+              onClick={e => {
+                e.stopPropagation()
+                onOpenSettings(agent.username || agent._id)
+              }}
+              className="agent-action-btn"
+              title="Agent Settings"
+            >
+              <Settings className="w-3 h-3" />
+            </button>
+          )}
+        </div>
 
         {/* Avatar */}
         <div className="agent-avatar-wrapper">
@@ -142,7 +137,13 @@ const SelectedAgentCard = ({
 
         {/* Agent Info */}
         <div className="agent-info">
-          <h2 className="agent-name">{agent.name}</h2>
+          <Link
+            href={`/agents/${agent.username}`}
+            onClick={e => e.stopPropagation()}
+            className="agent-name"
+          >
+            {agent.name}
+          </Link>
           <p className="agent-creator">
             by{' '}
             {agent.owner?.username ? (
@@ -703,7 +704,7 @@ const ChatLaunchpad = () => {
                     </button>
                     <button
                       type="button"
-                      className={`session-mode-segment ${
+                      className={`session-mode-segment session-mode-segment-automatic ${
                         sessionSettings.type === 'automatic' ? 'active' : ''
                       }`}
                       onClick={() =>
@@ -714,6 +715,7 @@ const ChatLaunchpad = () => {
                       }
                     >
                       Automatic
+                      <span className="beta-tag">BETA</span>
                     </button>
                   </div>
 
@@ -776,7 +778,7 @@ const ChatLaunchpad = () => {
               <MessageInput
                 sessionId="new"
                 onStreamingMessage={handleSendMessage}
-                enableLiveAudio={true}
+                enableVoiceInput={true}
                 agent={selectedAgents[0]}
                 placeholder={
                   selectedAgents.length > 1
@@ -1145,6 +1147,48 @@ const ChatLaunchpad = () => {
             transform: scale(1.1);
           }
 
+          .agent-action-buttons {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+          }
+
+          .agent-card-inner:hover .agent-action-buttons {
+            opacity: 1;
+          }
+
+          .agent-action-btn {
+            width: 1.75rem;
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: hsl(var(--muted) / 0.9);
+            border: 1px solid hsl(var(--border));
+            border-radius: 50%;
+            color: hsl(var(--muted-foreground));
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .agent-action-btn svg {
+            width: 0.875rem;
+            height: 0.875rem;
+          }
+
+          .agent-action-btn:hover {
+            background: hsl(var(--primary) / 0.2);
+            border-color: hsl(var(--primary) / 0.4);
+            color: hsl(var(--primary));
+            transform: scale(1.1);
+          }
+
           .agent-avatar-wrapper {
             position: relative;
             display: flex;
@@ -1197,6 +1241,12 @@ const ChatLaunchpad = () => {
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100%;
+            transition: color 0.15s ease;
+            text-decoration: none;
+          }
+
+          .agent-name:hover {
+            color: hsl(var(--primary));
           }
 
           .agent-creator {
@@ -1833,6 +1883,26 @@ const ChatLaunchpad = () => {
             font-weight: 600;
           }
 
+          .session-mode-segment-automatic {
+            white-space: nowrap;
+          }
+
+          .beta-tag {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 0.375rem;
+            padding: 0.125rem 0.375rem;
+            font-size: 0.625rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: hsl(var(--primary));
+            background: hsl(var(--primary) / 0.15);
+            border: 1px solid hsl(var(--primary) / 0.3);
+            border-radius: 0.25rem;
+            line-height: 1.2;
+          }
+
           .session-mode-meta {
             display: flex;
             align-items: center;
@@ -1919,16 +1989,12 @@ const ChatLaunchpad = () => {
               padding: 0.75rem;
             }
 
-            /* Mobile: always show remove and settings buttons */
+            /* Mobile: always show remove and action buttons */
             .agent-remove-btn {
               opacity: 1;
             }
 
-            .agent-settings-btn {
-              opacity: 1 !important;
-            }
-
-            .agent-profile-btn {
+            .agent-action-buttons {
               opacity: 1 !important;
             }
           }

@@ -5,6 +5,18 @@ import { updateSubscriptionGateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 
+// Preview-only deployment platforms (anything not explicitly stable)
+export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
+  'tiktok',
+  'instagram',
+  'google_calendar',
+  'shopify',
+  'printify',
+  'captions',
+  'email',
+  'gmail',
+])
+
 export enum GatedResource {
   AddAgent = 'AddAgent',
   SessionSettings = 'SessionSettings',

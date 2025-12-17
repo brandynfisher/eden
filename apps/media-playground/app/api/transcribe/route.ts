@@ -33,10 +33,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Using gpt-4o-mini-transcribe model with auto language detection
+    // Not specifying 'language' param allows Whisper to auto-detect the spoken language
     const transcription = await openai.audio.transcriptions.create({
-      file: audioFile, // Pass the File object directly
+      file: audioFile,
       model: 'gpt-4o-mini-transcribe',
       response_format: 'json',
+      // language: undefined - auto-detect (supports 50+ languages)
     })
 
     return NextResponse.json({

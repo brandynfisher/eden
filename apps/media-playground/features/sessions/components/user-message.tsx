@@ -5,6 +5,7 @@ import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { cn } from '@/lib/utils'
 import { Message, SessionV2 } from '@edenlabs/eden-sdk'
+import { useTimeAgo } from 'next-timeago'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -18,6 +19,7 @@ export const UserMessage = ({
   const pathname = usePathname()
   const isChatRoute = pathname?.startsWith('/chat')
   const [expanded, setExpanded] = useState(false)
+  const { TimeAgo } = useTimeAgo()
 
   const hasAttachments = message.attachments && message.attachments.length > 0
   const hasContent = message.content && message.content.trim().length > 0
@@ -58,9 +60,10 @@ export const UserMessage = ({
 
   return (
     <div
-      className={
-        isChatRoute ? 'pt-2 pb-4 pl-[calc(3rem+0.75rem)]' : 'pt-2 pb-4 sm:pl-0'
-      }
+      className={cn(
+        'group relative',
+        isChatRoute ? 'pt-2 pb-4 pl-[calc(3rem+0.75rem)]' : 'pt-2 pb-4 sm:pl-0',
+      )}
     >
       <div className="max-w-[42rem] ml-auto flex flex-col items-end">
         <div className="flex flex-col items-end gap-2 max-w-[85%]">
@@ -128,6 +131,12 @@ export const UserMessage = ({
               <LLMCallButton llmCallId={message.llm_call} />
             </div>
           )}
+          <div
+            className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            title={new Date(message.createdAt).toLocaleString()}
+          >
+            <TimeAgo date={new Date(message.createdAt)} />
+          </div>
         </div>
       </div>
     </div>

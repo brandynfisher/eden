@@ -8,15 +8,20 @@ import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
+import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
+import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
-import { useAuthState } from '@/hooks/use-auth-state'
-import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
-import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
+import {
+  GatedResource,
+  PREVIEW_ONLY_DEPLOYMENT_PLATFORMS,
+  useGatedResource,
+} from '@/hooks/use-gated-resource'
+import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, BookTextIcon, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -43,6 +48,17 @@ interface DeploymentSettingsInlineProps {
   agent: Agent
   onUnsavedChangesChange?: (hasChanges: boolean) => void
 }
+
+const UTILITIES_PLATFORMS: Deployment['platform'][] = [
+  'tiktok',
+  'instagram',
+  'google_calendar',
+  'shopify',
+  'printify',
+  'captions',
+  'email',
+  'gmail',
+]
 
 export const DeploymentSettingsInline = forwardRef<
   DeploymentSettingsHandle,
@@ -215,11 +231,15 @@ export const IntegrationsTab = forwardRef<
     [],
   )
 
-  const { user } = useAuthState()
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const deploymentsGate = useGatedResource(GatedResource.Deployments, {
     lockedBehavior: 'modal',
   })
+  const isPreviewUser = deploymentsGate.isPreviewUser
+  const showIntegration = useCallback(
+    (platform: Deployment['platform']) =>
+      isPreviewUser || !PREVIEW_ONLY_DEPLOYMENT_PLATFORMS.has(platform),
+    [isPreviewUser],
+  )
 
   // Always subscribe to the deployments query; seed it with any passed-in data
   const deploymentsQuery = useAgentDeploymentsQuery({
@@ -228,38 +248,55 @@ export const IntegrationsTab = forwardRef<
     enabled: deploymentsGate.isAllowed,
   })
   const effectiveDeployments = deploymentsQuery.deployments
+  const visibleDeployments = useMemo(
+    () =>
+      effectiveDeployments?.filter(deployment =>
+        showIntegration(deployment.platform),
+      ),
+    [effectiveDeployments, showIntegration],
+  )
   const loadingState = deploymentsQuery.isLoading || isLoading
   const errorState = deploymentsQuery.isError || isError
 
-  const gmailDeployment = effectiveDeployments?.find(
+  const gmailDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'gmail',
   )
-  const discordDeployment = effectiveDeployments?.find(
+  const discordDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'discord',
   )
-  const telegramDeployment = effectiveDeployments?.find(
+  const telegramDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'telegram',
   )
-  const twitterDeployment = effectiveDeployments?.find(
+  const twitterDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'twitter',
   )
-  const farcasterDeployment = effectiveDeployments?.find(
+  const farcasterDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'farcaster',
   )
-  const tiktokDeployment = effectiveDeployments?.find(
-    deployment => deployment.platform === 'tiktok',
-  )
-  const shopifyDeployment = effectiveDeployments?.find(
+  const shopifyDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'shopify',
   )
-  const printifyDeployment = effectiveDeployments?.find(
+  const printifyDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'printify',
   )
-  const captionsDeployment = effectiveDeployments?.find(
+  const captionsDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'captions',
   )
-  const emailDeployment = effectiveDeployments?.find(
+  const emailDeployment = visibleDeployments?.find(
     deployment => deployment.platform === 'email',
+  )
+  const googleCalendarDeployment = visibleDeployments?.find(
+    deployment => deployment.platform === 'google_calendar',
+  )
+  const instagramDeployment = visibleDeployments?.find(
+    deployment => deployment.platform === 'instagram',
+  )
+  const tiktokDeployment = visibleDeployments?.find(
+    deployment => deployment.platform === 'tiktok',
+  )
+  const shouldShowUtilities = useMemo(
+    () => UTILITIES_PLATFORMS.some(showIntegration),
+    [showIntegration],
   )
 
   if (!deploymentsGate.isAllowed) {
@@ -331,41 +368,65 @@ export const IntegrationsTab = forwardRef<
             key={`farcaster-${farcasterDeployment?._id || 'new'}`}
             deployment={farcasterDeployment}
           />
-          {isPreviewUser && (
-            <TiktokDeploymentForm
-              agentId={agent._id}
-              key={`tiktok-${tiktokDeployment?._id || 'new'}`}
-              deployment={tiktokDeployment}
-            />
-          )}
         </div>
       </div>
 
-      {isPreviewUser && (
+      {shouldShowUtilities && (
         <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <h2 className="text-lg font-medium text-foreground">Utilities</h2>
           <div className="space-y-4">
-            <ShopifyDeploymentForm
-              agentId={agent._id}
-              key={`shopify-${shopifyDeployment?._id || 'new'}`}
-              deployment={shopifyDeployment}
-            />
-            <PrintifyDeploymentForm
-              agentId={agent._id}
-              key={`printify-${printifyDeployment?._id || 'new'}`}
-              deployment={printifyDeployment}
-            />
-            <CaptionsDeploymentForm
-              agentId={agent._id}
-              key={`captions-${captionsDeployment?._id || 'new'}`}
-              deployment={captionsDeployment}
-            />
-            <EmailDeploymentForm
-              agentId={agent._id}
-              key={`email-${emailDeployment?._id || 'new'}`}
-              deployment={emailDeployment}
-            />
-            {gmailDeployment && (
+            {showIntegration('instagram') && (
+              <InstagramDeploymentForm
+                agentId={agent._id}
+                key={`instagram-${instagramDeployment?._id || 'new'}`}
+                deployment={instagramDeployment}
+              />
+            )}
+            {showIntegration('tiktok') && (
+              <TiktokDeploymentForm
+                agentId={agent._id}
+                key={`tiktok-${tiktokDeployment?._id || 'new'}`}
+                deployment={tiktokDeployment}
+              />
+            )}
+            {showIntegration('google_calendar') && (
+              <GoogleCalendarDeploymentForm
+                agentId={agent._id}
+                key={`google_calendar-${
+                  googleCalendarDeployment?._id || 'new'
+                }`}
+                deployment={googleCalendarDeployment}
+              />
+            )}
+            {showIntegration('shopify') && (
+              <ShopifyDeploymentForm
+                agentId={agent._id}
+                key={`shopify-${shopifyDeployment?._id || 'new'}`}
+                deployment={shopifyDeployment}
+              />
+            )}
+            {showIntegration('printify') && (
+              <PrintifyDeploymentForm
+                agentId={agent._id}
+                key={`printify-${printifyDeployment?._id || 'new'}`}
+                deployment={printifyDeployment}
+              />
+            )}
+            {showIntegration('captions') && (
+              <CaptionsDeploymentForm
+                agentId={agent._id}
+                key={`captions-${captionsDeployment?._id || 'new'}`}
+                deployment={captionsDeployment}
+              />
+            )}
+            {showIntegration('email') && (
+              <EmailDeploymentForm
+                agentId={agent._id}
+                key={`email-${emailDeployment?._id || 'new'}`}
+                deployment={emailDeployment}
+              />
+            )}
+            {showIntegration('gmail') && gmailDeployment && (
               <GmailDeploymentForm
                 agentId={agent._id}
                 deployment={gmailDeployment}

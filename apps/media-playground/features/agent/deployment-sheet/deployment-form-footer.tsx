@@ -103,10 +103,25 @@ export const DeploymentFormFooter = ({
     try {
       let config = {}
       if (platform === 'discord') {
+        // Split unified channels into allowed and read-only lists
+        const allowedChannels = (data.channels || [])
+          .filter((ch: { readOnly?: boolean }) => !ch.readOnly)
+          .map((ch: { id: string; note?: string }) => ({
+            id: ch.id,
+            note: ch.note,
+          }))
+        const readAccessChannels = (data.channels || [])
+          .filter((ch: { readOnly?: boolean }) => ch.readOnly)
+          .map((ch: { id: string; note?: string }) => ({
+            id: ch.id,
+            note: ch.note,
+          }))
+
         config = {
           discord: {
-            channel_allowlist: data.allowedChannels,
-            read_access_channels: data.readAccessChannels,
+            channel_allowlist: allowedChannels,
+            read_access_channels: readAccessChannels,
+            enable_discord_dm: data.enableDiscordDm ?? false,
           },
         }
       } else if (platform === 'telegram') {
@@ -161,6 +176,17 @@ export const DeploymentFormFooter = ({
               data.emailInstructions?.trim().length > 0
                 ? data.emailInstructions.trim()
                 : undefined,
+          },
+        }
+      } else if (platform === 'google_calendar') {
+        config = {
+          google_calendar: {
+            calendar_id: data.calendarId,
+            calendar_name: data.calendarName,
+            allow_write: data.allowWrite ?? false,
+            allow_delete: data.allowDelete ?? false,
+            time_zone: data.timeZone,
+            google_email: data.credentials?.google_email,
           },
         }
       }
@@ -234,6 +260,20 @@ export const DeploymentFormFooter = ({
               webhook_signing_key: data.domain.webhook_signing_key,
             },
           }
+        } else if (platform === 'google_calendar' && data.credentials) {
+          payload.secrets = {
+            google_calendar: {
+              access_token: data.credentials.access_token,
+              refresh_token: data.credentials.refresh_token,
+              token_uri: data.credentials.token_uri,
+              client_id: data.credentials.client_id,
+              client_secret: data.credentials.client_secret,
+              scopes: data.credentials.scopes,
+              expires_at: data.credentials.expires_at,
+              google_user_id: data.credentials.google_user_id,
+              google_email: data.credentials.google_email,
+            },
+          }
         }
 
         await axios.patch(`/api/agents/${agentId}/deployments`, payload)
@@ -305,9 +345,47 @@ export const DeploymentFormFooter = ({
               webhook_signing_key: data.domain.webhook_signing_key,
             },
           }
+        } else if (platform === 'google_calendar' && data.credentials) {
+          payload.secrets = {
+            google_calendar: {
+              access_token: data.credentials.access_token,
+              refresh_token: data.credentials.refresh_token,
+              token_uri: data.credentials.token_uri,
+              client_id: data.credentials.client_id,
+              client_secret: data.credentials.client_secret,
+              scopes: data.credentials.scopes,
+              expires_at: data.credentials.expires_at,
+              google_user_id: data.credentials.google_user_id,
+              google_email: data.credentials.google_email,
+            },
+          }
         }
 
         await axios.post(`/api/agents/${agentId}/deployments`, payload)
+
+        // Auto-enable social media tools when a new integration is deployed
+        try {
+          // First get current agent to preserve existing tools
+          const agentResponse = await axios.get(`/api/agents/${agentId}`)
+          const currentTools = agentResponse.data?.agent?.tools || {}
+
+          // Only update if social_media_tools is not already enabled
+          if (!currentTools.social_media_tools) {
+            await axios.patch(`/api/agents/${agentId}`, {
+              tools: {
+                ...currentTools,
+                social_media_tools: true,
+              },
+            })
+            // Invalidate agent query cache so Tools tab reflects the change
+            await queryClient.invalidateQueries({
+              queryKey: ['agents', agentId],
+            })
+          }
+        } catch (toolsError) {
+          // Don't fail the deployment if tools update fails, just log it
+          console.error('Failed to auto-enable social media tools:', toolsError)
+        }
       }
 
       toast.success(successMessage, {
@@ -418,7 +496,16 @@ export const DeploymentFormFooter = ({
             valid !== false && (
               <Button
                 type="submit"
-                onClick={form.handleSubmit(handleSubmit)}
+                onClick={form.handleSubmit(handleSubmit, errors => {
+                  console.error('Form validation errors:', errors)
+                  const firstError = Object.values(errors)[0]
+                  if (firstError?.message) {
+                    toast.error(`Validation error: ${firstError.message}`, {
+                      richColors: true,
+                      dismissible: true,
+                    })
+                  }
+                })}
                 disabled={isDeploying || !form.formState.isDirty || !canSubmit}
               >
                 {isDeployed ? (

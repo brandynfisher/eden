@@ -21,11 +21,13 @@ import { MinimalAgent } from '@edenlabs/eden-sdk'
 import {
   BrainIcon,
   ChevronRightIcon,
+  ExternalLinkIcon,
   MoreHorizontal,
   PinIcon,
   PinOffIcon,
   SettingsIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { FC, useEffect, useMemo, useState } from 'react'
 
@@ -150,6 +152,12 @@ const AgentListItem: FC<AgentListItemProps> = ({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href={`/agents/${agent.username || agent._id}`}>
+                <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                View Profile
+              </Link>
+            </DropdownMenuItem>
             {isPinned ? (
               <DropdownMenuItem
                 onClick={e => {

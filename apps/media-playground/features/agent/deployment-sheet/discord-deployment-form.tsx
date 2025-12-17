@@ -2,15 +2,25 @@
 
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { ChannelsField } from '@/features/agent/deployment-sheet/channels-field'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
+import { DiscordChannelSelector } from '@/features/agent/deployment-sheet/discord-channel-selector'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Copy } from 'lucide-react'
+import { Copy, PlusIcon, TrashIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -18,22 +28,15 @@ import { z } from 'zod'
 
 const schema = z.object({
   token: z.string(),
-  allowedChannels: z
-    .array(
-      z.object({
-        id: z.string().min(1, 'Channel ID is required'),
-        note: z.string().optional(),
-      }),
-    )
-    .min(1, 'At least one channel must be added to deploy your agent'),
-  readAccessChannels: z
-    .array(
-      z.object({
-        id: z.string().min(1, 'Channel ID is required'),
-        note: z.string().optional(),
-      }),
-    )
-    .optional(),
+  channels: z.array(
+    z.object({
+      id: z.string().min(1, 'Channel ID is required'),
+      note: z.string().optional(),
+      readOnly: z.boolean().optional(),
+    }),
+  ),
+  enableDiscordDm: z.boolean().optional(),
+  useManualEntry: z.boolean().optional(),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
@@ -49,36 +52,41 @@ export const DiscordDeploymentForm = ({
 }: DiscordDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
+  // Merge allowed channels and read-only channels into a unified list
+  const getInitialChannels = () => {
+    const allowedChannels =
+      deployment?.config?.discord?.channel_allowlist?.map(channel => ({
+        id: channel.id || '',
+        note: channel.note || '',
+        readOnly: false,
+      })) || []
+
+    const readOnlyChannels =
+      deployment?.config?.discord?.read_access_channels?.map(channel => ({
+        id: channel.id || '',
+        note: channel.note || '',
+        readOnly: true,
+      })) || []
+
+    const merged = [...allowedChannels, ...readOnlyChannels]
+    return merged.length > 0 ? merged : [{ id: '', note: '', readOnly: false }]
+  }
+
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels:
-        deployment?.config?.discord?.channel_allowlist?.map(channel => ({
-          id: channel.id || '',
-          note: channel.note || '',
-        })) && deployment?.config?.discord?.channel_allowlist?.length > 0
-          ? deployment?.config?.discord?.channel_allowlist?.map(channel => ({
-              id: channel.id || '',
-              note: channel.note || '',
-            }))
-          : [{ id: '', note: '' }],
-      readAccessChannels:
-        deployment?.config?.discord?.read_access_channels?.map(channel => ({
-          id: channel.id || '',
-          note: channel.note || '',
-        })) || [],
+      channels: getInitialChannels(),
+      enableDiscordDm: deployment?.config?.discord?.enable_discord_dm ?? false,
+      useManualEntry: false,
     },
   })
 
-  const allowedChannels = useFieldArray({
-    control: form.control,
-    name: 'allowedChannels',
-  })
+  const useManualEntry = form.watch('useManualEntry')
 
-  const readAccessChannels = useFieldArray({
+  const channels = useFieldArray({
     control: form.control,
-    name: 'readAccessChannels',
+    name: 'channels',
   })
 
   const isDeployed = useMemo(() => {
@@ -95,7 +103,7 @@ export const DiscordDeploymentForm = ({
 
   useEffect(() => {
     if (form.formState.submitCount > 0) {
-      form.trigger('allowedChannels')
+      form.trigger('channels')
     }
   }, [form.formState.submitCount, form.trigger])
 
@@ -118,7 +126,7 @@ export const DiscordDeploymentForm = ({
         ])}
       >
         <Form {...form}>
-          <form className="flex flex-col w-full space-y-4 p-4">
+          <div className="flex flex-col w-full space-y-4 p-4">
             <TokenField
               form={form}
               name="token"
@@ -127,42 +135,162 @@ export const DiscordDeploymentForm = ({
               label="Token"
               description="Your Discord bot token."
             />
-            <FormField
-              control={form.control}
-              name="allowedChannels"
-              render={({ fieldState }) => (
-                <FormItem>
-                  <ChannelsField
-                    form={form}
-                    name="allowedChannels"
-                    type="channel"
-                    allowList={allowedChannels}
-                    label="Allowed Channels"
-                    description="The channels your agent will be deployed to. At least one channel is required."
+            {/* Channel Selection Section */}
+            <div className="space-y-4 mt-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Channels</h4>
+                  <FormField
+                    control={form.control}
+                    name="useManualEntry"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2">
+                        <FormControl>
+                          <Switch
+                            checked={field.value ?? false}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          Manual entry
+                        </span>
+                      </FormItem>
+                    )}
                   />
-                  {fieldState.error && fieldState.error.message && (
-                    <FormMessage>{fieldState.error.message}</FormMessage>
+                </div>
+                <FormDescription>
+                  The channels your agent will have access to. Toggle write
+                  access for channels where the agent should respond.
+                </FormDescription>
+              </div>
+
+              {useManualEntry ? (
+                /* Manual Entry Mode */
+                <FormField
+                  control={form.control}
+                  name="channels"
+                  render={({ fieldState }) => (
+                    <FormItem>
+                      <div className="space-y-4">
+                        {channels.fields.map((field, index) => (
+                          <div
+                            key={field.id}
+                            className="flex gap-2 items-start"
+                          >
+                            <FormField
+                              control={form.control}
+                              name={`channels.${index}.id`}
+                              render={({ field }) => (
+                                <FormItem className="flex-1">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Channel ID"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`channels.${index}.note`}
+                              render={({ field }) => (
+                                <FormItem className="flex-1">
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Note (optional)"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`channels.${index}.readOnly`}
+                              render={({ field }) => (
+                                <FormItem className="flex items-center gap-2 pt-2">
+                                  <FormControl>
+                                    <Switch
+                                      checked={field.value ?? false}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    Read-only
+                                  </span>
+                                </FormItem>
+                              )}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => channels.remove(index)}
+                              className="flex-shrink-0"
+                              disabled={channels.fields.length <= 1}
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            channels.append({
+                              id: '',
+                              note: '',
+                              readOnly: false,
+                            })
+                          }
+                        >
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Add
+                        </Button>
+                      </div>
+                      {fieldState.error && fieldState.error.message && (
+                        <FormMessage>{fieldState.error.message}</FormMessage>
+                      )}
+                    </FormItem>
                   )}
-                </FormItem>
+                />
+              ) : (
+                /* Channel Selector Mode */
+                <DiscordChannelSelector
+                  agentId={agentId}
+                  selectedChannels={form.watch('channels').filter(c => c.id)}
+                  onChannelsChange={newChannels =>
+                    form.setValue('channels', newChannels, {
+                      shouldDirty: true,
+                    })
+                  }
+                  isDeployed={isDeployed}
+                />
               )}
-            />
+            </div>
 
             <FormField
               control={form.control}
-              name="readAccessChannels"
-              render={({ fieldState }) => (
-                <FormItem>
-                  <ChannelsField
-                    form={form}
-                    name="readAccessChannels"
-                    type="channel"
-                    allowList={readAccessChannels}
-                    label="Read Access Channels"
-                    description="The channels your agent will have read-only access to. The note field should describe what the channel is for so the agent is able to find it when asked to search."
-                  />
-                  {fieldState.error && fieldState.error.message && (
-                    <FormMessage>{fieldState.error.message}</FormMessage>
-                  )}
+              name="enableDiscordDm"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Enable DMs</FormLabel>
+                    <FormDescription>
+                      Allow users to interact with your agent via direct
+                      messages.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />
@@ -233,7 +361,7 @@ export const DiscordDeploymentForm = ({
               guideUrl="https://docs.eden.art/integrations/discord"
               valid={deployment?.valid}
             />
-          </form>
+          </div>
         </Form>
       </CollapsibleContent>
     </Collapsible>

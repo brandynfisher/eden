@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "eden-mobile",
+    "name": "Eden",
     "slug": "eden",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,10 +10,11 @@
     "scheme": "edenmobile",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.eden.art",
+      "bundleIdentifier": "art.eden.eden",
       "infoPlist": {
         "NSCameraUsageDescription": "Eden app needs access to your camera to capture photos and videos.",
-        "NSPhotoLibraryUsageDescription": "Eden app needs access to your photo library to select images and videos."
+        "NSPhotoLibraryUsageDescription": "Eden app needs access to your photo library to select images and videos.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -22,9 +23,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.eden.art",
+      "googleServicesFile": "./google-services.json",
+      "package": "art.eden.eden",
       "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",

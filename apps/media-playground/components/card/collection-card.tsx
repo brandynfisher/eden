@@ -3,6 +3,7 @@ import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Card } from '@/components/ui/card'
+import { siteConfig } from '@/lib/config'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { SquareMousePointerIcon } from 'lucide-react'
@@ -40,8 +41,12 @@ const CollectionCard = ({ collection, queryKey, onClick }: Props) => {
       >
         <CardImage
           media={{
-            url: collection.coverCreation?.thumbnail,
-            thumbnail: collection.coverCreation?.thumbnail,
+            url:
+              collection.coverCreation?.thumbnail ||
+              siteConfig.emptyCollectionPlaceholderUrl,
+            thumbnail:
+              collection.coverCreation?.thumbnail ||
+              siteConfig.emptyCollectionPlaceholderUrl,
             width: 512,
             height: 512,
             type: 'image',

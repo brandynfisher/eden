@@ -1,7 +1,7 @@
 import { BorderRadius, Colors, Spacing, Typography } from '@/constants/theme'
 import { StyleSheet } from 'react-native'
 
-export default (theme: 'light' | 'dark') =>
+export default (theme: 'light' | 'dark', bottomInset: number = 0) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -11,6 +11,7 @@ export default (theme: 'light' | 'dark') =>
       flexGrow: 1,
       paddingHorizontal: Spacing.lg,
       paddingTop: Spacing.xl,
+      paddingBottom: Spacing.xl + bottomInset,
     },
     header: {
       marginBottom: Spacing['2xl'],
@@ -61,7 +62,6 @@ export default (theme: 'light' | 'dark') =>
     },
     footer: {
       marginTop: 'auto',
-      paddingBottom: Spacing.xl,
       gap: Spacing.md,
     },
     continueButton: {

@@ -6,12 +6,14 @@ export type ClientType =
   | 'telegram'
   | 'farcaster'
   | 'twitter'
+  | 'instagram'
   | 'shopify'
   | 'printify'
   | 'captions'
   | 'tiktok'
   | 'gmail'
   | 'email'
+  | 'google_calendar'
 
 export type AllowlistItem = {
   id: string
@@ -26,6 +28,7 @@ export type DeploymentSettingsDiscord = {
   oauth_url?: string
   channel_allowlist?: DiscordAllowlistItem[]
   read_access_channels?: DiscordAllowlistItem[]
+  enable_discord_dm?: boolean
 }
 
 export type DeploymentSecretsDiscord = {
@@ -57,6 +60,19 @@ export type DeploymentSecretsFarcaster = {
   mnemonic?: string // For backwards compatibility with direct mnemonic auth
   signer_uuid?: string // For Neynar managed signers
   neynar_webhook_secret?: string
+}
+
+// Instagram Types
+export type DeploymentSettingsInstagram = {
+  username?: string
+  ig_user_id?: string
+}
+
+export type DeploymentSecretsInstagram = {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: Date | string
+  username?: string
 }
 
 // Twitter Types
@@ -100,7 +116,9 @@ export type DeploymentSecretsCaptions = {
 }
 
 // TikTok Types
-export type DeploymentSettingsTiktok = Record<string, never>
+export interface DeploymentSettingsTiktok {
+  username?: string
+}
 
 export type DeploymentSecretsTiktok = {
   access_token: string
@@ -147,18 +165,51 @@ export type DeploymentSecretsGmail = {
   reply_alias?: string
 }
 
+// Google Calendar Types
+export type DeploymentSettingsGoogleCalendar = {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+  google_email?: string
+}
+
+export type DeploymentSecretsGoogleCalendar = {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: Date | string
+  google_user_id?: string
+  google_email: string
+}
+
+export type GoogleCalendarInfo = {
+  id: string
+  name: string
+  primary: boolean
+  accessRole: string
+  backgroundColor?: string
+  timeZone?: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  instagram?: DeploymentSecretsInstagram
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
   tiktok?: DeploymentSecretsTiktok
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
+  google_calendar?: DeploymentSecretsGoogleCalendar
 }
 
 export type DeploymentConfig = {
@@ -166,12 +217,14 @@ export type DeploymentConfig = {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  instagram?: DeploymentSettingsInstagram
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
   tiktok?: DeploymentSettingsTiktok
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
+  google_calendar?: DeploymentSettingsGoogleCalendar
 }
 
 export type Deployment = {
@@ -185,4 +238,35 @@ export type Deployment = {
   local?: boolean
   createdAt: Date
   updatedAt: Date
+}
+
+// Discord channel types for channel selector
+export type DiscordChannelInfo = {
+  id: string
+  name: string
+  type: number
+  type_name: string
+  category_id?: string | null
+  category_name?: string | null
+  position?: number
+}
+
+export type DiscordGuildInfo = {
+  id: string
+  name: string
+  icon?: string | null
+  member_count?: number | null
+  channels: DiscordChannelInfo[]
+}
+
+export type GetDiscordChannelsResponse = {
+  guilds: DiscordGuildInfo[]
+  last_refreshed_at?: string | null
+}
+
+export type RefreshDiscordChannelsResponse = {
+  success: boolean
+  guilds_count: number
+  channels_count: number
+  guilds: Array<{ id: string; name: string; channel_count: number }>
 }

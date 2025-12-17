@@ -1,15 +1,9 @@
-import { useAuth } from '@clerk/nextjs'
-import { EdenClient, Trigger } from '@edenlabs/eden-sdk'
+import { fetcher } from '@/lib/fetcher'
+import { Trigger } from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
-interface TriggerWithAgent extends Trigger {
-  agent: {
-    _id: string
-    name: string
-    username: string
-    userImage?: string
-  }
-  last_run_time?: Date
+interface TriggersResponse {
+  triggers: Trigger[]
 }
 
 type Props = {
@@ -17,7 +11,6 @@ type Props = {
 }
 
 export const useUserTriggersQuery = ({ enabled = true }: Props = {}) => {
-  const { getToken } = useAuth()
   const queryKey: QueryKey = ['user', 'triggers']
 
   const {
@@ -33,23 +26,15 @@ export const useUserTriggersQuery = ({ enabled = true }: Props = {}) => {
   } = useQuery({
     enabled,
     queryKey,
-    queryFn: async () => {
-      const token = await getToken()
-      if (!token) throw new Error('No auth token')
-
-      const eden = new EdenClient({
-        edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL!,
-        token,
-      })
-
-      return await eden.agents.triggers.getAllUser({})
-    },
+    queryFn: () => fetcher<TriggersResponse>('/api/triggers'),
+    refetchOnWindowFocus: query => !!query.state.data, // Only refetch if data exists (prevents blank flash)
+    placeholderData: prev => prev, // Keep previous data during refetch
   })
 
   const queryClient = useQueryClient()
 
   return {
-    triggers: (data?.triggers as TriggerWithAgent[]) || [],
+    triggers: data?.triggers || [],
     queryKey,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () => queryClient.fetchQuery({ queryKey }),

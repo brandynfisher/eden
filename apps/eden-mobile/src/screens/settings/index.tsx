@@ -94,10 +94,11 @@ export default function Settings() {
   const handleResetOnboarding = async () => {
     try {
       await SecureStore.deleteItemAsync(ONBOARDING_COMPLETE_KEY)
-      const rootNav = navigation.getParent()?.getParent?.()
+      // We are inside the BottomTabs navigator; its parent is the Root stack.
+      const rootNav = navigation.getParent()
       rootNav?.reset({
         index: 0,
-        routes: [{ name: 'Welcome' as keyof RootStackParamList }],
+        routes: [{ name: 'Splash' as keyof RootStackParamList }],
       })
     } catch (error) {
       console.error('Error resetting onboarding:', error)

@@ -5,7 +5,6 @@ import { type AppShellConfig, useAppShell } from '@/components/layout/app-shell'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
-import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -39,7 +38,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           <EdenLogoBw className="w-[28px]" />
         </Link>
         <Link
-          href="/sessions/new"
+          href="/chat"
           onClick={close}
           className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
           aria-label="New Session"
@@ -80,37 +79,31 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   if (isShareRoute) {
     return (
       <SessionsLayoutContext.Provider value={contextValue}>
-        <LiveAudioProvider>
-          <SessionsHeader
-            onChatClick={handleChatClick}
-            isSidebarCollapsed={!canShowSidebar}
-          />
-          <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
-            <ScrollContainerProvider value={scrollRef}>
-              <div
-                className="flex-1 overflow-y-auto bg-background"
-                ref={scrollRef}
-              >
-                <div className="mx-auto w-full max-w-4xl h-full">
-                  {children}
-                </div>
-              </div>
-            </ScrollContainerProvider>
-          </div>
-        </LiveAudioProvider>
+        <SessionsHeader
+          onChatClick={handleChatClick}
+          isSidebarCollapsed={!canShowSidebar}
+        />
+        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
+          <ScrollContainerProvider value={scrollRef}>
+            <div
+              className="flex-1 overflow-y-auto bg-background"
+              ref={scrollRef}
+            >
+              <div className="mx-auto w-full max-w-4xl h-full">{children}</div>
+            </div>
+          </ScrollContainerProvider>
+        </div>
       </SessionsLayoutContext.Provider>
     )
   }
 
   return (
     <SessionsLayoutContext.Provider value={contextValue}>
-      <LiveAudioProvider>
-        <SessionsHeader
-          onChatClick={handleChatClick}
-          isSidebarCollapsed={!canShowSidebar}
-        />
-        {children}
-      </LiveAudioProvider>
+      <SessionsHeader
+        onChatClick={handleChatClick}
+        isSidebarCollapsed={!canShowSidebar}
+      />
+      {children}
     </SessionsLayoutContext.Provider>
   )
 }

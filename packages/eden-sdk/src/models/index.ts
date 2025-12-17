@@ -1,4 +1,5 @@
 export * from './v2/Agents'
+export * from './v2/Deployments'
 export * from './Admin'
 export * from './ApiKeys'
 export * from './Characters'

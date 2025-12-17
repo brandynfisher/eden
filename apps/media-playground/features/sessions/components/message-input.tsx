@@ -1,7 +1,6 @@
 'use client'
 
-import { useLiveAudio } from '../live-audio/live-audio-context'
-import { LiveAudioManager } from '../live-audio/live-audio-manager'
+import { useTapToRecord } from '../hooks/use-tap-to-record'
 import { Attachment, FileUploadProgress } from './attachment'
 import { MentionInput, MentionInputRef } from './mention-input'
 import { LightboxGallery } from '@/components/media/lightbox'
@@ -10,6 +9,13 @@ import {
   AutosizeTextAreaRef,
   AutosizeTextarea,
 } from '@/components/ui/custom/autoresize-textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import {
@@ -22,22 +28,30 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
+import { openUserSettingsModal } from '@/lib/user-settings'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  SessionPermissionLevel,
+  SubscriptionTier,
+} from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
+  AlertTriangleIcon,
   ClockIcon,
+  CrownIcon,
+  LoaderIcon,
   MessageSquareIcon,
   MicIcon,
   PaperclipIcon,
   PencilOffIcon,
   SendIcon,
-  SquareIcon,
+  XIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import * as z from 'zod'
@@ -48,6 +62,34 @@ const formSchema = z.object({
 
 const TEMP_MESSAGE_KEY = 'chat-temp-message'
 
+// Character limits per subscription tier
+const CHARACTER_LIMITS: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.Free]: 25000,
+  [SubscriptionTier.Basic]: 50000,
+  [SubscriptionTier.Pro]: 100000,
+  [SubscriptionTier.Believer]: 200000,
+  [SubscriptionTier.Admin]: 400000,
+}
+
+const SUBSCRIPTION_TIER_NAMES: Record<SubscriptionTier, string> = {
+  [SubscriptionTier.Free]: 'Free',
+  [SubscriptionTier.Basic]: 'Basic',
+  [SubscriptionTier.Pro]: 'Pro',
+  [SubscriptionTier.Believer]: 'Believer',
+  [SubscriptionTier.Admin]: 'Admin',
+}
+
+const getCharacterLimit = (tier: SubscriptionTier | undefined): number => {
+  return CHARACTER_LIMITS[tier ?? SubscriptionTier.Free]
+}
+
+const formatCharacterCount = (count: number): string => {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`
+  }
+  return count.toString()
+}
+
 type MessageInputProps = {
   sessionId: string
   onStreamingMessage?: (
@@ -55,10 +97,11 @@ type MessageInputProps = {
     attachments?: string[],
     thinking?: boolean,
   ) => void
-  enableLiveAudio?: boolean
+  enableVoiceInput?: boolean
   agent?: Agent // Optional agent prop for welcome screen
   placeholder?: string // Custom placeholder text
   expanded?: boolean // Start with expanded multi-line view
+  onTranscribingChange?: (isTranscribing: boolean) => void // Callback when transcription state changes
 }
 
 type AttachmentDropzoneProps = {
@@ -108,10 +151,11 @@ const getNativeWebViewBridge = () => {
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
-  enableLiveAudio = false,
+  enableVoiceInput = false,
   agent: propAgent,
   placeholder = 'Write a message...',
   expanded = false,
+  onTranscribingChange,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
   const [isMultiline, setIsMultiline] = useState(expanded)
@@ -130,8 +174,6 @@ export const MessageInput = ({
     key: firstAgentId!,
     enabled: !!firstAgentId,
   })
-
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
@@ -144,13 +186,39 @@ export const MessageInput = ({
   const [showMention, setShowMention] = useState(false)
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
+  const [showCharacterLimitModal, setShowCharacterLimitModal] = useState(false)
   const textareaRef = useRef<AutosizeTextAreaRef>(null)
   const mentionInputRef = useRef<MentionInputRef>(null)
+
+  // Character limit based on subscription tier
+  const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
+  const characterLimit = getCharacterLimit(subscriptionTier)
 
   // Check if the agent has reasoning capability (high model profile)
   // Use prop agent if available (for welcome screen), otherwise use session agent
   const activeAgent = propAgent || fullAgent
   const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
+
+  // Tap-to-record for voice input
+  const handleVoiceTranscription = useCallback(
+    (transcription: string) => {
+      if (onStreamingMessage && transcription.trim()) {
+        // Send the transcription directly as a message
+        onStreamingMessage(transcription.trim(), [], isThinkingEnabled)
+      }
+    },
+    [onStreamingMessage, isThinkingEnabled],
+  )
+
+  const {
+    isRecording: isVoiceRecording,
+    isTranscribing,
+    toggleRecording,
+    cancelRecording,
+  } = useTapToRecord({
+    onTranscription: handleVoiceTranscription,
+    onTranscribingChange,
+  })
 
   // Sync isMultiline with expanded prop when it changes
   useEffect(() => {
@@ -205,6 +273,13 @@ export const MessageInput = ({
       content: '',
     },
   })
+
+  // Watch content for character count
+  const watchedContent = useWatch({ control: form.control, name: 'content' })
+  const characterCount = watchedContent?.length ?? 0
+  const isOverLimit = characterCount > characterLimit
+  const isNearLimit = characterCount > characterLimit * 0.9 // Warning at 90%
+  const shouldShowCharacterCount = characterCount > characterLimit * 0.5 // Only show after 50%
 
   const handleFilesDropped = useCallback(async (files: File[]) => {
     const newAttachments: FileUploadProgress[] = files.map(file => ({
@@ -403,6 +478,12 @@ export const MessageInput = ({
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (isSubmitting) return
 
+    // Check character limit
+    if (data.content.length > characterLimit) {
+      setShowCharacterLimitModal(true)
+      return
+    }
+
     // Check authentication and prompt login if needed
     if (!(await verifyAuth())) {
       return
@@ -562,36 +643,6 @@ export const MessageInput = ({
     }
   }
 
-  // Always call the hook to avoid conditional hook calls
-  const liveAudioHook = useLiveAudio()
-  const liveAudioState = liveAudioHook?.state ?? {
-    isRecording: false,
-    isProcessing: false,
-    actionIntervalProgress: 0,
-  }
-  const { isRecording, isProcessing, actionIntervalProgress } = liveAudioState
-
-  // Only enable live audio features for preview users
-  const shouldShowLiveAudio = enableLiveAudio && isPreviewUser
-
-  const handleRecordToggle = () => {
-    if (!shouldShowLiveAudio || !liveAudioHook) return
-
-    // This will trigger the modal to open via the LiveAudioManager
-    const managerElement = document.querySelector('[data-live-audio-manager]')
-    const managerWithToggle = managerElement as HTMLElement & {
-      __toggleRecording?: () => void
-    }
-    if (managerElement && managerWithToggle.__toggleRecording) {
-      managerWithToggle.__toggleRecording()
-    }
-  }
-
-  const handleStopRecording = () => {
-    if (!shouldShowLiveAudio || !liveAudioHook) return
-    liveAudioHook.stopLiveAudio()
-  }
-
   useEffect(() => {
     const textarea = textareaRef.current?.textArea
     if (!textarea) return
@@ -665,19 +716,92 @@ export const MessageInput = ({
     )
   }
 
+  // Get next tier info for upgrade prompt
+  const getNextTierInfo = () => {
+    if (subscriptionTier >= SubscriptionTier.Believer) {
+      return null // Already at max tier (excluding Admin)
+    }
+    const nextTier = (subscriptionTier + 1) as SubscriptionTier
+    return {
+      name: SUBSCRIPTION_TIER_NAMES[nextTier],
+      limit: CHARACTER_LIMITS[nextTier],
+    }
+  }
+  const nextTierInfo = getNextTierInfo()
+
   return (
     <>
+      {/* Character Limit Warning Modal */}
+      <Dialog
+        open={showCharacterLimitModal}
+        onOpenChange={setShowCharacterLimitModal}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangleIcon className="text-orange-400 h-5 w-5" />
+              Message Too Long
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="flex flex-col gap-3 pt-4">
+                <p>
+                  Your message has{' '}
+                  <strong>{formatCharacterCount(characterCount)}</strong>{' '}
+                  characters, which exceeds your limit of{' '}
+                  <strong>{formatCharacterCount(characterLimit)}</strong>{' '}
+                  characters.
+                </p>
+                <p className="text-muted-foreground">
+                  Your current plan:{' '}
+                  <strong className="capitalize">
+                    {SUBSCRIPTION_TIER_NAMES[subscriptionTier]}
+                  </strong>
+                </p>
+                {nextTierInfo && (
+                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CrownIcon className="text-purple-400 h-4 w-4" />
+                      <span className="font-medium text-purple-300">
+                        Upgrade to {nextTierInfo.name}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Get up to{' '}
+                      <strong>
+                        {formatCharacterCount(nextTierInfo.limit)}
+                      </strong>{' '}
+                      characters per message and unlock more features.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowCharacterLimitModal(false)}
+            >
+              Edit Message
+            </Button>
+            {nextTierInfo && (
+              <Button
+                onClick={() => {
+                  setShowCharacterLimitModal(false)
+                  openUserSettingsModal('subscription')
+                }}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <CrownIcon className="w-4 h-4 mr-2" />
+                Upgrade Plan
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {isDragging && (
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
-      )}
-
-      {/* Live Audio Manager handles recording indicator and modal - only when enabled for preview users */}
-      {shouldShowLiveAudio && (
-        <LiveAudioManager
-          sessionId={sessionId}
-          onStreamingMessage={onStreamingMessage}
-          isSubmitting={isSubmitting}
-        />
       )}
 
       <div className="relative z-[51] bg-accent w-full">
@@ -707,7 +831,7 @@ export const MessageInput = ({
             )}
 
             {/* Conditional layout based on text wrapping */}
-            {!isRecording && (
+            {!isVoiceRecording && !isTranscribing && (
               <div className="px-2.5 py-2">
                 {/* Multi-line layout: text on top, buttons on bottom */}
                 {isMultiline ? (
@@ -837,8 +961,60 @@ export const MessageInput = ({
                       </div>
 
                       {/* Right side buttons */}
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {shouldShowLiveAudio && (
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Character count indicator - show after 50% of limit */}
+                        {shouldShowCharacterCount && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span
+                                  className={cn(
+                                    'text-xs tabular-nums cursor-pointer select-none',
+                                    isOverLimit && 'text-red-500 font-medium',
+                                    isNearLimit &&
+                                      !isOverLimit &&
+                                      'text-orange-400',
+                                    !isNearLimit &&
+                                      !isOverLimit &&
+                                      'text-muted-foreground',
+                                  )}
+                                  onClick={() => {
+                                    if (isOverLimit || isNearLimit) {
+                                      openUserSettingsModal('subscription')
+                                    }
+                                  }}
+                                >
+                                  {formatCharacterCount(characterCount)}/
+                                  {formatCharacterCount(characterLimit)}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {isOverLimit ? (
+                                  <p>
+                                    Upgrade your{' '}
+                                    <button
+                                      className="text-purple-400 underline hover:text-purple-300"
+                                      onClick={() =>
+                                        openUserSettingsModal('subscription')
+                                      }
+                                    >
+                                      subscription
+                                    </button>{' '}
+                                    to increase message limits
+                                  </p>
+                                ) : (
+                                  <p>
+                                    {formatCharacterCount(
+                                      characterLimit - characterCount,
+                                    )}{' '}
+                                    characters remaining
+                                  </p>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {enableVoiceInput && (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -848,43 +1024,67 @@ export const MessageInput = ({
                                   variant="ghost"
                                   className={cn(
                                     'h-8 w-8',
-                                    isProcessing && 'text-blue-500',
+                                    isTranscribing && 'text-blue-500',
                                   )}
-                                  onClick={handleRecordToggle}
-                                  disabled={isSubmitting || isProcessing}
+                                  onClick={toggleRecording}
+                                  disabled={isSubmitting || isTranscribing}
                                 >
                                   <MicIcon
                                     className={cn(
                                       'w-4 h-4',
-                                      isProcessing && 'animate-spin',
+                                      isTranscribing && 'animate-pulse',
                                     )}
                                   />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Start audio session</p>
+                                <p>
+                                  {isTranscribing
+                                    ? 'Transcribing...'
+                                    : 'Record voice message'}
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
                         )}
-                        <Button
-                          type="submit"
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8"
-                          disabled={
-                            !form.formState.isValid ||
-                            attachments.some(a => a.status === 'uploading') ||
-                            isSubmitting
-                          }
-                        >
-                          <SendIcon
-                            className={cn(
-                              'w-4 h-4',
-                              isSubmitting && 'animate-pulse',
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="submit"
+                                size="icon"
+                                variant="outline"
+                                className={cn(
+                                  'h-8 w-8',
+                                  isOverLimit &&
+                                    'border-red-500/50 text-red-500',
+                                )}
+                                disabled={
+                                  !form.formState.isValid ||
+                                  attachments.some(
+                                    a => a.status === 'uploading',
+                                  ) ||
+                                  isSubmitting ||
+                                  isOverLimit
+                                }
+                              >
+                                <SendIcon
+                                  className={cn(
+                                    'w-4 h-4',
+                                    isSubmitting && 'animate-pulse',
+                                  )}
+                                />
+                              </Button>
+                            </TooltipTrigger>
+                            {isOverLimit && (
+                              <TooltipContent>
+                                <p className="text-red-400">
+                                  Message exceeds character limit
+                                </p>
+                              </TooltipContent>
                             )}
-                          />
-                        </Button>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </div>
                   </>
@@ -1009,8 +1209,60 @@ export const MessageInput = ({
                     </div>
 
                     {/* Right side buttons */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {shouldShowLiveAudio && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Character count indicator - show after 50% of limit */}
+                      {shouldShowCharacterCount && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span
+                                className={cn(
+                                  'text-xs tabular-nums cursor-pointer select-none',
+                                  isOverLimit && 'text-red-500 font-medium',
+                                  isNearLimit &&
+                                    !isOverLimit &&
+                                    'text-orange-400',
+                                  !isNearLimit &&
+                                    !isOverLimit &&
+                                    'text-muted-foreground',
+                                )}
+                                onClick={() => {
+                                  if (isOverLimit || isNearLimit) {
+                                    openUserSettingsModal('subscription')
+                                  }
+                                }}
+                              >
+                                {formatCharacterCount(characterCount)}/
+                                {formatCharacterCount(characterLimit)}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {isOverLimit ? (
+                                <p>
+                                  Upgrade your{' '}
+                                  <button
+                                    className="text-purple-400 underline hover:text-purple-300"
+                                    onClick={() =>
+                                      openUserSettingsModal('subscription')
+                                    }
+                                  >
+                                    subscription
+                                  </button>{' '}
+                                  to increase message limits
+                                </p>
+                              ) : (
+                                <p>
+                                  {formatCharacterCount(
+                                    characterLimit - characterCount,
+                                  )}{' '}
+                                  characters remaining
+                                </p>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      {enableVoiceInput && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1020,81 +1272,130 @@ export const MessageInput = ({
                                 variant="ghost"
                                 className={cn(
                                   'h-8 w-8',
-                                  isProcessing && 'text-blue-500',
+                                  isTranscribing && 'text-blue-500',
                                 )}
-                                onClick={handleRecordToggle}
-                                disabled={isSubmitting || isProcessing}
+                                onClick={toggleRecording}
+                                disabled={isSubmitting || isTranscribing}
                               >
                                 <MicIcon
                                   className={cn(
                                     'w-4 h-4',
-                                    isProcessing && 'animate-spin',
+                                    isTranscribing && 'animate-pulse',
                                   )}
                                 />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Start audio session</p>
+                              <p>
+                                {isTranscribing
+                                  ? 'Transcribing...'
+                                  : 'Record voice message'}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       )}
-                      <Button
-                        type="submit"
-                        size="icon"
-                        variant="outline"
-                        className="h-8 w-8"
-                        disabled={
-                          !form.formState.isValid ||
-                          attachments.some(a => a.status === 'uploading') ||
-                          isSubmitting
-                        }
-                      >
-                        <SendIcon
-                          className={cn(
-                            'w-4 h-4',
-                            isSubmitting && 'animate-pulse',
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="submit"
+                              size="icon"
+                              variant="outline"
+                              className={cn(
+                                'h-8 w-8',
+                                isOverLimit && 'border-red-500/50 text-red-500',
+                              )}
+                              disabled={
+                                !form.formState.isValid ||
+                                attachments.some(
+                                  a => a.status === 'uploading',
+                                ) ||
+                                isSubmitting ||
+                                isOverLimit
+                              }
+                            >
+                              <SendIcon
+                                className={cn(
+                                  'w-4 h-4',
+                                  isSubmitting && 'animate-pulse',
+                                )}
+                              />
+                            </Button>
+                          </TooltipTrigger>
+                          {isOverLimit && (
+                            <TooltipContent>
+                              <p className="text-red-400">
+                                Message exceeds character limit
+                              </p>
+                            </TooltipContent>
                           )}
-                        />
-                      </Button>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Bottom half - recording indicator when recording is active and live audio is enabled for preview users */}
-            {shouldShowLiveAudio && isRecording && (
-              <div className="relative bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 px-4 py-2 overflow-hidden">
-                {/* Progress bar background */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-r from-red-400/50 to-red-200/30 dark:from-red-500/30 dark:to-red-700/15 transition-all duration-100 ease-linear border-r border-red-300/50 dark:border-red-600/30"
-                  style={{ width: `${actionIntervalProgress}%` }}
-                />
-
-                {/* Recording indicator content */}
-                <div className="relative flex items-center justify-between">
+            {/* Recording indicator when voice recording is active */}
+            {enableVoiceInput && isVoiceRecording && (
+              <div className="relative bg-orange-500/10 border-t border-orange-500/30 px-4 py-2">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <MicIcon className="w-5 h-5 text-red-600" />
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                      <MicIcon className="w-5 h-5 text-orange-400" />
+                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-400 rounded-full animate-pulse" />
                     </div>
-                    <span className="text-sm font-medium text-red-700 dark:text-red-300">
-                      {isProcessing
-                        ? 'Processing audio...'
-                        : 'Agent is listening...'}
+                    <span className="text-sm font-medium text-orange-300">
+                      Recording...
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={cancelRecording}
+                      className="h-7 px-2 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={toggleRecording}
+                      className="h-7 px-3 border-orange-500/30 text-orange-300 hover:bg-orange-500/10"
+                    >
+                      Stop & Send
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Transcribing indicator when audio is being transcribed */}
+            {enableVoiceInput && isTranscribing && (
+              <div className="relative bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800 px-4 py-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <LoaderIcon className="w-5 h-5 text-blue-600 animate-spin" />
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      Transcribing your message...
                     </span>
                   </div>
 
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
-                    onClick={handleStopRecording}
-                    className="h-7 px-3 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                    variant="ghost"
+                    onClick={cancelRecording}
+                    className="h-7 px-2 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900/30"
                   >
-                    <SquareIcon className="w-3 h-3 mr-1 fill-current" />
-                    Stop
+                    <XIcon className="w-4 h-4 mr-1" />
+                    Cancel
                   </Button>
                 </div>
               </div>

@@ -91,7 +91,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
   return (
     <div
       className={cn(
-        'aui-assistant-action-bar-root flex items-center gap-1 w-full z-10 mt-3',
+        'aui-assistant-action-bar-root flex flex-wrap items-center gap-1 md:gap-2 w-full z-10 mt-3',
         isLoading && 'opacity-50 pointer-events-none',
       )}
     >
@@ -130,7 +130,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
         <ThumbsDownIcon className="w-4 h-4" />
       </button>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2 max-w-full min-w-0 justify-end">
         {completedToolCalls.map((toolCall, index) => (
           <ToolHoverMenu
             key={`${toolCall.id}-${index}`}

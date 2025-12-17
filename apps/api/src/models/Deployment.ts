@@ -5,12 +5,14 @@ export enum ClientType {
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
   TWITTER = 'twitter',
+  INSTAGRAM = 'instagram',
   SHOPIFY = 'shopify',
   PRINTIFY = 'printify',
   CAPTIONS = 'captions',
   TIKTOK = 'tiktok',
   GMAIL = 'gmail',
   EMAIL = 'email',
+  GOOGLE_CALENDAR = 'google_calendar',
 }
 
 // Allowlist item base interface
@@ -76,6 +78,19 @@ export interface DeploymentSecretsTwitter {
   access_token_secret: string
 }
 
+// Instagram Types
+export interface DeploymentSettingsInstagram {
+  username?: string
+  ig_user_id?: string
+}
+
+export interface DeploymentSecretsInstagram {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: Date | string
+  username?: string
+}
+
 // Shopify Types
 export interface DeploymentSettingsShopify {}
 
@@ -101,7 +116,9 @@ export interface DeploymentSecretsCaptions {
 }
 
 // TikTok Types
-export interface DeploymentSettingsTiktok {}
+export interface DeploymentSettingsTiktok {
+  username?: string
+}
 
 export interface DeploymentSecretsTiktok {
   access_token: string
@@ -150,18 +167,41 @@ export interface DeploymentSecretsGmail {
   reply_alias?: string
 }
 
+// Google Calendar Types
+export interface DeploymentSettingsGoogleCalendar {
+  calendar_id: string
+  calendar_name?: string
+  allow_write?: boolean
+  allow_delete?: boolean
+  time_zone?: string
+}
+
+export interface DeploymentSecretsGoogleCalendar {
+  access_token: string
+  refresh_token: string
+  token_uri: string
+  client_id: string
+  client_secret: string
+  scopes: string[]
+  expires_at?: Date | string
+  google_user_id?: string
+  google_email: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  instagram?: DeploymentSecretsInstagram
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
   tiktok?: DeploymentSecretsTiktok
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
+  google_calendar?: DeploymentSecretsGoogleCalendar
 }
 
 export interface DeploymentConfig {
@@ -169,12 +209,14 @@ export interface DeploymentConfig {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  instagram?: DeploymentSettingsInstagram
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
   tiktok?: DeploymentSettingsTiktok
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
+  google_calendar?: DeploymentSettingsGoogleCalendar
 }
 
 export interface DeploymentSchema {

@@ -85,7 +85,10 @@ export function useSessionQuery({
     },
     enabled: enabled && !!sessionId,
     staleTime: 1000, // 1 second - allow frequent refetches during active conversation
-    refetchInterval: data => (data ? 2000 : false), // Poll only when we have session data
+    refetchInterval: data => {
+      // Only poll for the active session to avoid flooding
+      return data ? 2000 : false
+    }, // Poll only when we have session data
     refetchOnWindowFocus: query => !!query.state.data,
     retry: (failureCount, error) => {
       if (axios.isAxiosError(error)) {
@@ -131,7 +134,7 @@ export function useSessionQuery({
       const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
       const optimisticMessage: Message & { __optimistic: boolean } = {
         _id: optimisticId,
-        session: sessionId,
+        session: [sessionId] as unknown as SessionV2[],
         role: 'user',
         createdAt: new Date(),
         updatedAt: new Date(),
