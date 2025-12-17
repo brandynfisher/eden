@@ -65,7 +65,7 @@ export type TasksViewProps = {
   agentId?: string // For agent mode
   isModalOpen?: boolean // For controlling query fetching when in a modal
   onTasksChange?: () => void
-  onNavigateToMessage?: (messageId: string) => void
+  onNavigateToMessage?: (messageId: string, sessionId?: string) => void
   showHeader?: boolean
   headerTitle?: string
   headerDescription?: string
@@ -74,7 +74,11 @@ export type TasksViewProps = {
 // Helper to extract session info from trigger
 const getSessionInfo = (
   trigger: Trigger,
-): { id: string; title: string; agents: TriggerSessionAgent[] } => {
+): { id: string | null; title: string; agents: TriggerSessionAgent[] } => {
+  // Handle null session (Create new session)
+  if (!trigger.session) {
+    return { id: null, title: 'Session to be created', agents: [] }
+  }
   if (typeof trigger.session === 'string') {
     return { id: trigger.session, title: 'Session', agents: [] }
   }
@@ -133,12 +137,11 @@ const TaskItem: FC<{
   onResume: (triggerId: string) => void
   onDelete: (triggerId: string) => void
   onRunComplete?: (triggerId: string) => void
-  onNavigateToMessage?: (messageId: string) => void
+  onNavigateToMessage?: (messageId: string, sessionId?: string) => void
   onNavigateToLatest?: () => void
   isFinished?: boolean
   timezone: string
   showSessionInfo?: boolean
-  mode: TasksViewMode
 }> = ({
   trigger,
   onEdit,
@@ -153,7 +156,6 @@ const TaskItem: FC<{
   isFinished = false,
   timezone,
   showSessionInfo = false,
-  mode,
 }) => {
   const router = useRouter()
   const [isExecuting, setIsExecuting] = useState(false)
@@ -177,13 +179,50 @@ const TaskItem: FC<{
       return 'Running...'
     }
 
+    const schedule = trigger.schedule
     const scheduleWithTimezone = {
-      ...trigger.schedule,
+      ...schedule,
       timezone: timezone,
     }
     const description = formatCronSchedule(scheduleWithTimezone)
 
-    // For archived/finished tasks, just show the recurrence pattern without "Next: X"
+    // Determine cadence for recurring tasks
+    const getCadence = () => {
+      if (schedule.hour === '*') {
+        return 'hourly'
+      }
+      if (schedule.day_of_week === '*') {
+        return 'daily'
+      }
+      if (schedule.day_of_week && schedule.day_of_week !== '*') {
+        // Weekly - show day name
+        const days = [
+          'Sundays',
+          'Mondays',
+          'Tuesdays',
+          'Wednesdays',
+          'Thursdays',
+          'Fridays',
+          'Saturdays',
+        ]
+        const dayIndex =
+          typeof schedule.day_of_week === 'number'
+            ? schedule.day_of_week
+            : parseInt(schedule.day_of_week)
+        return days[dayIndex]
+      }
+      if (schedule.month && schedule.day) {
+        return 'annually'
+      }
+      if (schedule.day) {
+        return 'monthly'
+      }
+      return null // one-time task
+    }
+
+    const cadence = getCadence()
+
+    // For archived/finished tasks, just show the recurrence pattern
     if (isFinished || trigger.status === 'finished') {
       return description
     }
@@ -202,7 +241,23 @@ const TaskItem: FC<{
         dateStr = zonedTime.format('MMM D')
       }
 
-      return `Next: ${dateStr} at ${zonedTime.format('h:mma')}`
+      const timeStr = `${dateStr} at ${zonedTime.format('h:mma')}`
+      return cadence ? `${timeStr} (${cadence})` : timeStr
+    }
+
+    // If no next_scheduled_run but has schedule, show time with cadence
+    if (schedule.hour !== undefined && schedule.minute !== undefined) {
+      const hour =
+        typeof schedule.hour === 'string' && schedule.hour !== '*'
+          ? parseInt(schedule.hour)
+          : 0
+      const minute =
+        typeof schedule.minute === 'string'
+          ? parseInt(schedule.minute)
+          : schedule.minute || 0
+
+      const timeStr = dayjs().hour(hour).minute(minute).format('h:mma')
+      return cadence ? `At ${timeStr} (${cadence})` : `At ${timeStr}`
     }
 
     return description
@@ -234,7 +289,7 @@ const TaskItem: FC<{
                 label: 'View',
                 onClick: onNavigateToLatest,
               }
-            : showSessionInfo
+            : showSessionInfo && sessionInfo.id
             ? {
                 label: 'View Session',
                 onClick: () => router.push(`/sessions/${sessionInfo.id}`),
@@ -268,11 +323,22 @@ const TaskItem: FC<{
   const handleReactivate = async () => {
     setIsReactivating(true)
     try {
-      // If task has no schedule (one-time task), set status to active with no schedule
-      // If task has a schedule, just set status to active and keep the schedule
-      const payload = trigger.schedule
-        ? { status: 'active' }
-        : { status: 'active', schedule: null }
+      let payload: { status: string; schedule?: null } = { status: 'active' }
+
+      // Clear schedule if it's finished (no future runs)
+      // This handles:
+      // 1. One-time tasks whose schedule is in the past
+      // 2. Recurring tasks whose end_date has passed
+      // Keep schedule if it has future runs (recurring schedule with future dates)
+      if (trigger.schedule) {
+        const hasNoFutureRuns =
+          !trigger.next_scheduled_run ||
+          new Date(trigger.next_scheduled_run) <= new Date()
+
+        if (hasNoFutureRuns) {
+          payload.schedule = null
+        }
+      }
 
       await axios.patch(`/api/triggers/${trigger._id}`, payload)
       onReactivate(trigger._id)
@@ -324,8 +390,11 @@ const TaskItem: FC<{
   }
 
   const handleNavigateToRun = (messageId: string) => {
+    // Can't navigate to runs if session doesn't exist yet
+    if (!sessionInfo.id) return
+
     if (onNavigateToMessage) {
-      onNavigateToMessage(messageId)
+      onNavigateToMessage(messageId, sessionInfo.id)
     } else {
       router.push(`/sessions/${sessionInfo.id}?message=${messageId}`)
     }
@@ -333,6 +402,8 @@ const TaskItem: FC<{
 
   // For global/agent mode, link to session settings for editing
   const getEditLink = () => {
+    // Can't link to session settings if session doesn't exist yet
+    if (!sessionInfo.id) return undefined
     return `/sessions/${sessionInfo.id}?settings=tasks`
   }
 
@@ -378,21 +449,45 @@ const TaskItem: FC<{
             {/* Session info (for global/agent modes) */}
             {showSessionInfo && (
               <>
-                <Link
-                  href={`/sessions/${sessionInfo.id}`}
-                  className="flex items-center gap-1.5 hover:underline"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {sessionInfo.agents.length > 0 && (
-                    <AgentAvatars
-                      agents={sessionInfo.agents}
-                      className="scale-75 origin-left -ml-1"
-                    />
-                  )}
-                  <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                    {sessionInfo.title}
-                  </span>
-                </Link>
+                {sessionInfo.id ? (
+                  <Link
+                    href={`/sessions/${sessionInfo.id}`}
+                    className="flex items-center gap-1.5 hover:underline"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {sessionInfo.agents.length > 0 && (
+                      <AgentAvatars
+                        agents={sessionInfo.agents}
+                        className="scale-75 origin-left -ml-1"
+                      />
+                    )}
+                    <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                      {sessionInfo.title}
+                    </span>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    {trigger.agent &&
+                      typeof trigger.agent === 'object' &&
+                      'username' in trigger.agent && (
+                        <AgentAvatars
+                          agents={[
+                            {
+                              _id: trigger.agent._id,
+                              username: trigger.agent.username,
+                              name:
+                                trigger.agent.name || trigger.agent.username,
+                              userImage: trigger.agent.userImage,
+                            },
+                          ]}
+                          className="scale-75 origin-left -ml-1"
+                        />
+                      )}
+                    <span className="text-xs text-muted-foreground italic">
+                      {sessionInfo.title}
+                    </span>
+                  </div>
+                )}
                 {scheduleDisplay && (
                   <span className="text-muted-foreground/30">·</span>
                 )}
@@ -439,18 +534,20 @@ const TaskItem: FC<{
           <DropdownMenuContent align="end" className="w-40">
             {!isFinished ? (
               <>
-                {mode === 'session' && onEdit ? (
+                {onEdit ? (
                   <DropdownMenuItem onClick={() => onEdit(trigger)}>
                     <PencilIcon className="h-4 w-4 mr-2" />
                     Edit
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem asChild>
-                    <Link href={getEditLink()}>
-                      <PencilIcon className="h-4 w-4 mr-2" />
-                      Edit
-                    </Link>
-                  </DropdownMenuItem>
+                  getEditLink() && (
+                    <DropdownMenuItem asChild>
+                      <Link href={getEditLink()!}>
+                        <PencilIcon className="h-4 w-4 mr-2" />
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
+                  )
                 )}
                 {trigger.schedule && (
                   <>
@@ -686,9 +783,26 @@ export const TasksView: FC<TasksViewProps> = ({
 
     if (mode === 'agent' && agentId) {
       return allTriggers.filter(trigger => {
+        // Include tasks with null session (Create new session) for this agent
+        if (!trigger.session) {
+          const triggerAgent = trigger.agent
+          if (typeof triggerAgent === 'string') {
+            return triggerAgent === agentId
+          }
+          if (triggerAgent && typeof triggerAgent === 'object') {
+            return triggerAgent.username === agentId
+          }
+          return false
+        }
+
+        // Include tasks from single-agent sessions with the current agent
         if (typeof trigger.session === 'object' && trigger.session !== null) {
           const session = trigger.session as TriggerSession
-          return session.agents?.some(agent => agent._id === agentId)
+          // Backend already filters by permissions (owner/editor only)
+          return (
+            session.agents?.length === 1 &&
+            session.agents[0].username === agentId
+          )
         }
         return false
       })
@@ -919,10 +1033,13 @@ export const TasksView: FC<TasksViewProps> = ({
   }, [triggersQuery, onTasksChange])
 
   const handleNavigateToRun = (trigger: Trigger, messageId: string) => {
+    const sessionInfo = getSessionInfo(trigger)
+    // Can't navigate to runs if session doesn't exist yet
+    if (!sessionInfo.id) return
+
     if (onNavigateToMessage) {
-      onNavigateToMessage(messageId)
+      onNavigateToMessage(messageId, sessionInfo.id)
     } else {
-      const sessionInfo = getSessionInfo(trigger)
       router.push(`/sessions/${sessionInfo.id}?message=${messageId}`)
     }
   }
@@ -1058,7 +1175,11 @@ export const TasksView: FC<TasksViewProps> = ({
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
-                        onEdit={mode === 'session' ? handleEdit : undefined}
+                        onEdit={
+                          mode === 'session' || mode === 'agent'
+                            ? handleEdit
+                            : undefined
+                        }
                         onArchive={handleTaskChange}
                         onReactivate={handleTaskChange}
                         onPause={handleTaskChange}
@@ -1070,7 +1191,6 @@ export const TasksView: FC<TasksViewProps> = ({
                         isFinished={false}
                         timezone={userTimezone}
                         showSessionInfo={showSessionInfo}
-                        mode={mode}
                       />
                     ))}
                   </div>
@@ -1098,7 +1218,11 @@ export const TasksView: FC<TasksViewProps> = ({
                       <TaskItem
                         key={trigger._id}
                         trigger={trigger}
-                        onEdit={mode === 'session' ? handleEdit : undefined}
+                        onEdit={
+                          mode === 'session' || mode === 'agent'
+                            ? handleEdit
+                            : undefined
+                        }
                         onArchive={handleTaskChange}
                         onReactivate={handleTaskChange}
                         onPause={handleTaskChange}
@@ -1110,7 +1234,6 @@ export const TasksView: FC<TasksViewProps> = ({
                         isFinished={false}
                         timezone={userTimezone}
                         showSessionInfo={showSessionInfo}
-                        mode={mode}
                       />
                     ))}
                   </div>
@@ -1221,7 +1344,11 @@ export const TasksView: FC<TasksViewProps> = ({
               <TaskItem
                 key={trigger._id}
                 trigger={trigger}
-                onEdit={mode === 'session' ? handleEdit : undefined}
+                onEdit={
+                  mode === 'session' || mode === 'agent'
+                    ? handleEdit
+                    : undefined
+                }
                 onArchive={handleTaskChange}
                 onReactivate={handleTaskChange}
                 onPause={handleTaskChange}
@@ -1233,7 +1360,6 @@ export const TasksView: FC<TasksViewProps> = ({
                 isFinished={true}
                 timezone={userTimezone}
                 showSessionInfo={showSessionInfo}
-                mode={mode}
               />
             ))}
           </div>

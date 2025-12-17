@@ -7,11 +7,13 @@ import { FC } from 'react'
 interface AgentTasksViewProps {
   agent: Agent
   variant?: 'standalone' | 'panel'
+  onNavigateToMessage?: (messageId: string, sessionId?: string) => void
 }
 
 const AgentTasksView: FC<AgentTasksViewProps> = ({
   agent,
   variant = 'standalone',
+  onNavigateToMessage,
 }) => {
   const isPanelLayout = variant === 'panel'
   const outerWrapperClass = isPanelLayout
@@ -43,7 +45,12 @@ const AgentTasksView: FC<AgentTasksViewProps> = ({
           </div>
         )}
 
-        <TasksView mode="agent" agentId={agent.username} isModalOpen={true} />
+        <TasksView
+          mode="agent"
+          agentId={agent.username}
+          isModalOpen={true}
+          onNavigateToMessage={onNavigateToMessage}
+        />
       </div>
     </div>
   )

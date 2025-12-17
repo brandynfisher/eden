@@ -288,8 +288,10 @@ const TasksPage = () => {
                                 const sessionId =
                                   typeof trigger.session === 'string'
                                     ? trigger.session
-                                    : trigger.session._id
-                                router.push(`/sessions/${sessionId}`)
+                                    : trigger.session?._id
+                                if (sessionId) {
+                                  router.push(`/sessions/${sessionId}`)
+                                }
                               }}
                               className="h-8 w-8 p-0"
                               title="View session"

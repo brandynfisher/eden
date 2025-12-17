@@ -460,6 +460,19 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     onOpenChange(false)
   }, [onOpenChange])
 
+  // Handler for navigating to a message from tasks view
+  const handleNavigateToMessage = useCallback(
+    (messageId: string, sessionId?: string) => {
+      // Close the modal first
+      onOpenChange(false)
+      // Then navigate to the session with the message highlighted
+      if (sessionId) {
+        router.push(`/sessions/${sessionId}?message=${messageId}`)
+      }
+    },
+    [onOpenChange, router],
+  )
+
   const availableTabs = getAvailableTabs()
   const currentTab = availableTabs.find(tab => tab.key === activeTab)
   const headerDescription =
@@ -619,6 +632,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       )}
                     </div>
                   )}
+                  {/* Tabs that use the agent settings form */}
                   <Form {...form}>
                     <form
                       onSubmit={form.handleSubmit(handleSubmit)}
@@ -672,19 +686,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                           />
                         )}
 
-                      {activeTab === 'memories' &&
-                        (hasEditAccess || memoriesOnly) && (
-                          <AgentMemoryView agent={agent} variant="panel" />
-                        )}
-
-                      {activeTab === 'tasks' && hasEditAccess && (
-                        <AgentTasksView agent={agent} variant="panel" />
-                      )}
-
-                      {activeTab === 'dashboard' && hasEditAccess && (
-                        <AgentDashboardView agent={agent} variant="panel" />
-                      )}
-
                       {activeTab === 'manage' && isOriginalOwner && (
                         <div className="space-y-8">
                           {/* Permissions Section - only for original owner */}
@@ -729,6 +730,24 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       )}
                     </form>
                   </Form>
+
+                  {/* Tabs that have their own forms or don't need the agent settings form */}
+                  {activeTab === 'memories' &&
+                    (hasEditAccess || memoriesOnly) && (
+                      <AgentMemoryView agent={agent} variant="panel" />
+                    )}
+
+                  {activeTab === 'tasks' && hasEditAccess && (
+                    <AgentTasksView
+                      agent={agent}
+                      variant="panel"
+                      onNavigateToMessage={handleNavigateToMessage}
+                    />
+                  )}
+
+                  {activeTab === 'dashboard' && hasEditAccess && (
+                    <AgentDashboardView agent={agent} variant="panel" />
+                  )}
                 </div>
               </ScrollArea>
 

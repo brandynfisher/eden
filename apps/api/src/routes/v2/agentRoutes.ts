@@ -395,7 +395,8 @@ const agentRoutes: FastifyPluginAsync = async server => {
     schema: {
       tags: ['Triggers'],
       summary: 'Create Trigger',
-      description: 'Create a new trigger for a session.',
+      description:
+        'Create a new trigger for a session or agent. Either session or agent must be provided.',
       security: [
         {
           apiKey: [],
@@ -404,7 +405,8 @@ const agentRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         name: Type.String(),
         prompt: Type.String(),
-        session: Type.String(),
+        session: Type.Optional(Type.String()), // Optional - can be null when creating with agent
+        agent: Type.Optional(Type.String()), // Optional - agent username when session is null
         schedule: Type.Optional(Type.Any()), // Optional - tasks without schedules run manually only
       }),
       response: {

@@ -173,6 +173,7 @@ type TaskFormDto = z.infer<typeof taskSchema>
 
 type TaskFormProps = {
   sessionId?: string
+  agentId?: string // Agent username - used when session is null (Create new session)
   editingTask?: Trigger | null
   onCancel: () => void
   onSave: () => void
@@ -182,6 +183,7 @@ type TaskFormProps = {
 
 export const TaskForm: FC<TaskFormProps> = ({
   sessionId,
+  agentId,
   editingTask,
   onCancel,
   onSave,
@@ -288,8 +290,9 @@ export const TaskForm: FC<TaskFormProps> = ({
   }, [editingTask, form, currentTime, defaultTimezone])
 
   const onSubmit = async (values: TaskFormDto) => {
-    if (!sessionId) {
-      toast.error('Session is required to create a task')
+    // Either sessionId or agentId must be provided
+    if (!sessionId && !agentId) {
+      toast.error('Session or agent is required to create a task')
       return
     }
 
@@ -382,7 +385,8 @@ export const TaskForm: FC<TaskFormProps> = ({
         const requestData = {
           name: values.name,
           prompt: values.prompt,
-          session: sessionId,
+          ...(sessionId && { session: sessionId }), // Only include session if provided
+          ...(agentId && { agent: agentId }), // Include agent if provided
           ...(schedule && { schedule }),
         }
 
@@ -435,9 +439,20 @@ export const TaskForm: FC<TaskFormProps> = ({
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit, () => {
-            toast.error('Please fix the validation errors')
-          })}
+          action="javascript:void(0)"
+          method="post"
+          onSubmit={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            try {
+              form.handleSubmit(onSubmit, () => {
+                toast.error('Please fix the validation errors')
+              })(e)
+            } catch {
+              toast.error('Failed to submit form')
+            }
+            return false
+          }}
           className="space-y-4"
         >
           {/* Name */}

@@ -21,7 +21,8 @@ export interface TriggerRun {
 
 export interface TriggerSchema {
   user: ObjectId
-  session: ObjectId
+  session?: ObjectId | null // Optional - null when "Create new session" is selected
+  agent?: ObjectId | null // Agent reference - required when session is null
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string
@@ -46,7 +47,12 @@ const TriggerSchema = new Schema<TriggerDocument>(
     session: {
       type: Schema.Types.ObjectId,
       ref: 'sessions',
-      required: true,
+      required: false, // Optional - null when "Create new session" is selected
+    },
+    agent: {
+      type: Schema.Types.ObjectId,
+      ref: 'agent',
+      required: false, // Required when session is null
     },
     schedule: {
       type: Object,
@@ -106,5 +112,6 @@ const TriggerSchema = new Schema<TriggerDocument>(
 
 TriggerSchema.index({ session: 1 })
 TriggerSchema.index({ user: 1 })
+TriggerSchema.index({ agent: 1 })
 
 export const Trigger = model<TriggerDocument>('triggers2', TriggerSchema)
