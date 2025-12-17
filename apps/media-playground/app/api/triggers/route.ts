@@ -45,12 +45,16 @@ export async function POST(request: NextRequest) {
 
   const requestJson = await request.json()
 
-  const { name, prompt, session, schedule } = requestJson
+  const { name, prompt, session, agent, schedule } = requestJson
 
-  if (!session) {
-    return new NextResponse(JSON.stringify({ error: 'Session is required' }), {
-      status: 400,
-    })
+  // Either session or agent must be provided
+  if (!session && !agent) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Session or agent is required' }),
+      {
+        status: 400,
+      },
+    )
   }
 
   try {
@@ -62,8 +66,9 @@ export async function POST(request: NextRequest) {
       {
         name,
         prompt,
-        session,
-        schedule,
+        ...(session && { session }),
+        ...(agent && { agent }),
+        ...(schedule && { schedule }),
       },
       {
         headers: {

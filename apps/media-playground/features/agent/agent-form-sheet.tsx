@@ -5,6 +5,13 @@ import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Form,
   FormControl,
   FormDescription,
@@ -23,26 +30,42 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader'
-import { AGENT_FIELD_LIMITS } from '@/features/sessions/views/agent-constants'
+import {
+  AGENT_FIELD_LIMITS,
+  SUBSCRIPTION_TIER_NAMES,
+  formatCharacterCount,
+  getNextTierInfo,
+  getPersonaCharacterLimit,
+} from '@/features/sessions/views/agent-constants'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { openUserSettingsModal } from '@/lib/user-settings'
 import { cn } from '@/lib/utils'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Trigger } from '@edenlabs/eden-sdk'
+import { SubscriptionTier, Trigger } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
   AlertCircle,
+  AlertTriangleIcon,
   ClockIcon,
+  CrownIcon,
   Edit2Icon,
   Loader2,
   PlusIcon,
@@ -79,7 +102,7 @@ export const agentSchema = z.object({
       }),
     )
     .optional(),
-  persona: z.string().max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS).optional(),
+  persona: z.string().optional(),
   public: z.boolean().optional(),
   website: z
     .string()
@@ -108,11 +131,65 @@ export const agentSchema = z.object({
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
-function CharacterCount({ current, max }: { current: number; max: number }) {
+interface CharacterCountProps {
+  current: number
+  max: number
+  isOverLimit?: boolean
+  isNearLimit?: boolean
+  onClick?: () => void
+  showChars?: boolean
+}
+
+function CharacterCount({
+  current,
+  max,
+  isOverLimit,
+  isNearLimit,
+  onClick,
+  showChars = true,
+}: CharacterCountProps) {
+  const content = (
+    <span
+      className={cn(
+        'ml-auto text-xs flex-shrink-0 text-right tabular-nums',
+        isOverLimit && 'text-red-500 font-medium',
+        isNearLimit && !isOverLimit && 'text-orange-400',
+        !isNearLimit && !isOverLimit && 'text-muted-foreground',
+        onClick && 'cursor-pointer select-none',
+      )}
+      onClick={onClick}
+    >
+      {formatCharacterCount(current)}/{formatCharacterCount(max)}
+      {showChars && ' chars'}
+    </span>
+  )
+
+  if (!onClick) {
+    return <div>{content}</div>
+  }
+
   return (
-    <div className="ml-auto text-xs text-muted-foreground flex-shrink-0 text-right">
-      {current}/{max} chars
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent>
+          {isOverLimit ? (
+            <p>
+              Upgrade your{' '}
+              <button
+                className="text-purple-400 underline hover:text-purple-300"
+                onClick={() => openUserSettingsModal('subscription')}
+              >
+                subscription
+              </button>{' '}
+              to increase persona limits
+            </p>
+          ) : (
+            <p>{formatCharacterCount(max - current)} characters remaining</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -123,6 +200,13 @@ const AgentFormSheet = () => {
   const [activeTab, setActiveTab] = useState('profile')
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Trigger | null>(null)
+  const [showCharacterLimitModal, setShowCharacterLimitModal] = useState(false)
+
+  // Get user subscription tier
+  const { user } = useAuthState()
+  const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
+  const personaCharacterLimit = getPersonaCharacterLimit(subscriptionTier)
+  const nextTierInfo = getNextTierInfo(subscriptionTier)
 
   const agentQuery = useAgentQuery({
     key: agentId || '',
@@ -223,6 +307,12 @@ const AgentFormSheet = () => {
   }, [agentQuery.agent, form])
 
   const handleSubmit = async (data: AgentFormDto) => {
+    // Check persona character limit
+    if ((data.persona?.length || 0) > personaCharacterLimit) {
+      setShowCharacterLimitModal(true)
+      return
+    }
+
     try {
       if (mode === 'update') {
         await axios.patch(`/api/agents/${agentId}`, data)
@@ -325,648 +415,762 @@ const AgentFormSheet = () => {
     setIsTaskModalOpen(false)
   }
 
+  // Get current persona character count for modal
+  const currentPersonaLength = form.watch('persona')?.length || 0
+
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side="left"
-        className="overflow-y-auto w-full sm:!max-w-2xl"
+    <>
+      {/* Character Limit Warning Modal */}
+      <Dialog
+        open={showCharacterLimitModal}
+        onOpenChange={setShowCharacterLimitModal}
       >
-        <SheetHeader>
-          <SheetTitle>
-            {mode === 'update' ? 'Update Agent' : 'Create an Agent'}
-          </SheetTitle>
-          <SheetDescription>
-            {mode === 'update'
-              ? 'Update your agent'
-              : 'Create an agent to help you with your tasks.'}
-          </SheetDescription>
-        </SheetHeader>
-        {mode === 'update' && agentQuery.isPending && (
-          <div className="flex items-center justify-center mt-10">
-            <Loader2 className="size-4 animate-spin" />
-          </div>
-        )}
-        {mode === 'update' && agentQuery.isError && (
-          <div className="flex items-center justify-center gap-2 mt-10">
-            <AlertCircle className="size-4 text-destructive" />
-            <p className="text-destructive">
-              We were unable to fetch agent. Please try again later.
-            </p>
-          </div>
-        )}
-        {(mode === 'create' || agentQuery.isSuccess) && (
-          <div className="flex-1 overflow-auto">
-            <div className="flex flex-col h-full">
-              {/* Navigation Tabs */}
-              <div className="flex gap-2 p-4 border-b border-border">
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                    activeTab === 'profile'
-                      ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                  )}
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={() => setActiveTab('concepts')}
-                  className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                    activeTab === 'concepts'
-                      ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                  )}
-                >
-                  Tools
-                </button>
-                {mode === 'update' && (
-                  <>
-                    <button
-                      onClick={() => setActiveTab('tasks')}
-                      className={cn(
-                        'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                        activeTab === 'tasks'
-                          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                      )}
-                    >
-                      Tasks
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('deployments')}
-                      className={cn(
-                        'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                        activeTab === 'deployments'
-                          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                      )}
-                    >
-                      Deployments
-                    </button>
-                  </>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangleIcon className="text-orange-400 h-5 w-5" />
+              Persona Too Long
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="flex flex-col gap-3 pt-4">
+                <p>
+                  Your persona has{' '}
+                  <strong>{formatCharacterCount(currentPersonaLength)}</strong>{' '}
+                  characters, which exceeds your limit of{' '}
+                  <strong>{formatCharacterCount(personaCharacterLimit)}</strong>{' '}
+                  characters.
+                </p>
+                <p className="text-muted-foreground">
+                  Your current plan:{' '}
+                  <strong className="capitalize">
+                    {SUBSCRIPTION_TIER_NAMES[subscriptionTier]}
+                  </strong>
+                </p>
+                {nextTierInfo && (
+                  <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CrownIcon className="text-purple-400 h-4 w-4" />
+                      <span className="font-medium text-purple-300">
+                        Upgrade to {nextTierInfo.name}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Get up to{' '}
+                      <strong>
+                        {formatCharacterCount(nextTierInfo.limit)}
+                      </strong>{' '}
+                      characters for your agent persona and unlock more
+                      features.
+                    </p>
+                  </div>
                 )}
               </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowCharacterLimitModal(false)}
+            >
+              Edit Persona
+            </Button>
+            {nextTierInfo && (
+              <Button
+                onClick={() => {
+                  setShowCharacterLimitModal(false)
+                  openUserSettingsModal('subscription')
+                }}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <CrownIcon className="w-4 h-4 mr-2" />
+                Upgrade Plan
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-              <Form {...form}>
-                <form
-                  className="w-full space-y-4 p-4"
-                  onSubmit={form.handleSubmit(handleSubmit)}
-                >
-                  {activeTab === 'profile' && (
-                    <div className="space-y-4">
-                      {/* Combined Profile Section */}
-                      <div className="p-4 bg-card rounded-xl border border-border mb-4">
-                        <div className="flex flex-col lg:flex-row gap-6">
-                          {/* Profile Image */}
-                          <div className="flex-shrink-0">
-                            <FormField
-                              control={form.control}
-                              name="image"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      className={'hidden'}
+      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+        <SheetContent
+          side="left"
+          className="overflow-y-auto w-full sm:!max-w-2xl"
+        >
+          <SheetHeader>
+            <SheetTitle>
+              {mode === 'update' ? 'Update Agent' : 'Create an Agent'}
+            </SheetTitle>
+            <SheetDescription>
+              {mode === 'update'
+                ? 'Update your agent'
+                : 'Create an agent to help you with your tasks.'}
+            </SheetDescription>
+          </SheetHeader>
+          {mode === 'update' && agentQuery.isPending && (
+            <div className="flex items-center justify-center mt-10">
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          )}
+          {mode === 'update' && agentQuery.isError && (
+            <div className="flex items-center justify-center gap-2 mt-10">
+              <AlertCircle className="size-4 text-destructive" />
+              <p className="text-destructive">
+                We were unable to fetch agent. Please try again later.
+              </p>
+            </div>
+          )}
+          {(mode === 'create' || agentQuery.isSuccess) && (
+            <div className="flex-1 overflow-auto">
+              <div className="flex flex-col h-full">
+                {/* Navigation Tabs */}
+                <div className="flex gap-2 p-4 border-b border-border">
+                  <button
+                    onClick={() => setActiveTab('profile')}
+                    className={cn(
+                      'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                      activeTab === 'profile'
+                        ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    )}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('concepts')}
+                    className={cn(
+                      'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                      activeTab === 'concepts'
+                        ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    )}
+                  >
+                    Tools
+                  </button>
+                  {mode === 'update' && (
+                    <>
+                      <button
+                        onClick={() => setActiveTab('tasks')}
+                        className={cn(
+                          'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                          activeTab === 'tasks'
+                            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                        )}
+                      >
+                        Tasks
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('deployments')}
+                        className={cn(
+                          'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                          activeTab === 'deployments'
+                            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                        )}
+                      >
+                        Deployments
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <Form {...form}>
+                  <form
+                    className="w-full space-y-4 p-4"
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                  >
+                    {activeTab === 'profile' && (
+                      <div className="space-y-4">
+                        {/* Combined Profile Section */}
+                        <div className="p-4 bg-card rounded-xl border border-border mb-4">
+                          <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Profile Image */}
+                            <div className="flex-shrink-0">
+                              <FormField
+                                control={form.control}
+                                name="image"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        className={'hidden'}
+                                        onChange={field.onChange}
+                                        onBlur={field.onBlur}
+                                        value={
+                                          field.value === null
+                                            ? ''
+                                            : field.value || ''
+                                        }
+                                      />
+                                    </FormControl>
+                                    <ProfileImageUploader
+                                      value={field.value}
                                       onChange={field.onChange}
-                                      onBlur={field.onBlur}
-                                      value={
-                                        field.value === null
-                                          ? ''
-                                          : field.value || ''
-                                      }
                                     />
-                                  </FormControl>
-                                  <ProfileImageUploader
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                  />
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
 
-                          {/* Username and Display Name */}
-                          <div className="flex-1 space-y-4">
-                            {/* Username Field */}
-                            <FormField
-                              control={form.control}
-                              name="key"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">
-                                    Username
-                                    <span className="text-red-500 ml-1">*</span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      placeholder="Username on Eden"
-                                      {...field}
-                                      onChange={e => {
-                                        field.onChange(
-                                          e.target.value.slice(0, 42),
-                                        )
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                            {/* Username and Display Name */}
+                            <div className="flex-1 space-y-4">
+                              {/* Username Field */}
+                              <FormField
+                                control={form.control}
+                                name="key"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-base font-medium">
+                                      Username
+                                      <span className="text-red-500 ml-1">
+                                        *
+                                      </span>
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="Username on Eden"
+                                        {...field}
+                                        onChange={e => {
+                                          field.onChange(
+                                            e.target.value.slice(0, 42),
+                                          )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
 
-                            {/* Display Name Field */}
-                            <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">
-                                    Name
-                                    <span className="text-red-500 ml-1">*</span>
-                                  </FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="text"
-                                      placeholder="Display name"
-                                      {...field}
-                                      onChange={e => {
-                                        field.onChange(
-                                          e.target.value.slice(0, 42),
-                                        )
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                              {/* Display Name Field */}
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-base font-medium">
+                                      Name
+                                      <span className="text-red-500 ml-1">
+                                        *
+                                      </span>
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="Display name"
+                                        {...field}
+                                        onChange={e => {
+                                          field.onChange(
+                                            e.target.value.slice(0, 42),
+                                          )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Public/Private Toggle Section */}
-                      <FormField
-                        control={form.control}
-                        name="public"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card">
-                            <div className="space-y-0.5">
+                        {/* Public/Private Toggle Section */}
+                        <FormField
+                          control={form.control}
+                          name="public"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base font-medium">
+                                  Make Agent Public
+                                </FormLabel>
+                                <FormDescription>
+                                  When public, other users can discover and
+                                  interact with your agent
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Description Field */}
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-card rounded-xl border border-border">
                               <FormLabel className="text-base font-medium">
-                                Make Agent Public
+                                Description
+                                <span className="text-red-500 ml-1">*</span>
                               </FormLabel>
-                              <FormDescription>
-                                When public, other users can discover and
-                                interact with your agent
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Description Field */}
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Description
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <AutosizeTextarea
-                                placeholder="Short description of the agent shown on profile and cards."
-                                {...field}
-                                className="min-h-[80px]"
-                              />
-                            </FormControl>
-                            <div className="flex justify-end mt-2">
-                              <CharacterCount
-                                current={field.value?.length || 0}
-                                max={5000}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Persona Field */}
-                      <FormField
-                        control={form.control}
-                        name="persona"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Instructions
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <AutosizeTextarea
-                                placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                                {...field}
-                                className="min-h-[240px]"
-                                variant="xl"
-                              />
-                            </FormControl>
-                            <div className="flex justify-end mt-2">
-                              <CharacterCount
-                                current={field.value?.length || 0}
-                                max={30000}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Greeting Field */}
-                      <FormField
-                        control={form.control}
-                        name="greeting"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Greeting
-                            </FormLabel>
-                            <FormDescription className="mt-1 mb-3">
-                              This will be displayed to users when they first
-                              interact with the agent.
-                            </FormDescription>
-                            <FormControl>
-                              <AutosizeTextarea
-                                placeholder="Hello, how can I help you today?"
-                                {...field}
-                                className="min-h-[60px]"
-                              />
-                            </FormControl>
-                            <div className="flex justify-end mt-2">
-                              <CharacterCount
-                                current={field.value?.length || 0}
-                                max={140}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {activeTab === 'concepts' && (
-                    <div className="space-y-4">
-                      {/* Voice Field */}
-                      <FormField
-                        control={form.control}
-                        name="voice"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Voice
-                            </FormLabel>
-                            <FormDescription className="mt-1 mb-3">
-                              Your agent will speak with this voice.
-                            </FormDescription>
-                            <FormControl>
-                              <VoiceSelector
-                                value={field.value || ''}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Models Field */}
-                      <FormField
-                        control={form.control}
-                        name="models"
-                        render={() => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Custom Models
-                            </FormLabel>
-                            <FormDescription className="mt-1 mb-3">
-                              Give your agent a unique aesthetic using up to 10
-                              custom models.
-                            </FormDescription>
-                            <div>
-                              {models.fields.map((model, index) => (
-                                <div
-                                  key={model.lora}
-                                  className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-                                >
-                                  <div className="flex items-start gap-4">
-                                    <ModelMiniCard
-                                      modelId={model.lora}
-                                      className="w-24 h-24"
-                                    />
-                                    <div className="flex-1 space-y-2">
-                                      <FormField
-                                        control={form.control}
-                                        name={`models.${index}.use_when`}
-                                        render={({ field }) => (
-                                          <FormItem className="flex-1">
-                                            <FormLabel className="text-sm text-muted-foreground">
-                                              When to use this model
-                                            </FormLabel>
-                                            <FormControl>
-                                              <Input
-                                                type="text"
-                                                placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
-                                                {...field}
-                                              />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => models.remove(index)}
-                                    >
-                                      <XIcon className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                              <div className="mt-4">
-                                <ModelSelectorModal
-                                  className="p-4 md:p-8 w-full"
-                                  title="Select LoRA Model"
-                                  description="Pick a LoRA model to add to this agent"
-                                  currentValue=""
-                                  selectedIds={models.fields.map(m => m.lora)}
-                                  onChange={id => {
-                                    const modelId =
-                                      typeof id === 'string' ? id : id[0]
-                                    if (!modelId) return
-
-                                    // Check if model already exists (shouldn't happen due to disabled state)
-                                    if (
-                                      models.fields.some(
-                                        m => m.lora === modelId,
-                                      )
-                                    ) {
-                                      toast.error('This model is already added')
-                                      return
-                                    }
-
-                                    // Add new model
-                                    form.setValue('models', [
-                                      ...models.fields,
-                                      { lora: modelId, use_when: '' },
-                                    ])
-                                  }}
-                                  trigger={
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      disabled={models.fields.length >= 10}
-                                      className="w-full"
-                                    >
-                                      Add LoRA Model
-                                    </Button>
-                                  }
+                              <FormControl>
+                                <AutosizeTextarea
+                                  placeholder="Short description of the agent shown on profile and cards."
+                                  {...field}
+                                  className="min-h-[80px]"
+                                />
+                              </FormControl>
+                              <div className="flex justify-end mt-2">
+                                <CharacterCount
+                                  current={field.value?.length || 0}
+                                  max={5000}
                                 />
                               </div>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      {/* Tools Field */}
-                      <FormField
-                        control={form.control}
-                        name="tools"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-secondary rounded-lg mt-4">
-                            <FormLabel>Tools</FormLabel>
-                            <FormDescription>
-                              Select which tools this agent can use to help
-                              users.
-                            </FormDescription>
-                            <FormControl>
-                              <div className="space-y-3">
-                                {[
-                                  {
-                                    key: 'create_image',
-                                    label: 'Create images and videos',
-                                  },
-                                  {
-                                    key: 'create_audio',
-                                    label:
-                                      'Create Audio (including music and speech)',
-                                  },
-                                  {
-                                    key: 'vj_tools',
-                                    label:
-                                      'VJ Tools (Texture Flow and Video FX)',
-                                  },
-                                  {
-                                    key: 'manage_collections',
-                                    label: 'Manage collections',
-                                  },
-                                  {
-                                    key: 'social_media_tools',
-                                    label: 'Social media tools (read and post)',
-                                  },
-                                ].map(tool => (
+                        {/* Persona Field */}
+                        <FormField
+                          control={form.control}
+                          name="persona"
+                          render={({ field }) => {
+                            const charCount = field.value?.length || 0
+                            const isOverLimit =
+                              charCount > personaCharacterLimit
+                            const isNearLimit =
+                              charCount > personaCharacterLimit * 0.9
+
+                            return (
+                              <FormItem className="p-4 bg-card rounded-xl border border-border">
+                                <FormLabel className="text-base font-medium">
+                                  Instructions
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <FormControl>
+                                  <AutosizeTextarea
+                                    placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
+                                    {...field}
+                                    className={cn(
+                                      'min-h-[240px]',
+                                      isOverLimit &&
+                                        'border-red-500/50 focus:border-red-500',
+                                    )}
+                                    variant="xl"
+                                  />
+                                </FormControl>
+                                <div className="flex justify-end mt-2">
+                                  <CharacterCount
+                                    current={charCount}
+                                    max={personaCharacterLimit}
+                                    isOverLimit={isOverLimit}
+                                    isNearLimit={isNearLimit}
+                                    onClick={
+                                      isOverLimit || isNearLimit
+                                        ? () =>
+                                            openUserSettingsModal(
+                                              'subscription',
+                                            )
+                                        : undefined
+                                    }
+                                  />
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )
+                          }}
+                        />
+
+                        {/* Greeting Field */}
+                        <FormField
+                          control={form.control}
+                          name="greeting"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                              <FormLabel className="text-base font-medium">
+                                Greeting
+                              </FormLabel>
+                              <FormDescription className="mt-1 mb-3">
+                                This will be displayed to users when they first
+                                interact with the agent.
+                              </FormDescription>
+                              <FormControl>
+                                <AutosizeTextarea
+                                  placeholder="Hello, how can I help you today?"
+                                  {...field}
+                                  className="min-h-[60px]"
+                                />
+                              </FormControl>
+                              <div className="flex justify-end mt-2">
+                                <CharacterCount
+                                  current={field.value?.length || 0}
+                                  max={140}
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {activeTab === 'concepts' && (
+                      <div className="space-y-4">
+                        {/* Voice Field */}
+                        <FormField
+                          control={form.control}
+                          name="voice"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                              <FormLabel className="text-base font-medium">
+                                Voice
+                              </FormLabel>
+                              <FormDescription className="mt-1 mb-3">
+                                Your agent will speak with this voice.
+                              </FormDescription>
+                              <FormControl>
+                                <VoiceSelector
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Models Field */}
+                        <FormField
+                          control={form.control}
+                          name="models"
+                          render={() => (
+                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                              <FormLabel className="text-base font-medium">
+                                Custom Models
+                              </FormLabel>
+                              <FormDescription className="mt-1 mb-3">
+                                Give your agent a unique aesthetic using up to
+                                10 custom models.
+                              </FormDescription>
+                              <div>
+                                {models.fields.map((model, index) => (
                                   <div
-                                    key={tool.key}
-                                    className="flex items-center space-x-2"
+                                    key={model.lora}
+                                    className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
                                   >
-                                    <Switch
-                                      checked={Boolean(field.value?.[tool.key])}
-                                      onCheckedChange={checked => {
-                                        const currentTools = field.value || {}
-                                        field.onChange({
-                                          ...currentTools,
-                                          [tool.key]: checked,
-                                        })
-                                      }}
-                                    />
-                                    <label className="text-sm font-medium">
-                                      {tool.label}
-                                    </label>
+                                    <div className="flex items-start gap-4">
+                                      <ModelMiniCard
+                                        modelId={model.lora}
+                                        className="w-24 h-24"
+                                      />
+                                      <div className="flex-1 space-y-2">
+                                        <FormField
+                                          control={form.control}
+                                          name={`models.${index}.use_when`}
+                                          render={({ field }) => (
+                                            <FormItem className="flex-1">
+                                              <FormLabel className="text-sm text-muted-foreground">
+                                                When to use this model
+                                              </FormLabel>
+                                              <FormControl>
+                                                <Input
+                                                  type="text"
+                                                  placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
+                                                  {...field}
+                                                />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() => models.remove(index)}
+                                      >
+                                        <XIcon className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 ))}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
+                                <div className="mt-4">
+                                  <ModelSelectorModal
+                                    className="p-4 md:p-8 w-full"
+                                    title="Select LoRA Model"
+                                    description="Pick a LoRA model to add to this agent"
+                                    currentValue=""
+                                    selectedIds={models.fields.map(m => m.lora)}
+                                    onChange={id => {
+                                      const modelId =
+                                        typeof id === 'string' ? id : id[0]
+                                      if (!modelId) return
 
-                  {activeTab === 'tasks' && mode === 'update' && (
-                    <div className="space-y-4">
-                      <div className="p-4 bg-card rounded-xl border border-border">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-medium">Tasks</h3>
-                          <Button onClick={handleCreateTask} className="gap-2">
-                            <PlusIcon className="w-4 h-4" />
-                            Create Task
-                          </Button>
+                                      // Check if model already exists (shouldn't happen due to disabled state)
+                                      if (
+                                        models.fields.some(
+                                          m => m.lora === modelId,
+                                        )
+                                      ) {
+                                        toast.error(
+                                          'This model is already added',
+                                        )
+                                        return
+                                      }
+
+                                      // Add new model
+                                      form.setValue('models', [
+                                        ...models.fields,
+                                        { lora: modelId, use_when: '' },
+                                      ])
+                                    }}
+                                    trigger={
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={models.fields.length >= 10}
+                                        className="w-full"
+                                      >
+                                        Add LoRA Model
+                                      </Button>
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Tools Field */}
+                        <FormField
+                          control={form.control}
+                          name="tools"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-secondary rounded-lg mt-4">
+                              <FormLabel>Tools</FormLabel>
+                              <FormDescription>
+                                Select which tools this agent can use to help
+                                users.
+                              </FormDescription>
+                              <FormControl>
+                                <div className="space-y-3">
+                                  {[
+                                    {
+                                      key: 'create_image',
+                                      label: 'Create images and videos',
+                                    },
+                                    {
+                                      key: 'create_audio',
+                                      label:
+                                        'Create Audio (including music and speech)',
+                                    },
+                                    {
+                                      key: 'vj_tools',
+                                      label:
+                                        'VJ Tools (Texture Flow and Video FX)',
+                                    },
+                                    {
+                                      key: 'manage_collections',
+                                      label: 'Manage collections',
+                                    },
+                                    {
+                                      key: 'social_media_tools',
+                                      label:
+                                        'Social media tools (read and post)',
+                                    },
+                                  ].map(tool => (
+                                    <div
+                                      key={tool.key}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Switch
+                                        checked={Boolean(
+                                          field.value?.[tool.key],
+                                        )}
+                                        onCheckedChange={checked => {
+                                          const currentTools = field.value || {}
+                                          field.onChange({
+                                            ...currentTools,
+                                            [tool.key]: checked,
+                                          })
+                                        }}
+                                      />
+                                      <label className="text-sm font-medium">
+                                        {tool.label}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {activeTab === 'tasks' && mode === 'update' && (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-card rounded-xl border border-border">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-medium">Tasks</h3>
+                            <Button
+                              onClick={handleCreateTask}
+                              className="gap-2"
+                            >
+                              <PlusIcon className="w-4 h-4" />
+                              Create Task
+                            </Button>
+                          </div>
+
+                          {triggersQuery.isPending && (
+                            <div className="flex items-center justify-center mt-10">
+                              <Loader2 className="size-4 animate-spin" />
+                            </div>
+                          )}
+
+                          {triggersQuery.isError && (
+                            <div className="flex items-center justify-center gap-2 mt-10">
+                              <AlertCircle className="size-4 text-destructive" />
+                              <p className="text-destructive">
+                                We were unable to fetch your tasks. Please try
+                                again later.
+                              </p>
+                            </div>
+                          )}
+
+                          {triggersQuery.isSuccess && (
+                            <div className="space-y-4">
+                              {triggersQuery.triggers?.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                  <p className="text-lg font-medium mb-2">
+                                    No scheduled tasks
+                                  </p>
+                                  <p className="text-sm">
+                                    Create your first automated task to get
+                                    started.
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {triggersQuery.triggers?.map(trigger => (
+                                    <div
+                                      key={trigger._id}
+                                      className="p-4 bg-background rounded-lg border border-border"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <h4 className="font-medium">
+                                            {trigger.name || trigger.prompt}
+                                          </h4>
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleEditTask(trigger)
+                                          }
+                                        >
+                                          <Edit2Icon className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
-                        {triggersQuery.isPending && (
+                        <TaskFormModal
+                          sessionId={
+                            typeof editingTask?.session === 'string'
+                              ? editingTask.session
+                              : editingTask?.session?._id
+                          }
+                          editingTask={editingTask}
+                          open={isTaskModalOpen}
+                          onOpenChange={handleTaskModalClose}
+                          onSave={handleTaskSave}
+                        />
+                      </div>
+                    )}
+
+                    {activeTab === 'deployments' && mode === 'update' && (
+                      <div className="space-y-4">
+                        {deploymentsQuery.isPending && (
                           <div className="flex items-center justify-center mt-10">
                             <Loader2 className="size-4 animate-spin" />
                           </div>
                         )}
 
-                        {triggersQuery.isError && (
+                        {deploymentsQuery.isError && (
                           <div className="flex items-center justify-center gap-2 mt-10">
                             <AlertCircle className="size-4 text-destructive" />
                             <p className="text-destructive">
-                              We were unable to fetch your tasks. Please try
-                              again later.
+                              We were unable to fetch your deployments. Please
+                              try again later.
                             </p>
                           </div>
                         )}
 
-                        {triggersQuery.isSuccess && (
+                        {deploymentsQuery.isSuccess && (
                           <div className="space-y-4">
-                            {triggersQuery.triggers?.length === 0 ? (
-                              <div className="text-center py-8 text-muted-foreground">
-                                <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                <p className="text-lg font-medium mb-2">
-                                  No scheduled tasks
-                                </p>
-                                <p className="text-sm">
-                                  Create your first automated task to get
-                                  started.
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="space-y-4">
-                                {triggersQuery.triggers?.map(trigger => (
-                                  <div
-                                    key={trigger._id}
-                                    className="p-4 bg-background rounded-lg border border-border"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <h4 className="font-medium">
-                                          {trigger.name || trigger.prompt}
-                                        </h4>
-                                      </div>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleEditTask(trigger)}
-                                      >
-                                        <Edit2Icon className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                            <DiscordDeploymentForm
+                              agentId={agentId || ''}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment => deployment.platform === 'discord',
+                              )}
+                            />
+                            <TelegramDeploymentForm
+                              agentId={agentId || ''}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment =>
+                                  deployment.platform === 'telegram',
+                              )}
+                            />
+                            <TwitterDeploymentForm
+                              agentId={agentId || ''}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment => deployment.platform === 'twitter',
+                              )}
+                            />
                           </div>
                         )}
                       </div>
+                    )}
 
-                      <TaskFormModal
-                        sessionId={
-                          typeof editingTask?.session === 'string'
-                            ? editingTask.session
-                            : editingTask?.session?._id
-                        }
-                        editingTask={editingTask}
-                        open={isTaskModalOpen}
-                        onOpenChange={handleTaskModalClose}
-                        onSave={handleTaskSave}
-                      />
-                    </div>
-                  )}
-
-                  {activeTab === 'deployments' && mode === 'update' && (
-                    <div className="space-y-4">
-                      {deploymentsQuery.isPending && (
-                        <div className="flex items-center justify-center mt-10">
-                          <Loader2 className="size-4 animate-spin" />
-                        </div>
-                      )}
-
-                      {deploymentsQuery.isError && (
-                        <div className="flex items-center justify-center gap-2 mt-10">
-                          <AlertCircle className="size-4 text-destructive" />
-                          <p className="text-destructive">
-                            We were unable to fetch your deployments. Please try
-                            again later.
-                          </p>
-                        </div>
-                      )}
-
-                      {deploymentsQuery.isSuccess && (
-                        <div className="space-y-4">
-                          <DiscordDeploymentForm
-                            agentId={agentId || ''}
-                            deployment={deploymentsQuery.deployments?.find(
-                              deployment => deployment.platform === 'discord',
-                            )}
-                          />
-                          <TelegramDeploymentForm
-                            agentId={agentId || ''}
-                            deployment={deploymentsQuery.deployments?.find(
-                              deployment => deployment.platform === 'telegram',
-                            )}
-                          />
-                          <TwitterDeploymentForm
-                            agentId={agentId || ''}
-                            deployment={deploymentsQuery.deployments?.find(
-                              deployment => deployment.platform === 'twitter',
-                            )}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  {activeTab !== 'deployments' && activeTab !== 'tasks' && (
-                    <SheetFooter className="mt-6">
-                      <Button
-                        type="submit"
-                        disabled={form.formState.isSubmitting}
-                      >
-                        {form.formState.isSubmitting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {mode === 'update' ? 'Updating...' : 'Creating...'}
-                          </>
-                        ) : mode === 'update' ? (
-                          'Update Agent'
-                        ) : (
-                          'Create Agent'
-                        )}
-                      </Button>
-                    </SheetFooter>
-                  )}
-                </form>
-              </Form>
+                    {/* Footer */}
+                    {activeTab !== 'deployments' && activeTab !== 'tasks' && (
+                      <SheetFooter className="mt-6">
+                        <Button
+                          type="submit"
+                          disabled={form.formState.isSubmitting}
+                        >
+                          {form.formState.isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {mode === 'update'
+                                ? 'Updating...'
+                                : 'Creating...'}
+                            </>
+                          ) : mode === 'update' ? (
+                            'Update Agent'
+                          ) : (
+                            'Create Agent'
+                          )}
+                        </Button>
+                      </SheetFooter>
+                    )}
+                  </form>
+                </Form>
+              </div>
             </div>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }
 

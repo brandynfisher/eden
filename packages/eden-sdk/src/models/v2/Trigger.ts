@@ -32,10 +32,18 @@ export type TriggerSession = {
   agents?: TriggerSessionAgent[]
 }
 
+export type TriggerAgent = {
+  _id: string
+  username: string
+  name?: string
+  userImage?: string
+}
+
 export type Trigger = {
   _id: string
   user: Creator
-  session: string | TriggerSession
+  session?: string | TriggerSession | null // Optional - null when "Create new session" is selected
+  agent?: string | TriggerAgent | null // Agent reference - required when session is null
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string

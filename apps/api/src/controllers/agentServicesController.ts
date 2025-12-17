@@ -81,22 +81,44 @@ export const executeTrigger = async (
     })
   }
 
-  const trigger = await Trigger.findById(trigger_id)
+  const trigger = await Trigger.findById(trigger_id).populate('agent')
   if (!trigger) {
     return reply.status(404).send({
       message: 'Trigger not found',
     })
   }
 
-  // Check session-based permissions
-  if (
-    !(await canEditSession(
-      trigger.session.toString(),
-      currentUserId.toString(),
-    ))
-  ) {
-    return reply.status(403).send({
-      message: 'User not authorized to execute this trigger',
+  // Check permissions based on whether trigger has session or agent
+  if (trigger.session) {
+    // Session-based trigger - check session permissions
+    if (
+      !(await canEditSession(
+        trigger.session.toString(),
+        currentUserId.toString(),
+      ))
+    ) {
+      return reply.status(403).send({
+        message: 'User not authorized to execute this trigger',
+      })
+    }
+  } else if (trigger.agent) {
+    // Agent-based trigger (null session) - check agent ownership
+    const agentDoc =
+      typeof trigger.agent === 'string'
+        ? await Agent.findById(trigger.agent)
+        : trigger.agent
+    if (
+      !agentDoc ||
+      !('owner' in agentDoc) ||
+      agentDoc.owner.toString() !== currentUserId.toString()
+    ) {
+      return reply.status(403).send({
+        message: 'User not authorized to execute this trigger',
+      })
+    }
+  } else {
+    return reply.status(400).send({
+      message: 'Trigger has neither session nor agent',
     })
   }
 
@@ -585,10 +607,18 @@ export const getAllUserTriggers = async (
     // Combine both lists of session IDs
     const allAccessibleSessionIds = [...sharedSessionIds, ...ownedSessionIds]
 
+    // Find all agents owned by the user (for triggers with null session)
+    const ownedAgents = await Agent.find({
+      owner: currentUserId,
+    }).select('_id')
+
+    const ownedAgentIds = ownedAgents.map(a => a._id)
+
     // Get all triggers where:
     // 1. User created the trigger, OR
     // 2. Trigger is in a session owned by user, OR
-    // 3. Trigger is in a session shared with user (with edit/owner permissions)
+    // 3. Trigger is in a session shared with user (with edit/owner permissions), OR
+    // 4. Trigger has an agent owned by user (for null session triggers)
     // AND exclude deleted triggers
     const triggers = await Trigger.find({
       $and: [
@@ -598,20 +628,28 @@ export const getAllUserTriggers = async (
             { user: currentUserId },
             // Triggers in sessions owned or shared with user
             { session: { $in: allAccessibleSessionIds } },
+            // Triggers with agent owned by user (for null session)
+            { agent: { $in: ownedAgentIds } },
           ],
         },
         // Exclude deleted triggers
         { $or: [{ deleted: { $exists: false } }, { deleted: false }] },
       ],
-    }).populate({
-      path: 'session',
-      select: '_id title agents',
-      model: Session,
-      populate: {
-        path: 'agents',
-        select: '_id username userImage name',
-      },
     })
+      .populate({
+        path: 'session',
+        select: '_id title agents',
+        model: Session,
+        populate: {
+          path: 'agents',
+          select: '_id username userImage name',
+        },
+      })
+      .populate({
+        path: 'agent',
+        select: '_id username userImage name',
+        model: Agent,
+      })
 
     return reply.status(200).send({
       triggers,
@@ -1105,10 +1143,11 @@ export const createTrigger = async (
     JSON.stringify(request.body, null, 2),
   )
 
-  const { name, prompt, session, schedule } = request.body as {
+  const { name, prompt, session, agent, schedule } = request.body as {
     name: string
     prompt: string
-    session: string
+    session?: string
+    agent?: string // Agent username
     schedule?: any // Optional - tasks without schedules run manually only
   }
   const currentUserId = request.user.userId
@@ -1117,21 +1156,49 @@ export const createTrigger = async (
     name,
     prompt,
     session,
+    agent,
     schedule,
     currentUserId,
   })
 
-  // Validate session exists
-  const sessionDoc = await Session.findById(session)
-  if (!sessionDoc) {
-    return reply.status(404).send({ error: 'Session not found' })
+  // Either session or agent must be provided
+  if (!session && !agent) {
+    return reply
+      .status(400)
+      .send({ error: 'Either session or agent must be provided' })
   }
 
-  // Check permissions
-  if (!(await canEditSession(session, currentUserId.toString()))) {
-    return reply
-      .status(401)
-      .send({ error: 'Not authorized to create triggers for this session' })
+  let agentId: string | undefined
+
+  // Validate session if provided
+  if (session) {
+    const sessionDoc = await Session.findById(session)
+    if (!sessionDoc) {
+      return reply.status(404).send({ error: 'Session not found' })
+    }
+
+    // Check permissions
+    if (!(await canEditSession(session, currentUserId.toString()))) {
+      return reply
+        .status(401)
+        .send({ error: 'Not authorized to create triggers for this session' })
+    }
+  }
+
+  // Validate and lookup agent if provided
+  if (agent) {
+    const agentDoc = await Agent.findOne({ username: agent })
+    if (!agentDoc) {
+      return reply.status(404).send({ error: 'Agent not found' })
+    }
+    agentId = agentDoc._id.toString()
+
+    // Check if user owns the agent
+    if (agentDoc.owner.toString() !== currentUserId.toString()) {
+      return reply
+        .status(401)
+        .send({ error: 'Not authorized to create triggers for this agent' })
+    }
   }
 
   // Calculate next scheduled run (only if schedule is provided)
@@ -1160,7 +1227,8 @@ export const createTrigger = async (
   // Save directly to MongoDB
   const trigger = new Trigger({
     user: currentUserId,
-    session,
+    ...(session && { session }),
+    ...(agentId && { agent: agentId }),
     name,
     prompt,
     ...(schedule && { schedule }),

@@ -86,11 +86,31 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
 
   // Agent mode flow: Session selector + Task form (combined on one screen)
   if (mode === 'agent') {
+    // When editing, use the task's existing session and don't show selector
+    if (editingTask) {
+      const taskSessionId =
+        typeof editingTask.session === 'string'
+          ? editingTask.session
+          : editingTask.session?._id
+
+      return (
+        <TaskForm
+          sessionId={taskSessionId}
+          agentId={agentId}
+          editingTask={editingTask}
+          onCancel={onCancel}
+          onSave={onSave}
+          hideHeader={true}
+        />
+      )
+    }
+
+    // When creating, show session selector
     return (
       <div className="space-y-4">
         {/* Session Selection */}
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">Session *</label>
+          <label className="text-sm text-muted-foreground">Session</label>
           <SessionSelectorInline
             agentUsername={agentId!}
             selectedSession={selectedSession}
@@ -100,12 +120,13 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
 
         {/* Task Form - Always visible */}
         <TaskForm
-          sessionId={selectedSession?._id || ''}
+          sessionId={selectedSession?._id}
+          agentId={agentId}
           editingTask={editingTask}
           onCancel={onCancel}
           onSave={onSave}
           hideHeader={true}
-          disabled={!selectedSession}
+          disabled={false}
         />
       </div>
     )
@@ -113,13 +134,40 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
 
   // Global mode flow: Combined single screen - clean and minimal
   if (mode === 'global') {
+    // When editing, use the task's existing session and don't show selectors
+    if (editingTask) {
+      const taskSessionId =
+        typeof editingTask.session === 'string'
+          ? editingTask.session
+          : editingTask.session?._id
+
+      // Get agent ID from the editingTask
+      const taskAgentId = editingTask.agent
+        ? typeof editingTask.agent === 'string'
+          ? editingTask.agent
+          : editingTask.agent.username
+        : undefined
+
+      return (
+        <TaskForm
+          sessionId={taskSessionId}
+          agentId={taskAgentId}
+          editingTask={editingTask}
+          onCancel={onCancel}
+          onSave={onSave}
+          hideHeader={true}
+        />
+      )
+    }
+
+    // When creating, show agent and session selectors
     const currentAgentUsername = selectedAgent?.username
 
     return (
       <div className="space-y-4">
         {/* Agent Selection */}
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">Agent *</label>
+          <label className="text-sm text-muted-foreground">Agent</label>
           {isLoadingDefaultAgent && !selectedAgent ? (
             <div className="flex items-center gap-2 p-4 rounded-lg border bg-muted/30">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -166,7 +214,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
         {/* Session Selection */}
         {currentAgentUsername && (
           <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Session *</label>
+            <label className="text-sm text-muted-foreground">Session</label>
             <SessionSelectorInline
               agentUsername={currentAgentUsername}
               selectedSession={selectedSession}
@@ -178,12 +226,13 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
         {/* Task Form - Always visible when agent is selected */}
         {currentAgentUsername && (
           <TaskForm
-            sessionId={selectedSession?._id || ''}
+            sessionId={selectedSession?._id}
+            agentId={currentAgentUsername}
             editingTask={editingTask}
             onCancel={onCancel}
             onSave={onSave}
             hideHeader={true}
-            disabled={!selectedSession}
+            disabled={false}
           />
         )}
 
@@ -212,9 +261,28 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
   selectedSession,
   onSessionChange,
 }) => {
+  const { user } = useAuthState()
   const { sessions, isLoading, isError } = useAgentSessionListQuery({
     agentId: agentUsername,
     enabled: !!agentUsername,
+  })
+
+  // Filter sessions to only show those where user has owner/editor permissions
+  const editableSessions = sessions?.filter(session => {
+    if (!session || !user) return false
+
+    // Check if user is the owner
+    const ownerId =
+      typeof session.owner === 'string' ? session.owner : session.owner?._id
+    if (ownerId === user._id) {
+      return true
+    }
+
+    // Check if user has owner/editor permission
+    const permissionLevel = (
+      session as SessionV2 & { permission_level_for_user?: string }
+    ).permission_level_for_user
+    return permissionLevel === 'owner' || permissionLevel === 'editor'
   })
 
   // Reset selection when agent changes
@@ -223,9 +291,14 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
   }, [agentUsername]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSessionChange = (sessionId: string) => {
-    const session = sessions?.find(s => s?._id === sessionId)
-    if (session) {
-      onSessionChange(session)
+    if (sessionId === '__create_new__') {
+      // Special value for "Create new session"
+      onSessionChange(null)
+    } else {
+      const session = editableSessions?.find(s => s?._id === sessionId)
+      if (session) {
+        onSessionChange(session)
+      }
     }
   }
 
@@ -246,10 +319,11 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
     )
   }
 
-  if (!sessions || sessions.length === 0) {
+  if (!editableSessions || editableSessions.length === 0) {
     return (
       <div className="p-2 text-sm text-muted-foreground">
-        No sessions found with this agent. Start a chat to create a session.
+        No sessions found with this agent where you have edit permissions. Start
+        a chat to create a session.
       </div>
     )
   }
@@ -257,20 +331,24 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
   return (
     <Select
       onValueChange={handleSessionChange}
-      value={selectedSession?._id || ''}
+      value={selectedSession?._id || '__create_new__'}
     >
       <SelectTrigger>
         <SelectValue placeholder="Select a session" />
       </SelectTrigger>
       <SelectContent className="max-h-60">
-        {sessions.map(session => {
+        {/* Create new session option */}
+        <SelectItem value="__create_new__">Create new session</SelectItem>
+
+        {/* Existing sessions */}
+        {editableSessions.map(session => {
           const sessionAgents = (
             typeof session?.agents !== 'undefined' ? session.agents : []
           ) as TriggerSessionAgent[]
 
           return (
             <SelectItem key={session?._id} value={session?._id ?? ''}>
-              <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-2">
                 {sessionAgents.length > 0 && (
                   <AgentAvatars
                     agents={sessionAgents.map(a => ({
@@ -281,9 +359,7 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
                     }))}
                   />
                 )}
-                <span className="flex-1">
-                  {session?.title || 'Untitled Session'}
-                </span>
+                <span>{session?.title || 'Untitled Session'}</span>
               </div>
             </SelectItem>
           )

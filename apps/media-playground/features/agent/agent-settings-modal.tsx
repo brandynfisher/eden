@@ -11,6 +11,7 @@ import {
   type RealtimeTabHandle,
   ToolsTab,
 } from '../sessions/views/AgentEditView'
+import { getPersonaCharacterLimit } from '../sessions/views/agent-constants'
 import AgentDashboardView from '../sessions/views/agent-dashboard-view'
 import AgentMemoryView from '../sessions/views/agent-memory-view'
 import AgentTasksView from '../sessions/views/agent-tasks-view'
@@ -40,7 +41,7 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -460,6 +461,19 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     onOpenChange(false)
   }, [onOpenChange])
 
+  // Handler for navigating to a message from tasks view
+  const handleNavigateToMessage = useCallback(
+    (messageId: string, sessionId?: string) => {
+      // Close the modal first
+      onOpenChange(false)
+      // Then navigate to the session with the message highlighted
+      if (sessionId) {
+        router.push(`/sessions/${sessionId}?message=${messageId}`)
+      }
+    },
+    [onOpenChange, router],
+  )
+
   const availableTabs = getAvailableTabs()
   const currentTab = availableTabs.find(tab => tab.key === activeTab)
   const headerDescription =
@@ -493,6 +507,13 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     isSpecialTabSaving ||
     (activeTab === 'realtime' && realtimeTabRef.current?.isSaving) ||
     (activeTab === 'integrations' && integrationsTabRef.current?.isSaving)
+
+  // Check persona character limit
+  const personaCharacterLimit = getPersonaCharacterLimit(
+    user?.subscriptionTier ?? SubscriptionTier.Free,
+  )
+  const currentPersonaLength = form.watch('persona')?.length || 0
+  const isPersonaOverLimit = currentPersonaLength > personaCharacterLimit
 
   return (
     <>
@@ -619,6 +640,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       )}
                     </div>
                   )}
+                  {/* Tabs that use the agent settings form */}
                   <Form {...form}>
                     <form
                       onSubmit={form.handleSubmit(handleSubmit)}
@@ -672,19 +694,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                           />
                         )}
 
-                      {activeTab === 'memories' &&
-                        (hasEditAccess || memoriesOnly) && (
-                          <AgentMemoryView agent={agent} variant="panel" />
-                        )}
-
-                      {activeTab === 'tasks' && hasEditAccess && (
-                        <AgentTasksView agent={agent} variant="panel" />
-                      )}
-
-                      {activeTab === 'dashboard' && hasEditAccess && (
-                        <AgentDashboardView agent={agent} variant="panel" />
-                      )}
-
                       {activeTab === 'manage' && isOriginalOwner && (
                         <div className="space-y-8">
                           {/* Permissions Section - only for original owner */}
@@ -729,6 +738,24 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       )}
                     </form>
                   </Form>
+
+                  {/* Tabs that have their own forms or don't need the agent settings form */}
+                  {activeTab === 'memories' &&
+                    (hasEditAccess || memoriesOnly) && (
+                      <AgentMemoryView agent={agent} variant="panel" />
+                    )}
+
+                  {activeTab === 'tasks' && hasEditAccess && (
+                    <AgentTasksView
+                      agent={agent}
+                      variant="panel"
+                      onNavigateToMessage={handleNavigateToMessage}
+                    />
+                  )}
+
+                  {activeTab === 'dashboard' && hasEditAccess && (
+                    <AgentDashboardView agent={agent} variant="panel" />
+                  )}
                 </div>
               </ScrollArea>
 
@@ -737,20 +764,37 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                 <div className="border-t p-4 bg-background flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   {/* Unsaved changes warning */}
                   <div className="flex items-center gap-2">
-                    {hasUnsavedChanges && (
+                    {isPersonaOverLimit ? (
                       <>
-                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span className="text-sm text-amber-500">
-                          You have unsaved changes
+                        <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                        <span className="text-sm text-red-500">
+                          Persona exceeds character limit
                         </span>
                       </>
+                    ) : (
+                      hasUnsavedChanges && (
+                        <>
+                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                          <span className="text-sm text-amber-500">
+                            You have unsaved changes
+                          </span>
+                        </>
+                      )
                     )}
                   </div>
                   <Button
                     type="button"
                     onClick={handleSaveAction}
-                    disabled={isSaving || isDeleting}
-                    className="w-full md:w-auto"
+                    disabled={isSaving || isDeleting || isPersonaOverLimit}
+                    className={cn(
+                      'w-full md:w-auto',
+                      isPersonaOverLimit && 'opacity-50 cursor-not-allowed',
+                    )}
+                    title={
+                      isPersonaOverLimit
+                        ? 'Persona exceeds character limit'
+                        : undefined
+                    }
                   >
                     {isSaving ? (
                       <>
