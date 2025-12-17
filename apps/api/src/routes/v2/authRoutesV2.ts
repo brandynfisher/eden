@@ -3,6 +3,7 @@ import {
   createFarcasterManagedSigner,
   createWebviewSignInToken,
   disconnectGoogleCalendar,
+  disconnectInstagram,
   disconnectTikTok,
   disconnectTwitter,
   disconnectTwitterIntegration,
@@ -10,6 +11,7 @@ import {
   getFarcasterSignerStatus,
   googleCalendarOAuthCallback,
   googleCalendarOAuthInit,
+  instagramOAuth,
   tiktokOAuth,
   twitterIntegrationOAuth,
   twitterOAuth,
@@ -79,6 +81,38 @@ const authRoutes: FastifyPluginAsync = async server => {
       }),
     },
     handler: (request, reply) => tiktokOAuth(server, request, reply),
+  })
+
+  server.get('/v2/auth/instagram/callback', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Instagram OAuth Callback',
+      description:
+        'Handle Instagram OAuth callback and process authorization code or errors.',
+      hide: true,
+      querystring: Type.Object({
+        code: Type.Optional(Type.String()),
+        state: Type.String(),
+        error: Type.Optional(Type.String()),
+        error_description: Type.Optional(Type.String()),
+      }),
+    },
+    handler: (request, reply) => instagramOAuth(server, request, reply),
+  })
+
+  server.delete('/v2/auth/instagram/disconnect', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Disconnect Instagram',
+      description:
+        'Remove Instagram authentication and disconnect the agent from Instagram integration.',
+      hide: true,
+      querystring: Type.Object({
+        agentId: Type.String(),
+      }),
+    },
+    handler: (request, reply) => disconnectInstagram(request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 
   server.delete('/v2/auth/tiktok/disconnect', {

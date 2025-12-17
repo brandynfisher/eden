@@ -617,6 +617,273 @@ export const tiktokOAuth = async (
   }
 }
 
+export const instagramOAuth = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { code, state, error, error_description } = request.query as {
+    code?: string
+    state: string
+    error?: string
+    error_description?: string
+  }
+
+  const sendPopupResponse = (data: {
+    success: boolean
+    message?: string
+    type?: string
+    redirectUrl?: string
+    payload?: Record<string, unknown>
+  }) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Instagram Connection</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#0f172a; color:#e2e8f0; }
+    .card { text-align:center; padding:24px; border:1px solid #1f2937; border-radius:12px; background:#111827; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+    .spinner { margin:0 auto 12px; width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.18); border-top-color:#f472b6; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .success { color:#34d399; }
+    .error { color:#f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="status">Finishing Instagram connection...</div>
+  </div>
+  <script>
+    (function() {
+      const data = ${JSON.stringify(data)};
+      const message = data.message || (data.success ? 'Instagram connected!' : 'Unable to connect Instagram');
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = data.success ? 'success' : 'error';
+      }
+
+      const postData = { type: data.type || 'instagram-link', ...data };
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(postData, '*');
+        } catch (e) {
+          console.error('postMessage failed', e);
+        }
+        setTimeout(() => window.close(), 1200);
+      } else if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      }
+    })();
+  </script>
+</body>
+</html>`
+    return reply.type('text/html').send(html)
+  }
+
+  const agentId = state
+
+  if (error || !code) {
+    const agent = await Agent.findById(agentId)
+    const redirectUrl = agent
+      ? `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+      : undefined
+    return sendPopupResponse({
+      success: false,
+      message: error_description || error || 'OAuth cancelled or failed',
+      redirectUrl,
+      type: 'instagram-link',
+    })
+  }
+
+  if (!state) {
+    return sendPopupResponse({
+      success: false,
+      message: 'Missing state parameter',
+      type: 'instagram-link',
+    })
+  }
+
+  if (
+    !server.config.INSTAGRAM_CLIENT_ID ||
+    !server.config.INSTAGRAM_CLIENT_SECRET
+  ) {
+    server.log.error('Missing Instagram OAuth env (INSTAGRAM_CLIENT_ID/SECRET)')
+    return sendPopupResponse({
+      success: false,
+      message: 'Instagram OAuth is not configured',
+      type: 'instagram-link',
+    })
+  }
+
+  try {
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return sendPopupResponse({
+        success: false,
+        message: 'Agent not found',
+        type: 'instagram-link',
+      })
+    }
+
+    const tokenResponse = await axios.post(
+      'https://api.instagram.com/oauth/access_token',
+      new URLSearchParams({
+        client_id: server.config.INSTAGRAM_CLIENT_ID as string,
+        client_secret: server.config.INSTAGRAM_CLIENT_SECRET as string,
+        grant_type: 'authorization_code',
+        redirect_uri: `${server.config.API_URL}/v2/auth/instagram/callback`,
+        code,
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    const { access_token, user_id, expires_in } = tokenResponse.data as {
+      access_token?: string
+      user_id?: string | number
+      expires_in?: number
+    }
+
+    const normalizedAccessToken =
+      typeof access_token === 'string' ? access_token.trim() : access_token
+
+    if (!normalizedAccessToken) {
+      const { access_token: _redacted, ...rest } = tokenResponse.data as Record<
+        string,
+        unknown
+      >
+      server.log.error({ data: rest }, 'Instagram token exchange failed')
+      return sendPopupResponse({
+        success: false,
+        message: 'Invalid credentials received from Instagram',
+        type: 'instagram-link',
+      })
+    }
+
+    let igUserId = user_id ? String(user_id) : ''
+    let username = ''
+
+    try {
+      const meResponse = await axios.get(
+        'https://graph.instagram.com/v24.0/me',
+        {
+          params: {
+            fields: 'user_id,username,id',
+            access_token: normalizedAccessToken,
+          },
+        },
+      )
+
+      const data = meResponse.data as {
+        user_id?: string | number
+        id?: string | number
+        username?: string
+      }
+
+      igUserId = String(data.user_id ?? data.id ?? igUserId)
+      username = data.username ?? username
+    } catch {
+      // Username is optional; continue without it.
+    }
+
+    const expiresAt =
+      typeof expires_in === 'number'
+        ? new Date(Date.now() + expires_in * 1000)
+        : undefined
+
+    const instagramSecrets = {
+      access_token: normalizedAccessToken,
+      refresh_token: null,
+      expires_at: expiresAt,
+      username,
+    }
+
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/create`,
+      data: {
+        agent: agentId,
+        user: agent.owner,
+        platform: 'instagram',
+        secrets: { instagram: instagramSecrets },
+        config: { instagram: { username, ig_user_id: igUserId } },
+      },
+    }
+
+    await axios.post(modalRequest.endpoint, modalRequest.data, {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    })
+
+    await Deployment.updateOne(
+      { agent: agentId, platform: 'instagram' },
+      {
+        $set: {
+          'config.instagram.username': username || undefined,
+          'config.instagram.ig_user_id': igUserId || undefined,
+          'secrets.instagram.username': username || undefined,
+        },
+      },
+    )
+
+    const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+
+    return sendPopupResponse({
+      success: true,
+      message: 'Instagram connected successfully',
+      type: 'instagram-link',
+      redirectUrl,
+      payload: {
+        username,
+        ig_user_id: igUserId,
+        agentId,
+      },
+    })
+  } catch (err) {
+    console.error('Instagram OAuth error:', err)
+    return sendPopupResponse({
+      success: false,
+      message: 'Failed to connect Instagram account',
+      type: 'instagram-link',
+    })
+  }
+}
+
+export const disconnectInstagram = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.query as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    await Deployment.deleteOne({
+      agent: agentId,
+      platform: 'instagram',
+    })
+
+    return reply.status(200).send({
+      message: 'Instagram account disconnected successfully',
+    })
+  } catch (error) {
+    console.error('Instagram disconnect error:', error)
+    return reply
+      .status(500)
+      .send({ message: 'Failed to disconnect Instagram account' })
+  }
+}
+
 export const disconnectTikTok = async (
   request: FastifyRequest,
   reply: FastifyReply,

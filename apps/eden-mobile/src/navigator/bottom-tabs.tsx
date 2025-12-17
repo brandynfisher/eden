@@ -19,6 +19,7 @@ export default function BottomTabsNavigator() {
   const theme = colorScheme === 'dark' ? 'dark' : 'light'
   const colors = Colors[theme]
   const insets = useSafeAreaInsets()
+  console.log('***debug*** bottom-tabs insets.bottom:', insets.bottom)
   const styles = createStyles(theme, insets.bottom)
 
   return (
@@ -32,6 +33,8 @@ export default function BottomTabsNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          paddingBottom: insets.bottom,
+          height: 60 + insets.bottom,
         },
         tabBarLabelStyle: styles.tabBarLabelStyle,
       }}

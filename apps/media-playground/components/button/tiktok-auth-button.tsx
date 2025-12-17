@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 interface TiktokAuthButtonProps {
@@ -11,13 +12,14 @@ interface TiktokAuthButtonProps {
 
 const TiktokAuthButton = ({ agentId, isConnected }: TiktokAuthButtonProps) => {
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const handleTiktokConnection = async () => {
     if (isConnected) {
       setIsLoading(true)
       await axios.delete(`/api/auth/tiktok?agentId=${agentId}`)
       setIsLoading(false)
-      window.location.reload()
+      router.refresh()
     } else {
       const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
       const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`

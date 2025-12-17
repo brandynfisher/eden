@@ -9,6 +9,7 @@ import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployme
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -32,6 +33,8 @@ export const TiktokDeploymentForm = ({
   const [isOpen, setIsOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
+  const queryClient = useQueryClient()
+  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -84,7 +87,16 @@ export const TiktokDeploymentForm = ({
           description: username ? `Connected as @${username}` : undefined,
         })
 
-        window.location.reload()
+        await queryClient.invalidateQueries({
+          queryKey: deploymentsQueryKey,
+          exact: true,
+          refetchType: 'active',
+        })
+        await queryClient.refetchQueries({
+          queryKey: deploymentsQueryKey,
+          exact: true,
+        })
+        setIsOpen(true)
       } else {
         toast.error(event.data.message ?? 'Failed to connect TikTok account')
       }
@@ -103,7 +115,7 @@ export const TiktokDeploymentForm = ({
       window.clearInterval(interval)
       cleanupPopup()
     }
-  }, [agentId, cleanupPopup, tiktokUsername])
+  }, [cleanupPopup, deploymentsQueryKey, queryClient, tiktokUsername])
 
   const handleConnect = async () => {
     setIsConnecting(true)
@@ -137,8 +149,15 @@ export const TiktokDeploymentForm = ({
     try {
       await axios.delete(`/api/auth/tiktok?agentId=${agentId}`)
       toast.success('TikTok account disconnected successfully')
-      // Refresh the page to update deployment status
-      window.location.reload()
+      await queryClient.invalidateQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+        refetchType: 'active',
+      })
+      await queryClient.refetchQueries({
+        queryKey: deploymentsQueryKey,
+        exact: true,
+      })
     } catch (error) {
       toast.error('Failed to disconnect TikTok account')
     }

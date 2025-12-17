@@ -1,6 +1,5 @@
 'use client'
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Form } from '@/components/ui/form'
@@ -11,8 +10,8 @@ import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { CheckCircle, ShieldCheck, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { CheckCircle, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -33,6 +32,7 @@ export const InstagramDeploymentForm = ({
   const [isOpen, setIsOpen] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const popupRef = useRef<Window | null>(null)
   const queryClient = useQueryClient()
   const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
   const form = useForm<DeploymentFormDto>({
@@ -56,38 +56,103 @@ export const InstagramDeploymentForm = ({
 
   const isConnected = Boolean(deployment)
 
+  const cleanupPopup = useCallback(() => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close()
+    }
+    popupRef.current = null
+    setIsConnecting(false)
+  }, [])
+
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (
+        !event.data ||
+        typeof event.data !== 'object' ||
+        event.data.type !== 'instagram-link'
+      ) {
+        return
+      }
+
+      cleanupPopup()
+
+      if (event.data.success) {
+        const username =
+          event.data.payload?.username || instagramUsername || undefined
+
+        toast.success('Instagram connected', {
+          description: username ? `Connected as @${username}` : undefined,
+        })
+
+        await queryClient.invalidateQueries({
+          queryKey: deploymentsQueryKey,
+          exact: true,
+          refetchType: 'active',
+        })
+        await queryClient.refetchQueries({
+          queryKey: deploymentsQueryKey,
+          exact: true,
+        })
+
+        setIsOpen(true)
+      } else {
+        toast.error(event.data.message ?? 'Failed to connect Instagram account')
+      }
+    }
+
+    const interval = window.setInterval(() => {
+      if (popupRef.current && popupRef.current.closed) {
+        cleanupPopup()
+      }
+    }, 500)
+
+    window.addEventListener('message', handleMessage)
+
+    return () => {
+      window.removeEventListener('message', handleMessage)
+      window.clearInterval(interval)
+      cleanupPopup()
+    }
+  }, [cleanupPopup, deploymentsQueryKey, instagramUsername, queryClient])
+
   const handleConnect = async () => {
     setIsConnecting(true)
-    try {
-      await axios.post(`/api/agents/${agentId}/deployments`, {
-        platform: 'instagram',
-      })
-      toast.success('Instagram connected (shared token)')
-      await queryClient.invalidateQueries({
-        queryKey: deploymentsQueryKey,
-        exact: true,
-        refetchType: 'active',
-      })
-      await queryClient.refetchQueries({
-        queryKey: deploymentsQueryKey,
-        exact: true,
-      })
-      setIsOpen(true)
-    } catch (error: unknown) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to connect Instagram',
-      )
+
+    const clientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID
+    const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/instagram/callback`
+    const scope =
+      process.env.NEXT_PUBLIC_INSTAGRAM_OAUTH_SCOPES ||
+      'instagram_business_basic,instagram_business_content_publish'
+
+    if (!clientId) {
+      toast.error('Missing NEXT_PUBLIC_INSTAGRAM_CLIENT_ID')
       setIsConnecting(false)
+      return
     }
+
+    const oauthUrl = `https://www.instagram.com/oauth/authorize?force_reauth=true&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri,
+    )}&response_type=code&scope=${encodeURIComponent(scope)}&state=${agentId}`
+
+    const popup = window.open(
+      oauthUrl,
+      'instagram-oauth',
+      'width=600,height=700,scrollbars=yes',
+    )
+
+    if (!popup) {
+      window.location.href = oauthUrl
+      return
+    }
+
+    popupRef.current = popup
   }
 
   const handleDisconnect = async () => {
     if (!deployment) return
     setIsDisconnecting(true)
     try {
-      await axios.delete(`/api/agents/${agentId}/deployments`, {
-        data: { platform: 'instagram' },
-      })
+      await axios.delete(`/api/auth/instagram?agentId=${agentId}`)
       toast.success('Instagram disconnected')
       await queryClient.invalidateQueries({
         queryKey: deploymentsQueryKey,
@@ -115,7 +180,7 @@ export const InstagramDeploymentForm = ({
         isOpen={isOpen}
         isDeployed={isDeployed}
         label="Instagram"
-        tooltip="Deploy your agent to Instagram (coming soon)"
+        tooltip="Connect Instagram so your agent can publish posts"
         valid={deployment?.valid}
       />
       <CollapsibleContent
@@ -130,17 +195,6 @@ export const InstagramDeploymentForm = ({
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
             <div className="space-y-4">
-              <Alert className="border border-blue-500/30 bg-blue-500/5">
-                <ShieldCheck className="h-4 w-4 text-blue-400" />
-                <AlertTitle className="text-sm font-medium">
-                  Staging connection
-                </AlertTitle>
-                <AlertDescription className="text-xs text-muted-foreground">
-                  For now this uses the shared staging Instagram token from
-                  server env. Deploying will wire your agent to that account.
-                </AlertDescription>
-              </Alert>
-
               {isConnected && (
                 <div className="space-y-2">
                   <Label>Connection Status</Label>
@@ -150,7 +204,7 @@ export const InstagramDeploymentForm = ({
                       Connected{' '}
                       {instagramUsername
                         ? `as @${instagramUsername}`
-                        : '(handle unavailable yet)'}
+                        : '(account connected)'}
                     </span>
                   </div>
                   <Button
@@ -161,7 +215,7 @@ export const InstagramDeploymentForm = ({
                     disabled={isDisconnecting}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Disconnect
+                    Disconnect Instagram
                   </Button>
                 </div>
               )}
@@ -169,8 +223,8 @@ export const InstagramDeploymentForm = ({
               {!isConnected && (
                 <>
                   <div className="text-sm text-muted-foreground">
-                    Connect to the shared staging Instagram token. Dedicated
-                    per-user OAuth will ship after review.
+                    Connect your Instagram professional (Creator/Business)
+                    account so Eden can publish posts to your profile.
                   </div>
                   <Button
                     type="button"
@@ -178,9 +232,7 @@ export const InstagramDeploymentForm = ({
                     onClick={handleConnect}
                     disabled={isConnecting}
                   >
-                    {isConnecting
-                      ? 'Connecting…'
-                      : 'Use shared Instagram connection'}
+                    {isConnecting ? 'Connecting…' : 'Connect Instagram Account'}
                   </Button>
                 </>
               )}

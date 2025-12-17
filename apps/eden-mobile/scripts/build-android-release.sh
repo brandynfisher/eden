@@ -106,9 +106,10 @@ npx expo prebuild --platform android --clean
 
 # Inject versionCode from android-version.json (survives prebuild --clean)
 VERSION_FILE="$ROOT_DIR/android-version.json"
+GRADLE_FILE="$ANDROID_DIR/app/build.gradle"
+
 if [[ -f "$VERSION_FILE" ]]; then
   VERSION_CODE=$(node -e "console.log(require('$VERSION_FILE').versionCode)")
-  GRADLE_FILE="$ANDROID_DIR/app/build.gradle"
   if [[ -f "$GRADLE_FILE" ]]; then
     sed -i.bak "s/versionCode [0-9]*/versionCode $VERSION_CODE/" "$GRADLE_FILE"
     rm -f "$GRADLE_FILE.bak"
@@ -117,6 +118,10 @@ if [[ -f "$VERSION_FILE" ]]; then
 else
   echo "⚠️  android-version.json not found, using default versionCode"
 fi
+
+# Patch signing config - expo prebuild generates release with debug signing, we need proper release signing
+echo "ℹ️  Patching build.gradle with release signing config..."
+node "$ROOT_DIR/scripts/patch-signing-config.js"
 
 cd "$ANDROID_DIR"
 
