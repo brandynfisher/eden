@@ -139,9 +139,17 @@ const agentSchema = z.object({
 ```typescript
 AGENT_FIELD_LIMITS = {
   DESCRIPTION_MAX_CHARS: 100,
-  INSTRUCTIONS_MAX_CHARS: 30000,
   NAME_MAX_CHARS: 42,
   GREETING_MAX_CHARS: 140,
+}
+
+// Persona/Instructions limits are tier-based:
+PERSONA_CHARACTER_LIMITS = {
+  Free: 50000,
+  Basic: 100000,
+  Pro: 200000,
+  Believer: 300000,
+  Admin: 400000,
 }
 ```
 

@@ -127,8 +127,8 @@ const AccountMenuContent = ({
       </DropdownMenuItem>
 
       <DropdownMenuItem
-        className="cursor-default"
-        onSelect={event => event.preventDefault()}
+        className="cursor-pointer hover:bg-purple-500/10"
+        onSelect={() => openSettingsTab('subscription')}
       >
         <div className="flex items-center justify-between w-full">
           <div className="capitalize text-xs">
