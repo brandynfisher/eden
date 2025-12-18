@@ -1362,6 +1362,50 @@ const Session = ({
     setTimeout(() => setChildSessionId(null), 300)
   }, [])
 
+  // Enrich message sender with data from session.agents if sender is incomplete
+  const enrichMessageSender = useCallback(
+    (message: Message): Message => {
+      if (!displaySession?.agents || displaySession.agents.length === 0) {
+        return message
+      }
+
+      // If sender already has username and userImage, no need to enrich
+      if (message.sender?.username && message.sender?.userImage) {
+        return message
+      }
+
+      // Try to find matching agent - by sender._id if available, otherwise use first agent for assistant messages
+      let matchingAgent = message.sender?._id
+        ? displaySession.agents.find(a => a._id === message.sender?._id)
+        : null
+
+      // For assistant messages without a matching sender, use the first agent
+      if (!matchingAgent && message.role === 'assistant') {
+        matchingAgent = displaySession.agents[0]
+      }
+
+      if (!matchingAgent) {
+        return message
+      }
+
+      // Merge sender with agent data (sender data takes precedence if present)
+      return {
+        ...message,
+        sender: {
+          _id: message.sender?._id || matchingAgent._id,
+          username: message.sender?.username || matchingAgent.username,
+          name: message.sender?.name || matchingAgent.name,
+          userImage:
+            message.sender?.userImage ||
+            (matchingAgent.userImage?.startsWith('https://')
+              ? matchingAgent.userImage
+              : getCloudfrontUrl(matchingAgent.userImage)),
+        },
+      }
+    },
+    [displaySession?.agents],
+  )
+
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
       <Skeleton className="h-8 w-8 rounded-full" />
@@ -1966,12 +2010,6 @@ const Session = ({
               </div>
             ) : (
               (() => {
-                // Hide avatars only if there's exactly 1 agent, exactly 1 user, and that user is you
-                const isSingleAgentSession =
-                  session?.agents?.length === 1 &&
-                  session?.users?.length === 1 &&
-                  session?.users?.[0]?._id === user?._id
-
                 // Check if this is a newly created session waiting for first response
                 const isNewSession =
                   session &&
@@ -2044,7 +2082,7 @@ const Session = ({
                               ))
                             : group
                                 .filter(message => message.role !== 'tool')
-                                .map(message => (
+                                .map((message, index) => (
                                   <div
                                     key={message._id}
                                     data-message-id={message._id}
@@ -2052,8 +2090,8 @@ const Session = ({
                                   >
                                     <AssistantMessage
                                       sessionId={sessionId as string}
-                                      message={message}
-                                      showAvatar={!isSingleAgentSession}
+                                      message={enrichMessageSender(message)}
+                                      showAvatar={index === 0}
                                       isStreamingTokens={false}
                                       isChatRoute={ischatRoute}
                                       onSessionClick={handleChildSessionClick}
@@ -2094,7 +2132,7 @@ const Session = ({
                                   role: 'assistant',
                                 } as Message
                               }
-                              showAvatar={!isSingleAgentSession}
+                              showAvatar={true}
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
@@ -2142,7 +2180,7 @@ const Session = ({
                                   role: 'assistant',
                                 } as Message
                               }
-                              showAvatar={!isSingleAgentSession}
+                              showAvatar={true}
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
@@ -2177,7 +2215,7 @@ const Session = ({
                               role: 'assistant',
                             } as Message
                           }
-                          showAvatar={!isSingleAgentSession}
+                          showAvatar={true}
                           isStreamingTokens={true}
                           isChatRoute={ischatRoute}
                           onSessionClick={handleChildSessionClick}
@@ -2208,7 +2246,7 @@ const Session = ({
                               role: 'assistant',
                             } as Message
                           }
-                          showAvatar={!isSingleAgentSession}
+                          showAvatar={true}
                           isStreamingTokens={
                             streamingState.isStreamingTokens &&
                             !streamingState.hasReceivedTokens
@@ -2345,11 +2383,9 @@ const Session = ({
                                 >
                                   <AssistantMessage
                                     sessionId={sessionId as string}
-                                    message={message}
+                                    message={enrichMessageSender(message)}
                                     isStreamingTokens={false}
-                                    showAvatar={
-                                      !isSingleAgentSession && index === 0
-                                    }
+                                    showAvatar={index === 0}
                                     isChatRoute={ischatRoute}
                                     onSessionClick={handleChildSessionClick}
                                   />
@@ -2389,7 +2425,7 @@ const Session = ({
                                 role: 'assistant',
                               } as Message
                             }
-                            showAvatar={!isSingleAgentSession}
+                            showAvatar={true}
                             isStreamingTokens={true}
                             isChatRoute={ischatRoute}
                             onSessionClick={handleChildSessionClick}

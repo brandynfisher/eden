@@ -197,54 +197,88 @@ export function useSessionQuery({
       queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
         if (!oldData) return oldData
 
-        // Enrich assistant messages with complete agent data if sender info is incomplete
+        const existingMessages = oldData.messages || []
+        // Enrich assistant messages with complete agent data if sender info is missing/incomplete
         let enrichedMessage = newMessage
-        if (newMessage.role === 'assistant' && newMessage.sender) {
-          let matchingAgent = null
+        if (newMessage.role === 'assistant') {
+          const existingSender = existingMessages.find(
+            m => m._id === newMessage._id,
+          )?.sender
 
-          if (oldData.agents) {
-            matchingAgent = oldData.agents.find(
-              agent =>
-                agent._id === newMessage.sender?._id ||
-                agent.username === newMessage.sender?.username,
-            )
-          }
+          // Some webhook updates omit or clear sender; prefer existing sender, then fallback to single-agent session agent.
+          const incomingSender =
+            (newMessage.sender as unknown as
+              | Record<string, unknown>
+              | null
+              | undefined) ||
+            (existingSender as unknown as
+              | Record<string, unknown>
+              | null
+              | undefined) ||
+            (oldData.agents && oldData.agents.length === 1
+              ? (oldData.agents[0] as unknown as Record<string, unknown>)
+              : undefined)
 
-          // Check if sender data is incomplete (missing userImage or has empty/default values)
-          const hasIncompleteUserImage =
-            !newMessage.sender.userImage ||
-            newMessage.sender.userImage === '' ||
-            newMessage.sender.userImage === null ||
-            newMessage.sender.userImage === undefined ||
-            !newMessage.sender.userImage.startsWith('https://') // Also check if it's a filename instead of URL
+          if (incomingSender) {
+            const senderObj = incomingSender as {
+              _id?: string
+              username?: string
+              name?: string
+              userImage?: string
+            }
 
-          const hasIncompleteName =
-            !newMessage.sender.name ||
-            newMessage.sender.name === '' ||
-            newMessage.sender.name === null ||
-            newMessage.sender.name === undefined
+            const matchingAgent =
+              oldData.agents?.find(
+                agent =>
+                  agent._id === senderObj._id ||
+                  (senderObj.username && agent.username === senderObj.username),
+              ) ||
+              (oldData.agents?.length === 1 ? oldData.agents[0] : undefined)
 
-          if (matchingAgent && (hasIncompleteUserImage || hasIncompleteName)) {
-            enrichedMessage = {
-              ...newMessage,
-              sender: {
-                ...newMessage.sender,
-                name: hasIncompleteName
-                  ? matchingAgent.name
-                  : newMessage.sender.name,
-                // Convert filename to URL using same function as message components
-                userImage: hasIncompleteUserImage
-                  ? getCloudfrontUrl(matchingAgent.userImage)
-                  : newMessage.sender.userImage,
-                // Keep other fields from the original sender
-                username: newMessage.sender.username || matchingAgent.username,
-                _id: newMessage.sender._id || matchingAgent._id,
-              },
+            const hasIncompleteUserImage =
+              !senderObj.userImage ||
+              senderObj.userImage === '' ||
+              (typeof senderObj.userImage === 'string' &&
+                !senderObj.userImage.startsWith('https://'))
+
+            const hasIncompleteName = !senderObj.name || senderObj.name === ''
+
+            const hasIncompleteUsername =
+              !senderObj.username || senderObj.username === ''
+
+            if (
+              matchingAgent &&
+              (hasIncompleteUserImage ||
+                hasIncompleteName ||
+                hasIncompleteUsername)
+            ) {
+              enrichedMessage = {
+                ...newMessage,
+                sender: {
+                  ...senderObj,
+                  name: hasIncompleteName ? matchingAgent.name : senderObj.name,
+                  username: hasIncompleteUsername
+                    ? matchingAgent.username
+                    : senderObj.username,
+                  _id: senderObj._id || matchingAgent._id,
+                  // If senderObj.userImage is a filename, convert it; otherwise fall back to agent's userImage.
+                  userImage: hasIncompleteUserImage
+                    ? getCloudfrontUrl(
+                        senderObj.userImage || matchingAgent.userImage,
+                      )
+                    : senderObj.userImage,
+                } as Message['sender'],
+              }
+            } else if (!newMessage.sender && incomingSender) {
+              // Ensure we keep a sender for assistant messages even if the incoming payload omitted it.
+              enrichedMessage = {
+                ...newMessage,
+                sender: incomingSender as Message['sender'],
+              }
             }
           }
         }
 
-        const existingMessages = oldData.messages || []
         const existingMessageIndex = existingMessages.findIndex(
           (m: Message) => m._id === enrichedMessage._id,
         )
@@ -270,12 +304,24 @@ export function useSessionQuery({
           const existingMessage = updatedMessages[existingMessageIndex]
           const mergedThought =
             enrichedMessage.thought || existingMessage.thought
+          const mergedSender =
+            enrichedMessage.role === 'assistant' &&
+            (!('sender' in enrichedMessage) ||
+              enrichedMessage.sender === null ||
+              enrichedMessage.sender === undefined ||
+              (typeof enrichedMessage.sender === 'object' &&
+                enrichedMessage.sender &&
+                Object.keys(enrichedMessage.sender).length === 0))
+              ? existingMessage.sender
+              : enrichedMessage.sender
 
           updatedMessages[existingMessageIndex] = {
             ...existingMessage,
             ...enrichedMessage,
             // Explicitly preserve thought field if it exists in either message
             thought: mergedThought,
+            // Preserve sender if webhook update omitted/cleared it
+            sender: mergedSender,
           }
         }
 
