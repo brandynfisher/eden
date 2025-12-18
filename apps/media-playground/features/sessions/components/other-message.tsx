@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Discord icon component
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -51,6 +51,9 @@ export const OtherMessage = ({
   isStreamingTokens = false,
   onSessionClick,
 }: OtherMessageProps) => {
+  const [stickySender, setStickySender] = useState(message.sender)
+  const lastMessageIdRef = useRef(message._id)
+
   // Track optimistically cancelled tool calls
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
     Set<string>
@@ -80,6 +83,25 @@ export const OtherMessage = ({
     }
   }, [message.tool_calls])
 
+  // Preserve sender info across webhook updates that may omit/clear sender
+  useEffect(() => {
+    // When a new message is mounted/reused, reset.
+    if (lastMessageIdRef.current !== message._id) {
+      lastMessageIdRef.current = message._id
+      setStickySender(message.sender)
+      return
+    }
+
+    // For the same message, only update if we got sender info with meaningful display data
+    // (username or userImage). This prevents overwriting good data with incomplete data.
+    if (
+      message.sender &&
+      (message.sender.username || message.sender.userImage)
+    ) {
+      setStickySender(message.sender)
+    }
+  }, [message._id, message.sender])
+
   // Check if message has attachments
   const hasAttachments = message.attachments && message.attachments.length > 0
 
@@ -92,21 +114,21 @@ export const OtherMessage = ({
     return null
 
   const isEmpty = !message.content || message.content.length === 0
-  const profileIdentifier =
-    message.sender?.username || message.sender?._id || ''
+  const sender = stickySender
+  const profileIdentifier = sender?.username || sender?._id || ''
   // Make any sender with an identifier clickable
   const shouldMakeClickable = !!profileIdentifier
 
-  const finalImageUrl = message.sender?.userImage
-    ? message.sender.userImage.startsWith('https://')
-      ? message.sender.userImage // Already a full URL, don't process again
-      : getCloudfrontUrl(message.sender.userImage) // Convert filename to URL
+  const finalImageUrl = sender?.userImage
+    ? sender.userImage.startsWith('https://')
+      ? sender.userImage // Already a full URL, don't process again
+      : getCloudfrontUrl(sender.userImage) // Convert filename to URL
     : undefined
 
   // Format display name (strips discord_ prefix)
   const { displayName, isDiscord } = formatDisplayName(
-    message.sender?.name,
-    message.sender?.username,
+    sender?.name,
+    sender?.username,
   )
 
   return (
@@ -126,7 +148,7 @@ export const OtherMessage = ({
               <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
                 <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
-                  {message.sender?.username ? (
+                  {sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">
                       <text
                         x="50%"
@@ -136,9 +158,9 @@ export const OtherMessage = ({
                         className="fill-current text-sm font-medium"
                         style={{ fontSize: '14px' }}
                       >
-                        {`${message.sender?.username?.charAt(
+                        {`${sender?.username?.charAt(
                           0,
-                        )}${message.sender?.username?.charAt(1)}`}
+                        )}${sender?.username?.charAt(1)}`}
                       </text>
                     </svg>
                   ) : (
@@ -156,7 +178,7 @@ export const OtherMessage = ({
               <Avatar className="w-full h-full">
                 <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
-                  {message.sender?.username ? (
+                  {sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">
                       <text
                         x="50%"
@@ -166,9 +188,9 @@ export const OtherMessage = ({
                         className="fill-current text-sm font-medium"
                         style={{ fontSize: '14px' }}
                       >
-                        {`${message.sender?.username?.charAt(
+                        {`${sender?.username?.charAt(
                           0,
-                        )}${message.sender?.username?.charAt(1)}`}
+                        )}${sender?.username?.charAt(1)}`}
                       </text>
                     </svg>
                   ) : (

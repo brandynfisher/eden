@@ -13,7 +13,7 @@ import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 type Props = {
   task: TaskV2
@@ -31,6 +31,7 @@ export const MediaResultOutput = ({
   output: TasksV2ResultOutput
   index?: number
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const width = output.mediaAttributes?.width ?? task.args?.width ?? 1024
   const height = output.mediaAttributes?.height ?? task.args?.height ?? 1024
   const aspectRatio =
@@ -38,50 +39,50 @@ export const MediaResultOutput = ({
     output?.mediaAttributes?.aspectRatio ||
     (task.output_type === 'audio' ? 3 : 1)
 
-  const computeFitSize = (ratio: number) => {
-    if (typeof window === 'undefined') {
-      return { width: '100%', height: 'auto' }
-    }
-    const maxWidth = Math.min(window.innerWidth * 0.9, 1200)
-    const maxHeight = window.innerHeight * 0.7
-
-    let computedWidth = maxWidth
-    let computedHeight = computedWidth / ratio
-
-    if (computedHeight > maxHeight) {
-      computedHeight = maxHeight
-      computedWidth = computedHeight * ratio
-    }
-
-    return { width: computedWidth, height: computedHeight }
-  }
-
-  const [fitSize, setFitSize] = useState(() => computeFitSize(aspectRatio))
+  const [containerWidth, setContainerWidth] = useState<number | null>(null)
 
   useEffect(() => {
-    const handleResize = () => setFitSize(computeFitSize(aspectRatio))
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [aspectRatio])
+    const updateWidth = () => {
+      if (containerRef.current?.parentElement) {
+        setContainerWidth(containerRef.current.parentElement.clientWidth)
+      }
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
+  // Calculate dimensions that fit within container and max height
+  const maxHeight =
+    typeof window !== 'undefined' ? window.innerHeight * 0.6 : 600
+  const availableWidth = containerWidth ?? 800
+
+  let computedWidth = availableWidth
+  let computedHeight = computedWidth / aspectRatio
+
+  // If too tall, constrain by height
+  if (computedHeight > maxHeight) {
+    computedHeight = maxHeight
+    computedWidth = computedHeight * aspectRatio
+  }
+
+  // Don't exceed container width
+  if (computedWidth > availableWidth) {
+    computedWidth = availableWidth
+    computedHeight = computedWidth / aspectRatio
+  }
 
   return (
     <div
+      ref={containerRef}
       className={cn([
-        'relative bg-accent z-10 rounded-md w-full max-w-full',
-        'overflow-hidden flex items-center justify-center mx-auto',
-        'min-h-[260px] md:min-h-[320px] max-h-[70vh]',
+        'relative bg-accent z-10 rounded-md mx-auto',
+        'overflow-hidden flex items-center justify-center',
       ])}
       style={{
-        aspectRatio,
-        width:
-          typeof fitSize.width === 'number'
-            ? `${fitSize.width}px`
-            : fitSize.width,
-        height:
-          typeof fitSize.height === 'number'
-            ? `${fitSize.height}px`
-            : fitSize.height,
+        width: computedWidth,
+        height: computedHeight,
+        maxWidth: '100%',
       }}
     >
       {!output.creation?.public ? <PrivateIcon /> : null}
@@ -149,7 +150,10 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <>
       {result.output.map(output => (
-        <div key={output.filename} className="p-2 bg-secondary rounded-md">
+        <div
+          key={output.filename}
+          className="p-2 bg-secondary rounded-md overflow-hidden max-w-full"
+        >
           <div
             className={cn([
               'relative',

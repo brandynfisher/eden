@@ -43,6 +43,7 @@ import {
   ChevronDownIcon,
   ComponentIcon,
   DownloadIcon,
+  FileSlidersIcon,
   Share2Icon,
   TrashIcon,
 } from 'lucide-react'
@@ -176,6 +177,14 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
     })
   }
 
+  const handleUseAsPreset = () => {
+    if (!item || type !== 'creation') return '#'
+    const creation = item as CreationV2
+    const fileType =
+      getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+    return `/studio/${fileType}/${creation.tool}?creation=${creation._id}`
+  }
+
   const handleDelete = () => {
     if (!isOwner || !item) return
 
@@ -244,6 +253,25 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Add to Collection</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            asChild
+                            disabled={!isSignedIn}
+                          >
+                            <Link href={handleUseAsPreset()}>
+                              <FileSlidersIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Use as Preset</p>
                         </TooltipContent>
                       </Tooltip>
 
