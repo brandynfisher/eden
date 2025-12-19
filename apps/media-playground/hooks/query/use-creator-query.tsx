@@ -2,6 +2,20 @@ import { fetcher } from '@/lib/fetcher'
 import { Agent, Creator, CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+// Extended Agent type with optional profile fields
+type AgentWithProfile = Agent & {
+  _id?: string
+  username?: string
+  userId?: string
+  userImage?: string
+  createdAt?: string
+  updatedAt?: string
+  followerCount?: number
+  followingCount?: number
+  creationsCount?: number
+  likedCreationsCount?: number
+}
+
 type Props = {
   key: Creator['username']
   initialData?: CreatorsGetResponse
@@ -40,28 +54,26 @@ export const useCreatorQuery = ({
 
       // Fallback to agent endpoint
       try {
-        const agentRes = await fetcher<{ agent: Agent }>(`/api/agents/${key}`)
+        const agentRes = await fetcher<{ agent: AgentWithProfile }>(
+          `/api/agents/${key}`,
+        )
         if (agentRes?.agent) {
+          const agent = agentRes.agent
           return {
             creator: {
-              _id: (agentRes.agent as any)._id,
-              userId:
-                (agentRes.agent as any).username ||
-                (agentRes.agent as any).userId ||
-                key,
-              username:
-                (agentRes.agent as any).username ||
-                (agentRes.agent as any).userId ||
-                key,
-              userImage: (agentRes.agent as any).userImage || '',
-              createdAt:
-                (agentRes.agent as any).createdAt || new Date().toISOString(),
-              followerCount: (agentRes.agent as any).followerCount || 0,
-              followingCount: (agentRes.agent as any).followingCount || 0,
-              creationCount: (agentRes.agent as any).creationCount || 0,
+              _id: agent._id,
+              userId: agent.username || agent.userId || key,
+              username: agent.username || agent.userId || key,
+              userImage: agent.userImage || '',
+              createdAt: agent.createdAt || new Date().toISOString(),
+              updatedAt: agent.updatedAt || new Date().toISOString(),
+              followerCount: agent.followerCount || 0,
+              followingCount: agent.followingCount || 0,
+              creationsCount: agent.creationsCount || 0,
+              likedCreationsCount: agent.likedCreationsCount || 0,
               type: 'agent',
             },
-          } as CreatorsGetResponse
+          } as unknown as CreatorsGetResponse
         }
       } catch (_) {
         // ignore
