@@ -37,11 +37,11 @@ const ProfileTabs = () => {
   const isOwnProfile = creator ? user?._id === creator._id : false
   const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
 
-  // Determine default sort: show "Latest" if profile has fewer than 10 liked creations
+  // Determine default sort: show "Latest" if profile has fewer than 20 liked creations
   const likedCreationsCount =
     (creator as CreatorWithCounts)?.likedCreationsCount ?? 0
   const defaultSort =
-    isOwnProfile || likedCreationsCount < 10
+    isOwnProfile || likedCreationsCount < 20
       ? 'createdAt;-1'
       : 'likeCount|createdAt;-1'
 

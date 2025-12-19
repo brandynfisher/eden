@@ -302,10 +302,10 @@ export const getCreator = async (
     })
   }
 
-  // Count ALL creations by the user (public + private, including agent creations)
-  const creationsCount = await CreationV2.countDocuments({
+  // Count ALL creations by the user (public + private, including deleted and agent creations)
+  // Use countDocumentsWithDeleted to bypass mongoose-delete plugin's default filtering
+  const creationsCount = await (CreationV2 as any).countDocumentsWithDeleted({
     user: creatorDoc?._id,
-    deleted: false,
   })
   // Count only public liked creations (for determining default sort on profile)
   const likedCreationsCount = await CreationV2.countDocuments({
