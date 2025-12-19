@@ -29,6 +29,10 @@ export function useVoiceConversation(
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([])
   const [inputVolume, setInputVolume] = useState<number>(0)
   const sessionIdRef = useRef<string | null>(null)
+  const billingSessionIdRef = useRef<string | null>(null)
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  )
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const animationFrameRef = useRef<number | null>(null)
@@ -302,6 +306,18 @@ export function useVoiceConversation(
       setToolCalls([])
       stopVolumeMonitoring()
       sessionIdRef.current = null
+
+      // Stop heartbeat and close billing session
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
+      if (billingSessionIdRef.current) {
+        fetch(`/api/realtime/billing/${billingSessionIdRef.current}/close`, {
+          method: 'POST',
+        }).catch(err => console.error('Failed to close billing session:', err))
+        billingSessionIdRef.current = null
+      }
     },
     onMessage: async (message: { source: string; message: string }) => {
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'
@@ -440,6 +456,83 @@ export function useVoiceConversation(
         )
       }
 
+      // Start billing session
+      addDebugLog('Starting billing session...', 'info')
+      try {
+        const billingResponse = await fetch('/api/realtime/billing/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agentId: config.edenAgentId,
+            sessionId: sessionIdRef.current,
+          }),
+        })
+
+        if (billingResponse.ok) {
+          const billingData = await billingResponse.json()
+          const billingSessionId = billingData.realtimeSession?._id
+          if (billingSessionId) {
+            billingSessionIdRef.current = billingSessionId
+            addDebugLog(
+              `Billing session started: ${billingSessionId}`,
+              'success',
+            )
+
+            // Start heartbeat interval (every 30 seconds)
+            heartbeatIntervalRef.current = setInterval(async () => {
+              if (billingSessionIdRef.current) {
+                try {
+                  const heartbeatRes = await fetch(
+                    `/api/realtime/billing/${billingSessionIdRef.current}/heartbeat`,
+                    { method: 'POST' },
+                  )
+                  if (!heartbeatRes.ok) {
+                    // Consume the response body
+                    await heartbeatRes.json()
+                    if (heartbeatRes.status === 402) {
+                      addDebugLog(
+                        'Insufficient manna - ending session',
+                        'error',
+                      )
+                      // Session was closed by API, stop heartbeat
+                      if (heartbeatIntervalRef.current) {
+                        clearInterval(heartbeatIntervalRef.current)
+                        heartbeatIntervalRef.current = null
+                      }
+                      billingSessionIdRef.current = null
+                    }
+                  }
+                } catch (err) {
+                  console.error('Heartbeat error:', err)
+                }
+              }
+            }, 30000)
+          }
+        } else {
+          const errorData = await billingResponse.json()
+          if (billingResponse.status === 402) {
+            addDebugLog(`Insufficient manna: ${errorData.message}`, 'error')
+            throw new Error(errorData.message || 'Insufficient manna balance')
+          } else {
+            addDebugLog(
+              `Failed to start billing: ${billingResponse.status} ${errorData.message}`,
+              'error',
+            )
+          }
+        }
+      } catch (error) {
+        const billingErrorMessage =
+          error instanceof Error ? error.message : 'Unknown error'
+        addDebugLog(
+          `Error starting billing session: ${billingErrorMessage}`,
+          'error',
+        )
+        // If billing failed due to insufficient manna, stop here
+        if (billingErrorMessage.includes('manna')) {
+          throw error
+        }
+      }
+
       // Prepare conversation config with dynamic variables
       const sessionConfig = prepareConversationConfig()
 
@@ -508,6 +601,32 @@ export function useVoiceConversation(
 
   const endConversation = useCallback(async () => {
     try {
+      // Stop heartbeat first
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
+
+      // Close billing session
+      if (billingSessionIdRef.current) {
+        try {
+          const closeRes = await fetch(
+            `/api/realtime/billing/${billingSessionIdRef.current}/close`,
+            { method: 'POST' },
+          )
+          if (closeRes.ok) {
+            const closeData = await closeRes.json()
+            addDebugLog(
+              `Billing session closed. Total billed: ${closeData.totalMannaBilled} manna`,
+              'info',
+            )
+          }
+        } catch (err) {
+          console.error('Failed to close billing session:', err)
+        }
+        billingSessionIdRef.current = null
+      }
+
       await conversation.endSession()
       stopVolumeMonitoring()
       addDebugLog('Disconnected', 'info')
