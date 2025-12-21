@@ -1,3 +1,4 @@
+import { closeInactiveSessions } from './controllers/realtimeSessionBillingController'
 import { subscribeWebSocketUpdates } from './controllers/v2/taskControllerV2'
 import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'
@@ -223,6 +224,18 @@ const createServer = async (opts: CreateServerOpts) => {
   })
 
   await server.ready()
+
+  // Periodically close inactive realtime sessions (every 2 minutes)
+  setInterval(async () => {
+    try {
+      const closed = await closeInactiveSessions()
+      if (closed > 0) {
+        server.log.info(`Closed ${closed} inactive realtime sessions`)
+      }
+    } catch (err) {
+      server.log.error(err, 'Failed to close inactive sessions')
+    }
+  }, 120_000)
 
   return server
 }

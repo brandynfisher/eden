@@ -18,7 +18,7 @@ export const REALTIME_BILLING = {
   BILLING_INTERVAL_SECONDS: 60,
 
   /** Seconds of inactivity before auto-closing the session */
-  INACTIVITY_TIMEOUT_SECONDS: 120,
+  INACTIVITY_TIMEOUT_SECONDS: 60,
 } as const
 
 export type RealtimeBillingConfig = typeof REALTIME_BILLING
