@@ -15,6 +15,7 @@ import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
+import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
 import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
 import { groupConsecutiveMessages } from './utils/group-messages'
@@ -242,6 +243,12 @@ const Session = ({
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
+  })
+
+  // Show confetti when an automatic session with an outcome is loaded
+  useSessionCompletionConfetti({
+    session,
+    isLoading: isSessionLoading,
   })
 
   useEffect(() => {
