@@ -46,9 +46,9 @@ export const AgentWorkspaces = ({
         <button
           className={cn(
             'flex items-center gap-2 px-3 py-1.5 rounded-full',
-            'bg-primary/10 hover:bg-primary/20 border border-primary/20',
-            'text-sm font-medium text-primary transition-all duration-200',
-            'shadow-sm hover:shadow-md',
+            'bg-blue-600 hover:bg-blue-500',
+            'text-sm font-medium text-white transition-colors',
+            'border border-blue-500/30',
             className,
           )}
         >

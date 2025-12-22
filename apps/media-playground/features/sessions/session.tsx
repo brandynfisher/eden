@@ -149,6 +149,7 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [showConductorMessages, setShowConductorMessages] = useState(false)
   const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
@@ -1943,17 +1944,34 @@ const Session = ({
               'flex flex-col justify-center items-center',
           )}
         >
-          {/* Floating Agent Workspaces button - desktop only */}
-          {session?.agent_sessions &&
-            Object.keys(session.agent_sessions).length > 0 && (
-              <div className="hidden md:block sticky top-2 z-20 float-right mr-4">
+          {/* Floating controls - Agent Workspaces + Conductor toggle - desktop only */}
+          <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
+            {session?.agent_sessions &&
+              Object.keys(session.agent_sessions).length > 0 && (
                 <AgentWorkspaces
                   agents={session.agents || []}
                   agentSessions={session.agent_sessions}
                   onOpenWorkspace={handleChildSessionClick}
                 />
-              </div>
+              )}
+            {/* Conductor messages toggle - only show for automatic sessions */}
+            {session?.session_type === 'automatic' && (
+              <button
+                onClick={() => setShowConductorMessages(!showConductorMessages)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-full',
+                  'text-sm font-medium transition-colors',
+                  'border border-blue-500/30',
+                  showConductorMessages
+                    ? 'bg-blue-600 text-white hover:bg-blue-500'
+                    : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
+                )}
+              >
+                <BrainIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">View Conductor</span>
+              </button>
             )}
+          </div>
           <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
             {/* Load more button for older messages */}
             {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
@@ -2061,7 +2079,13 @@ const Session = ({
                                   data-message-id={message._id}
                                   className="transition-colors duration-500"
                                 >
-                                  <EdenMessage message={message} />
+                                  <EdenMessage
+                                    message={message}
+                                    agents={session?.agents}
+                                    showConductorMessages={
+                                      showConductorMessages
+                                    }
+                                  />
                                 </div>
                               ))
                             : group[0].role === 'system'
@@ -2354,7 +2378,11 @@ const Session = ({
                                 data-message-id={message._id}
                                 className="transition-colors duration-500"
                               >
-                                <EdenMessage message={message} />
+                                <EdenMessage
+                                  message={message}
+                                  agents={session?.agents}
+                                  showConductorMessages={showConductorMessages}
+                                />
                               </div>
                             ))
                           : group[0].role === 'system'
