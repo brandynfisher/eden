@@ -460,6 +460,8 @@ export type SessionsV2ShareGetResponse = WebAPICallResult & {
     messages: Message[]
     owner: Creator
     createdAt: Date
+    /** Maps agent IDs to their child share IDs for workspace viewing */
+    child_shares?: Record<string, string>
   }
 }
 

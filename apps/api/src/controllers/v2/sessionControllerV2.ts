@@ -2005,6 +2005,61 @@ export const createSessionShare = async (
 
     await sessionShare.save()
 
+    // Create shares for any agent_sessions (child/workspace sessions)
+    if (
+      session.agent_sessions &&
+      typeof session.agent_sessions === 'object' &&
+      Object.keys(session.agent_sessions).length > 0
+    ) {
+      const childSharesMap: Record<string, string> = {}
+
+      for (const [agentId, childSessionId] of Object.entries(
+        session.agent_sessions,
+      )) {
+        if (!childSessionId) continue
+
+        try {
+          // Get the last message from the child session to use as message_id
+          const lastChildMessage = await Message.findOne({
+            session: new ObjectId(childSessionId.toString()),
+          })
+            .sort({ createdAt: -1 })
+            .select('_id')
+
+          if (lastChildMessage) {
+            const childShare = new SessionShare({
+              session: new ObjectId(childSessionId.toString()),
+              owner: userId,
+              message_id: lastChildMessage._id,
+              title: title ? `${title} - Workspace` : undefined,
+              parent_share: sessionShare._id,
+            })
+
+            await childShare.save()
+            childSharesMap[agentId] = childShare._id.toString()
+          }
+        } catch (childError) {
+          // Log but don't fail the whole operation if a child share fails
+          server.log.warn({
+            message: 'Failed to create child share for agent session',
+            agentId,
+            childSessionId: childSessionId.toString(),
+            error:
+              childError instanceof Error
+                ? childError.message
+                : 'Unknown error',
+          })
+        }
+      }
+
+      // Update the parent share with child_shares mapping
+      if (Object.keys(childSharesMap).length > 0) {
+        await SessionShare.findByIdAndUpdate(sessionShare._id, {
+          child_shares: childSharesMap,
+        })
+      }
+    }
+
     return reply.status(201).send({
       success: true,
       share_id: sessionShare._id.toString(),
@@ -2034,7 +2089,8 @@ export const getSharedSession = async (
     const sessionShare = await SessionShare.findById(share_id)
       .populate({
         path: 'session',
-        select: '_id title context agents createdAt',
+        select:
+          '_id title context agents session_type agent_sessions createdAt',
         populate: [
           {
             path: 'agents',
@@ -2046,6 +2102,7 @@ export const getSharedSession = async (
         path: 'owner',
         select: '_id username userImage',
       })
+      .lean()
 
     if (!sessionShare) {
       return reply.status(404).send({
@@ -2077,6 +2134,7 @@ export const getSharedSession = async (
         messages,
         owner: sessionShare.owner,
         createdAt: sessionShare.createdAt,
+        child_shares: sessionShare.child_shares,
       },
     })
   } catch (error) {

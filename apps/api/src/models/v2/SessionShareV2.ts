@@ -14,6 +14,10 @@ export interface SessionShareSchema {
   owner: UserDocument
   message_id: ObjectId
   title?: string
+  /** For parent shares: maps agent IDs to their child share IDs */
+  child_shares?: Record<string, ObjectId>
+  /** For child shares: reference to the parent share */
+  parent_share?: ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -23,6 +27,8 @@ export interface SessionShareInput {
   owner: ObjectId
   message_id: ObjectId
   title?: string
+  child_shares?: Record<string, ObjectId>
+  parent_share?: ObjectId
 }
 
 export interface SessionShareDocument
@@ -49,6 +55,14 @@ export const sessionShareSchema = new Schema<SessionShareDocument>(
     title: {
       type: Schema.Types.String,
       maxlength: 200,
+    },
+    child_shares: {
+      type: Schema.Types.Mixed,
+      default: undefined,
+    },
+    parent_share: {
+      type: Schema.Types.ObjectId,
+      ref: 'session_shares',
     },
     deleted: {
       type: Boolean,
