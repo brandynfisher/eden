@@ -712,6 +712,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             messages: Type.Array(Type.Any()),
             owner: Type.Any(),
             createdAt: Type.String(),
+            child_shares: Type.Optional(
+              Type.Record(Type.String(), Type.String()),
+            ),
           }),
         }),
         404: {

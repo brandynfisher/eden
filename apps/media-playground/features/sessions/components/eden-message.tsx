@@ -156,7 +156,14 @@ function ConductorFinishMessage({
           <Trophy className="h-3 w-3" />
           OUTCOME
         </div>
-        <div className="bg-amber-50/60 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-700/30 rounded-lg px-4 py-3">
+        <div
+          onClick={() => content.summary && setShowSummary(!showSummary)}
+          className={cn(
+            'bg-amber-50/60 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-700/30 rounded-lg px-4 py-3',
+            content.summary &&
+              'cursor-pointer hover:bg-amber-50/80 dark:hover:bg-amber-900/20 transition-colors',
+          )}
+        >
           {/* Outcome - prominent display */}
           {content.outcome && (
             <div className="text-base text-amber-900 dark:text-amber-100 font-medium">
@@ -167,17 +174,14 @@ function ConductorFinishMessage({
           {/* Summary - expandable */}
           {content.summary && (
             <div className="mt-2">
-              <button
-                onClick={() => setShowSummary(!showSummary)}
-                className="flex items-center gap-1 text-xs text-amber-600/70 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-              >
+              <div className="flex items-center gap-1 text-xs text-amber-600/70 dark:text-amber-400/50">
                 {showSummary ? (
                   <ChevronDown className="h-3 w-3" />
                 ) : (
                   <ChevronRight className="h-3 w-3" />
                 )}
                 view summary
-              </button>
+              </div>
               {showSummary && (
                 <div className="mt-2 text-sm text-amber-800/70 dark:text-amber-200/60 leading-relaxed">
                   {content.summary}
@@ -212,9 +216,14 @@ function ConductorTurnMessage({
   agents?: Agent[]
   TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
 }) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const speakerAgent = content.speaker
     ? getAgentByUsername(agents, content.speaker)
     : undefined
+
+  // Check if reasoning needs truncation
+  const reasoning = content.reasoning || ''
+  const needsTruncation = reasoning.split(/\s+/).length > 20
 
   return (
     <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
@@ -222,11 +231,23 @@ function ConductorTurnMessage({
         <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
           CONDUCTOR TURN
         </div>
-        <div className="bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3 space-y-2">
+        <div
+          onClick={() => needsTruncation && setIsExpanded(!isExpanded)}
+          className={cn(
+            'bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3 space-y-2',
+            needsTruncation &&
+              'cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/25 transition-colors',
+          )}
+        >
           {/* Reasoning - truncated with expand */}
           {content.reasoning && (
             <div className="text-sm text-blue-900/70 dark:text-blue-100/60">
-              <ExpandableText text={content.reasoning} previewWordCount={20} />
+              {isExpanded ? reasoning : truncateToWords(reasoning, 20)}
+              {needsTruncation && !isExpanded && (
+                <span className="text-blue-500 dark:text-blue-400 ml-1">
+                  ...
+                </span>
+              )}
             </div>
           )}
 
@@ -254,6 +275,18 @@ function ConductorTurnMessage({
                   &ldquo;{content.hint}&rdquo;
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Expand/collapse indicator */}
+          {needsTruncation && (
+            <div className="flex items-center gap-1 text-xs text-blue-600/50 dark:text-blue-400/40">
+              {isExpanded ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+              {isExpanded ? 'collapse' : 'expand'}
             </div>
           )}
         </div>
@@ -358,6 +391,8 @@ function DefaultConductorMessage({
   message: Message
   TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
 }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   // Try to parse and pretty-print JSON content
   let displayContent = content
   try {
@@ -367,18 +402,47 @@ function DefaultConductorMessage({
     displayContent = content
   }
 
+  // Check if content needs truncation (more than ~20 words or 150 chars)
+  const needsTruncation =
+    displayContent.split(/\s+/).length > 20 || displayContent.length > 150
+  const truncatedContent = needsTruncation
+    ? truncateToWords(displayContent, 20)
+    : displayContent
+
   return (
     <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
       <div className="max-w-[42rem]">
         <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
           {label}
         </div>
-        <div className="bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3">
-          <div className="text-base text-blue-900/70 dark:text-blue-100/60">
+        <div
+          onClick={() => needsTruncation && setIsExpanded(!isExpanded)}
+          className={cn(
+            'bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3',
+            needsTruncation &&
+              'cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/25 transition-colors',
+          )}
+        >
+          <div className="text-sm text-blue-900/70 dark:text-blue-100/60">
             <pre className="whitespace-pre-wrap font-sans">
-              {displayContent}
+              {isExpanded ? displayContent : truncatedContent}
+              {needsTruncation && !isExpanded && (
+                <span className="text-blue-500 dark:text-blue-400 ml-1">
+                  ...
+                </span>
+              )}
             </pre>
           </div>
+          {needsTruncation && (
+            <div className="flex items-center gap-1 text-xs text-blue-600/50 dark:text-blue-400/40 mt-2">
+              {isExpanded ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+              {isExpanded ? 'collapse' : 'expand'}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <div

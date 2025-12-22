@@ -101,7 +101,7 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
   const { share } = sharedSessionData
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex">
       <div className="flex-1 overflow-y-auto relative">
         {/* Floating controls - Agent Workspaces + Conductor toggle - desktop only */}
         <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
@@ -165,7 +165,7 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
                     />
                   )
                 } else if (
-                  message.role === 'system' &&
+                  (message.role === 'system' || message.role === 'eden') &&
                   message.eden_message_data
                 ) {
                   return (
