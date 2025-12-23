@@ -31,7 +31,6 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import { toast } from 'sonner'
@@ -197,7 +196,6 @@ interface IntegrationsTabProps {
   deployments?: Deployment[]
   isLoading?: boolean
   isError?: boolean
-  onUnsavedChangesChange?: (hasChanges: boolean) => void
 }
 
 export interface IntegrationsTabHandle {
@@ -209,23 +207,19 @@ export interface IntegrationsTabHandle {
 export const IntegrationsTab = forwardRef<
   IntegrationsTabHandle,
   IntegrationsTabProps
->(({ agent, deployments, isLoading, isError, onUnsavedChangesChange }, ref) => {
-  const settingsRef = useRef<DeploymentSettingsHandle>(null)
-
-  // Expose imperative handle for parent to control save
+>(({ agent, deployments, isLoading, isError }, ref) => {
+  // Expose imperative handle for parent (no longer has settings to save)
   useImperativeHandle(
     ref,
     () => ({
       save: async () => {
-        if (settingsRef.current) {
-          await settingsRef.current.save()
-        }
+        // No settings to save - payer settings moved to Manage tab
       },
       get hasUnsavedChanges() {
-        return settingsRef.current?.hasUnsavedChanges ?? false
+        return false
       },
       get isSaving() {
-        return settingsRef.current?.isSaving ?? false
+        return false
       },
     }),
     [],
@@ -435,15 +429,6 @@ export const IntegrationsTab = forwardRef<
           </div>
         </div>
       )}
-
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <h2 className="text-lg font-medium">Integration Settings</h2>
-        <DeploymentSettingsInline
-          ref={settingsRef}
-          agent={agent}
-          onUnsavedChangesChange={onUnsavedChangesChange}
-        />
-      </div>
     </div>
   )
 })

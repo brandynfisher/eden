@@ -2,7 +2,7 @@ import { SubscriptionTier } from '@edenlabs/eden-sdk'
 
 // Agent form constants and guidance text
 export const AGENT_FIELD_LIMITS = {
-  DESCRIPTION_MAX_CHARS: 100,
+  DESCRIPTION_MAX_CHARS: 200,
   NAME_MAX_CHARS: 42,
   GREETING_MAX_CHARS: 140,
 } as const

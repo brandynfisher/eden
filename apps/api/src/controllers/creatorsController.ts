@@ -1,8 +1,8 @@
 import { BaseUser } from '../models/BaseUser'
-import { Creation } from '../models/Creation'
 import { Follow, FollowDocument } from '../models/Follow'
 import { Manna } from '../models/Manna'
 import { User } from '../models/User'
+import { CreationV2 } from '../models/v2/CreationV2'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 import { createMultiFieldQuery } from '../utils/mongoUtils'
@@ -302,9 +302,17 @@ export const getCreator = async (
     })
   }
 
-  const creationsCount = await Creation.countDocuments({
+  // Count ALL creations by the user (public + private, including deleted and agent creations)
+  // Use countDocumentsWithDeleted to bypass mongoose-delete plugin's default filtering
+  const creationsCount = await (CreationV2 as any).countDocumentsWithDeleted({
     user: creatorDoc?._id,
-    character: null,
+  })
+  // Count only public liked creations (for determining default sort on profile)
+  const likedCreationsCount = await CreationV2.countDocuments({
+    user: creatorDoc?._id,
+    likeCount: { $gte: 1 },
+    deleted: false,
+    public: true,
   })
   const followerCount = await Follow.countDocuments({
     following: creatorDoc?._id,
@@ -327,6 +335,7 @@ export const getCreator = async (
     followerCount,
     followingCount,
     creationsCount,
+    likedCreationsCount,
     isFollowing,
   }
   return reply.status(200).send({ creator })

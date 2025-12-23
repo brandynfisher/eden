@@ -21,13 +21,20 @@ export async function GET(
   const { getToken } = getAuth(request)
   const authToken = await getToken()
 
+  // Get parent_session_id from query params if present
+  const { searchParams } = new URL(request.url)
+  const parentSessionId = searchParams.get('parent_session_id')
+
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.sessions.v2.get({ session_id: id })
+    const res = await eden.sessions.v2.get({
+      session_id: id,
+      ...(parentSessionId && { parent_session_id: parentSessionId }),
+    })
 
     if (!res) {
       return new NextResponse(

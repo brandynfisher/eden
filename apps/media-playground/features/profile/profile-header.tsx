@@ -10,9 +10,14 @@ import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Creator } from '@edenlabs/eden-sdk'
 import { InstagramLogoIcon } from '@radix-ui/react-icons'
-import { LinkIcon, Share2Icon, UserIcon } from 'lucide-react'
+import { ImageIcon, LinkIcon, Share2Icon, UserIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+
+// Extended Creator type with optional count fields from API
+type CreatorWithCounts = Creator & {
+  creationsCount?: number
+}
 
 type Props = {
   name: string
@@ -73,6 +78,19 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
                   <UserIcon className="w-3 h-3" />
                   Member since {new Date(creator.createdAt).getFullYear()}
                 </Badge>
+                {(creator as CreatorWithCounts).creationsCount &&
+                  (creator as CreatorWithCounts).creationsCount! > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      {(
+                        creator as CreatorWithCounts
+                      ).creationsCount!.toLocaleString()}{' '}
+                      creations
+                    </Badge>
+                  )}
                 {creator.twitterHandle && (
                   <Badge
                     variant="secondary"

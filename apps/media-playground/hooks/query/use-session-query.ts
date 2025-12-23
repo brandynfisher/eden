@@ -20,18 +20,23 @@ const OPTIMISTIC_ID_PREFIX = 'optimistic_'
 
 export function useSessionQuery({
   sessionId,
+  parentSessionId,
   enabled = true,
 }: {
   sessionId?: string
+  parentSessionId?: string
   enabled?: boolean
 }) {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ['session', sessionId],
+    queryKey: ['session', sessionId, parentSessionId],
     queryFn: async () => {
+      const params = parentSessionId
+        ? `?parent_session_id=${parentSessionId}`
+        : ''
       const response: AxiosResponse<SessionsV2GetResponse> = await axios.get(
-        `/api/sessions/${sessionId}`,
+        `/api/sessions/${sessionId}${params}`,
       )
 
       if (!response || !response.data.session) {

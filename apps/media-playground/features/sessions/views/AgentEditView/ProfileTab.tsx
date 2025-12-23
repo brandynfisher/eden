@@ -184,7 +184,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
               </FormLabel>
               <FormDescription className="mt-1 mb-3">
                 A short public description shown on your agent&apos;s profile
-                and cards. 100 characters max.
+                and cards. 200 characters max.
               </FormDescription>
               <FormControl>
                 <AutosizeTextarea

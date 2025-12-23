@@ -15,11 +15,16 @@ import { SharedAgentsSection } from '@/features/profile/shared-agents-section'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
+import { Creator, FeatureFlag } from '@edenlabs/eden-sdk'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+
+// Extended Creator type with optional count fields from API
+type CreatorWithCounts = Creator & {
+  likedCreationsCount?: number
+}
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
@@ -31,6 +36,14 @@ const ProfileTabs = () => {
 
   const isOwnProfile = creator ? user?._id === creator._id : false
   const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
+
+  // Determine default sort: show "Latest" if profile has fewer than 20 liked creations
+  const likedCreationsCount =
+    (creator as CreatorWithCounts)?.likedCreationsCount ?? 0
+  const defaultSort =
+    isOwnProfile || likedCreationsCount < 20
+      ? 'createdAt;-1'
+      : 'likeCount|createdAt;-1'
 
   // Safe early return AFTER all hooks have executed to keep hook order stable.
   if (!creator || (isSignedIn && !user)) {
@@ -45,13 +58,9 @@ const ProfileTabs = () => {
     {
       key: 'creations',
       title: 'Creations',
-      initialSort: isOwnProfile ? 'createdAt;-1' : 'likeCount|createdAt;-1',
+      initialSort: defaultSort,
       sortMenu: props => (
-        <SortMenu
-          {...props}
-          variant="creation"
-          initialSort={isOwnProfile ? 'createdAt;-1' : 'likeCount|createdAt;-1'}
-        />
+        <SortMenu {...props} variant="creation" initialSort={defaultSort} />
       ),
       filterMenu: ProfileCreationsFilter,
       canSearch: true,

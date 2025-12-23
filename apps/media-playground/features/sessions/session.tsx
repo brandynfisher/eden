@@ -15,6 +15,7 @@ import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
+import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
 import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
 import { groupConsecutiveMessages } from './utils/group-messages'
@@ -148,6 +149,7 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [showConductorMessages, setShowConductorMessages] = useState(false)
   const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
@@ -242,6 +244,12 @@ const Session = ({
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
+  })
+
+  // Show confetti when an automatic session with an outcome is loaded
+  useSessionCompletionConfetti({
+    session,
+    isLoading: isSessionLoading,
   })
 
   useEffect(() => {
@@ -1936,18 +1944,71 @@ const Session = ({
               'flex flex-col justify-center items-center',
           )}
         >
-          {/* Floating Agent Workspaces button - desktop only */}
-          {session?.agent_sessions &&
-            Object.keys(session.agent_sessions).length > 0 && (
-              <div className="hidden md:block sticky top-2 z-20 float-right mr-4">
+          {/* Floating controls - Agent Workspaces + Conductor toggle - desktop only */}
+          <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
+            {session?.agent_sessions &&
+              Object.keys(session.agent_sessions).length > 0 && (
                 <AgentWorkspaces
                   agents={session.agents || []}
                   agentSessions={session.agent_sessions}
                   onOpenWorkspace={handleChildSessionClick}
                 />
+              )}
+            {/* Conductor messages toggle - only show for automatic sessions */}
+            {session?.session_type === 'automatic' && (
+              <button
+                onClick={() => setShowConductorMessages(!showConductorMessages)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-full',
+                  'text-sm font-medium transition-colors',
+                  'border border-blue-500/30',
+                  showConductorMessages
+                    ? 'bg-blue-600 text-white hover:bg-blue-500'
+                    : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
+                )}
+              >
+                <BrainIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">View Conductor</span>
+              </button>
+            )}
+          </div>
+          <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
+            {/* Mobile-only controls - Agent Workspaces + Conductor toggle */}
+            {((session?.agent_sessions &&
+              Object.keys(session.agent_sessions).length > 0) ||
+              session?.session_type === 'automatic') && (
+              <div className="md:hidden flex flex-wrap gap-2 mb-4">
+                {session?.agent_sessions &&
+                  Object.keys(session.agent_sessions).length > 0 && (
+                    <AgentWorkspaces
+                      agents={session.agents || []}
+                      agentSessions={session.agent_sessions}
+                      onOpenWorkspace={handleChildSessionClick}
+                      label="Workspaces"
+                      alwaysShowLabel
+                    />
+                  )}
+                {session?.session_type === 'automatic' && (
+                  <button
+                    onClick={() =>
+                      setShowConductorMessages(!showConductorMessages)
+                    }
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-1.5 rounded-full',
+                      'text-sm font-medium transition-colors',
+                      'border border-blue-500/30',
+                      showConductorMessages
+                        ? 'bg-blue-600 text-white hover:bg-blue-500'
+                        : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
+                    )}
+                  >
+                    <BrainIcon className="w-4 h-4" />
+                    <span>View Conductor</span>
+                  </button>
+                )}
               </div>
             )}
-          <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
+
             {/* Load more button for older messages */}
             {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
               <div className="flex justify-center py-4">
@@ -2054,7 +2115,13 @@ const Session = ({
                                   data-message-id={message._id}
                                   className="transition-colors duration-500"
                                 >
-                                  <EdenMessage message={message} />
+                                  <EdenMessage
+                                    message={message}
+                                    agents={session?.agents}
+                                    showConductorMessages={
+                                      showConductorMessages
+                                    }
+                                  />
                                 </div>
                               ))
                             : group[0].role === 'system'
@@ -2347,7 +2414,11 @@ const Session = ({
                                 data-message-id={message._id}
                                 className="transition-colors duration-500"
                               >
-                                <EdenMessage message={message} />
+                                <EdenMessage
+                                  message={message}
+                                  agents={session?.agents}
+                                  showConductorMessages={showConductorMessages}
+                                />
                               </div>
                             ))
                           : group[0].role === 'system'
@@ -2479,6 +2550,7 @@ const Session = ({
         {childSessionId && (
           <ChildSessionSidebar
             sessionId={childSessionId}
+            parentSessionId={sessionId}
             isOpen={isChildSidebarOpen}
             onClose={handleCloseChildSidebar}
           />

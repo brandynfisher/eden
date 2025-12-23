@@ -79,6 +79,7 @@ export interface SessionsV2GetArguments extends WebAPICallOptions {
   session_id: string
   cursor?: string
   limit?: number
+  parent_session_id?: string
 }
 
 export interface SessionsV2DeleteArguments extends WebAPICallOptions {
@@ -193,6 +194,9 @@ export const sessionsGetRequestConfigV2 = (
   }
   if (args.limit !== undefined) {
     params.limit = args.limit
+  }
+  if (args.parent_session_id) {
+    params.parent_session_id = args.parent_session_id
   }
   return {
     method: 'GET',
@@ -460,6 +464,8 @@ export type SessionsV2ShareGetResponse = WebAPICallResult & {
     messages: Message[]
     owner: Creator
     createdAt: Date
+    /** Maps agent IDs to their child share IDs for workspace viewing */
+    child_shares?: Record<string, string>
   }
 }
 

@@ -14,6 +14,8 @@ interface SharedSessionData {
     messages: Message[]
     owner: Creator
     createdAt: Date
+    /** Maps agent IDs to their child share IDs */
+    child_shares?: Record<string, string>
   }
 }
 
