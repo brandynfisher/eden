@@ -1351,7 +1351,8 @@ export const getSessionMessages = async (
     }
 
     // Build query for cursor-based pagination
-    // Filter out messages with no content, no tool_calls, and no attachments
+    // Filter out messages with no content, no tool_calls, no attachments, and no eden_message_data
+    // Note: eden_message_data condition must match getSession query to include conductor messages
     const messageQuery: any = {
       session: session._id,
       $or: [
@@ -1370,6 +1371,12 @@ export const getSessionMessages = async (
             { attachments: { $ne: null } },
             { attachments: { $type: 'array' } },
             { attachments: { $not: { $size: 0 } } },
+          ],
+        },
+        {
+          $and: [
+            { eden_message_data: { $exists: true } },
+            { eden_message_data: { $ne: null } },
           ],
         },
       ],

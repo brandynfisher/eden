@@ -29,8 +29,13 @@ export function useSessionQuery({
 }) {
   const queryClient = useQueryClient()
 
+  // Build a consistent query key - only include parentSessionId if it's defined
+  const queryKey = parentSessionId
+    ? ['session', sessionId, parentSessionId]
+    : ['session', sessionId]
+
   const query = useQuery({
-    queryKey: ['session', sessionId, parentSessionId],
+    queryKey,
     queryFn: async () => {
       const params = parentSessionId
         ? `?parent_session_id=${parentSessionId}`
@@ -63,10 +68,9 @@ export function useSessionQuery({
       }
 
       // Merge with existing older messages if they exist
-      const existingSession = queryClient.getQueryData([
-        'session',
-        sessionId,
-      ]) as SessionV2 | undefined
+      const existingSession = queryClient.getQueryData(queryKey) as
+        | SessionV2
+        | undefined
 
       if (existingSession?.messages) {
         const newMessageIds = new Set(
@@ -425,7 +429,8 @@ export function useSessionQuery({
       })
 
       // Prepend older messages to existing messages (deduplicate by _id)
-      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+      // Use the same queryKey pattern as the main query
+      queryClient.setQueryData(queryKey, (oldData: SessionV2) => {
         if (!oldData) return oldData
 
         const existingIds = new Set(oldData.messages.map(m => m._id))
@@ -450,7 +455,7 @@ export function useSessionQuery({
       })
       return { hasMore: false, messages: [] }
     }
-  }, [queryClient, sessionId])
+  }, [queryClient, sessionId, queryKey])
 
   const getPaginationData = useCallback(() => {
     return queryClient.getQueryData(['session-pagination', sessionId]) as
