@@ -1,4 +1,5 @@
 import LoadingIndicator from '@/components/loading-indicator'
+import CreatorPageLayout from '@/features/profile/creator-page-layout'
 import ProfileHeader from '@/features/profile/profile-header'
 import ProfileTabs from '@/features/profile/profile-tabs'
 import { fetcher } from '@/lib/fetcher'
@@ -122,12 +123,18 @@ const CreatorProfilePage = async ({ params: { name } }: Props) => {
   }
 
   return (
-    <>
-      <ProfileHeader name={name} creatorSSRData={creatorResponse.creator} />
+    <CreatorPageLayout>
       <Suspense fallback={<LoadingIndicator />}>
-        <ProfileTabs />
+        <ProfileTabs
+          header={
+            <ProfileHeader
+              name={name}
+              creatorSSRData={creatorResponse.creator}
+            />
+          }
+        />
       </Suspense>
-    </>
+    </CreatorPageLayout>
   )
 }
 

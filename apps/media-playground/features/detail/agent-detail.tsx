@@ -269,8 +269,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   return (
     <div className="flex flex-col min-h-0">
-      {/* Mobile navbar */}
-      <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 shrink-0">
+      {/* Mobile navbar - sticky */}
+      <div className="md:hidden sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background px-2 shrink-0">
         <button
           onClick={openMobileSidebar}
           className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"

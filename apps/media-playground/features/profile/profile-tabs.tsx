@@ -20,13 +20,18 @@ import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { ReactElement } from 'react'
 
 // Extended Creator type with optional count fields from API
 type CreatorWithCounts = Creator & {
   likedCreationsCount?: number
 }
 
-const ProfileTabs = () => {
+type ProfileTabsProps = {
+  header?: ReactElement
+}
+
+const ProfileTabs = ({ header }: ProfileTabsProps) => {
   const params = useParams<{ name: string }>()
   const { user, isSignedIn } = useAuthState()
   const { creator } = useCreatorQuery({ key: params?.name })
@@ -136,7 +141,7 @@ const ProfileTabs = () => {
       : []),
   ]
 
-  return <RouterTabs tabs={tabs} baseQuery={baseQuery} />
+  return <RouterTabs tabs={tabs} baseQuery={baseQuery} header={header} />
 }
 
 export default ProfileTabs

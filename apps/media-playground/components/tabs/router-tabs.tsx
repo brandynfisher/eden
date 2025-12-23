@@ -49,9 +49,10 @@ type Props = {
   tabs: RouterTab[]
   sharedFilterMenu?: (props: FilterMenuProps) => ReactElement
   baseQuery?: FeedCursorRouteQueryParams['filter']
+  header?: ReactElement
 }
 
-const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
+const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery, header }: Props) => {
   const defaultTabName = tabs[0].key
 
   const pathname = usePathname()
@@ -242,6 +243,8 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           className="w-full min-h-0 flex-1 overflow-y-auto"
           style={{ height: 'calc(100vh - 200px)' }}
         >
+          {/* Optional header rendered inside scroll container */}
+          {header}
           <Tabs
             value={activeTab}
             defaultValue={defaultTabName}
