@@ -17,10 +17,11 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { DiscordChannelSelector } from '@/features/agent/deployment-sheet/discord-channel-selector'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
+import { useSyncDiscordSessions } from '@/hooks/mutation/use-sync-discord-sessions'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Copy, PlusIcon, TrashIcon } from 'lucide-react'
+import { Copy, PlusIcon, RefreshCw, TrashIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -83,6 +84,7 @@ export const DiscordDeploymentForm = ({
   })
 
   const useManualEntry = form.watch('useManualEntry')
+  const syncMutation = useSyncDiscordSessions(agentId)
 
   const channels = useFieldArray({
     control: form.control,
@@ -272,6 +274,26 @@ export const DiscordDeploymentForm = ({
                 />
               )}
             </div>
+
+            {/* Sync Sessions Button */}
+            {isDeployed && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => syncMutation.mutate()}
+                disabled={syncMutation.isPending}
+                className="w-full"
+              >
+                <RefreshCw
+                  className={cn(
+                    'h-4 w-4 mr-2',
+                    syncMutation.isPending && 'animate-spin',
+                  )}
+                />
+                Sync Sessions
+              </Button>
+            )}
 
             <FormField
               control={form.control}

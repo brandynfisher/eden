@@ -270,3 +270,8 @@ export type RefreshDiscordChannelsResponse = {
   channels_count: number
   guilds: Array<{ id: string; name: string; channel_count: number }>
 }
+
+export type SyncDiscordSessionsResponse = {
+  success: boolean
+  sessions_count: number
+}

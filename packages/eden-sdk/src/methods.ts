@@ -92,6 +92,7 @@ import {
   AgentsRefreshDiscordChannelsArguments,
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
+  AgentsSyncDiscordSessionsArguments,
   AgentsUnlikeArguments,
   AgentsUnlikeResponse,
   AgentsUpdateDeploymentArguments,
@@ -202,6 +203,7 @@ import {
   SessionsV2ToolCallReactResponse,
   SessionsV2UpdatePermissionsArguments,
   SessionsV2UpdatePermissionsResponse,
+  SyncDiscordSessionsResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -229,6 +231,7 @@ import {
   agentsLikeRequestConfig,
   agentsRefreshDiscordChannelsRequestConfig,
   agentsStopDeploymentRequestConfig,
+  agentsSyncDiscordSessionsRequestConfig,
   agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
   agentsUpdatePermissionsRequestConfig,
@@ -611,6 +614,10 @@ export abstract class Methods {
         AgentsRefreshDiscordChannelsArguments,
         RefreshDiscordChannelsResponse
       >(this, agentsRefreshDiscordChannelsRequestConfig),
+      syncSessions: bindApiCall<
+        AgentsSyncDiscordSessionsArguments,
+        SyncDiscordSessionsResponse
+      >(this, agentsSyncDiscordSessionsRequestConfig),
     },
   }
 

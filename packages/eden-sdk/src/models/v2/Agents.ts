@@ -731,3 +731,20 @@ export const agentsRefreshDiscordChannelsRequestConfig = (
     },
   }
 }
+
+export interface AgentsSyncDiscordSessionsArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export const agentsSyncDiscordSessionsRequestConfig = (
+  args: AgentsSyncDiscordSessionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/discord/sync`,
+    data: {},
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+}

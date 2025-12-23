@@ -598,15 +598,9 @@ export const EdenMessage = ({
 
   let text = ''
   if (isAgentAdd) {
-    text =
-      messageAgents.length === 1
-        ? `Added agent ${agentNames}`
-        : `Added agents ${agentNames}`
+    text = `Added ${agentNames}`
   } else if (isAgentRemove) {
-    text =
-      messageAgents.length === 1
-        ? `Removed agent ${agentNames}`
-        : `Removed agents ${agentNames}`
+    text = `Removed ${agentNames}`
   }
 
   return (

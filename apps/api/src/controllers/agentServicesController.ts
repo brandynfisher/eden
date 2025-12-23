@@ -1492,3 +1492,60 @@ export const refreshDiscordChannels = async (
     })
   }
 }
+
+export const syncDiscordSessions = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    return reply.status(404).send({ error: 'Agent not found' })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    return reply.status(401).send({
+      error: 'User not authorized to sync sessions for this agent',
+    })
+  }
+
+  // Find Discord deployment for this agent
+  const deployment = await Deployment.findOne({
+    agent: agent._id,
+    platform: 'discord',
+  })
+
+  if (!deployment) {
+    return reply.status(404).send({ error: 'Discord deployment not found' })
+  }
+
+  try {
+    const response = await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/${deployment._id}/discord-sync`,
+      {
+        deployment_id: deployment._id.toString(),
+        user_id: currentUserId,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    return reply.status(200).send(response.data)
+  } catch (error: any) {
+    server.log.error({ err: error }, 'Error syncing Discord sessions')
+    return reply.status(error.response?.status || 500).send({
+      error: error.response?.data?.message || 'Failed to sync Discord sessions',
+    })
+  }
+}

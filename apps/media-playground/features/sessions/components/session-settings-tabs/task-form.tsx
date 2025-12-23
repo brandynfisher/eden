@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Form,
   FormControl,
   FormField,
@@ -31,7 +39,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { addMinutes, format } from 'date-fns'
 import { ArrowLeftIcon, CalendarIcon, Loader2 } from 'lucide-react'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -191,13 +199,14 @@ export const TaskForm: FC<TaskFormProps> = ({
   disabled = false,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
+    useState(false)
 
   const { invalidate } = useUserTriggersQuery({
     enabled: false,
   })
 
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const currentTime = format(new Date(), 'HH:mm')
 
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(taskSchema),
@@ -218,15 +227,19 @@ export const TaskForm: FC<TaskFormProps> = ({
 
   const editingTaskIdRef = useRef<string | null>(null)
 
-  // Reset form when editingTask changes
+  // Reset form only when the editing task ID actually changes
   useEffect(() => {
     const newTaskId = editingTask?._id || null
     const taskIdChanged = editingTaskIdRef.current !== newTaskId
 
-    if (editingTask && (taskIdChanged || !form.formState.isDirty)) {
-      editingTaskIdRef.current = newTaskId
+    // Only reset if task ID changed - this prevents resets during re-renders
+    if (!taskIdChanged) return
 
+    editingTaskIdRef.current = newTaskId
+
+    if (editingTask) {
       const hasSchedule = !!editingTask.schedule
+      const currentTime = format(new Date(), 'HH:mm')
 
       let repeat = ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT
       if (hasSchedule && editingTask.schedule) {
@@ -270,8 +283,7 @@ export const TaskForm: FC<TaskFormProps> = ({
       }
 
       form.reset(formData)
-    } else if (!editingTask) {
-      editingTaskIdRef.current = null
+    } else {
       const minimumDateTime = addMinutes(new Date(), 3)
       form.reset({
         name: '',
@@ -287,7 +299,22 @@ export const TaskForm: FC<TaskFormProps> = ({
         timezone: defaultTimezone,
       })
     }
-  }, [editingTask, form, currentTime, defaultTimezone])
+  }, [editingTask?._id, defaultTimezone, form])
+
+  // Handle cancel with unsaved changes check
+  const handleCancel = useCallback(() => {
+    if (form.formState.isDirty) {
+      setShowUnsavedChangesDialog(true)
+    } else {
+      onCancel()
+    }
+  }, [form.formState.isDirty, onCancel])
+
+  // Confirm discard changes
+  const handleConfirmDiscard = useCallback(() => {
+    setShowUnsavedChangesDialog(false)
+    onCancel()
+  }, [onCancel])
 
   const onSubmit = async (values: TaskFormDto) => {
     // Either sessionId or agentId must be provided
@@ -426,7 +453,7 @@ export const TaskForm: FC<TaskFormProps> = ({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="p-1.5 -ml-1.5 rounded-md hover:bg-muted"
           >
             <ArrowLeftIcon className="w-4 h-4" />
@@ -839,7 +866,7 @@ export const TaskForm: FC<TaskFormProps> = ({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={onCancel}
+                onClick={handleCancel}
                 disabled={form.formState.isSubmitting || isDeleting}
               >
                 Cancel
@@ -863,6 +890,33 @@ export const TaskForm: FC<TaskFormProps> = ({
           </div>
         </form>
       </Form>
+
+      {/* Unsaved Changes Confirmation Dialog */}
+      <Dialog
+        open={showUnsavedChangesDialog}
+        onOpenChange={setShowUnsavedChangesDialog}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes to this task. Are you sure you want to
+              discard them?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowUnsavedChangesDialog(false)}
+            >
+              Keep Editing
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDiscard}>
+              Discard Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

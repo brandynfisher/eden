@@ -42,6 +42,7 @@ import {
   executeTrigger,
   getDiscordChannels,
   refreshDiscordChannels,
+  syncDiscordSessions,
   updateTrigger,
 } from '../../controllers/agentServicesController'
 import {
@@ -633,6 +634,28 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => refreshDiscordChannels(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments/discord/sync', {
+    schema: {
+      tags: ['Agents - Deployments'],
+      summary: 'Sync Discord Sessions',
+      description: 'Sync Discord sessions with the Eden compute backend.',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          sessions_count: Type.Number(),
+        }),
+        401: Type.Object({ error: Type.String() }),
+        404: Type.Object({ error: Type.String() }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => syncDiscordSessions(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId', {
