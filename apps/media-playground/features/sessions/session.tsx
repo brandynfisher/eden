@@ -166,8 +166,8 @@ const Session = ({
   const { mutateAsync: updateUserPreferences } = useUpdateUserPreferences()
   const lastSyncedSessionIdRef = useRef<string | null>(null)
 
-  // Track session viewing for notifications
-  useSessionTracking(sessionId)
+  // Track session viewing for notifications (only when signed in)
+  useSessionTracking(isSignedIn ? sessionId : undefined)
 
   // Get optimistic notification clearing function
   const { markSessionAsRead } = useSessionNotificationsQuery()
@@ -185,19 +185,19 @@ const Session = ({
     setCurrentSessionId(sessionId)
   }, [sessionId])
 
-  // Mark notifications as read when session is loaded (optimistic update)
+  // Mark notifications as read when session is loaded (optimistic update, only when signed in)
   useEffect(() => {
-    if (sessionId && sessionId !== 'new') {
+    if (isSignedIn && sessionId && sessionId !== 'new') {
       markSessionAsRead(sessionId).catch(err =>
         console.error('Failed to mark notifications as read:', err),
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId])
+  }, [sessionId, isSignedIn])
 
-  // Mark notifications as read when page regains focus (optimistic update)
+  // Mark notifications as read when page regains focus (optimistic update, only when signed in)
   useEffect(() => {
-    if (!sessionId || sessionId === 'new') return
+    if (!isSignedIn || !sessionId || sessionId === 'new') return
 
     const handleFocus = () => {
       markSessionAsRead(sessionId).catch(err =>
@@ -208,7 +208,7 @@ const Session = ({
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId])
+  }, [sessionId, isSignedIn])
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
