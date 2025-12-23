@@ -1973,6 +1973,42 @@ const Session = ({
             )}
           </div>
           <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
+            {/* Mobile-only controls - Agent Workspaces + Conductor toggle */}
+            {((session?.agent_sessions &&
+              Object.keys(session.agent_sessions).length > 0) ||
+              session?.session_type === 'automatic') && (
+              <div className="md:hidden flex flex-wrap gap-2 mb-4">
+                {session?.agent_sessions &&
+                  Object.keys(session.agent_sessions).length > 0 && (
+                    <AgentWorkspaces
+                      agents={session.agents || []}
+                      agentSessions={session.agent_sessions}
+                      onOpenWorkspace={handleChildSessionClick}
+                      label="Workspaces"
+                      alwaysShowLabel
+                    />
+                  )}
+                {session?.session_type === 'automatic' && (
+                  <button
+                    onClick={() =>
+                      setShowConductorMessages(!showConductorMessages)
+                    }
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-1.5 rounded-full',
+                      'text-sm font-medium transition-colors',
+                      'border border-blue-500/30',
+                      showConductorMessages
+                        ? 'bg-blue-600 text-white hover:bg-blue-500'
+                        : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
+                    )}
+                  >
+                    <BrainIcon className="w-4 h-4" />
+                    <span>View Conductor</span>
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Load more button for older messages */}
             {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
               <div className="flex justify-center py-4">
@@ -2514,6 +2550,7 @@ const Session = ({
         {childSessionId && (
           <ChildSessionSidebar
             sessionId={childSessionId}
+            parentSessionId={sessionId}
             isOpen={isChildSidebarOpen}
             onClose={handleCloseChildSidebar}
           />

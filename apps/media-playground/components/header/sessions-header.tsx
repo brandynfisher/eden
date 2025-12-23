@@ -12,11 +12,21 @@ import {
 import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { SessionStatusToggle } from '@/features/sessions/components/session-status-toggle'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useSharedSessionQuery } from '@/hooks/query/use-shared-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent, SessionPermissionLevel, SessionType } from '@edenlabs/eden-sdk'
-import { EditIcon, MenuIcon, Settings } from 'lucide-react'
+import {
+  EditIcon,
+  HomeIcon,
+  MenuIcon,
+  MessageSquarePlusIcon,
+  Settings,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -91,6 +101,17 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
   // Check if we're on a share route
   const isShareRoute = pathname?.includes('/sessions/share/')
+
+  // Extract share ID from pathname for share routes
+  const shareId = isShareRoute
+    ? pathname?.split('/sessions/share/')[1]?.split('/')[0]
+    : null
+
+  // Get shared session data for share routes
+  const { data: sharedSessionData } = useSharedSessionQuery({
+    shareId: shareId || '',
+    enabled: !!shareId && isShareRoute,
+  })
 
   // Get current session data only if not on share route
   const { data: session, refetch } = useSessionQuery({
@@ -268,11 +289,15 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           </button>
         )}
 
-        {/* Left section - Show "Sessions" on list page, or agent avatars + title on individual session */}
+        {/* Left section - Show "Sessions" on list page, share title on share route, or agent avatars + title on individual session */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {isSessionsListPage ? (
+          {isShareRoute ? (
+            <h1 className="text-lg font-semibold truncate">
+              {sharedSessionData?.share?.title || 'Shared Session'}
+            </h1>
+          ) : isSessionsListPage ? (
             <h1 className="text-xl font-bold">Sessions</h1>
-          ) : !isShareRoute && session?.agents && session.agents.length > 0 ? (
+          ) : session?.agents && session.agents.length > 0 ? (
             <>
               <AgentAvatarsMenu agents={session.agents}>
                 <button className="flex items-center gap-2 hover:bg-muted/10 rounded-lg px-1 py-1 transition-colors shrink-0">
@@ -291,8 +316,28 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           ) : null}
         </div>
 
-        {/* Right section - Icon buttons only (hide on share route) */}
+        {/* Right section - Icon buttons */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* Share route: New chat + Home buttons */}
+          {isShareRoute && (
+            <>
+              <Link
+                href="/chat"
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+                aria-label="New chat"
+              >
+                <MessageSquarePlusIcon className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/"
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+                aria-label="Home"
+              >
+                <HomeIcon className="w-5 h-5" />
+              </Link>
+            </>
+          )}
+
           {/* Status Toggle - only show for automatic sessions when user can manage */}
           {!isShareRoute &&
             canManageSession &&

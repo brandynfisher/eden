@@ -15,12 +15,14 @@ import { useEffect, useRef } from 'react'
 
 interface ChildSessionSidebarProps {
   sessionId: string
+  parentSessionId?: string
   onClose: () => void
   isOpen: boolean
 }
 
 export const ChildSessionSidebar = ({
   sessionId,
+  parentSessionId,
   onClose,
   isOpen,
 }: ChildSessionSidebarProps) => {
@@ -30,6 +32,7 @@ export const ChildSessionSidebar = ({
 
   const { data: session, isLoading } = useSessionQuery({
     sessionId,
+    parentSessionId,
     enabled: !!sessionId && isOpen,
   })
 

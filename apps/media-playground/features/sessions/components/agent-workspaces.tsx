@@ -18,6 +18,10 @@ interface AgentWorkspacesProps {
   agentSessions?: Record<string, string>
   onOpenWorkspace: (sessionId: string) => void
   className?: string
+  /** Custom label text (default: "Agent Workspaces") */
+  label?: string
+  /** Always show the label, even on small screens */
+  alwaysShowLabel?: boolean
 }
 
 export const AgentWorkspaces = ({
@@ -25,6 +29,8 @@ export const AgentWorkspaces = ({
   agentSessions,
   onOpenWorkspace,
   className,
+  label = 'Agent Workspaces',
+  alwaysShowLabel = false,
 }: AgentWorkspacesProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -53,7 +59,9 @@ export const AgentWorkspaces = ({
           )}
         >
           <BrainCircuitIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">Agent Workspaces</span>
+          <span className={alwaysShowLabel ? '' : 'hidden sm:inline'}>
+            {label}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64 p-2" sideOffset={8}>

@@ -351,12 +351,13 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.get<{
     Params: { session_id: string }
+    Querystring: { parent_session_id?: string }
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
       summary: 'Get Session Details',
       description:
-        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination. Public sessions can be accessed without authentication if is_public is true.',
+        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination. Public sessions can be accessed without authentication if is_public is true. Child sessions can be accessed without authentication if their parent session is public (pass parent_session_id query param).',
       security: [
         {
           apiKey: [],
@@ -365,6 +366,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       params: {
         session_id: Type.String(),
       },
+      querystring: Type.Object({
+        parent_session_id: Type.Optional(Type.String()),
+      }),
       response: {
         200: Type.Object({
           session: Type.Any(),

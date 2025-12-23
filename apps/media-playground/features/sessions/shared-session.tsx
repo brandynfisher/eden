@@ -133,8 +133,8 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
         </div>
 
         <div className="p-6 max-w-3xl mx-auto clear-both">
-          {/* Session Info */}
-          <div className="mb-8 pb-6 border-b border-border">
+          {/* Session Info - desktop only */}
+          <div className="hidden md:block mb-8 pb-6 border-b border-border">
             <h1 className="text-2xl font-bold mb-2">
               {share.title || 'Shared Conversation'}
             </h1>
@@ -143,6 +143,39 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
               {new Date(share.createdAt).toLocaleDateString()}
             </p>
           </div>
+
+          {/* Mobile-only controls - Agent Workspaces + Conductor toggle */}
+          {(hasChildShares || session?.session_type === 'automatic') && (
+            <div className="md:hidden flex flex-wrap gap-2 mb-4">
+              {hasChildShares && (
+                <AgentWorkspaces
+                  agents={agents}
+                  agentSessions={childShares}
+                  onOpenWorkspace={handleOpenWorkspace}
+                  label="Workspaces"
+                  alwaysShowLabel
+                />
+              )}
+              {session?.session_type === 'automatic' && (
+                <button
+                  onClick={() =>
+                    setShowConductorMessages(!showConductorMessages)
+                  }
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-full',
+                    'text-sm font-medium transition-colors',
+                    'border border-blue-500/30',
+                    showConductorMessages
+                      ? 'bg-blue-600 text-white hover:bg-blue-500'
+                      : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
+                  )}
+                >
+                  <BrainIcon className="w-4 h-4" />
+                  <span>View Conductor</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Messages */}
           <div className="space-y-6">

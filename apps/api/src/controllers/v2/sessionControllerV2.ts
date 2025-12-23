@@ -1058,13 +1058,24 @@ export const getSession = async (
   server: FastifyInstance,
   request: FastifyRequest<{
     Params: { session_id: string }
+    Querystring: { parent_session_id?: string }
   }>,
   reply: FastifyReply,
 ) => {
   const { userId, featureFlags } = request.user || {}
 
   const { session_id } = request.params
+  const { parent_session_id } = request.query || {}
   const limit = 25 // Fixed limit for initial session load
+
+  // Debug logging for child session access
+  if (parent_session_id) {
+    server.log.info({
+      message: 'Child session access attempt',
+      session_id,
+      parent_session_id,
+    })
+  }
 
   try {
     const session = await Session.findOne({
@@ -1096,6 +1107,49 @@ export const getSession = async (
     // Check if session is public
     const isPublicSession = session.extras?.is_public === true
 
+    // Check if parent session is public and this is a child of that parent
+    let parentIsPublicAndContainsChild = false
+    if (parent_session_id && !isPublicSession) {
+      try {
+        const parentSession = await Session.findOne({
+          _id: new ObjectId(parent_session_id),
+        }).select('extras agent_sessions')
+
+        server.log.info({
+          message: 'Parent session lookup result',
+          parentFound: !!parentSession,
+          parentIsPublic: parentSession?.extras?.is_public,
+          agentSessionsCount: parentSession?.agent_sessions
+            ? Object.keys(parentSession.agent_sessions).length
+            : 0,
+        })
+
+        if (parentSession?.extras?.is_public === true) {
+          // Verify this session is in the parent's agent_sessions
+          const agentSessions = parentSession.agent_sessions || {}
+          const childSessionIds = Object.values(agentSessions).map(id =>
+            id.toString(),
+          )
+          const isChildInParent = childSessionIds.includes(session_id)
+          server.log.info({
+            message: 'Child session check',
+            session_id,
+            childSessionIds,
+            isChildInParent,
+          })
+          if (isChildInParent) {
+            parentIsPublicAndContainsChild = true
+          }
+        }
+      } catch (err) {
+        server.log.error({
+          message: 'Error checking parent session',
+          error: err instanceof Error ? err.message : 'Unknown error',
+        })
+        // Invalid parent_session_id, continue with normal access check
+      }
+    }
+
     const requesterPermission = userId
       ? await SessionPermission.findOne({
           session: session._id,
@@ -1103,16 +1157,16 @@ export const getSession = async (
         })
       : null
 
-    // If not authenticated, only allow access to public sessions
+    // If not authenticated, only allow access to public sessions or child sessions of public parents
     if (!userId) {
-      if (!isPublicSession) {
+      if (!isPublicSession && !parentIsPublicAndContainsChild) {
         return reply.status(401).send({
           message: 'Authentication required to access this session',
         })
       }
       // Continue to fetch and return session for public access
     } else {
-      // Check if user has access to the session (owner, in users list, has permission, is eden admin, or session is public)
+      // Check if user has access to the session (owner, in users list, has permission, is eden admin, session is public, or parent is public)
       const getSessionUserIdStr = userId.toString()
       const isSessionOwner =
         session.owner._id.toString() === getSessionUserIdStr
@@ -1125,7 +1179,8 @@ export const getSession = async (
         !isSessionUser &&
         !hasPermission &&
         !isEdenTeamMember &&
-        !isPublicSession
+        !isPublicSession &&
+        !parentIsPublicAndContainsChild
       ) {
         return reply.status(403).send({
           message:
