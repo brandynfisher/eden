@@ -160,8 +160,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   // Track unsaved changes from different tabs
   const [realtimeHasUnsavedChanges, setRealtimeHasUnsavedChanges] =
     useState(false)
-  const [integrationsHasUnsavedChanges, setIntegrationsHasUnsavedChanges] =
-    useState(false)
 
   // Track saving state for special tabs
   const [isSpecialTabSaving, setIsSpecialTabSaving] = useState(false)
@@ -399,7 +397,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   const formHasUnsavedChanges = form.formState.isDirty
   const hasUnsavedChanges =
     (activeTab === 'realtime' && realtimeHasUnsavedChanges) ||
-    (activeTab === 'integrations' && integrationsHasUnsavedChanges) ||
     (['profile', 'persona', 'tools'].includes(activeTab) &&
       formHasUnsavedChanges)
 
@@ -676,9 +673,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                           deployments={deploymentsQuery.deployments}
                           isLoading={deploymentsQuery.isPending}
                           isError={deploymentsQuery.isError}
-                          onUnsavedChangesChange={
-                            setIntegrationsHasUnsavedChanges
-                          }
                         />
                       )}
 

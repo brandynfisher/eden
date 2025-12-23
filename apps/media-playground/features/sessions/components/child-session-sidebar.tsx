@@ -99,7 +99,7 @@ export const ChildSessionSidebar = ({
           )}
           {/* Title */}
           <h3 className="font-medium text-sm truncate">
-            {session?.title || 'Child Session'}
+            {session?.title || 'Subsession'}
           </h3>
         </div>
 

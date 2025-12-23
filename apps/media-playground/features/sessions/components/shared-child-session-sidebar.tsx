@@ -25,7 +25,11 @@ export const SharedChildSessionSidebar = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const { data: sharedData, isLoading } = useSharedSessionQuery({
+  const {
+    data: sharedData,
+    isLoading,
+    error,
+  } = useSharedSessionQuery({
     shareId,
     enabled: !!shareId && isOpen,
   })
@@ -71,7 +75,7 @@ export const SharedChildSessionSidebar = ({
           )}
           {/* Title */}
           <h3 className="font-medium text-sm truncate">
-            {sharedData?.share?.title || session?.title || 'Workspace'}
+            {sharedData?.share?.title || session?.title || 'Shared Workspace'}
           </h3>
         </div>
 
@@ -95,13 +99,20 @@ export const SharedChildSessionSidebar = ({
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="animate-pulse text-muted-foreground text-sm">
-              Loading workspace...
+              Loading shared workspace...
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="text-destructive text-sm text-center px-4">
+              Failed to load workspace:{' '}
+              {error instanceof Error ? error.message : 'Unknown error'}
             </div>
           </div>
         ) : !session ? (
           <div className="flex items-center justify-center h-32">
             <div className="text-muted-foreground text-sm">
-              Workspace not found
+              Shared workspace not found
             </div>
           </div>
         ) : messages.length === 0 ? (
