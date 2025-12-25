@@ -1,3 +1,4 @@
+import { realtimeSessionBillingRoutes } from '../realtimeSessionBillingRoutes'
 import agentRoutes from './agentRoutes'
 import artifactRoutesV2 from './artifactRoutesV2'
 import authRoutesV2 from './authRoutesV2'
@@ -32,4 +33,5 @@ export const routes = [
   notificationRoutes,
   llmCallRoutes,
   verdelisSeedRoutesV2,
+  realtimeSessionBillingRoutes,
 ]

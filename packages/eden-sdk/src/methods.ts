@@ -168,6 +168,14 @@ import {
   NotificationsListResponse,
   NotificationsMarkReadArguments,
   NotificationsMarkReadResponse,
+  RealtimeSessionsV2CloseArguments,
+  RealtimeSessionsV2CloseResponse,
+  RealtimeSessionsV2GetArguments,
+  RealtimeSessionsV2GetResponse,
+  RealtimeSessionsV2HeartbeatArguments,
+  RealtimeSessionsV2HeartbeatResponse,
+  RealtimeSessionsV2StartArguments,
+  RealtimeSessionsV2StartResponse,
   RefreshDiscordChannelsResponse,
   SessionsV2CancelArguments,
   SessionsV2CancelResponse,
@@ -270,6 +278,10 @@ import {
   notificationsCreateRequestConfig,
   notificationsListRequestConfig,
   notificationsMarkReadRequestConfig,
+  realtimeSessionsV2CloseRequestConfig,
+  realtimeSessionsV2GetRequestConfig,
+  realtimeSessionsV2HeartbeatRequestConfig,
+  realtimeSessionsV2StartRequestConfig,
   sessionsCancelRequestConfigV2,
   sessionsCreateRequestConfigV2,
   sessionsDeleteRequestConfigV2,
@@ -834,5 +846,24 @@ export abstract class Methods {
       this,
       tasksV2CancelRequestConfig,
     ),
+  }
+
+  public readonly realtimeSessions = {
+    start: bindApiCall<
+      RealtimeSessionsV2StartArguments,
+      RealtimeSessionsV2StartResponse
+    >(this, realtimeSessionsV2StartRequestConfig),
+    close: bindApiCall<
+      RealtimeSessionsV2CloseArguments,
+      RealtimeSessionsV2CloseResponse
+    >(this, realtimeSessionsV2CloseRequestConfig),
+    heartbeat: bindApiCall<
+      RealtimeSessionsV2HeartbeatArguments,
+      RealtimeSessionsV2HeartbeatResponse
+    >(this, realtimeSessionsV2HeartbeatRequestConfig),
+    get: bindApiCall<
+      RealtimeSessionsV2GetArguments,
+      RealtimeSessionsV2GetResponse
+    >(this, realtimeSessionsV2GetRequestConfig),
   }
 }

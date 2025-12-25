@@ -1,8 +1,9 @@
 import { MannaDocument } from './../Manna'
 import { MannaVoucherDocument } from './../MannaVoucher'
+import { RealtimeSessionDocument } from './RealtimeSessionV2'
 import { TaskV2Document } from './TaskV2'
 import { TransactionType } from '@edenlabs/eden-sdk'
-import { Document, Schema, model } from 'mongoose'
+import mongoose, { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 import Stripe from 'stripe'
 
@@ -11,6 +12,7 @@ export interface TransactionSchema {
   amount: number
   type?: TransactionType
   task?: TaskV2Document
+  realtimeSession?: RealtimeSessionDocument
   voucher?: MannaVoucherDocument
   code?: string
   stripeEventId?: string
@@ -31,6 +33,10 @@ const transaction = new Schema<TransactionV2Document>(
     task: {
       type: Schema.Types.ObjectId,
       ref: 'tasks3',
+    },
+    realtimeSession: {
+      type: Schema.Types.ObjectId,
+      ref: 'realtime_sessions',
     },
     voucher: {
       type: Schema.Types.ObjectId,
@@ -69,7 +75,8 @@ transaction.index(
 )
 transaction.plugin(paginate)
 
-export const TransactionV2 = model<TransactionV2Document>(
-  'transactions',
-  transaction,
-)
+// Use existing model if already registered, otherwise create new one
+// This prevents OverwriteModelError when import order varies
+export const TransactionV2 =
+  (mongoose.models.transactions as mongoose.Model<TransactionV2Document>) ||
+  model<TransactionV2Document>('transactions', transaction)

@@ -6,6 +6,7 @@ export type Transaction = {
   amount: number
   type?: TransactionType
   task?: string
+  realtimeSession?: string
   voucher?: string
   code?: string
   stripeEventId?: string
@@ -18,6 +19,7 @@ export type Transaction = {
 export type TransactionType =
   | 'spend'
   | 'refund'
+  | 'realtime_session'
   | 'credit_stripe'
   | 'credit_voucher'
   | 'admin_modify'

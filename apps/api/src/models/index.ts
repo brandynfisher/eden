@@ -39,6 +39,14 @@ import { CreationV2, CreationV2Document } from './v2/CreationV2'
 import { Message, MessageDocument } from './v2/Message'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import {
+  RealtimeBillingTick,
+  RealtimeBillingTickDocument,
+} from './v2/RealtimeBillingTickV2'
+import {
+  RealtimeSession,
+  RealtimeSessionDocument,
+} from './v2/RealtimeSessionV2'
+import {
   Session as SessionV2,
   SessionDocument as SessionV2Document,
 } from './v2/SessionV2'
@@ -87,6 +95,8 @@ export interface Database {
   SessionV2: Model<SessionV2Document>
   AgentPermission: Model<AgentPermissionDocument>
   AgentRealtime: Model<AgentRealtimeDocument>
+  RealtimeSession: Model<RealtimeSessionDocument>
+  RealtimeBillingTick: Model<RealtimeBillingTickDocument>
 }
 
 export const models: Database = {
@@ -128,4 +138,6 @@ export const models: Database = {
   SessionV2,
   AgentPermission,
   AgentRealtime,
+  RealtimeSession,
+  RealtimeBillingTick,
 }
