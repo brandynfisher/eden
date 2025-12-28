@@ -1231,19 +1231,39 @@ export const getSession = async (
         '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
       )
 
-    // Check if there are more messages by seeing if we got more than limit
-    const hasMore = messages.length > limit
-    const paginatedMessages = hasMore
-      ? messages.slice(0, limit).reverse()
-      : messages.reverse()
+    // Take up to limit messages (we fetched limit+1 to check if there are more)
+    const paginatedMessages =
+      messages.length > limit
+        ? messages.slice(0, limit).reverse()
+        : messages.reverse()
 
-    // Generate cursor for fetching older messages if there are more
+    // Check if there are more messages by looking for ANY message older than our oldest
+    // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
+    let hasMore = false
     let nextCursor: string | undefined
-    if (hasMore && paginatedMessages.length > 0) {
+
+    if (paginatedMessages.length > 0) {
       const oldestMessage = paginatedMessages[0]
       const createdAt = oldestMessage.createdAt || new Date()
-      const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
-      nextCursor = Buffer.from(cursorString).toString('base64')
+
+      // Check if any message exists older than the oldest we're returning
+      const olderMessageCount = await Message.countDocuments({
+        session: session._id,
+        $or: [
+          { createdAt: { $lt: createdAt } },
+          {
+            createdAt: createdAt,
+            _id: { $lt: oldestMessage._id },
+          },
+        ],
+      }).limit(1)
+
+      hasMore = olderMessageCount > 0
+
+      if (hasMore) {
+        const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
+        nextCursor = Buffer.from(cursorString).toString('base64')
+      }
     }
 
     // Fetch permissions for the session
@@ -1426,19 +1446,40 @@ export const getSessionMessages = async (
         '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
       )
 
-    // Check if there are more messages
-    const hasMore = messages.length > limit
-    const paginatedMessages = hasMore
-      ? messages.slice(0, limit).reverse()
-      : messages.reverse()
+    // Take up to limit messages (we fetched limit+1 to check if there are more)
+    const paginatedMessages =
+      messages.length > limit
+        ? messages.slice(0, limit).reverse()
+        : messages.reverse()
 
-    // Generate next cursor if there are more
+    // Check if there are more messages by looking for ANY message older than our oldest
+    // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
+    let hasMore = false
     let nextCursor: string | undefined
-    if (hasMore && paginatedMessages.length > 0) {
+
+    if (paginatedMessages.length > 0) {
       const oldestMessage = paginatedMessages[0]
       const createdAt = oldestMessage.createdAt || new Date()
-      const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
-      nextCursor = Buffer.from(cursorString).toString('base64')
+
+      // Check if any message exists older than the oldest we're returning
+      // Use countDocuments with limit 1 for efficiency (we only need to know if at least one exists)
+      const olderMessageCount = await Message.countDocuments({
+        session: session._id,
+        $or: [
+          { createdAt: { $lt: createdAt } },
+          {
+            createdAt: createdAt,
+            _id: { $lt: oldestMessage._id },
+          },
+        ],
+      }).limit(1)
+
+      hasMore = olderMessageCount > 0
+
+      if (hasMore) {
+        const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
+        nextCursor = Buffer.from(cursorString).toString('base64')
+      }
     }
 
     return reply.status(200).send({

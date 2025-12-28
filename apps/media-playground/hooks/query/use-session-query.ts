@@ -448,12 +448,13 @@ export function useSessionQuery({
         messages: olderMessages,
       }
     } catch (error) {
-      // Mark as no more messages to prevent infinite loop
-      queryClient.setQueryData(['session-pagination', sessionId], {
-        nextCursor: undefined,
-        hasMore: false,
-      })
-      return { hasMore: false, messages: [] }
+      // Don't permanently kill pagination on error - allow retry
+      // Just log and return empty result, preserving the existing pagination state
+      console.error(
+        '[fetchOlderMessages] Error fetching older messages:',
+        error,
+      )
+      throw error
     }
   }, [queryClient, sessionId, queryKey])
 
