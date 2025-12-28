@@ -951,6 +951,9 @@ export const TasksView: FC<TasksViewProps> = ({
 
     if (mode === 'session' && sessionId) {
       return allTriggers.filter(trigger => {
+        // Don't show subscriptions in session mode
+        if (trigger.parent_trigger) return false
+
         const triggerSessionId =
           typeof trigger.session === 'object' && trigger.session !== null
             ? (trigger.session as TriggerSession)._id
@@ -961,6 +964,9 @@ export const TasksView: FC<TasksViewProps> = ({
 
     if (mode === 'agent' && agentId) {
       return allTriggers.filter(trigger => {
+        // Don't show subscriptions in agent mode - they belong in global /tasks view
+        if (trigger.parent_trigger) return false
+
         // Include tasks with null session (Create new session) for this agent
         if (!trigger.session) {
           const triggerAgent = trigger.agent

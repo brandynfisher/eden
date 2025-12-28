@@ -1321,6 +1321,11 @@ export const updateTrigger = async (
 
   // Cascade schedule changes to child triggers (subscriptions)
   if (schedule !== undefined && trigger.subscribable) {
+    console.log(
+      '[updateTrigger] Cascading schedule to subscribers of trigger:',
+      triggerId,
+    )
+
     const childUpdateData: Record<string, unknown> = {
       schedule: schedule,
     }
@@ -1333,9 +1338,14 @@ export const updateTrigger = async (
       childUpdateData.next_scheduled_run = null
     }
 
-    await Trigger.updateMany(
-      { parent_trigger: triggerId, deleted: { $ne: true } },
+    const cascadeResult = await Trigger.updateMany(
+      { parent_trigger: trigger._id, deleted: { $ne: true } },
       { $set: childUpdateData },
+    )
+    console.log(
+      '[updateTrigger] Cascade result:',
+      cascadeResult.modifiedCount,
+      'triggers updated',
     )
   }
 
