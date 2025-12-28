@@ -40,8 +40,11 @@ import {
   createTrigger,
   deleteTrigger,
   executeTrigger,
+  getAgentSubscribableTriggers,
   getDiscordChannels,
+  getTriggerSubscribers,
   refreshDiscordChannels,
+  subscribeToTrigger,
   syncDiscordSessions,
   updateTrigger,
 } from '../../controllers/agentServicesController'
@@ -454,6 +457,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             Type.Literal('running'),
           ]),
         ),
+        subscribable: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Any(),
@@ -496,6 +500,107 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteTrigger(server, request, reply),
+  })
+
+  // ============================================================================
+  // Trigger Subscription Routes
+  // ============================================================================
+
+  server.get('/v2/agents/:agentId/subscribable-triggers', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Get Agent Subscribable Triggers',
+      description:
+        'Get all subscribable triggers for a specific agent. Public endpoint.',
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          triggers: Type.Array(Type.Any()),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    handler: (request, reply) =>
+      getAgentSubscribableTriggers(
+        server,
+        request as Parameters<typeof getAgentSubscribableTriggers>[1],
+        reply,
+      ),
+  })
+
+  server.post('/v2/triggers/:triggerId/subscribe', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Subscribe to Trigger',
+      description:
+        'Subscribe to a trigger by creating a copy for the current user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          trigger: Type.Any(),
+        }),
+        400: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      subscribeToTrigger(
+        server,
+        request as Parameters<typeof subscribeToTrigger>[1],
+        reply,
+      ),
+  })
+
+  server.get('/v2/triggers/:triggerId/subscribers', {
+    schema: {
+      tags: ['Triggers'],
+      summary: 'Get Trigger Subscribers',
+      description:
+        'Get all users who have subscribed to this trigger. Only the owner can view.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        triggerId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          subscribers: Type.Array(Type.Any()),
+          count: Type.Number(),
+        }),
+        401: Type.Object({
+          error: Type.String(),
+        }),
+        404: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      getTriggerSubscribers(
+        server,
+        request as Parameters<typeof getTriggerSubscribers>[1],
+        reply,
+      ),
   })
 
   server.get('/v2/agents/:agentId/deployments', {

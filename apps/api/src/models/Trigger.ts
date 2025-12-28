@@ -33,6 +33,8 @@ export interface TriggerSchema {
   error_count?: number
   last_error?: string
   runs?: TriggerRun[] // Track each run with message_id and timestamp
+  subscribable?: boolean // Whether this trigger can be subscribed to by others
+  parent_trigger?: ObjectId | null // Reference to the parent trigger (if this is a subscription)
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -104,6 +106,15 @@ const TriggerSchema = new Schema<TriggerDocument>(
       ],
       default: [],
     },
+    subscribable: {
+      type: Boolean,
+      default: false,
+    },
+    parent_trigger: {
+      type: Schema.Types.ObjectId,
+      ref: 'triggers2',
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -113,5 +124,7 @@ const TriggerSchema = new Schema<TriggerDocument>(
 TriggerSchema.index({ session: 1 })
 TriggerSchema.index({ user: 1 })
 TriggerSchema.index({ agent: 1 })
+TriggerSchema.index({ parent_trigger: 1 })
+TriggerSchema.index({ subscribable: 1, agent: 1 }) // For finding subscribable triggers by agent
 
 export const Trigger = model<TriggerDocument>('triggers2', TriggerSchema)

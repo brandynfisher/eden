@@ -1246,11 +1246,12 @@ export const updateTrigger = async (
   reply: FastifyReply,
 ) => {
   const { triggerId } = request.params as { triggerId: string }
-  const { name, prompt, schedule, status } = request.body as {
+  const { name, prompt, schedule, status, subscribable } = request.body as {
     name?: string
     prompt?: string
     schedule?: any
     status?: 'active' | 'paused' | 'finished'
+    subscribable?: boolean
   }
   const currentUserId = request.user.userId
 
@@ -1259,18 +1260,20 @@ export const updateTrigger = async (
     return reply.status(404).send({ error: 'Trigger not found' })
   }
 
-  if (!trigger.session) {
-    return reply
-      .status(400)
-      .send({ error: 'Trigger has no associated session' })
-  }
+  // Check permissions - either session-based or user-owned
+  let hasPermission = false
 
-  if (
-    !(await canEditSession(
+  if (trigger.session) {
+    hasPermission = await canEditSession(
       trigger.session.toString(),
       currentUserId.toString(),
-    ))
-  ) {
+    )
+  } else if (trigger.user.toString() === currentUserId.toString()) {
+    // User owns this trigger directly (agent-based trigger without session)
+    hasPermission = true
+  }
+
+  if (!hasPermission) {
     return reply
       .status(401)
       .send({ error: 'Not authorized to update this trigger' })
@@ -1281,6 +1284,7 @@ export const updateTrigger = async (
   if (name !== undefined) updateData.name = name
   if (prompt !== undefined) updateData.prompt = prompt
   if (status !== undefined) updateData.status = status
+  if (subscribable !== undefined) updateData.subscribable = subscribable
 
   // If schedule changed, recalculate next_scheduled_run
   if (schedule !== undefined) {
@@ -1315,6 +1319,26 @@ export const updateTrigger = async (
     { new: true },
   )
 
+  // Cascade schedule changes to child triggers (subscriptions)
+  if (schedule !== undefined && trigger.subscribable) {
+    const childUpdateData: Record<string, unknown> = {
+      schedule: schedule,
+    }
+
+    // Recalculate next_scheduled_run for children
+    const childNextRun = calculateNextScheduledRun(schedule)
+    if (childNextRun) {
+      childUpdateData.next_scheduled_run = childNextRun
+    } else {
+      childUpdateData.next_scheduled_run = null
+    }
+
+    await Trigger.updateMany(
+      { parent_trigger: triggerId, deleted: { $ne: true } },
+      { $set: childUpdateData },
+    )
+  }
+
   return reply.status(200).send({ trigger: updatedTrigger })
 }
 
@@ -1331,18 +1355,20 @@ export const deleteTrigger = async (
     return reply.status(404).send({ error: 'Trigger not found' })
   }
 
-  if (!trigger.session) {
-    return reply
-      .status(400)
-      .send({ error: 'Trigger has no associated session' })
-  }
+  // Check permissions - either session-based or user-owned
+  let hasPermission = false
 
-  if (
-    !(await canEditSession(
+  if (trigger.session) {
+    hasPermission = await canEditSession(
       trigger.session.toString(),
       currentUserId.toString(),
-    ))
-  ) {
+    )
+  } else if (trigger.user.toString() === currentUserId.toString()) {
+    // User owns this trigger directly (e.g., subscription triggers without session)
+    hasPermission = true
+  }
+
+  if (!hasPermission) {
     return reply
       .status(401)
       .send({ error: 'Not authorized to delete this trigger' })
@@ -1548,4 +1574,178 @@ export const syncDiscordSessions = async (
       error: error.response?.data?.message || 'Failed to sync Discord sessions',
     })
   }
+}
+
+// ============================================================================
+// Trigger Subscription Endpoints
+// ============================================================================
+
+/**
+ * Get all subscribable triggers for a specific agent (public endpoint)
+ */
+export const getAgentSubscribableTriggers = async (
+  _server: FastifyInstance,
+  request: FastifyRequest<{ Params: { agentId: string } }>,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params
+
+  // Find the agent by ID or username
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    return reply.status(404).send({ error: 'Agent not found' })
+  }
+
+  // Find all sessions that include this agent
+  const sessionsWithAgent = await Session.find({
+    agents: agent._id,
+  }).select('_id')
+
+  const sessionIds = sessionsWithAgent.map(s => s._id)
+
+  // Find all subscribable triggers for this agent
+  // Either directly linked to agent OR linked to a session with this agent
+  const triggers = await Trigger.find({
+    subscribable: true,
+    $or: [{ agent: agent._id }, { session: { $in: sessionIds } }],
+    $and: [{ $or: [{ deleted: { $exists: false } }, { deleted: false }] }],
+  })
+    .populate('user', 'username name userImage')
+    .sort({ createdAt: -1 })
+
+  return reply.status(200).send({ triggers })
+}
+
+/**
+ * Subscribe to a trigger (creates a copy for the current user)
+ */
+export const subscribeToTrigger = async (
+  _server: FastifyInstance,
+  request: FastifyRequest<{ Params: { triggerId: string } }>,
+  reply: FastifyReply,
+) => {
+  const { triggerId } = request.params
+  const currentUserId = request.user.userId
+
+  console.log('[subscribeToTrigger] Request:', {
+    triggerId,
+    currentUserId,
+  })
+
+  // Find the parent trigger
+  const parentTrigger = await Trigger.findById(triggerId)
+  if (!parentTrigger) {
+    console.log('[subscribeToTrigger] ERROR: Trigger not found')
+    return reply.status(404).send({ error: 'Trigger not found' })
+  }
+
+  console.log('[subscribeToTrigger] Parent trigger:', {
+    _id: parentTrigger._id,
+    name: parentTrigger.name,
+    subscribable: parentTrigger.subscribable,
+    owner: parentTrigger.user.toString(),
+  })
+
+  // Verify it's subscribable
+  if (!parentTrigger.subscribable) {
+    console.log('[subscribeToTrigger] ERROR: Trigger is not subscribable')
+    return reply.status(400).send({ error: 'This trigger is not subscribable' })
+  }
+
+  // Check if user is trying to subscribe to their own trigger
+  if (parentTrigger.user.toString() === currentUserId.toString()) {
+    console.log(
+      '[subscribeToTrigger] ERROR: User trying to subscribe to own trigger',
+    )
+    return reply
+      .status(400)
+      .send({ error: 'You cannot subscribe to your own trigger' })
+  }
+
+  // Check if user has already subscribed to this trigger
+  const existingSubscription = await Trigger.findOne({
+    parent_trigger: parentTrigger._id,
+    user: currentUserId,
+    $or: [{ deleted: { $exists: false } }, { deleted: false }],
+  })
+
+  if (existingSubscription) {
+    console.log('[subscribeToTrigger] ERROR: User already subscribed', {
+      existingSubscriptionId: existingSubscription._id,
+    })
+    return reply
+      .status(400)
+      .send({ error: 'You have already subscribed to this trigger' })
+  }
+
+  // Calculate next scheduled run for the new trigger
+  let next_scheduled_run: Date | null = null
+  if (parentTrigger.schedule) {
+    next_scheduled_run = calculateNextScheduledRun(parentTrigger.schedule)
+  }
+
+  // Create the subscription (copy of the trigger)
+  const subscriptionTrigger = new Trigger({
+    user: currentUserId,
+    session: null, // Will create new session on first run
+    agent: parentTrigger.agent,
+    parent_trigger: parentTrigger._id,
+    name: parentTrigger.name,
+    prompt: parentTrigger.prompt,
+    schedule: parentTrigger.schedule,
+    status: 'active',
+    subscribable: false, // Subscriptions cannot be re-subscribed
+    ...(next_scheduled_run && { next_scheduled_run }),
+  })
+
+  await subscriptionTrigger.save()
+
+  console.log('[subscribeToTrigger] SUCCESS: Subscription created', {
+    subscriptionId: subscriptionTrigger._id,
+    parentTriggerId: parentTrigger._id,
+    userId: currentUserId,
+  })
+
+  return reply.status(200).send({ trigger: subscriptionTrigger })
+}
+
+/**
+ * Get subscribers for a trigger (only the owner can see)
+ */
+export const getTriggerSubscribers = async (
+  _server: FastifyInstance,
+  request: FastifyRequest<{ Params: { triggerId: string } }>,
+  reply: FastifyReply,
+) => {
+  const { triggerId } = request.params
+  const currentUserId = request.user.userId
+
+  // Find the trigger
+  const trigger = await Trigger.findById(triggerId)
+  if (!trigger) {
+    return reply.status(404).send({ error: 'Trigger not found' })
+  }
+
+  // Only the owner can see subscribers
+  if (trigger.user.toString() !== currentUserId.toString()) {
+    return reply
+      .status(401)
+      .send({ error: 'Not authorized to view subscribers' })
+  }
+
+  // Find all subscriptions to this trigger
+  const subscriptions = await Trigger.find({
+    parent_trigger: trigger._id,
+    $or: [{ deleted: { $exists: false } }, { deleted: false }],
+  }).populate('user', 'username name userImage')
+
+  // Extract user info from subscriptions
+  const subscribers = subscriptions.map(sub => sub.user)
+
+  return reply.status(200).send({
+    subscribers,
+    count: subscribers.length,
+  })
 }

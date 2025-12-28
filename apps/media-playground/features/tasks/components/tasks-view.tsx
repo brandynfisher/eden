@@ -9,6 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { TaskForm } from '@/features/sessions/components/session-settings-tabs/task-form'
 import { TaskFormWithSelectors } from '@/features/tasks/components/task-form-with-selectors'
@@ -34,6 +39,7 @@ import {
   ChevronRightIcon,
   ClockIcon,
   HistoryIcon,
+  LinkIcon,
   Loader2,
   MoreVerticalIcon,
   PauseIcon,
@@ -41,7 +47,9 @@ import {
   PlayIcon,
   PlusIcon,
   RotateCcwIcon,
+  Share2Icon,
   Trash2Icon,
+  UsersIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -165,8 +173,18 @@ const TaskItem: FC<{
   const [isResuming, setIsResuming] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showRuns, setShowRuns] = useState(false)
+  const [isTogglingSubscribable, setIsTogglingSubscribable] = useState(false)
+  const [subscribers, setSubscribers] = useState<
+    Array<{ _id: string; username: string; name?: string }>
+  >([])
+  const [subscriberCount, setSubscriberCount] = useState(0)
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState(false)
+  const [showSubscribers, setShowSubscribers] = useState(false)
 
   const sessionInfo = useMemo(() => getSessionInfo(trigger), [trigger])
+
+  // Check if this is a subscription (has parent_trigger)
+  const isSubscription = !!trigger.parent_trigger
 
   const scheduleDisplay = useMemo(() => {
     if (!trigger.schedule) return null
@@ -389,6 +407,49 @@ const TaskItem: FC<{
     }
   }
 
+  const handleToggleSubscribable = async () => {
+    setIsTogglingSubscribable(true)
+    try {
+      await axios.patch(`/api/triggers/${trigger._id}`, {
+        subscribable: !trigger.subscribable,
+      })
+      onArchive(trigger._id) // Reuse onArchive callback to refresh the list
+      toast.success(
+        trigger.subscribable
+          ? 'Subscription sharing disabled'
+          : 'Subscription sharing enabled',
+      )
+    } catch {
+      toast.error('Failed to update subscription status')
+    } finally {
+      setIsTogglingSubscribable(false)
+    }
+  }
+
+  const fetchSubscribers = async () => {
+    if (isLoadingSubscribers) return
+    setIsLoadingSubscribers(true)
+    try {
+      const response = await axios.get(
+        `/api/triggers/${trigger._id}/subscribers`,
+      )
+      setSubscribers(response.data.subscribers || [])
+      setSubscriberCount(response.data.count || 0)
+    } catch {
+      // Silently fail - subscriber count is optional
+    } finally {
+      setIsLoadingSubscribers(false)
+    }
+  }
+
+  // Fetch subscribers when popover opens
+  const handleSubscribersPopoverChange = (open: boolean) => {
+    setShowSubscribers(open)
+    if (open && trigger.subscribable && !isSubscription) {
+      fetchSubscribers()
+    }
+  }
+
   const handleNavigateToRun = (messageId: string) => {
     // Can't navigate to runs if session doesn't exist yet
     if (!sessionInfo.id) return
@@ -410,23 +471,28 @@ const TaskItem: FC<{
   return (
     <div className="group">
       <div className="flex items-center gap-3 px-4 py-3">
-        {/* Play Button / Running Indicator */}
+        {/* Play Button / Running Indicator / Subscription Icon */}
         {!isFinished && (
           <div
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              isRunning(trigger.status) || isExecuting
+              isSubscription
+                ? 'bg-muted/50 cursor-default'
+                : isRunning(trigger.status) || isExecuting
                 ? 'bg-primary/10 cursor-default'
                 : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
             )}
             title={
-              isRunning(trigger.status) || isExecuting
+              isSubscription
+                ? 'Subscribed task'
+                : isRunning(trigger.status) || isExecuting
                 ? 'Running...'
                 : 'Run now'
             }
           >
-            {/* Note: trigger.status includes 'running' but TS cache may not reflect latest SDK types */}
-            {isRunning(trigger.status) || isExecuting ? (
+            {isSubscription ? (
+              <LinkIcon className="h-4 w-4 text-muted-foreground" />
+            ) : isRunning(trigger.status) || isExecuting ? (
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
             ) : (
               <button
@@ -501,8 +567,79 @@ const TaskItem: FC<{
                 </span>
               </div>
             )}
+            {/* Subscription indicator for child tasks */}
+            {isSubscription && (
+              <>
+                {scheduleDisplay && (
+                  <span className="text-muted-foreground/30">·</span>
+                )}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <LinkIcon className="h-3 w-3" />
+                  <span>Subscribed</span>
+                </div>
+              </>
+            )}
+            {/* Subscribable indicator for parent tasks */}
+            {trigger.subscribable && !isSubscription && (
+              <>
+                {(scheduleDisplay || isSubscription) && (
+                  <span className="text-muted-foreground/30">·</span>
+                )}
+                <div className="flex items-center gap-1 text-xs text-primary/70">
+                  <Share2Icon className="h-3 w-3" />
+                  <span>Shared</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Subscribers Button - only for subscribable parent tasks */}
+        {trigger.subscribable && !isSubscription && !isFinished && (
+          <Popover
+            open={showSubscribers}
+            onOpenChange={handleSubscribersPopoverChange}
+          >
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  'h-7 px-2 rounded-md text-xs flex items-center gap-1.5 transition-colors',
+                  showSubscribers
+                    ? 'bg-muted text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                )}
+              >
+                <UsersIcon className="h-3.5 w-3.5" />
+                {subscriberCount > 0 && <span>{subscriberCount}</span>}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2" align="end">
+              <div className="text-xs font-medium mb-2 text-muted-foreground">
+                Subscribers
+              </div>
+              {isLoadingSubscribers ? (
+                <div className="flex items-center justify-center py-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              ) : subscribers.length === 0 ? (
+                <div className="text-xs text-muted-foreground py-2 text-center">
+                  No subscribers yet
+                </div>
+              ) : (
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {subscribers.map(sub => (
+                    <div
+                      key={sub._id}
+                      className="text-sm py-1 px-1 rounded hover:bg-muted/50"
+                    >
+                      {sub.name || sub.username}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        )}
 
         {/* Runs Toggle Button */}
         {runs.length > 0 && (
@@ -534,22 +671,27 @@ const TaskItem: FC<{
           <DropdownMenuContent align="end" className="w-40">
             {!isFinished ? (
               <>
-                {onEdit ? (
-                  <DropdownMenuItem onClick={() => onEdit(trigger)}>
-                    <PencilIcon className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                ) : (
-                  getEditLink() && (
-                    <DropdownMenuItem asChild>
-                      <Link href={getEditLink()!}>
+                {/* Edit - hidden for subscriptions */}
+                {!isSubscription && (
+                  <>
+                    {onEdit ? (
+                      <DropdownMenuItem onClick={() => onEdit(trigger)}>
                         <PencilIcon className="h-4 w-4 mr-2" />
                         Edit
-                      </Link>
-                    </DropdownMenuItem>
-                  )
+                      </DropdownMenuItem>
+                    ) : (
+                      getEditLink() && (
+                        <DropdownMenuItem asChild>
+                          <Link href={getEditLink()!}>
+                            <PencilIcon className="h-4 w-4 mr-2" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                      )
+                    )}
+                  </>
                 )}
-                {trigger.schedule && (
+                {trigger.schedule && !isSubscription && (
                   <>
                     <DropdownMenuSeparator />
                     {trigger.status === 'paused' ? (
@@ -579,18 +721,52 @@ const TaskItem: FC<{
                     )}
                   </>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleArchive}
-                  disabled={isArchiving}
-                >
-                  {isArchiving ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <ArchiveIcon className="h-4 w-4 mr-2" />
-                  )}
-                  Archive
-                </DropdownMenuItem>
+                {/* Share Subscription - only for non-subscription tasks */}
+                {!isSubscription && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleToggleSubscribable}
+                      disabled={isTogglingSubscribable}
+                    >
+                      {isTogglingSubscribable ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Share2Icon className="h-4 w-4 mr-2" />
+                      )}
+                      {trigger.subscribable
+                        ? 'Remove Subscription'
+                        : 'Share Subscription'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleArchive}
+                      disabled={isArchiving}
+                    >
+                      {isArchiving ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <ArchiveIcon className="h-4 w-4 mr-2" />
+                      )}
+                      Archive
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {/* Unsubscribe - only for subscriptions */}
+                {isSubscription && (
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <LinkIcon className="h-4 w-4 mr-2" />
+                    )}
+                    Unsubscribe
+                  </DropdownMenuItem>
+                )}
               </>
             ) : (
               <>
@@ -745,6 +921,7 @@ export const TasksView: FC<TasksViewProps> = ({
   const [recentRunsPage, setRecentRunsPage] = useState(0)
   const [activeTasksPage, setActiveTasksPage] = useState(0)
   const [scheduledTasksPage, setScheduledTasksPage] = useState(0)
+  const [subscribedTasksPage, setSubscribedTasksPage] = useState(0)
   const [archivedTasksPage, setArchivedTasksPage] = useState(0)
 
   const tasksGate = useGatedResource(GatedResource.Tasks, {
@@ -759,6 +936,7 @@ export const TasksView: FC<TasksViewProps> = ({
   React.useEffect(() => {
     setActiveTasksPage(0)
     setScheduledTasksPage(0)
+    setSubscribedTasksPage(0)
     setArchivedTasksPage(0)
     setRecentRunsPage(0)
   }, [activeTab, mode, sessionId, agentId])
@@ -811,90 +989,100 @@ export const TasksView: FC<TasksViewProps> = ({
     return allTriggers
   }, [triggersQuery.triggers, mode, sessionId, agentId])
 
-  const { manualTriggers, scheduledTriggers, archivedTriggers, allRecentRuns } =
-    useMemo(() => {
-      const archived = filteredTriggers.filter(trigger => {
-        // Running tasks should never be archived, even if end_date has passed
-        if (isRunning(trigger.status)) {
-          return false
-        }
-        if (trigger.status === 'finished') {
-          return true
-        }
-        if (!trigger.schedule) {
-          return false
-        }
+  const {
+    manualTriggers,
+    scheduledTriggers,
+    subscribedTriggers,
+    archivedTriggers,
+    allRecentRuns,
+  } = useMemo(() => {
+    const archived = filteredTriggers.filter(trigger => {
+      // Running tasks should never be archived, even if end_date has passed
+      if (isRunning(trigger.status)) {
+        return false
+      }
+      if (trigger.status === 'finished') {
+        return true
+      }
+      if (!trigger.schedule) {
+        return false
+      }
+      if (trigger.schedule.end_date) {
+        const endDate = new Date(trigger.schedule.end_date)
+        const currentDate = new Date()
+        return endDate <= currentDate
+      }
+      return false
+    })
+
+    const active = filteredTriggers.filter(trigger => {
+      if (trigger.status === 'finished') {
+        return false
+      }
+      if (!trigger.schedule) {
+        return true
+      }
+      if (
+        trigger.status === 'active' ||
+        trigger.status === 'paused' ||
+        isRunning(trigger.status)
+      ) {
         if (trigger.schedule.end_date) {
           const endDate = new Date(trigger.schedule.end_date)
           const currentDate = new Date()
-          return endDate <= currentDate
+          return endDate > currentDate
         }
-        return false
-      })
-
-      const active = filteredTriggers.filter(trigger => {
-        if (trigger.status === 'finished') {
-          return false
-        }
-        if (!trigger.schedule) {
-          return true
-        }
-        if (
-          trigger.status === 'active' ||
-          trigger.status === 'paused' ||
-          isRunning(trigger.status)
-        ) {
-          if (trigger.schedule.end_date) {
-            const endDate = new Date(trigger.schedule.end_date)
-            const currentDate = new Date()
-            return endDate > currentDate
-          }
-          return true
-        }
-        return false
-      })
-
-      const manual = active.filter(trigger => !trigger.schedule)
-      const scheduled = active.filter(trigger => !!trigger.schedule)
-
-      const sortByUpdated = (a: Trigger, b: Trigger) => {
-        const aDate = new Date(a.updatedAt || a.createdAt)
-        const bDate = new Date(b.updatedAt || b.createdAt)
-        return bDate.getTime() - aDate.getTime()
+        return true
       }
+      return false
+    })
 
-      const sortByNextRun = (a: Trigger, b: Trigger) => {
-        if (!a.next_scheduled_run && !b.next_scheduled_run) {
-          return sortByUpdated(a, b)
-        }
-        if (!a.next_scheduled_run) return 1
-        if (!b.next_scheduled_run) return -1
-        const aNextRun = new Date(a.next_scheduled_run).getTime()
-        const bNextRun = new Date(b.next_scheduled_run).getTime()
-        return aNextRun - bNextRun
+    // Separate subscribed tasks (those with parent_trigger) from regular tasks
+    const subscribed = active.filter(trigger => !!trigger.parent_trigger)
+    const ownTasks = active.filter(trigger => !trigger.parent_trigger)
+
+    const manual = ownTasks.filter(trigger => !trigger.schedule)
+    const scheduled = ownTasks.filter(trigger => !!trigger.schedule)
+
+    const sortByUpdated = (a: Trigger, b: Trigger) => {
+      const aDate = new Date(a.updatedAt || a.createdAt)
+      const bDate = new Date(b.updatedAt || b.createdAt)
+      return bDate.getTime() - aDate.getTime()
+    }
+
+    const sortByNextRun = (a: Trigger, b: Trigger) => {
+      if (!a.next_scheduled_run && !b.next_scheduled_run) {
+        return sortByUpdated(a, b)
       }
+      if (!a.next_scheduled_run) return 1
+      if (!b.next_scheduled_run) return -1
+      const aNextRun = new Date(a.next_scheduled_run).getTime()
+      const bNextRun = new Date(b.next_scheduled_run).getTime()
+      return aNextRun - bNextRun
+    }
 
-      // Collect all runs from filtered triggers
-      const allRuns: RecentRunItem[] = []
-      filteredTriggers.forEach(trigger => {
-        if (trigger.runs) {
-          trigger.runs.forEach(run => {
-            allRuns.push({ trigger, run })
-          })
-        }
-      })
-      allRuns.sort(
-        (a, b) =>
-          new Date(b.run.ran_at).getTime() - new Date(a.run.ran_at).getTime(),
-      )
-
-      return {
-        manualTriggers: manual.sort(sortByUpdated),
-        scheduledTriggers: scheduled.sort(sortByNextRun),
-        archivedTriggers: archived.sort(sortByNextRun),
-        allRecentRuns: allRuns,
+    // Collect all runs from filtered triggers
+    const allRuns: RecentRunItem[] = []
+    filteredTriggers.forEach(trigger => {
+      if (trigger.runs) {
+        trigger.runs.forEach(run => {
+          allRuns.push({ trigger, run })
+        })
       }
-    }, [filteredTriggers])
+    })
+    allRuns.sort(
+      (a, b) =>
+        new Date(b.run.ran_at).getTime() - new Date(a.run.ran_at).getTime(),
+    )
+
+    return {
+      manualTriggers: manual.sort(sortByUpdated),
+      scheduledTriggers: scheduled.sort(sortByNextRun),
+      subscribedTriggers: subscribed.sort(sortByNextRun),
+      archivedTriggers: archived.sort(sortByNextRun),
+      allRecentRuns: allRuns,
+    }
+  }, [filteredTriggers])
 
   // Combine pending runs with actual runs
   const combinedRecentRuns = useMemo(() => {
@@ -938,6 +1126,17 @@ export const TasksView: FC<TasksViewProps> = ({
     scheduledTriggers.length / TASKS_PER_PAGE,
   )
 
+  // Paginated subscribed tasks
+  const paginatedSubscribedTasks = useMemo(() => {
+    const start = subscribedTasksPage * TASKS_PER_PAGE
+    const end = start + TASKS_PER_PAGE
+    return subscribedTriggers.slice(start, end)
+  }, [subscribedTriggers, subscribedTasksPage])
+
+  const totalSubscribedTasksPages = Math.ceil(
+    subscribedTriggers.length / TASKS_PER_PAGE,
+  )
+
   // Paginated archived tasks
   const paginatedArchivedTasks = useMemo(() => {
     const start = archivedTasksPage * TASKS_PER_PAGE
@@ -962,13 +1161,21 @@ export const TasksView: FC<TasksViewProps> = ({
     setScheduledTasksPage(page)
   }, [])
 
+  const handleSubscribedTasksPageChange = useCallback((page: number) => {
+    setSubscribedTasksPage(page)
+  }, [])
+
   const handleArchivedTasksPageChange = useCallback((page: number) => {
     setArchivedTasksPage(page)
   }, [])
 
   const handleRunComplete = useCallback(
     (triggerId: string) => {
-      const allActive = [...manualTriggers, ...scheduledTriggers]
+      const allActive = [
+        ...manualTriggers,
+        ...scheduledTriggers,
+        ...subscribedTriggers,
+      ]
       const trigger = allActive.find(t => t._id === triggerId)
       if (trigger) {
         const pendingRun: RecentRunItem = {
@@ -987,7 +1194,13 @@ export const TasksView: FC<TasksViewProps> = ({
         setPendingRuns([])
       }, 3000)
     },
-    [manualTriggers, scheduledTriggers, triggersQuery, onTasksChange],
+    [
+      manualTriggers,
+      scheduledTriggers,
+      subscribedTriggers,
+      triggersQuery,
+      onTasksChange,
+    ],
   )
 
   const handleNavigateToLatest = useCallback(() => {
@@ -1158,7 +1371,9 @@ export const TasksView: FC<TasksViewProps> = ({
       ) : activeTab === 'active' ? (
         <>
           {/* Empty state */}
-          {manualTriggers.length === 0 && scheduledTriggers.length === 0 ? (
+          {manualTriggers.length === 0 &&
+          scheduledTriggers.length === 0 &&
+          subscribedTriggers.length === 0 ? (
             <div className="bg-background rounded-lg border">
               <div className="text-center p-8 text-muted-foreground">
                 <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -1242,6 +1457,45 @@ export const TasksView: FC<TasksViewProps> = ({
                       currentPage={scheduledTasksPage}
                       totalPages={totalScheduledTasksPages}
                       onPageChange={handleScheduledTasksPageChange}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Subscribed Tasks */}
+              {subscribedTriggers.length > 0 && (
+                <div>
+                  <div className="mb-2 px-1">
+                    <span className="text-[11px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+                      Subscribed
+                    </span>
+                  </div>
+                  <div className="bg-background rounded-lg border divide-y">
+                    {paginatedSubscribedTasks.map(trigger => (
+                      <TaskItem
+                        key={trigger._id}
+                        trigger={trigger}
+                        onEdit={handleEdit}
+                        onArchive={handleTaskChange}
+                        onReactivate={handleReactivateTask}
+                        onPause={handleTaskChange}
+                        onResume={handleTaskChange}
+                        onDelete={handleTaskChange}
+                        onRunComplete={handleRunComplete}
+                        onNavigateToMessage={onNavigateToMessage}
+                        onNavigateToLatest={handleNavigateToLatest}
+                        isFinished={false}
+                        timezone={userTimezone}
+                        showSessionInfo={showSessionInfo}
+                      />
+                    ))}
+                  </div>
+                  {/* Pagination */}
+                  {totalSubscribedTasksPages > 1 && (
+                    <Pagination
+                      currentPage={subscribedTasksPage}
+                      totalPages={totalSubscribedTasksPages}
+                      onPageChange={handleSubscribedTasksPageChange}
                     />
                   )}
                 </div>

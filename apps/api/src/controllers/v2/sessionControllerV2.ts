@@ -1274,12 +1274,18 @@ export const getSession = async (
       hasMore,
     })
   } catch (e) {
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
+    const error = e as Error & { response?: { data?: string } }
+    const errorMessage =
+      error?.response?.data ||
+      error?.message ||
+      (typeof e === 'string' ? e : 'Unknown Error')
 
     server.log.error({
       message: 'Failed to get session',
+      session_id,
+      parent_session_id,
       error: errorMessage,
+      stack: error?.stack,
     })
     return reply.status(500).send({ error: errorMessage })
   }
@@ -1441,12 +1447,17 @@ export const getSessionMessages = async (
       nextCursor,
     })
   } catch (e) {
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
+    const error = e as Error & { response?: { data?: string } }
+    const errorMessage =
+      error?.response?.data ||
+      error?.message ||
+      (typeof e === 'string' ? e : 'Unknown Error')
 
     server.log.error({
       message: 'Failed to get session messages',
+      session_id,
       error: errorMessage,
+      stack: error?.stack,
     })
     return reply.status(500).send({ error: errorMessage })
   }

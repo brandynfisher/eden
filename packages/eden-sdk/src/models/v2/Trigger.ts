@@ -54,6 +54,8 @@ export type Trigger = {
   error_count?: number
   last_error?: string
   runs?: TriggerRun[] // Track each run with message_id and timestamp
+  subscribable?: boolean // Whether this trigger can be subscribed to by others
+  parent_trigger?: string | Trigger | null // Reference to the parent trigger (if this is a subscription)
   createdAt: Date
   updatedAt: Date
 }

@@ -25,11 +25,14 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { formatCompactNumber } from '@/lib/strings'
 import { useAppDispatch } from '@/stores/store'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  BellPlusIcon,
+  CheckIcon,
   EyeIcon,
   EyeOffIcon,
+  Loader2,
   MenuIcon,
   MessageSquareIcon,
   MoreHorizontalIcon,
@@ -69,6 +72,19 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+
+  // Subscribable triggers state
+  const [subscribableTriggers, setSubscribableTriggers] = useState<Trigger[]>(
+    [],
+  )
+  const [subscribingTo, setSubscribingTo] = useState<string | null>(null)
+  const [unsubscribingFrom, setUnsubscribingFrom] = useState<string | null>(
+    null,
+  )
+  // Map of parent trigger ID -> user's subscription trigger ID
+  const [subscribedTriggers, setSubscribedTriggers] = useState<
+    Map<string, string>
+  >(new Map())
 
   // Pinning functionality
   const { pinnedAgents } = useUserPreferencesQuery({
@@ -193,6 +209,99 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
         pinnedAgent._id === agent._id || pinnedAgent.agentId === agent._id,
     )
   }, [agent, pinnedAgents])
+
+  // Fetch subscribable triggers for this agent and check user's subscriptions
+  useEffect(() => {
+    const fetchSubscribableTriggers = async () => {
+      if (!agent?.username) return
+
+      try {
+        const response = await axios.get(
+          `/api/agents/${agent.username}/subscribable-triggers`,
+        )
+        const triggers = response.data.triggers || []
+        setSubscribableTriggers(triggers)
+
+        // If user is signed in, check which ones they're already subscribed to
+        if (isSignedIn && triggers.length > 0) {
+          try {
+            const userTriggersResponse = await axios.get('/api/triggers')
+            const userTriggers = userTriggersResponse.data.triggers || []
+
+            // Build map of parent_trigger -> subscription ID
+            const subscriptionMap = new Map<string, string>()
+            for (const trigger of userTriggers) {
+              if (trigger.parent_trigger) {
+                const parentId =
+                  typeof trigger.parent_trigger === 'string'
+                    ? trigger.parent_trigger
+                    : trigger.parent_trigger._id
+                subscriptionMap.set(parentId, trigger._id)
+              }
+            }
+            setSubscribedTriggers(subscriptionMap)
+          } catch {
+            // Silently fail - subscription check is optional
+          }
+        }
+      } catch {
+        // Silently fail - subscribable triggers are optional
+      }
+    }
+
+    fetchSubscribableTriggers()
+  }, [agent?.username, isSignedIn])
+
+  // Handle subscribing to a trigger
+  const handleSubscribe = async (triggerId: string) => {
+    if (!isSignedIn) {
+      const verified = await verifyAuth()
+      if (!verified) return
+    }
+
+    setSubscribingTo(triggerId)
+    try {
+      const response = await axios.post(`/api/triggers/${triggerId}/subscribe`)
+      const newSubscriptionId = response.data.trigger._id
+      setSubscribedTriggers(prev =>
+        new Map(prev).set(triggerId, newSubscriptionId),
+      )
+      toast.success('Subscribed')
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || 'Failed to subscribe'
+      toast.error(errorMessage)
+    } finally {
+      setSubscribingTo(null)
+    }
+  }
+
+  // Handle unsubscribing from a trigger
+  const handleUnsubscribe = async (parentTriggerId: string) => {
+    const subscriptionId = subscribedTriggers.get(parentTriggerId)
+    if (!subscriptionId) return
+
+    setUnsubscribingFrom(parentTriggerId)
+    try {
+      await axios.delete(`/api/triggers/${subscriptionId}`)
+      setSubscribedTriggers(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(parentTriggerId)
+        return newMap
+      })
+      toast.success('Unsubscribed')
+    } catch {
+      toast.error('Failed to unsubscribe')
+    } finally {
+      setUnsubscribingFrom(null)
+    }
+  }
+
+  // Check if already subscribed to a trigger
+  const isAlreadySubscribed = (triggerId: string) => {
+    return subscribedTriggers.has(triggerId)
+  }
 
   const canPin = !isPinned && (pinnedAgents?.length ?? 0) < MAX_PINNED_AGENTS
 
@@ -517,6 +626,44 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
           )}
         </div>
       </header>
+
+      {/* Subscribable Tasks Section */}
+      {subscribableTriggers.length > 0 && (
+        <div className="px-4 sm:px-6 md:px-10 py-3 flex flex-wrap items-center gap-3">
+          {subscribableTriggers.map(trigger => {
+            const isSubscribed = isAlreadySubscribed(trigger._id)
+            const isSubscribing = subscribingTo === trigger._id
+            const isUnsubscribing = unsubscribingFrom === trigger._id
+            const isLoading = isSubscribing || isUnsubscribing
+
+            return (
+              <Button
+                key={trigger._id}
+                variant={isSubscribed ? 'ghost' : undefined}
+                size="lg"
+                className="gap-2 px-6"
+                onClick={() =>
+                  isSubscribed
+                    ? handleUnsubscribe(trigger._id)
+                    : handleSubscribe(trigger._id)
+                }
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isSubscribed ? (
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                ) : (
+                  <BellPlusIcon className="h-4 w-4" />
+                )}
+                {isSubscribed
+                  ? `Unsubscribe: ${trigger.name}`
+                  : `Subscribe: ${trigger.name}`}
+              </Button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Divider */}
       <div className="border-t border-border/50" />
