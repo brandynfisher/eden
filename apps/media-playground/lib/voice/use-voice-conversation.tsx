@@ -36,7 +36,8 @@ const BUILT_IN_TOOLS: Record<
 export function useVoiceConversation(
   config: VoiceProviderConfig & { edenAgentId: string },
 ): VoiceConversation {
-  const [apiKey, setApiKey] = useState<string | null>(null)
+  // eslint-disable-next-line no-unused-vars
+  const [_apiKey, setApiKey] = useState<string | null>(null)
   const [agentId, setAgentId] = useState<string | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
@@ -382,9 +383,9 @@ export function useVoiceConversation(
   }, [config.dynamicVariables, config.realtimeSettings, addDebugLog])
 
   // Initialize ElevenLabs conversation
-  // Note: onMessage uses sessionId from the current closure
+  // Note: For public agents, we don't pass the API key (it's not needed and shouldn't be exposed)
+  // For private agents, we would need to use conversation tokens generated server-side
   const conversation = useConversation({
-    apiKey: apiKey || '',
     onConnect: () => {
       addDebugLog('Connected to agent', 'success')
     },
@@ -466,17 +467,15 @@ export function useVoiceConversation(
   })
 
   const startConversation = useCallback(async () => {
-    // Fetch configuration if not already loaded
-    let currentApiKey = apiKey
+    // Fetch agent ID if not already loaded (API key not needed for public agents)
     let currentAgentId = agentId
 
-    if (!currentApiKey || !currentAgentId) {
+    if (!currentAgentId) {
       const configData = await fetchConfig()
       if (!configData) {
         addDebugLog('Failed to load configuration', 'error')
         return
       }
-      currentApiKey = configData.apiKey
       currentAgentId = configData.agentId
     }
 
@@ -629,6 +628,7 @@ export function useVoiceConversation(
       const sessionConfig = prepareConversationConfig()
 
       // Get built-in tool handlers (create, display, create_async)
+      // These must match the tools configured in the ElevenLabs agent dashboard
       const builtInTools = getBuiltInToolHandlers()
 
       // Merge built-in tools with any custom client tools (custom overrides built-in)
@@ -637,29 +637,51 @@ export function useVoiceConversation(
         ...config.clientTools,
       }
 
-      // Wrap all tools to log them
-      const wrappedClientTools = wrapClientTools(allClientTools)
+      // Wrap all tools to log them (only if there are any tools)
+      const wrappedClientTools =
+        Object.keys(allClientTools).length > 0
+          ? wrapClientTools(allClientTools)
+          : undefined
 
       // Start the conversation with dynamic variables and client tools
       addDebugLog('Starting ElevenLabs conversation...', 'info')
-      if (wrappedClientTools) {
-        const builtInToolNames = Object.keys(builtInTools)
-        const customToolNames = Object.keys(config.clientTools || {})
-        addDebugLog(
-          `Built-in tools: ${builtInToolNames.join(', ') || 'none'}`,
-          'info',
-        )
-        if (customToolNames.length > 0) {
-          addDebugLog(`Custom tools: ${customToolNames.join(', ')}`, 'info')
-        }
-      }
+      addDebugLog(`Agent ID: ${currentAgentId}`, 'info')
+
+      const builtInToolNames = Object.keys(builtInTools)
+      const customToolNames = Object.keys(config.clientTools || {})
+      addDebugLog(
+        `Tools: ${
+          [...builtInToolNames, ...customToolNames].join(', ') || 'none'
+        }`,
+        'info',
+      )
+
+      // Log the full session config for debugging
+      // eslint-disable-next-line no-console
+      console.log('[ElevenLabs] Session config:', {
+        agentId: currentAgentId,
+        ...sessionConfig,
+        clientTools: wrappedClientTools ? Object.keys(wrappedClientTools) : [],
+      })
+
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (conversation.startSession as any)({
+        // Build the config - try with just dynamic variables first (no overrides)
+        // The agent has defaults configured in ElevenLabs dashboard
+        const fullConfig = {
           agentId: currentAgentId,
-          ...sessionConfig,
+          dynamicVariables: sessionConfig.dynamicVariables,
+          // Temporarily skip overrides to debug connection issue
+          // overrides: sessionConfig.overrides,
           ...(wrappedClientTools && { clientTools: wrappedClientTools }),
-        })
+        }
+        // eslint-disable-next-line no-console
+        console.log(
+          '[ElevenLabs] Starting with config (no overrides):',
+          fullConfig,
+        )
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (conversation.startSession as any)(fullConfig)
         addDebugLog('ElevenLabs conversation started successfully', 'success')
       } catch (elevenLabsError) {
         const elevenLabsErrorMessage =
@@ -689,7 +711,6 @@ export function useVoiceConversation(
       stopVolumeMonitoring()
     }
   }, [
-    apiKey,
     agentId,
     conversation,
     config.edenAgentId,

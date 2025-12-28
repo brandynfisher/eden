@@ -39,24 +39,28 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
               return
             }
 
-            if (!messageDoc.session) {
+            // session field is an array of ObjectIds
+            const sessionIds = messageDoc.session
+            if (
+              !sessionIds ||
+              !Array.isArray(sessionIds) ||
+              sessionIds.length === 0
+            ) {
               fastify.log.error(
                 `insert: No session field found for message ${messageDoc._id}`,
               )
               return
             }
 
-            // Get the session for this message
-            const session = await Session.findById(messageDoc.session).populate(
-              {
-                path: 'owner',
-                select: '_id',
-              },
-            )
+            // Get the first session for this message
+            const session = await Session.findById(sessionIds[0]).populate({
+              path: 'owner',
+              select: '_id',
+            })
 
             if (!session) {
               fastify.log.error(
-                `insert: Session not found for message ${messageDoc._id}`,
+                `insert: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]})`,
               )
               return
             }
@@ -76,24 +80,28 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
               return
             }
 
-            if (!messageDoc.session) {
+            // session field is an array of ObjectIds
+            const sessionIds = messageDoc.session
+            if (
+              !sessionIds ||
+              !Array.isArray(sessionIds) ||
+              sessionIds.length === 0
+            ) {
               fastify.log.error(
                 `update: No session field found for message ${messageDoc._id}`,
               )
               return
             }
 
-            // Get the session for this message
-            const session = await Session.findById(messageDoc.session).populate(
-              {
-                path: 'owner',
-                select: '_id',
-              },
-            )
+            // Get the first session for this message
+            const session = await Session.findById(sessionIds[0]).populate({
+              path: 'owner',
+              select: '_id',
+            })
 
             if (!session) {
               fastify.log.error(
-                `update: Session not found for message ${messageDoc._id}`,
+                `update: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]})`,
               )
               return
             }
