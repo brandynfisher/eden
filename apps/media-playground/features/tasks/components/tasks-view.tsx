@@ -1092,9 +1092,17 @@ export const TasksView: FC<TasksViewProps> = ({
 
   // Combine pending runs with actual runs
   const combinedRecentRuns = useMemo(() => {
-    const actualRunIds = new Set(allRecentRuns.map(r => r.run.message_id))
+    // Deduplicate by trigger ID and recent timestamp - if a trigger already has a run
+    // from the last 30 seconds, don't show the pending run (API has returned)
+    const now = Date.now()
+    const recentThreshold = 30 * 1000 // 30 seconds
+    const triggersWithRecentRuns = new Set(
+      allRecentRuns
+        .filter(r => now - new Date(r.run.ran_at).getTime() < recentThreshold)
+        .map(r => r.trigger._id),
+    )
     const uniquePendingRuns = pendingRuns.filter(
-      pr => !actualRunIds.has(pr.run.message_id),
+      pr => !triggersWithRecentRuns.has(pr.trigger._id),
     )
     return [...uniquePendingRuns, ...allRecentRuns]
   }, [allRecentRuns, pendingRuns])

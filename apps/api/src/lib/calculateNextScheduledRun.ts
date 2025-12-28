@@ -39,10 +39,15 @@ export function calculateNextScheduledRun(schedule: CronSchedule): Date | null {
 
     const cronExpression = `${minute} ${hour} ${dayOfMonth} ${month} ${dayOfWeek}`
 
+    // Use the later of start_date or now as the base for calculation
+    // This ensures that when resuming a paused trigger, we calculate the next
+    // future occurrence rather than a past date based on an old start_date
+    const now = new Date()
+    const startDate = schedule.start_date ? new Date(schedule.start_date) : now
+    const baseDate = startDate > now ? startDate : now
+
     const options: CronExpressionOptions = {
-      currentDate: schedule.start_date
-        ? new Date(schedule.start_date)
-        : new Date(),
+      currentDate: baseDate,
       tz: schedule.timezone || 'UTC',
     }
 
