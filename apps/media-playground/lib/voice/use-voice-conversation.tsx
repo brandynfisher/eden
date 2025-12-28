@@ -16,6 +16,20 @@ import { useConversation } from '@elevenlabs/react'
 import { useCallback, useRef, useState } from 'react'
 
 /**
+ * Built-in tool configuration.
+ * - waitForResponse: true = blocking (tool waits for Eve to return result)
+ * - waitForResponse: false = async (returns immediately, work happens in background)
+ */
+const BUILT_IN_TOOLS: Record<
+  string,
+  { waitForResponse: boolean; timeoutSeconds?: number }
+> = {
+  create: { waitForResponse: true, timeoutSeconds: 120 },
+  display: { waitForResponse: true, timeoutSeconds: 30 },
+  create_async: { waitForResponse: false },
+}
+
+/**
  * Hook for managing voice conversations with abstracted provider support
  * Currently supports ElevenLabs, designed to be extended for other providers
  */
@@ -61,6 +75,84 @@ export function useVoiceConversation(
     },
     [],
   )
+
+  // Create a handler for built-in tools that calls our API
+  const createBuiltInToolHandler = useCallback(
+    (toolName: string) => {
+      return async (parameters: Record<string, unknown>): Promise<string> => {
+        const sessionId = sessionIdRef.current
+        if (!sessionId) {
+          throw new Error('No active session for tool call')
+        }
+
+        addDebugLog(`Calling built-in tool: ${toolName}`, 'info')
+
+        try {
+          const response = await fetch('/api/realtime/tool', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tool_name: toolName,
+              args: parameters,
+              session_id: sessionId,
+            }),
+          })
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Tool API error: ${response.status} ${errorText}`)
+          }
+
+          const result = await response.json()
+          addToolCall(toolName, parameters, result)
+
+          // Format response for ElevenLabs agent
+          if (result.status === 'completed') {
+            addDebugLog(`Tool ${toolName} completed`, 'success')
+            // Return the result in a format the agent can understand
+            return JSON.stringify({
+              success: true,
+              task_id: result.task_id,
+              result: result.result,
+            })
+          } else if (result.status === 'pending') {
+            addDebugLog(`Tool ${toolName} started in background`, 'info')
+            // For async tools, return acknowledgment
+            return result.message || "I've started working on that."
+          } else if (result.status === 'failed') {
+            addDebugLog(`Tool ${toolName} failed: ${result.error}`, 'error')
+            return JSON.stringify({
+              success: false,
+              error: result.error,
+            })
+          }
+
+          return JSON.stringify(result)
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error)
+          addToolCall(toolName, parameters, { error: errorMessage })
+          addDebugLog(`Tool ${toolName} failed: ${errorMessage}`, 'error')
+          throw error
+        }
+      }
+    },
+    [addDebugLog, addToolCall],
+  )
+
+  // Build all built-in tool handlers
+  const getBuiltInToolHandlers = useCallback(() => {
+    const handlers: Record<
+      string,
+      (params: Record<string, unknown>) => Promise<string>
+    > = {}
+
+    for (const toolName of Object.keys(BUILT_IN_TOOLS)) {
+      handlers[toolName] = createBuiltInToolHandler(toolName)
+    }
+
+    return handlers
+  }, [createBuiltInToolHandler])
 
   // Wrap client tools to log them before executing
   const wrapClientTools = useCallback(
@@ -536,18 +628,30 @@ export function useVoiceConversation(
       // Prepare conversation config with dynamic variables
       const sessionConfig = prepareConversationConfig()
 
-      // Wrap client tools to log them
-      const wrappedClientTools = wrapClientTools(config.clientTools)
+      // Get built-in tool handlers (create, display, create_async)
+      const builtInTools = getBuiltInToolHandlers()
+
+      // Merge built-in tools with any custom client tools (custom overrides built-in)
+      const allClientTools = {
+        ...builtInTools,
+        ...config.clientTools,
+      }
+
+      // Wrap all tools to log them
+      const wrappedClientTools = wrapClientTools(allClientTools)
 
       // Start the conversation with dynamic variables and client tools
       addDebugLog('Starting ElevenLabs conversation...', 'info')
       if (wrappedClientTools) {
+        const builtInToolNames = Object.keys(builtInTools)
+        const customToolNames = Object.keys(config.clientTools || {})
         addDebugLog(
-          `Registered client tools: ${Object.keys(wrappedClientTools).join(
-            ', ',
-          )}`,
+          `Built-in tools: ${builtInToolNames.join(', ') || 'none'}`,
           'info',
         )
+        if (customToolNames.length > 0) {
+          addDebugLog(`Custom tools: ${customToolNames.join(', ')}`, 'info')
+        }
       }
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -592,6 +696,7 @@ export function useVoiceConversation(
     config.userInfo,
     config.clientTools,
     prepareConversationConfig,
+    getBuiltInToolHandlers,
     wrapClientTools,
     addDebugLog,
     startVolumeMonitoring,

@@ -15,11 +15,10 @@ import {
   DEFAULT_REALTIME_SETTINGS,
   RealtimeSettings,
 } from '@/lib/voice/realtime-defaults'
-import { ClientToolHandler } from '@/lib/voice/types'
 import { useVoiceConversation } from '@/lib/voice/use-voice-conversation'
 import { Maximize2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 
 interface ConversationInterfaceProps {
   agentName: string
@@ -85,40 +84,14 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
     )
   }, [agentContext, agentName, userInfo, realtimeSettings.first_message])
 
-  // Client tool handlers for ElevenLabs agent
-  // Tool names must match exactly with ElevenLabs dashboard configuration
-  const createImageTool: ClientToolHandler = useCallback(
-    async (parameters: Record<string, unknown>) => {
-      const prompt = parameters.prompt as string
-
-      // TODO: Implement actual image generation via Eden API
-      // For now, return a placeholder response
-
-      // Simulating an async operation
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      return `Image generation started for prompt: "${prompt}". The image will be ready shortly.`
-    },
-    [],
-  )
-
-  // Memoize client tools object to prevent unnecessary re-renders
-  const clientTools = useMemo(
-    () => ({
-      create_image: createImageTool,
-    }),
-    [createImageTool],
-  )
-
   // Initialize voice conversation with ElevenLabs provider
-  // Dynamic variables are passed instead of agentPrompt
+  // Built-in client tools (create, display, create_async) are provided by the hook
   const conversation = useVoiceConversation({
     provider: 'elevenlabs',
     dynamicVariables,
     edenAgentId,
     userInfo,
     realtimeSettings,
-    clientTools,
   })
 
   // Toggle fullscreen by removing dev=true from URL

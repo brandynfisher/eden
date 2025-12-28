@@ -585,7 +585,7 @@ const TaskItem: FC<{
                 {(scheduleDisplay || isSubscription) && (
                   <span className="text-muted-foreground/30">·</span>
                 )}
-                <div className="flex items-center gap-1 text-xs text-primary/70">
+                <div className="flex items-center gap-1 text-xs text-yellow-500">
                   <Share2Icon className="h-3 w-3" />
                   <span>Shared</span>
                 </div>

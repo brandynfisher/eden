@@ -10,6 +10,7 @@ import feedRoutesV2 from './feedRoutesV2'
 import llmCallRoutes from './llmCallRoutes'
 import modelRoutesV2 from './modelRoutesV2'
 import notificationRoutes from './notificationRoutes'
+import realtimeToolRoutesV2 from './realtimeToolRoutesV2'
 import sessionRoutesV2 from './sessionRoutesV2'
 import taskRoutesV2 from './taskRoutesV2'
 import toolRoutesV2 from './toolRoutesV2'
@@ -34,4 +35,5 @@ export const routes = [
   llmCallRoutes,
   verdelisSeedRoutesV2,
   realtimeSessionBillingRoutes,
+  realtimeToolRoutesV2,
 ]
