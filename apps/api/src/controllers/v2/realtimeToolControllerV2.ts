@@ -14,6 +14,7 @@ const TOOL_CONFIG: Record<
   create: { waitForResponse: true, timeoutSeconds: 120 },
   display: { waitForResponse: true, timeoutSeconds: 30 },
   create_async: { waitForResponse: false, timeoutSeconds: 120 },
+  eden_search: { waitForResponse: true, timeoutSeconds: 30 },
 }
 
 interface RealtimeToolRequest {

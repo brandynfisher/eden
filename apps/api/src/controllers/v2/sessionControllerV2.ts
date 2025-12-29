@@ -2917,3 +2917,205 @@ export const addPassiveMessage = async (
     })
   }
 }
+
+/**
+ * Add or update a tool call on the most recent assistant message in a session.
+ * This is used for realtime voice conversations where tools are called by the agent.
+ *
+ * Flow:
+ * 1. When tool starts: Call with status='pending', returns tool_call_id and message_id
+ * 2. When tool completes: Call with tool_call_id, status='completed', and result
+ * 3. When tool fails: Call with tool_call_id, status='failed', and error
+ */
+export const addToolCallToMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Body: {
+      session_id: string
+      user_id: string
+      tool_call_id?: string // If provided, update existing; if not, create new
+      tool_name: string
+      args?: Record<string, unknown>
+      status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+      result?: unknown
+      error?: string
+      task_id?: string
+    }
+  }>,
+  reply: FastifyReply,
+) => {
+  const {
+    session_id,
+    user_id,
+    tool_call_id,
+    tool_name,
+    args,
+    status = 'pending',
+    result,
+    error,
+    task_id,
+  } = request.body
+
+  // Validation
+  if (!session_id) {
+    return reply.status(400).send({ message: 'session_id is required' })
+  }
+
+  if (!user_id) {
+    return reply.status(400).send({ message: 'user_id is required' })
+  }
+
+  if (!tool_name) {
+    return reply.status(400).send({ message: 'tool_name is required' })
+  }
+
+  try {
+    // Verify session exists
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({ message: 'Session not found' })
+    }
+
+    // Verify user exists
+    const user = await User.findById(user_id)
+    if (!user) {
+      return reply.status(404).send({ message: 'User not found' })
+    }
+
+    // Check user permission
+    const userIdStr = user_id.toString()
+    const isSessionOwner = session.owner.toString() === userIdStr
+    const isSessionUser = isUserInList(session.users, userIdStr)
+    const sessionPermission = await SessionPermission.findOne({
+      session: session_id,
+      user: user_id,
+    })
+
+    if (
+      !isSessionOwner &&
+      !isSessionUser &&
+      !canInteractWithPermission(sessionPermission)
+    ) {
+      return reply.status(403).send({
+        message: 'User not authorized to modify this session',
+      })
+    }
+
+    // If tool_call_id provided, update existing tool call
+    if (tool_call_id) {
+      // Find message with this tool call
+      const message = await Message.findOne({
+        session: new ObjectId(session_id),
+        'tool_calls.id': tool_call_id,
+      })
+
+      if (!message) {
+        return reply.status(404).send({
+          message: `Tool call ${tool_call_id} not found in session`,
+        })
+      }
+
+      // Update the specific tool call
+      const toolCallIndex = message.tool_calls?.findIndex(
+        tc => tc.id === tool_call_id,
+      )
+      if (toolCallIndex === undefined || toolCallIndex < 0) {
+        return reply.status(404).send({
+          message: `Tool call ${tool_call_id} not found in message`,
+        })
+      }
+
+      // Update the tool call fields
+      const updateFields: Record<string, unknown> = {}
+      if (status) {
+        updateFields[`tool_calls.${toolCallIndex}.status`] = status
+      }
+      if (result !== undefined) {
+        updateFields[`tool_calls.${toolCallIndex}.result`] = result
+      }
+      if (error !== undefined) {
+        updateFields[`tool_calls.${toolCallIndex}.error`] = error
+      }
+      if (task_id) {
+        updateFields[`tool_calls.${toolCallIndex}.task`] = task_id
+      }
+
+      await Message.updateOne({ _id: message._id }, { $set: updateFields })
+
+      return reply.status(200).send({
+        success: true,
+        tool_call_id,
+        message_id: message._id.toString(),
+      })
+    }
+
+    // No tool_call_id - create new tool call on most recent assistant message
+    // Find the most recent assistant message for this session
+    let message = await Message.findOne({
+      session: new ObjectId(session_id),
+      role: 'assistant',
+    }).sort({ createdAt: -1 })
+
+    // If no assistant message exists, create one
+    if (!message) {
+      // Get the first agent in the session as sender
+      if (!session.agents || session.agents.length === 0) {
+        return reply.status(400).send({
+          message: 'Session has no agents for assistant message',
+        })
+      }
+      const firstAgent = session.agents[0]
+      const senderId =
+        firstAgent instanceof ObjectId
+          ? firstAgent
+          : new ObjectId((firstAgent as any)._id || firstAgent)
+
+      message = new Message({
+        session: [new ObjectId(session_id)],
+        sender: senderId,
+        eden_user_id: new ObjectId(user_id),
+        role: 'assistant',
+        content: '',
+        tool_calls: [],
+      })
+      await message.save()
+
+      // Add message to session's messages array
+      session.messages.push(message._id as any)
+      await session.save()
+    }
+
+    // Generate a unique tool call ID
+    const newToolCallId = `toolcall_${crypto
+      .randomUUID()
+      .replace(/-/g, '')
+      .slice(0, 24)}`
+
+    // Create the tool call object
+    const toolCall = {
+      id: newToolCallId,
+      name: tool_name,
+      tool: tool_name,
+      args: args || {},
+      status: status,
+      result: result,
+      error: error,
+      task: task_id,
+    }
+
+    // Add tool call to message
+    await Message.updateOne(
+      { _id: message._id },
+      { $push: { tool_calls: toolCall } },
+    )
+
+    return reply.status(200).send({
+      success: true,
+      tool_call_id: newToolCallId,
+      message_id: message._id.toString(),
+    })
+  } catch (err) {
+    server.log.error({ err }, 'Error adding tool call to message:')
+    return reply.status(500).send({ message: 'Internal server error' })
+  }
+}

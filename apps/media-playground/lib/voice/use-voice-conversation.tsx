@@ -27,6 +27,7 @@ const BUILT_IN_TOOLS: Record<
   create: { waitForResponse: true, timeoutSeconds: 120 },
   display: { waitForResponse: true, timeoutSeconds: 30 },
   create_async: { waitForResponse: false },
+  eden_search: { waitForResponse: true, timeoutSeconds: 30 },
 }
 
 /**
@@ -77,6 +78,57 @@ export function useVoiceConversation(
     [],
   )
 
+  // Helper function to add/update tool call in Eden session
+  const saveToolCallToSession = useCallback(
+    async (params: {
+      sessionId: string
+      toolCallId?: string
+      toolName: string
+      args?: Record<string, unknown>
+      status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+      result?: unknown
+      error?: string
+      taskId?: string
+    }) => {
+      try {
+        const response = await fetch('/api/realtime/session/tool-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: params.sessionId,
+            tool_call_id: params.toolCallId,
+            tool_name: params.toolName,
+            args: params.args,
+            status: params.status,
+            result: params.result,
+            error: params.error,
+            task_id: params.taskId,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          addDebugLog(
+            `Failed to save tool call: ${response.status} ${errorText}`,
+            'error',
+          )
+          return null
+        }
+
+        return await response.json()
+      } catch (error) {
+        addDebugLog(
+          `Error saving tool call: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          'error',
+        )
+        return null
+      }
+    },
+    [addDebugLog],
+  )
+
   // Create a handler for built-in tools that calls our API
   const createBuiltInToolHandler = useCallback(
     (toolName: string) => {
@@ -88,7 +140,18 @@ export function useVoiceConversation(
 
         addDebugLog(`Calling built-in tool: ${toolName}`, 'info')
 
+        // Step 1: Create pending tool call in Eden session
+        const pendingToolCall = await saveToolCallToSession({
+          sessionId,
+          toolName,
+          args: parameters,
+          status: 'pending',
+        })
+
+        const toolCallId = pendingToolCall?.tool_call_id
+
         try {
+          // Step 2: Execute the tool via Eve API
           const response = await fetch('/api/realtime/tool', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -106,6 +169,37 @@ export function useVoiceConversation(
 
           const result = await response.json()
           addToolCall(toolName, parameters, result)
+
+          // Step 3: Update tool call with result in Eden session
+          if (toolCallId) {
+            if (result.status === 'completed') {
+              await saveToolCallToSession({
+                sessionId,
+                toolCallId,
+                toolName,
+                status: 'completed',
+                result: result.result,
+                taskId: result.task_id,
+              })
+            } else if (result.status === 'pending') {
+              // Async tool - mark as running since work continues in background
+              await saveToolCallToSession({
+                sessionId,
+                toolCallId,
+                toolName,
+                status: 'running',
+                taskId: result.task_id,
+              })
+            } else if (result.status === 'failed') {
+              await saveToolCallToSession({
+                sessionId,
+                toolCallId,
+                toolName,
+                status: 'failed',
+                error: result.error,
+              })
+            }
+          }
 
           // Format response for ElevenLabs agent
           if (result.status === 'completed') {
@@ -132,13 +226,25 @@ export function useVoiceConversation(
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
+
+          // Update tool call with error
+          if (toolCallId) {
+            await saveToolCallToSession({
+              sessionId,
+              toolCallId,
+              toolName,
+              status: 'failed',
+              error: errorMessage,
+            })
+          }
+
           addToolCall(toolName, parameters, { error: errorMessage })
           addDebugLog(`Tool ${toolName} failed: ${errorMessage}`, 'error')
           throw error
         }
       }
     },
-    [addDebugLog, addToolCall],
+    [addDebugLog, addToolCall, saveToolCallToSession],
   )
 
   // Build all built-in tool handlers

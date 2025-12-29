@@ -8,6 +8,7 @@ import {
   addPassiveMessage,
   addSessionMessageReaction,
   addSessionToolCallReaction,
+  addToolCallToMessage,
   cancelSession,
   createSession,
   createSessionMessage,
@@ -1085,6 +1086,73 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => addPassiveMessage(server, request, reply),
+  })
+
+  // Add tool call to message endpoint (for realtime voice conversations)
+  server.post<{
+    Body: {
+      session_id: string
+      user_id: string
+      tool_call_id?: string
+      tool_name: string
+      args?: Record<string, unknown>
+      status?: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+      result?: unknown
+      error?: string
+      task_id?: string
+    }
+  }>('/v2/sessions/add-tool-call', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Add Tool Call to Message',
+      description:
+        'Add or update a tool call on the most recent assistant message in a session. Used for realtime voice conversations where tools are called by the agent.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+        user_id: Type.String(),
+        tool_call_id: Type.Optional(Type.String()),
+        tool_name: Type.String(),
+        args: Type.Optional(Type.Record(Type.String(), Type.Any())),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('pending'),
+            Type.Literal('running'),
+            Type.Literal('completed'),
+            Type.Literal('failed'),
+            Type.Literal('cancelled'),
+          ]),
+        ),
+        result: Type.Optional(Type.Any()),
+        error: Type.Optional(Type.String()),
+        task_id: Type.Optional(Type.String()),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          tool_call_id: Type.String(),
+          message_id: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        403: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => addToolCallToMessage(server, request, reply),
   })
 
   // Get all triggers for a specific session
