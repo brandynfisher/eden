@@ -672,6 +672,83 @@ const AgentsPage = () => {
                 </div>
               </>
             )}
+
+            {/* Footer */}
+            <footer className="mt-auto pt-12 pb-6 text-center text-xs text-muted-foreground/60">
+              <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+                <a
+                  href="https://docs.eden.art/legal/tos"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Terms of Service
+                </a>
+                <span>·</span>
+                <a
+                  href="https://docs.eden.art/legal/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Privacy Policy
+                </a>
+                <span>·</span>
+                <a
+                  href="https://docs.eden.art/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Docs
+                </a>
+                <span>·</span>
+                <a
+                  href="https://discord.com/invite/4dSYwDT"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Discord
+                </a>
+                <span>·</span>
+                <a
+                  href="https://github.com/edenartlab"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  GitHub
+                </a>
+                <span>·</span>
+                <a
+                  href="https://instagram.com/edenartlab"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Instagram
+                </a>
+                <span>·</span>
+                <a
+                  href="https://twitter.com/Eden_Art_"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Twitter
+                </a>
+              </div>
+              <div className="mt-2">
+                © 2025 Eden Labs /{' '}
+                <a
+                  href="mailto:info@eden.art"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  info@eden.art
+                </a>
+              </div>
+            </footer>
           </div>
         </div>
       </div>
