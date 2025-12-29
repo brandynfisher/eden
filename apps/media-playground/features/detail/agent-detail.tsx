@@ -628,9 +628,22 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
       </header>
 
       {/* Subscribable Tasks Section */}
-      {subscribableTriggers.length > 0 && (
+      {subscribableTriggers.filter(t => {
+        // Don't show Subscribe buttons for triggers the user owns
+        const triggerUserId = typeof t.user === 'string' ? t.user : t.user?._id
+        return triggerUserId !== user?._id
+      }).length > 0 && (
         <div className="px-4 sm:px-6 md:px-10 py-3 flex flex-wrap items-center gap-3">
           {subscribableTriggers.map(trigger => {
+            // Don't show Subscribe buttons for triggers the user owns
+            const triggerUserId =
+              typeof trigger.user === 'string'
+                ? trigger.user
+                : trigger.user?._id
+            if (triggerUserId === user?._id) {
+              return null
+            }
+
             const isSubscribed = isAlreadySubscribed(trigger._id)
             const isSubscribing = subscribingTo === trigger._id
             const isUnsubscribing = unsubscribingFrom === trigger._id
