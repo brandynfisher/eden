@@ -735,7 +735,7 @@ const TaskItem: FC<{
                         <Share2Icon className="h-4 w-4 mr-2" />
                       )}
                       {trigger.subscribable
-                        ? 'Remove Subscription'
+                        ? 'Unsubscribe'
                         : 'Share Subscription'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
