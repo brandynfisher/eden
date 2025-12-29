@@ -11,6 +11,7 @@ import { useToggleLikeQuery } from '@/hooks/query/use-toggle-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { downloadFile } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { normalizeToolResults } from '@/lib/tool-results'
 import { cn } from '@/lib/utils'
 import {
   updateAddToCollectionModal,
@@ -202,12 +203,12 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
     message.tool_calls?.filter(toolCall => {
       // Normalize tool name for comparison (trim whitespace and lowercase)
       const normalizedToolName = (toolCall.tool || '').trim().toLowerCase()
+      const results = normalizeToolResults(toolCall.result)
 
       return (
         toolCall.status === 'completed' &&
-        toolCall.result &&
-        toolCall.result.length > 0 &&
-        toolCall.result.some(
+        results.length > 0 &&
+        results.some(
           (result: TaskV2Result) =>
             result &&
             Array.isArray(result?.output) &&
@@ -221,19 +222,18 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
     }) || []
 
   // Get all creation IDs from completed tool calls
-  const creationIds = completedToolCallsWithCreations.flatMap(
-    toolCall =>
-      toolCall.result?.flatMap((result: TaskV2Result) =>
-        Array.isArray(result?.output)
-          ? result.output
-              .filter((output: TasksV2ResultOutput) => output.creation)
-              .map((output: TasksV2ResultOutput) =>
-                typeof output.creation === 'string'
-                  ? output.creation
-                  : output.creation?._id,
-              )
-          : [],
-      ) || [],
+  const creationIds = completedToolCallsWithCreations.flatMap(toolCall =>
+    normalizeToolResults(toolCall.result).flatMap((result: TaskV2Result) =>
+      Array.isArray(result?.output)
+        ? result.output
+            .filter((output: TasksV2ResultOutput) => output.creation)
+            .map((output: TasksV2ResultOutput) =>
+              typeof output.creation === 'string'
+                ? output.creation
+                : output.creation?._id,
+            )
+        : [],
+    ),
   )
 
   // Use the first creation ID for the action buttons

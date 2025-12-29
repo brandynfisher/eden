@@ -7,7 +7,8 @@ import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { ThoughtBlock } from '@/features/sessions/components/thought-block'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { getCloudfrontUrl } from '@/lib/media'
-import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
+import { hasCreationResults, hasDisplayableResults } from '@/lib/tool-results'
+import { Message } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -279,15 +280,7 @@ export const AssistantMessage = ({
                   message.tool_calls?.some(
                     toolCall =>
                       toolCall.status === 'completed' &&
-                      toolCall.result &&
-                      (toolCall.result as TaskV2Result[]).length > 0 &&
-                      toolCall.result.some(
-                        (result: TaskV2Result) =>
-                          result &&
-                          (Array.isArray(result?.output) ||
-                            (typeof result?.output === 'string' &&
-                              (result?.output as string).length > 0)),
-                      ),
+                      hasDisplayableResults(toolCall.result),
                   )
                     ? 'opacity-100'
                     : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
@@ -296,16 +289,7 @@ export const AssistantMessage = ({
                 {message.tool_calls?.some(
                   toolCall =>
                     toolCall.status === 'completed' &&
-                    toolCall.result &&
-                    toolCall.result.length > 0 &&
-                    toolCall.result.some(
-                      (result: TaskV2Result) =>
-                        result &&
-                        Array.isArray(result?.output) &&
-                        result.output.some(
-                          (output: TasksV2ResultOutput) => output.creation,
-                        ),
-                    ),
+                    hasCreationResults(toolCall.result),
                 ) ? (
                   <ToolResultActionBar message={message} />
                 ) : (
@@ -487,15 +471,7 @@ export const AssistantMessage = ({
                     message.tool_calls?.some(
                       toolCall =>
                         toolCall.status === 'completed' &&
-                        toolCall.result &&
-                        (toolCall.result as TaskV2Result[]).length > 0 &&
-                        toolCall.result.some(
-                          (result: TaskV2Result) =>
-                            result &&
-                            (Array.isArray(result?.output) ||
-                              (typeof result?.output === 'string' &&
-                                (result?.output as string).length > 0)),
-                        ),
+                        hasDisplayableResults(toolCall.result),
                     )
                       ? 'opacity-100'
                       : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
@@ -504,16 +480,7 @@ export const AssistantMessage = ({
                   {message.tool_calls?.some(
                     toolCall =>
                       toolCall.status === 'completed' &&
-                      toolCall.result &&
-                      toolCall.result.length > 0 &&
-                      toolCall.result.some(
-                        (result: TaskV2Result) =>
-                          result &&
-                          Array.isArray(result?.output) &&
-                          result.output.some(
-                            (output: TasksV2ResultOutput) => output.creation,
-                          ),
-                      ),
+                      hasCreationResults(toolCall.result),
                   ) ? (
                     <ToolResultActionBar message={message} />
                   ) : (
@@ -692,15 +659,7 @@ export const AssistantMessage = ({
               message.tool_calls?.some(
                 toolCall =>
                   toolCall.status === 'completed' &&
-                  toolCall.result &&
-                  (toolCall.result as TaskV2Result[]).length > 0 &&
-                  toolCall.result.some(
-                    (result: TaskV2Result) =>
-                      result &&
-                      (Array.isArray(result?.output) ||
-                        (typeof result?.output === 'string' &&
-                          (result?.output as string).length > 0)),
-                  ),
+                  hasDisplayableResults(toolCall.result),
               )
                 ? 'opacity-100'
                 : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
@@ -709,16 +668,7 @@ export const AssistantMessage = ({
             {message.tool_calls?.some(
               toolCall =>
                 toolCall.status === 'completed' &&
-                toolCall.result &&
-                toolCall.result.length > 0 &&
-                toolCall.result.some(
-                  (result: TaskV2Result) =>
-                    result &&
-                    Array.isArray(result?.output) &&
-                    result.output.some(
-                      (output: TasksV2ResultOutput) => output.creation,
-                    ),
-                ),
+                hasCreationResults(toolCall.result),
             ) ? (
               <ToolResultActionBar message={message} />
             ) : (

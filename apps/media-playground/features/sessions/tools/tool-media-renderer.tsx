@@ -22,9 +22,16 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
   results,
   args,
 }) => {
+  // Ensure results is always an array (API might return single object for some tools)
+  const normalizedResults = Array.isArray(results)
+    ? results
+    : results
+    ? [results]
+    : []
+
   // Flatten all media outputs from all results
   const allMediaOutputs =
-    results?.flatMap((result, resultIndex) =>
+    normalizedResults.flatMap((result, resultIndex) =>
       Array.isArray(result?.output)
         ? result.output.map((output, outputIndex) => ({
             output,
@@ -45,8 +52,9 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
   )
 
   // Text-only results
-  const textResults =
-    results?.filter(result => !Array.isArray(result?.output)) || []
+  const textResults = normalizedResults.filter(
+    result => !Array.isArray(result?.output),
+  )
 
   // Calculate aspect ratio for an output
   const getAspectRatio = (output: TasksV2ResultOutput) => {

@@ -2,8 +2,9 @@ import { LLMCallButton } from './llm-call-modal'
 import { ToolHoverMenu } from './tool-hover-menu'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasDisplayableResults } from '@/lib/tool-results'
 import { cn } from '@/lib/utils'
-import { Message, TaskV2Result } from '@edenlabs/eden-sdk'
+import { Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { CheckIcon, CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
@@ -49,15 +50,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
 
       return (
         toolCall.status === 'completed' &&
-        toolCall.result &&
-        (toolCall.result as TaskV2Result[]).length > 0 &&
-        toolCall.result.some(
-          (result: TaskV2Result) =>
-            result &&
-            (Array.isArray(result?.output) ||
-              (typeof result?.output === 'string' &&
-                (result?.output as string).length > 0)),
-        ) &&
+        hasDisplayableResults(toolCall.result) &&
         !SESSION_POST_TOOLS.includes(normalizedToolName) &&
         !toolCall.child_session
       )

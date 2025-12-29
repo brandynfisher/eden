@@ -8,8 +8,9 @@ import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { ThoughtBlock } from '@/features/sessions/components/thought-block'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { getCloudfrontUrl } from '@/lib/media'
+import { hasCreationResults, hasDisplayableResults } from '@/lib/tool-results'
 import { cn } from '@/lib/utils'
-import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
+import { Message } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -339,15 +340,7 @@ export const OtherMessage = ({
               message.tool_calls?.some(
                 toolCall =>
                   toolCall.status === 'completed' &&
-                  toolCall.result &&
-                  (toolCall.result as TaskV2Result[]).length > 0 &&
-                  toolCall.result.some(
-                    (result: TaskV2Result) =>
-                      result &&
-                      (Array.isArray(result?.output) ||
-                        (typeof result?.output === 'string' &&
-                          (result?.output as string).length > 0)),
-                  ),
+                  hasDisplayableResults(toolCall.result),
               )
                 ? 'opacity-100'
                 : 'opacity-0 group-hover:opacity-100'
@@ -356,16 +349,7 @@ export const OtherMessage = ({
             {message.tool_calls?.some(
               toolCall =>
                 toolCall.status === 'completed' &&
-                toolCall.result &&
-                toolCall.result.length > 0 &&
-                toolCall.result.some(
-                  (result: TaskV2Result) =>
-                    result &&
-                    Array.isArray(result?.output) &&
-                    result.output.some(
-                      (output: TasksV2ResultOutput) => output.creation,
-                    ),
-                ),
+                hasCreationResults(toolCall.result),
             ) ? (
               <ToolResultActionBar message={message} />
             ) : (

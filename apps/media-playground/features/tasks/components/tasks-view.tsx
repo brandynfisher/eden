@@ -964,11 +964,8 @@ export const TasksView: FC<TasksViewProps> = ({
 
     if (mode === 'agent' && agentId) {
       return allTriggers.filter(trigger => {
-        // Don't show subscriptions in agent mode - they belong in global /tasks view
-        if (trigger.parent_trigger) return false
-
-        // Include tasks with null session (Create new session) for this agent
-        if (!trigger.session) {
+        // Helper to check if trigger's agent matches the current agent
+        const matchesAgent = () => {
           const triggerAgent = trigger.agent
           if (typeof triggerAgent === 'string') {
             return triggerAgent === agentId
@@ -977,6 +974,16 @@ export const TasksView: FC<TasksViewProps> = ({
             return triggerAgent.username === agentId
           }
           return false
+        }
+
+        // Include subscriptions for this agent
+        if (trigger.parent_trigger) {
+          return matchesAgent()
+        }
+
+        // Include tasks with null session (Create new session) for this agent
+        if (!trigger.session) {
+          return matchesAgent()
         }
 
         // Include tasks from single-agent sessions with the current agent
@@ -1057,6 +1064,12 @@ export const TasksView: FC<TasksViewProps> = ({
     }
 
     const sortByNextRun = (a: Trigger, b: Trigger) => {
+      // Paused tasks go to the bottom
+      const aIsPaused = a.status === 'paused'
+      const bIsPaused = b.status === 'paused'
+      if (aIsPaused && !bIsPaused) return 1
+      if (!aIsPaused && bIsPaused) return -1
+
       if (!a.next_scheduled_run && !b.next_scheduled_run) {
         return sortByUpdated(a, b)
       }

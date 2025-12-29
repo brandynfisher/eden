@@ -618,7 +618,7 @@ export const getAllUserTriggers = async (
     // 1. User created the trigger, OR
     // 2. Trigger is in a session owned by user, OR
     // 3. Trigger is in a session shared with user (with edit/owner permissions), OR
-    // 4. Trigger has an agent owned by user (for null session triggers)
+    // 4. Trigger has an agent owned by user (for null session triggers) - only non-subscriptions
     // AND exclude deleted triggers
     const triggers = await Trigger.find({
       $and: [
@@ -628,8 +628,19 @@ export const getAllUserTriggers = async (
             { user: currentUserId },
             // Triggers in sessions owned or shared with user
             { session: { $in: allAccessibleSessionIds } },
-            // Triggers with agent owned by user (for null session)
-            { agent: { $in: ownedAgentIds } },
+            // Triggers with agent owned by user (for null session) - exclude subscriptions
+            // to prevent seeing other users' subscriptions to your agent's tasks
+            {
+              $and: [
+                { agent: { $in: ownedAgentIds } },
+                {
+                  $or: [
+                    { parent_trigger: { $exists: false } },
+                    { parent_trigger: null },
+                  ],
+                },
+              ],
+            },
           ],
         },
         // Exclude deleted triggers
@@ -650,9 +661,39 @@ export const getAllUserTriggers = async (
         select: '_id username userImage name',
         model: Agent,
       })
+      .populate({
+        path: 'parent_trigger',
+        select: '_id user',
+      })
+
+    // Get IDs of all triggers owned by this user (to filter out subscriptions to own tasks)
+    const ownTriggerIds = new Set(
+      triggers
+        .filter(
+          t =>
+            t.user?.toString() === currentUserId.toString() &&
+            !t.parent_trigger,
+        )
+        .map(t => t._id.toString()),
+    )
+
+    // Filter out subscriptions where the parent_trigger is one of the user's own triggers
+    const filteredTriggers = triggers.filter(trigger => {
+      if (!trigger.parent_trigger) return true
+      // Get parent trigger ID whether it's populated or not
+      const pt = trigger.parent_trigger as
+        | { _id?: { toString(): string } }
+        | { toString(): string }
+      const parentTriggerId =
+        typeof pt === 'object' && pt !== null && '_id' in pt && pt._id
+          ? pt._id.toString()
+          : String(pt)
+      // Filter out if the parent trigger is one of the user's own triggers
+      return !ownTriggerIds.has(parentTriggerId)
+    })
 
     return reply.status(200).send({
-      triggers,
+      triggers: filteredTriggers,
     })
   } catch (error) {
     console.error('Error getting user triggers:', error)

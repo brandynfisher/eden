@@ -215,6 +215,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             <SocialPostEmbed
               results={toolResults || []}
               platform={postToolConfig?.platform || 'discord'}
+              args={toolCall.args}
             />
           </div>
         ) : isSessionPost ? (
