@@ -37,7 +37,7 @@ const NewSession = () => {
           turn_budget?: number
         }
         extras?: {
-          exclude_memory?: boolean
+          incognito?: boolean
         }
       } = {
         agent_ids: data.agents.map(agent => agent._id),
@@ -49,7 +49,7 @@ const NewSession = () => {
           mention_force_reply: data.mention_force_reply,
         },
         extras: {
-          exclude_memory: data.exclude_memory,
+          incognito: data.incognito,
         },
       }
 

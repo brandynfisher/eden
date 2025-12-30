@@ -74,6 +74,8 @@ import { useEffect, useRef, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -96,7 +98,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
-    exclude_memory: false,
+    incognito: false,
   })
 
   // Check if we're on a share route
@@ -151,7 +153,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           token_budget: session.budget?.token_budget,
           turn_budget_unlimited: !session.budget?.turn_budget,
           turn_budget: session.budget?.turn_budget,
-          exclude_memory: session.extras?.exclude_memory || false,
+          incognito: session.extras?.incognito || false,
         })
       }
     }
@@ -187,7 +189,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           turn_budget?: number
         }
         extras?: {
-          exclude_memory?: boolean
+          incognito?: boolean
         }
         agent_ids?: string[]
       } = {
@@ -224,10 +226,10 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         requestBody.budget = budget
       }
 
-      // Add exclude_memory to extras
-      if (settings.exclude_memory) {
+      // Add incognito to extras
+      if (settings.incognito) {
         requestBody.extras = {
-          exclude_memory: true,
+          incognito: true,
         }
       }
 

@@ -1353,6 +1353,11 @@ export const updateTrigger = async (
     }
   }
 
+  // If archiving (status set to 'finished'), automatically unshare the task
+  if (status === 'finished' && trigger.status !== 'finished') {
+    updateData.subscribable = false
+  }
+
   // Update directly in MongoDB
   const updatedTrigger = await Trigger.findByIdAndUpdate(
     triggerId,
@@ -1387,6 +1392,19 @@ export const updateTrigger = async (
       '[updateTrigger] Cascade result:',
       cascadeResult.modifiedCount,
       'triggers updated',
+    )
+  }
+
+  // If archiving, also archive all child subscriptions
+  if (status === 'finished' && trigger.status !== 'finished') {
+    const archiveResult = await Trigger.updateMany(
+      { parent_trigger: trigger._id, deleted: { $ne: true } },
+      { $set: { status: 'finished' } },
+    )
+    console.log(
+      '[updateTrigger] Archived subscriptions:',
+      archiveResult.modifiedCount,
+      'triggers archived',
     )
   }
 
@@ -1658,8 +1676,10 @@ export const getAgentSubscribableTriggers = async (
 
   // Find all subscribable triggers for this agent
   // Either directly linked to agent OR linked to a session with this agent
+  // Exclude deleted and archived (finished) triggers
   const triggers = await Trigger.find({
     subscribable: true,
+    status: { $ne: 'finished' },
     $or: [{ agent: agent._id }, { session: { $in: sessionIds } }],
     $and: [{ $or: [{ deleted: { $exists: false } }, { deleted: false }] }],
   })

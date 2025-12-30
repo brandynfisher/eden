@@ -160,7 +160,7 @@ const Session = ({
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
-    exclude_memory: false,
+    incognito: false,
   })
   const queryClient = useQueryClient()
   const { mutateAsync: updateUserPreferences } = useUpdateUserPreferences()
@@ -307,7 +307,7 @@ const Session = ({
           token_budget: session.budget?.token_budget,
           turn_budget_unlimited: !session.budget?.turn_budget,
           turn_budget: session.budget?.turn_budget,
-          exclude_memory: session.extras?.exclude_memory || false,
+          incognito: session.extras?.incognito || false,
         })
       }
     }
@@ -1523,7 +1523,7 @@ const Session = ({
           turn_budget?: number
         }
         extras?: {
-          exclude_memory?: boolean
+          incognito?: boolean
         }
         agent_ids?: string[]
       } = {
@@ -1560,10 +1560,10 @@ const Session = ({
         requestBody.budget = budget
       }
 
-      // Add exclude_memory to extras
-      if (settings.exclude_memory) {
+      // Add incognito to extras
+      if (settings.incognito) {
         requestBody.extras = {
-          exclude_memory: true,
+          incognito: true,
         }
       }
 

@@ -105,7 +105,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         ),
         extras: Type.Optional(
           Type.Object({
-            exclude_memory: Type.Optional(Type.Boolean()),
+            incognito: Type.Optional(Type.Boolean()),
           }),
         ),
       }),
@@ -152,7 +152,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         mention_force_reply: boolean
       }
       extras?: {
-        exclude_memory?: boolean
+        incognito?: boolean
         is_public?: boolean
       }
     }
@@ -207,7 +207,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         ),
         extras: Type.Optional(
           Type.Object({
-            exclude_memory: Type.Optional(Type.Boolean()),
+            incognito: Type.Optional(Type.Boolean()),
           }),
         ),
       }),
@@ -449,7 +449,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         pinned: Type.Optional(Type.Boolean()),
         extras: Type.Optional(
           Type.Object({
-            exclude_memory: Type.Optional(Type.Boolean()),
+            incognito: Type.Optional(Type.Boolean()),
             is_public: Type.Optional(Type.Boolean()),
           }),
         ),

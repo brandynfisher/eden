@@ -4639,7 +4639,7 @@
                   "extras": {
                     "type": "object",
                     "properties": {
-                      "exclude_memory": {
+                      "incognito": {
                         "type": "boolean"
                       }
                     }
@@ -4921,7 +4921,7 @@
                   "extras": {
                     "type": "object",
                     "properties": {
-                      "exclude_memory": {
+                      "incognito": {
                         "type": "boolean"
                       }
                     }

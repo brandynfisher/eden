@@ -90,6 +90,7 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
   session_id: string
   title?: string
   pinned?: boolean
+  visible?: boolean
   extras?: SessionExtras
   agent_ids?: string[]
   session_type?: SessionType
@@ -223,6 +224,9 @@ export const sessionsRenameRequestConfigV2 = (
   }
   if (args.pinned !== undefined) {
     data.pinned = args.pinned
+  }
+  if (args.visible !== undefined) {
+    data.visible = args.visible
   }
   if (args.extras !== undefined) {
     data.extras = args.extras
@@ -566,7 +570,7 @@ export type SessionsV2GetMessagesResponse = WebAPICallResult & {
 export type SessionStatus = 'active' | 'paused' | 'stopped' | 'archived'
 
 export type SessionExtras = {
-  exclude_memory?: boolean
+  incognito?: boolean
   is_public?: boolean
 }
 
@@ -602,6 +606,7 @@ export type SessionV2 = {
   platform?: 'discord' | 'telegram' | 'twitter' | 'farcaster'
   trigger?: string
   pinned?: boolean
+  visible?: boolean
   active_requests?: string[]
   extras?: SessionExtras
   /** Maps agent IDs to their private workspace session IDs */

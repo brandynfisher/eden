@@ -189,7 +189,7 @@ const ChatLaunchpad = () => {
     manna_budget_unlimited: true,
     token_budget_unlimited: true,
     turn_budget_unlimited: true,
-    exclude_memory: false,
+    incognito: false,
   })
 
   // Get user preferences for last agent
@@ -410,7 +410,7 @@ const ChatLaunchpad = () => {
             turn_budget?: number
           }
           extras?: {
-            exclude_memory?: boolean
+            incognito?: boolean
           }
         } = {
           content,
@@ -439,11 +439,11 @@ const ChatLaunchpad = () => {
           }
         }
 
-        // Add exclude_memory to extras
-        if (sessionSettings.exclude_memory) {
+        // Add incognito to extras
+        if (sessionSettings.incognito) {
           payload.extras = {
             ...payload.extras,
-            exclude_memory: true,
+            incognito: true,
           }
         }
 

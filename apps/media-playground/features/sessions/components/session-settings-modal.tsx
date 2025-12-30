@@ -44,7 +44,7 @@ export type SessionSettings = {
   token_budget?: number
   turn_budget_unlimited: boolean
   turn_budget?: number
-  exclude_memory: boolean
+  incognito: boolean
 }
 
 type SessionSettingsTab = 'participants' | 'context' | 'tasks'
@@ -226,7 +226,7 @@ export const SessionSettingsModal = ({
       settings.type !== initial.type ||
       settings.context !== initial.context ||
       settings.delay_interval !== initial.delay_interval ||
-      settings.exclude_memory !== initial.exclude_memory
+      settings.incognito !== initial.incognito
     )
   })()
 

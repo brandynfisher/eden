@@ -599,7 +599,7 @@ export const createSessionMessage = async (
         mention_force_reply: boolean
       }
       extras?: {
-        exclude_memory?: boolean
+        incognito?: boolean
         is_public?: boolean
       }
     }
@@ -971,7 +971,7 @@ export const listSessions = async (
   try {
     const queryOptions: QueryOptions = {
       select:
-        '_id title name owner createdAt updatedAt trigger agents users pinned session_type parent_session platform',
+        '_id title name owner createdAt updatedAt trigger agents users pinned visible session_type parent_session platform',
       limit,
       page,
       sort: {
