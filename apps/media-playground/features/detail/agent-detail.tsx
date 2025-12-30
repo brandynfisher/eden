@@ -1,6 +1,8 @@
 'use client'
 
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
+import { FarcasterIcon } from '@/components/icons/farcaster'
+import TwitterIcon from '@/components/icons/twitter'
 import { useAppShell } from '@/components/layout/app-shell'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -32,6 +34,7 @@ import {
   CheckIcon,
   EyeIcon,
   EyeOffIcon,
+  GlobeIcon,
   Loader2,
   MenuIcon,
   MessageSquareIcon,
@@ -448,6 +451,60 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                 <MessageSquareIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span>{formatCompactNumber(messageCount)} messages</span>
               </div>
+
+              {/* Social Links */}
+              {(agent.website ||
+                agent.social_accounts?.twitter ||
+                agent.social_accounts?.farcaster) && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {agent.website && (
+                      <Link
+                        href={agent.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <GlobeIcon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
+                        <span className="text-xs sm:text-sm">
+                          {agent.website
+                            .replace(/^https?:\/\//, '')
+                            .replace(/\/$/, '')}
+                        </span>
+                      </Link>
+                    )}
+                    {agent.social_accounts?.twitter && (
+                      <Link
+                        href={`https://twitter.com/${agent.social_accounts.twitter}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-80 transition-opacity"
+                        title={`@${agent.social_accounts.twitter}`}
+                      >
+                        <TwitterIcon
+                          size={16}
+                          className="sm:w-[18px] sm:h-[18px]"
+                        />
+                      </Link>
+                    )}
+                    {agent.social_accounts?.farcaster && (
+                      <Link
+                        href={`https://warpcast.com/${agent.social_accounts.farcaster}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#855DCD] hover:opacity-80 transition-opacity"
+                        title={`@${agent.social_accounts.farcaster}`}
+                      >
+                        <FarcasterIcon
+                          size={16}
+                          className="sm:w-[18px] sm:h-[18px]"
+                        />
+                      </Link>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Description */}

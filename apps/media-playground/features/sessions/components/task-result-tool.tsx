@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/error-boundary'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
 import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
 import { FarcasterCastEmbed } from '@/features/sessions/tools/farcaster-cast-embed'
+import { JsonResultEmbed } from '@/features/sessions/tools/json-result-embed'
 import { SeedEmbed } from '@/features/sessions/tools/seed-embed'
 import { SessionPostEmbed } from '@/features/sessions/tools/session-post-embed'
 import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
@@ -115,6 +116,12 @@ const SOCIAL_TOOLS = {
       contentType: 'trends' as const,
     },
   },
+
+  // JSON result tools - display prettified JSON output
+  JSON_TOOLS: {
+    display: {},
+    eden_search: {},
+  },
 } as const
 
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({
@@ -156,6 +163,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     SOCIAL_TOOLS.WEB_SEARCH_TOOLS[
       tool as keyof typeof SOCIAL_TOOLS.WEB_SEARCH_TOOLS
     ]
+  const jsonToolConfig =
+    SOCIAL_TOOLS.JSON_TOOLS[tool as keyof typeof SOCIAL_TOOLS.JSON_TOOLS]
 
   const isFarcasterCast = tool === 'farcaster_cast'
   const isSocialPost = !!postToolConfig
@@ -167,6 +176,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   const isSocialContent = !!contentToolConfig
   const isCollectionTool = !!collectionToolConfig
   const isWebSearchTool = !!webSearchToolConfig
+  const isJsonTool = !!jsonToolConfig
 
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
@@ -292,6 +302,11 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               contentType={contentToolConfig?.contentType || 'search'}
             />
           </div>
+        ) : isJsonTool && toolCall.status === 'completed' ? (
+          // Handle JSON result tools (display, eden_search)
+          <div className="mb-2 relative group">
+            <JsonResultEmbed results={toolResults || []} toolName={tool!} />
+          </div>
         ) : toolCall.child_session ? (
           // If tool has a child_session but isn't a SESSION_POST_TOOLS, show session (which includes media)
           <SessionPostEmbed
@@ -311,6 +326,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
       {!hasDisplayableResults &&
         !(isWebSearchTool && toolCall.status === 'completed') &&
         !(isVerdelisSeedTool && toolCall.status === 'completed') &&
+        !(isJsonTool && toolCall.status === 'completed') &&
         !isVerdelisPlantSeedTool &&
         !isSessionPost &&
         !toolCall.child_session && (
