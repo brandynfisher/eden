@@ -5,7 +5,7 @@ import TwitterIcon from '@/components/icons/twitter'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ExternalLink } from 'lucide-react'
-import React, { Component, ReactNode } from 'react'
+import React, { Component, ReactNode, useState } from 'react'
 import { Tweet } from 'react-tweet'
 
 export type SocialPostEmbedProps = {
@@ -151,11 +151,15 @@ const isVideoUrl = (url: string): boolean => {
 }
 
 // Discord post embed - Discord doesn't have official embeds, so we create a styled message preview
+const DISCORD_CONTENT_LIMIT = 500
+
 const DiscordPostEmbed: React.FC<{
   url: string
   content?: string
   mediaUrls?: string[]
 }> = ({ url, content, mediaUrls }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   // Normalize media URLs
   const normalizedMediaUrls = mediaUrls?.map(mediaUrl => {
     // If it's an Eden CDN URL, get the cloudfront version
@@ -164,6 +168,13 @@ const DiscordPostEmbed: React.FC<{
     }
     return mediaUrl
   })
+
+  // Check if content needs truncation
+  const needsTruncation = content && content.length > DISCORD_CONTENT_LIMIT
+  const displayContent =
+    needsTruncation && !isExpanded
+      ? content.slice(0, DISCORD_CONTENT_LIMIT) + '...'
+      : content
 
   return (
     <div className="overflow-hidden rounded-md border border-[#1e1f22] bg-[#313338] max-w-lg">
@@ -187,10 +198,20 @@ const DiscordPostEmbed: React.FC<{
       {/* Message content */}
       <div className="px-3 py-3 space-y-3">
         {/* Text content */}
-        {content && (
-          <p className="text-sm text-[#dbdee1] whitespace-pre-wrap break-words">
-            {content}
-          </p>
+        {displayContent && (
+          <div>
+            <p className="text-sm text-[#dbdee1] whitespace-pre-wrap break-words">
+              {displayContent}
+            </p>
+            {needsTruncation && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="mt-1 text-xs text-[#00A8FC] hover:underline"
+              >
+                {isExpanded ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Media grid */}

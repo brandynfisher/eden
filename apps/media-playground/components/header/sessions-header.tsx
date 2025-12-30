@@ -76,6 +76,8 @@ import { useEffect, useRef, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -204,9 +206,8 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
         },
       }
 
-      if (settings.context && settings.context.trim()) {
-        requestBody.context = settings.context
-      }
+      // Always include context to allow clearing it (empty string clears the field)
+      requestBody.context = settings.context?.trim() || ''
 
       const budget: {
         manna_budget?: number

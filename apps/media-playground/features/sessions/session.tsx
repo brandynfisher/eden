@@ -1538,9 +1538,8 @@ const Session = ({
         },
       }
 
-      if (settings.context && settings.context.trim()) {
-        requestBody.context = settings.context
-      }
+      // Always include context to allow clearing it (empty string clears the field)
+      requestBody.context = settings.context?.trim() || ''
 
       const budget: {
         manna_budget?: number

@@ -632,7 +632,7 @@ export const SessionForm = ({
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Incognito</FormLabel>
                     <FormDescription>
-                      This session will not contribute to memory formation
+                      No memories will be formed from this session
                     </FormDescription>
                   </div>
                   <FormControl>

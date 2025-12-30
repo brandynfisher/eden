@@ -48,7 +48,7 @@ export const ContextTab = ({
         <div className="space-y-0.5">
           <Label>Incognito</Label>
           <p className="text-sm text-muted-foreground">
-            This session will not contribute to memory formation
+            No memories will be formed from this session
           </p>
         </div>
         <Switch
