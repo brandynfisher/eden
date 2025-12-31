@@ -124,6 +124,17 @@ export const DeploymentFormFooter = ({
             enable_discord_dm: data.enableDiscordDm ?? false,
           },
         }
+      } else if (platform === 'discord_v3') {
+        config = {
+          discord: {
+            guild_id: data.guildId,
+            channel_configs: (data.channels || []).map((ch: any) => ({
+              channel_id: ch.channelId,
+              channel_name: ch.channelName,
+              access: ch.access || 'read_write',
+            })),
+          },
+        }
       } else if (platform === 'telegram') {
         config = {
           telegram: {
@@ -205,6 +216,10 @@ export const DeploymentFormFooter = ({
               token: data.token,
             },
           }
+        } else if (platform === 'discord_v3') {
+          payload.secrets = {
+            discord: {},
+          }
         } else if (platform === 'telegram' && data.token) {
           payload.secrets = {
             telegram: {
@@ -285,6 +300,12 @@ export const DeploymentFormFooter = ({
         }
 
         if (platform === 'discord') {
+          payload.secrets = {
+            discord: {
+              token: data.token,
+            },
+          }
+        } else if (platform === 'discord_v3') {
           payload.secrets = {
             discord: {
               token: data.token,

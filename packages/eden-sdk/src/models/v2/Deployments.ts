@@ -3,6 +3,7 @@ import { Agent } from 'src/models/v2'
 // Base Types
 export type ClientType =
   | 'discord'
+  | 'discord_v3'
   | 'telegram'
   | 'farcaster'
   | 'twitter'
