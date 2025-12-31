@@ -133,12 +133,23 @@ export function useVoiceConversation(
   const createBuiltInToolHandler = useCallback(
     (toolName: string) => {
       return async (parameters: Record<string, unknown>): Promise<string> => {
+        // Prominent console logging to track tool invocation
+        // eslint-disable-next-line no-console
+        console.log(
+          `%c[TOOL INVOKED] ${toolName}`,
+          'background: #4CAF50; color: white; padding: 4px 8px; font-weight: bold;',
+        )
+        // eslint-disable-next-line no-console
+        console.log('[TOOL PARAMS]', JSON.stringify(parameters, null, 2))
+
         const sessionId = sessionIdRef.current
         if (!sessionId) {
+          console.error('[TOOL ERROR] No active session for tool call')
           throw new Error('No active session for tool call')
         }
 
-        addDebugLog(`Calling built-in tool: ${toolName}`, 'info')
+        addDebugLog(`🔧 TOOL INVOKED: ${toolName}`, 'info')
+        addDebugLog(`Tool params: ${JSON.stringify(parameters)}`, 'info')
 
         // Step 1: Create pending tool call in Eden session
         const pendingToolCall = await saveToolCallToSession({
@@ -254,8 +265,17 @@ export function useVoiceConversation(
       (params: Record<string, unknown>) => Promise<string>
     > = {}
 
+    // eslint-disable-next-line no-console
+    console.log(
+      '%c[TOOL SETUP] Building handlers for tools:',
+      'background: #2196F3; color: white; padding: 2px 6px;',
+      Object.keys(BUILT_IN_TOOLS),
+    )
+
     for (const toolName of Object.keys(BUILT_IN_TOOLS)) {
       handlers[toolName] = createBuiltInToolHandler(toolName)
+      // eslint-disable-next-line no-console
+      console.log(`[TOOL SETUP] Registered handler for: ${toolName}`)
     }
 
     return handlers
@@ -271,7 +291,18 @@ export function useVoiceConversation(
           >
         | undefined,
     ) => {
-      if (!clientTools) return undefined
+      if (!clientTools) {
+        // eslint-disable-next-line no-console
+        console.log('[TOOL WRAP] No client tools to wrap')
+        return undefined
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(
+        '%c[TOOL WRAP] Wrapping tools:',
+        'background: #FF9800; color: white; padding: 2px 6px;',
+        Object.keys(clientTools),
+      )
 
       const wrappedTools: Record<
         string,
@@ -282,16 +313,27 @@ export function useVoiceConversation(
         wrappedTools[toolName] = async (
           parameters: Record<string, unknown>,
         ) => {
-          addDebugLog(`Tool called: ${toolName}`, 'info')
+          // Log when ElevenLabs invokes a tool through the wrapper
+          // eslint-disable-next-line no-console
+          console.log(
+            `%c[ELEVENLABS TOOL CALL] ${toolName}`,
+            'background: #9C27B0; color: white; padding: 4px 8px; font-weight: bold;',
+          )
+          // eslint-disable-next-line no-console
+          console.log('[ELEVENLABS TOOL PARAMS]', parameters)
+          addDebugLog(`🎙️ ElevenLabs calling tool: ${toolName}`, 'info')
 
           try {
             const result = await handler(parameters)
+            // eslint-disable-next-line no-console
+            console.log(`[TOOL RESULT] ${toolName}:`, result)
             addToolCall(toolName, parameters, result)
             addDebugLog(`Tool ${toolName} completed successfully`, 'success')
             return result
           } catch (error) {
             const errorMessage =
               error instanceof Error ? error.message : String(error)
+            console.error(`[TOOL ERROR] ${toolName}:`, errorMessage)
             addToolCall(toolName, parameters, { error: errorMessage })
             addDebugLog(`Tool ${toolName} failed: ${errorMessage}`, 'error')
             throw error
@@ -299,6 +341,8 @@ export function useVoiceConversation(
         }
       }
 
+      // eslint-disable-next-line no-console
+      console.log('[TOOL WRAP] Final wrapped tools:', Object.keys(wrappedTools))
       return wrappedTools
     },
     [addDebugLog, addToolCall],
@@ -492,8 +536,18 @@ export function useVoiceConversation(
   // Note: For public agents, we don't pass the API key (it's not needed and shouldn't be exposed)
   // For private agents, we would need to use conversation tokens generated server-side
   const conversation = useConversation({
-    onConnect: () => {
-      addDebugLog('Connected to agent', 'success')
+    onConnect: (props: { conversationId: string }) => {
+      // eslint-disable-next-line no-console
+      console.log(
+        '%c[ELEVENLABS CONNECTED]',
+        'background: #4CAF50; color: white; padding: 4px 8px; font-weight: bold;',
+        'Conversation ID:',
+        props.conversationId,
+      )
+      addDebugLog(
+        `Connected to agent (conversation: ${props.conversationId})`,
+        'success',
+      )
     },
     onDisconnect: (reason: unknown) => {
       addDebugLog(
@@ -519,6 +573,17 @@ export function useVoiceConversation(
       }
     },
     onMessage: async (message: { source: string; message: string }) => {
+      // Log all messages for debugging
+      // eslint-disable-next-line no-console
+      console.log(
+        `%c[ELEVENLABS MESSAGE] ${message.source}`,
+        message.source === 'ai'
+          ? 'background: #3F51B5; color: white; padding: 2px 6px;'
+          : 'background: #009688; color: white; padding: 2px 6px;',
+        message.message.substring(0, 100) +
+          (message.message.length > 100 ? '...' : ''),
+      )
+
       // Handle messages from ElevenLabs - messages have source: 'user' or 'ai'
       if (message.source === 'ai') {
         setTranscript(prev => [
@@ -558,17 +623,33 @@ export function useVoiceConversation(
         }
       }
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, context?: unknown) => {
       const errorMessage =
         typeof error === 'string'
           ? error
           : error instanceof Error
           ? error.message
           : JSON.stringify(error)
+      console.error('[ELEVENLABS ERROR]', errorMessage, context)
       addDebugLog(`Error: ${errorMessage}`, 'error')
     },
-    onStatusChange: () => {
-      // Status changes are tracked via conversation.status
+    onStatusChange: (props: { status: string }) => {
+      // eslint-disable-next-line no-console
+      console.log(
+        `%c[ELEVENLABS STATUS] ${props.status}`,
+        'background: #607D8B; color: white; padding: 2px 6px;',
+      )
+      addDebugLog(`Status: ${props.status}`, 'info')
+    },
+    onModeChange: (props: { mode: string }) => {
+      // Mode changes between "speaking" and "listening"
+      // Tool execution may trigger mode changes
+      // eslint-disable-next-line no-console
+      console.log(
+        `%c[ELEVENLABS MODE] ${props.mode}`,
+        'background: #795548; color: white; padding: 2px 6px;',
+      )
+      addDebugLog(`Mode: ${props.mode}`, 'info')
     },
   })
 
@@ -780,15 +861,43 @@ export function useVoiceConversation(
           // overrides: sessionConfig.overrides,
           ...(wrappedClientTools && { clientTools: wrappedClientTools }),
         }
+
+        // Detailed logging of what's being sent to ElevenLabs
         // eslint-disable-next-line no-console
         console.log(
-          '[ElevenLabs] Starting with config (no overrides):',
-          fullConfig,
+          '%c[ELEVENLABS CONFIG] Starting session with:',
+          'background: #E91E63; color: white; padding: 4px 8px; font-weight: bold;',
+        )
+        // eslint-disable-next-line no-console
+        console.log('[ELEVENLABS CONFIG] Agent ID:', currentAgentId)
+        // eslint-disable-next-line no-console
+        console.log(
+          '[ELEVENLABS CONFIG] Client tools registered:',
+          wrappedClientTools ? Object.keys(wrappedClientTools) : 'NONE',
+        )
+        // eslint-disable-next-line no-console
+        console.log(
+          '[ELEVENLABS CONFIG] Dynamic variables:',
+          Object.keys(sessionConfig.dynamicVariables),
+        )
+        // eslint-disable-next-line no-console
+        console.log('[ELEVENLABS CONFIG] Full config:', fullConfig)
+
+        addDebugLog(
+          `Registering ${
+            wrappedClientTools ? Object.keys(wrappedClientTools).length : 0
+          } tools with ElevenLabs`,
+          'info',
         )
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (conversation.startSession as any)(fullConfig)
         addDebugLog('ElevenLabs conversation started successfully', 'success')
+        // eslint-disable-next-line no-console
+        console.log(
+          '%c[ELEVENLABS] Session started successfully',
+          'background: #4CAF50; color: white; padding: 2px 6px;',
+        )
       } catch (elevenLabsError) {
         const elevenLabsErrorMessage =
           elevenLabsError instanceof Error
