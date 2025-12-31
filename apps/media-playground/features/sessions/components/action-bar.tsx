@@ -1,4 +1,5 @@
 import { LLMCallButton } from './llm-call-modal'
+import { ReactionsModal } from './reactions-modal'
 import { ToolHoverMenu } from './tool-hover-menu'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -6,7 +7,7 @@ import { hasDisplayableResults } from '@/lib/tool-results'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { CheckIcon, CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, HeartIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { useState } from 'react'
 
@@ -21,15 +22,56 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
   const { updateReaction } = useSessionQuery({ sessionId, enabled: false })
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showReactionsModal, setShowReactionsModal] = useState(false)
 
   const userId = user?._id || ''
 
-  const hasThumbsUp = userId
-    ? message.reactions?.[userId]?.includes('thumbs_up')
+  // Reactions can be in two formats:
+  // 1. Array format (from eve backend): [{ user_id, reaction }, ...]
+  //    Note: user_id can be a string or ObjectId object { $oid: "..." }
+  // 2. Dictionary format (from Eden API): { [userId]: [reactions...] }
+  const normalizeReactions = () => {
+    if (!message.reactions) return []
+
+    if (Array.isArray(message.reactions)) {
+      // Array format from eve backend
+      return message.reactions.map(
+        (r: { user_id: string | { $oid: string }; reaction: string }) => {
+          // Handle ObjectId format { $oid: "..." } or plain string
+          const id =
+            typeof r.user_id === 'object' && r.user_id?.$oid
+              ? r.user_id.$oid
+              : String(r.user_id)
+          return {
+            userId: id,
+            reaction: r.reaction,
+          }
+        },
+      )
+    } else {
+      // Dictionary format from Eden API
+      return Object.entries(message.reactions).flatMap(
+        ([reactorId, reactions]) => {
+          if (!Array.isArray(reactions)) return []
+          return reactions.map(reaction => ({
+            userId: reactorId,
+            reaction: String(reaction),
+          }))
+        },
+      )
+    }
+  }
+
+  const allReactions = normalizeReactions()
+
+  const hasHeart = userId
+    ? allReactions.some(r => r.userId === userId && r.reaction === '❤️')
     : false
-  const hasThumbsDown = userId
-    ? message.reactions?.[userId]?.includes('thumbs_down')
-    : false
+
+  // Count reactions from others (to determine if we show the count badge)
+  const otherUsersReactionCount = allReactions.filter(
+    r => r.userId !== userId,
+  ).length
 
   // Session post tools that render their own badge in SessionPostEmbed
   const SESSION_POST_TOOLS = [
@@ -73,9 +115,18 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
         reaction,
       })
 
-      updateReaction(response.data.message)
+      if (response.data?.message) {
+        updateReaction(response.data.message)
+      }
     } catch (error) {
-      console.error('Error toggling reaction:', error)
+      if (axios.isAxiosError(error)) {
+        console.error(
+          'Error toggling reaction:',
+          error.response?.data || error.message,
+        )
+      } else {
+        console.error('Error toggling reaction:', error)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -106,22 +157,32 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
       <button
         className={cn(
           'aui-button aui-button-ghost aui-button-icon hover:bg-gray-700/50 rounded-md p-2',
-          hasThumbsUp && 'text-green-600',
+          hasHeart && 'text-red-500',
         )}
-        onClick={() => toggleReaction('thumbs_up')}
+        onClick={() => toggleReaction('❤️')}
+        title={hasHeart ? 'Remove heart' : 'Add heart'}
       >
-        <ThumbsUpIcon className="w-4 h-4" />
+        <HeartIcon
+          className="w-4 h-4"
+          fill={hasHeart ? 'currentColor' : 'none'}
+        />
       </button>
 
-      <button
-        className={cn(
-          'aui-button aui-button-ghost aui-button-icon hover:bg-gray-700/50 rounded-md p-2',
-          hasThumbsDown && 'text-red-600',
-        )}
-        onClick={() => toggleReaction('thumbs_down')}
-      >
-        <ThumbsDownIcon className="w-4 h-4" />
-      </button>
+      {otherUsersReactionCount > 0 && (
+        <button
+          className="aui-button aui-button-ghost text-xs px-2 py-1 hover:bg-gray-700/50 rounded-md"
+          onClick={() => setShowReactionsModal(true)}
+          title="View all reactions"
+        >
+          {allReactions.length}
+        </button>
+      )}
+
+      <ReactionsModal
+        open={showReactionsModal}
+        onOpenChange={setShowReactionsModal}
+        reactions={allReactions}
+      />
 
       <div className="ml-auto flex flex-wrap items-center gap-2 max-w-full min-w-0 justify-end">
         {completedToolCalls.map((toolCall, index) => (

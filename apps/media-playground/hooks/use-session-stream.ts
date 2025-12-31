@@ -70,7 +70,7 @@ export const useSessionStream = ({
           mention_force_reply: boolean
         }
         extras?: {
-          exclude_memory?: boolean
+          incognito?: boolean
           is_public?: boolean
         }
       },

@@ -71,9 +71,8 @@ export const EditSessionModal = ({
         },
       }
 
-      if (data.context && data.context.trim()) {
-        requestBody.context = data.context
-      }
+      // Always include context to allow clearing it (empty string clears the field)
+      requestBody.context = data.context?.trim() || ''
 
       const budget: {
         manna_budget?: number

@@ -143,7 +143,7 @@ export async function PATCH(
       session_id: string
       title?: string
       pinned?: boolean
-      extras?: { exclude_memory?: boolean; is_public?: boolean }
+      extras?: { incognito?: boolean; is_public?: boolean }
       agent_ids?: string[]
       session_type?: SessionType
       settings?: SessionSettings

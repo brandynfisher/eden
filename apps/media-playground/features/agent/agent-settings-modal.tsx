@@ -266,6 +266,8 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
           ...data,
           image: imageToSend,
         })
+        // Invalidate to refetch latest agent data
+        await invalidate()
         // Reset form with current values to clear dirty state
         form.reset(data)
         toast.success('Agent updated successfully', {
@@ -290,7 +292,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         })
       }
     },
-    [agent, form],
+    [agent, form, invalidate],
   )
 
   const handleDeleteAgent = async () => {

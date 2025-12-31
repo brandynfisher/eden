@@ -133,6 +133,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         key: Type.String(),
         description: Type.String(),
         image: Type.String(),
+        website: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
         models: Type.Optional(
           Type.Array(
@@ -212,6 +213,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         key: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
+        website: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
         models: Type.Optional(
           Type.Array(

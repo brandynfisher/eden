@@ -88,7 +88,7 @@ const sessionFormSchema = z.object({
     .min(1, 'Turn budget must be at least 1')
     .max(1000, 'Turn budget must not exceed 1000')
     .optional(),
-  exclude_memory: z.boolean().default(false),
+  incognito: z.boolean().default(false),
   permissions: z
     .array(
       z.object({
@@ -148,7 +148,7 @@ export const SessionForm = ({
       token_budget: 10000,
       turn_budget_unlimited: true,
       turn_budget: 100,
-      exclude_memory: false,
+      incognito: false,
       permissions: [],
       ...defaultValues,
     },
@@ -626,13 +626,13 @@ export const SessionForm = ({
 
             <FormField
               control={form.control}
-              name="exclude_memory"
+              name="incognito"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Exclude Memory</FormLabel>
+                    <FormLabel className="text-base">Incognito</FormLabel>
                     <FormDescription>
-                      Disable memory injection into the system prompt
+                      No memories will be formed from this session
                     </FormDescription>
                   </div>
                   <FormControl>

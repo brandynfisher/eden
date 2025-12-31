@@ -599,7 +599,7 @@ export const createSessionMessage = async (
         mention_force_reply: boolean
       }
       extras?: {
-        exclude_memory?: boolean
+        incognito?: boolean
         is_public?: boolean
       }
     }
@@ -971,7 +971,7 @@ export const listSessions = async (
   try {
     const queryOptions: QueryOptions = {
       select:
-        '_id title name owner createdAt updatedAt trigger agents users pinned session_type parent_session platform',
+        '_id title name owner createdAt updatedAt trigger agents users pinned visible session_type parent_session platform',
       limit,
       page,
       sort: {
@@ -1573,9 +1573,28 @@ export const addSessionMessageReaction = async (
     })
   }
 
-  // Initialize reactions if it doesn't exist
+  // Initialize reactions if it doesn't exist or convert from array format
+  // Eve backend stores: [{ user_id, reaction }, ...]
+  // Eden API expects: { [userId]: [reactions...] }
   if (!message.reactions) {
     message.reactions = {}
+  } else if (Array.isArray(message.reactions)) {
+    // Convert array format to dictionary format
+    const dictReactions: Record<string, string[]> = {}
+    for (const r of message.reactions as Array<{
+      user_id: string | { toString(): string }
+      reaction: string
+    }>) {
+      const rUserId =
+        typeof r.user_id === 'object' ? r.user_id.toString() : r.user_id
+      if (!dictReactions[rUserId]) {
+        dictReactions[rUserId] = []
+      }
+      if (!dictReactions[rUserId].includes(r.reaction)) {
+        dictReactions[rUserId].push(r.reaction)
+      }
+    }
+    message.reactions = dictReactions
   }
 
   const userIdStr = userId.toString()

@@ -43,20 +43,20 @@ export const ContextTab = ({
         />
       </div>
 
-      {/* Exclude Memory */}
+      {/* Incognito Mode */}
       <div className="flex items-center justify-between rounded-lg border p-4">
         <div className="space-y-0.5">
-          <Label>Exclude Memory</Label>
+          <Label>Incognito</Label>
           <p className="text-sm text-muted-foreground">
-            Disable memory injection into the system prompt
+            No memories will be formed from this session
           </p>
         </div>
         <Switch
-          checked={settings.exclude_memory}
+          checked={settings.incognito}
           onCheckedChange={checked =>
             onSettingsChange({
               ...settings,
-              exclude_memory: checked,
+              incognito: checked,
             })
           }
         />

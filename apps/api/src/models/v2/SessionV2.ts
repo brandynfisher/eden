@@ -37,8 +37,9 @@ export interface SessionSchema {
   last_actor_id?: ObjectId
   trigger?: ObjectId
   pinned?: boolean
+  visible?: boolean
   extras?: {
-    exclude_memory?: boolean
+    incognito?: boolean
     is_public?: boolean
   }
   /** Maps agent IDs to their private workspace session IDs */
@@ -150,6 +151,9 @@ export const sessionSchema = new Schema<SessionDocument>(
     pinned: {
       type: Boolean,
       default: false,
+    },
+    visible: {
+      type: Boolean,
     },
     extras: {
       type: Schema.Types.Mixed,
