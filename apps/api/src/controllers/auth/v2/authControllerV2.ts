@@ -1638,3 +1638,187 @@ export const disconnectGoogleCalendar = async (
     })
   }
 }
+
+export const discordV3OAuthCallback = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { code, state, error } = request.query as {
+    code?: string
+    state: string
+    error?: string
+  }
+
+  const sendPopupResponse = (
+    success: boolean,
+    guilds?: any[],
+    message?: string,
+  ) => {
+    const targetOrigin = server.config.EDEN2_FRONTEND_URL || '*'
+    const payload = JSON.stringify({
+      type: 'discord-v3-config',
+      success,
+      guilds: guilds || [],
+      message,
+    })
+    return reply.type('text/html').send(`<!DOCTYPE html>
+<html>
+  <head>
+    <title>Discord Server Selection</title>
+  </head>
+  <body>
+    <p>Loading your Discord servers...</p>
+    <script>
+      ;(function() {
+        try {
+          if (window.opener) {
+            window.opener.postMessage(${payload}, ${JSON.stringify(
+      targetOrigin,
+    )})
+          }
+        } catch (err) {
+          console.error(err)
+        }
+        setTimeout(() => window.close(), 1500)
+      })()
+    </script>
+  </body>
+</html>`)
+  }
+
+  if (error) {
+    return sendPopupResponse(false, undefined, error)
+  }
+
+  if (!code || !state) {
+    return sendPopupResponse(false, undefined, 'Missing code or state')
+  }
+
+  let parsedState: { agent_id?: string; mode?: string } | undefined
+  try {
+    parsedState = JSON.parse(state)
+  } catch {
+    return sendPopupResponse(false, undefined, 'Invalid state')
+  }
+
+  const agentId = parsedState?.agent_id
+  if (!agentId) {
+    return sendPopupResponse(false, undefined, 'Missing agent_id in state')
+  }
+
+  // Verify agent exists
+  const agent = await Agent.findById(agentId)
+  if (!agent) {
+    return sendPopupResponse(false, undefined, 'Agent not found')
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await axios.post(
+      'https://discord.com/api/oauth2/token',
+      new URLSearchParams({
+        client_id: server.config.DISCORD_CLIENT_ID as string,
+        client_secret: server.config.DISCORD_CLIENT_SECRET as string,
+        code,
+        redirect_uri: `${server.config.API_URL}/v2/deployments/discord/oauth/callback`,
+        grant_type: 'authorization_code',
+        scope: 'guilds',
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    )
+
+    const { access_token } = tokenResponse.data
+
+    // Fetch user's guilds
+    const guildsResponse = await axios.get(
+      'https://discord.com/api/users/@me/guilds',
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      },
+    )
+
+    const allGuilds = guildsResponse.data
+
+    // Filter guilds where user has admin/manage server permissions
+    const ADMINISTRATOR = 0x8
+    const MANAGE_GUILD = 0x20
+
+    const adminGuilds = allGuilds.filter((guild: any) => {
+      const permissions = parseInt(guild.permissions)
+      return permissions & ADMINISTRATOR || permissions & MANAGE_GUILD
+    })
+
+    // Check which guilds have the bot
+    const botToken = server.config.DISCORD_BOT_TOKEN
+    const availableGuilds = []
+
+    for (const guild of adminGuilds) {
+      try {
+        await axios.get(`https://discord.com/api/v10/guilds/${guild.id}`, {
+          headers: {
+            Authorization: `Bot ${botToken}`,
+          },
+        })
+        // Bot is in guild
+        availableGuilds.push({
+          id: guild.id,
+          name: guild.name,
+          icon: guild.icon,
+          owner: guild.owner || false,
+        })
+      } catch {
+        // Bot not in guild, skip
+      }
+    }
+
+    return sendPopupResponse(true, availableGuilds)
+  } catch (error: any) {
+    server.log.error({ error }, 'Discord V3 OAuth error')
+    return sendPopupResponse(false, undefined, 'Failed to load Discord servers')
+  }
+}
+
+export const getDiscordGuildChannels = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { guildId } = request.params as { guildId: string }
+  const botToken = server.config.DISCORD_BOT_TOKEN
+
+  try {
+    const response = await axios.get(
+      `https://discord.com/api/v10/guilds/${guildId}/channels`,
+      {
+        headers: {
+          Authorization: `Bot ${botToken}`,
+        },
+      },
+    )
+
+    const allChannels = response.data
+
+    // Filter to text channels only (type 0 = GUILD_TEXT, type 5 = GUILD_NEWS)
+    const textChannels = allChannels
+      .filter((ch: any) => ch.type === 0 || ch.type === 5)
+      .map((ch: any) => ({
+        id: ch.id,
+        name: ch.name,
+        type: ch.type,
+      }))
+
+    return reply.send({ channels: textChannels })
+  } catch (error: any) {
+    server.log.error({ error, guildId }, 'Failed to fetch guild channels')
+    return reply.status(500).send({
+      message: 'Failed to fetch channels',
+    })
+  }
+}
