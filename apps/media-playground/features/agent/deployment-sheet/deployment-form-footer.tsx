@@ -506,7 +506,11 @@ export const DeploymentFormFooter = ({
                     })
                   }
                 })}
-                disabled={isDeploying || !form.formState.isDirty || !canSubmit}
+                disabled={
+                  isDeploying ||
+                  (isDeployed && !form.formState.isDirty) ||
+                  !canSubmit
+                }
               >
                 {isDeployed ? (
                   <SaveIcon className="size-4 mr-2" />
