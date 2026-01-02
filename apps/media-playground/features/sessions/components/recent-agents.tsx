@@ -21,13 +21,12 @@ import { MinimalAgent } from '@edenlabs/eden-sdk'
 import {
   BrainIcon,
   ChevronRightIcon,
-  ExternalLinkIcon,
+  MessageCircleIcon,
   MoreHorizontal,
   PinIcon,
   PinOffIcon,
   SettingsIcon,
 } from 'lucide-react'
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { FC, useEffect, useMemo, useState } from 'react'
 
@@ -68,18 +67,19 @@ const AgentListItem: FC<AgentListItemProps> = ({
     setHasMounted(true)
   }, [])
 
-  // Only highlight if on agent's home screen, not on a specific session
-  const agentPath = `/chat/${agent.username || agent._id}`
+  // Only highlight if on agent's profile page
+  const agentPath = `/agents/${agent.username || agent._id}`
   const isActive = pathname === agentPath
 
   const handleAgentClick = () => {
     onItemClick?.()
-    router.push(`/chat?agent=${agent.username || agent._id}`)
+    router.push(`/agents/${agent.username || agent._id}`)
   }
 
-  const handleSettingsClick = (e: React.MouseEvent) => {
+  const handleChatClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onSettingsOpen?.()
+    onItemClick?.()
+    router.push(`/chat?agent=${agent.username || agent._id}`)
   }
 
   return (
@@ -116,30 +116,13 @@ const AgentListItem: FC<AgentListItemProps> = ({
       </button>
 
       <div className="flex items-center gap-1 shrink-0 opacity-100">
-        {hasMounted && !isPermissionsLoading && (
-          <>
-            {hasEditAccess ? (
-              <button
-                onClick={handleSettingsClick}
-                className="p-1.5 hover:bg-muted/80 rounded transition-colors"
-                title="Agent settings"
-              >
-                <SettingsIcon className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  onMemoriesOpen?.()
-                }}
-                className="p-1.5 hover:bg-muted/80 rounded transition-colors"
-                title="View memories"
-              >
-                <BrainIcon className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </>
-        )}
+        <button
+          onClick={handleChatClick}
+          className="p-1.5 hover:bg-muted/80 rounded transition-colors"
+          title="Chat with agent"
+        >
+          <MessageCircleIcon className="h-3.5 w-3.5" />
+        </button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -152,12 +135,28 @@ const AgentListItem: FC<AgentListItemProps> = ({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/agents/${agent.username || agent._id}`}>
-                <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                View Profile
-              </Link>
-            </DropdownMenuItem>
+            {hasMounted && !isPermissionsLoading && hasEditAccess && (
+              <DropdownMenuItem
+                onClick={e => {
+                  e.stopPropagation()
+                  onSettingsOpen?.()
+                }}
+              >
+                <SettingsIcon className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            )}
+            {hasMounted && !isPermissionsLoading && !hasEditAccess && (
+              <DropdownMenuItem
+                onClick={e => {
+                  e.stopPropagation()
+                  onMemoriesOpen?.()
+                }}
+              >
+                <BrainIcon className="mr-2 h-4 w-4" />
+                View Memories
+              </DropdownMenuItem>
+            )}
             {isPinned ? (
               <DropdownMenuItem
                 onClick={e => {
