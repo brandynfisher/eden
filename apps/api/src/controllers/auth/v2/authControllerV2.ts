@@ -1718,8 +1718,8 @@ export const discordV3OAuthCallback = async (
     const tokenResponse = await axios.post(
       'https://discord.com/api/oauth2/token',
       new URLSearchParams({
-        client_id: server.config.DISCORD_OAUTH_CLIENT_ID as string,
-        client_secret: server.config.DISCORD_OAUTH_CLIENT_SECRET as string,
+        client_id: server.config.DISCORD_CLIENT_ID as string,
+        client_secret: server.config.DISCORD_CLIENT_SECRET as string,
         code,
         redirect_uri: `${server.config.API_URL}/v2/deployments/discord/oauth/callback`,
         grant_type: 'authorization_code',

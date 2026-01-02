@@ -92,8 +92,6 @@ const ConfigSchema = Type.Strict(
     MAILGUN_WEBHOOK_SIGNING_KEY: Type.Optional(Type.String()),
     GOOGLE_CALENDAR_CLIENT_ID: Type.Optional(Type.String()),
     GOOGLE_CALENDAR_CLIENT_SECRET: Type.Optional(Type.String()),
-    DISCORD_OAUTH_CLIENT_ID: Type.Optional(Type.String()),
-    DISCORD_OAUTH_CLIENT_SECRET: Type.Optional(Type.String()),
     DISCORD_BOT_TOKEN: Type.Optional(Type.String()),
   }),
 )

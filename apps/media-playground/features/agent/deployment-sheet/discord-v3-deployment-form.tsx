@@ -65,8 +65,7 @@ interface DiscordV3DeploymentFormProps {
   deployment?: Deployment
 }
 
-const DISCORD_CLIENT_ID =
-  process.env.NEXT_PUBLIC_DISCORD_OAUTH_CLIENT_ID || '1455722279701839996'
+const DISCORD_CLIENT_ID = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
 const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=123211940928&integration_type=0&scope=bot`
 
 export const DiscordV3DeploymentForm = ({
