@@ -84,7 +84,7 @@ export const GoogleCalendarDeploymentForm = ({
     defaultValues: {
       calendarId: deployment?.config?.google_calendar?.calendar_id ?? '',
       calendarName: deployment?.config?.google_calendar?.calendar_name ?? '',
-      allowWrite: deployment?.config?.google_calendar?.allow_write ?? false,
+      allowWrite: deployment?.config?.google_calendar?.allow_write ?? true,
       allowDelete: deployment?.config?.google_calendar?.allow_delete ?? false,
       timeZone: deployment?.config?.google_calendar?.time_zone ?? '',
       credentials: undefined,
