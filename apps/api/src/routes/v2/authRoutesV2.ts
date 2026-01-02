@@ -8,6 +8,8 @@ import {
   disconnectTwitter,
   disconnectTwitterIntegration,
   discordOAuth,
+  discordV3OAuthCallback,
+  getDiscordGuildChannels,
   getFarcasterSignerStatus,
   googleCalendarOAuthCallback,
   googleCalendarOAuthInit,
@@ -37,6 +39,37 @@ const authRoutes: FastifyPluginAsync = async server => {
       }),
     },
     handler: (request, reply) => discordOAuth(server, request, reply),
+  })
+
+  server.get('/v2/deployments/discord/oauth/callback', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Discord V3 OAuth Callback',
+      description:
+        'Handle Discord OAuth callback for V3 deployments and return available guilds.',
+      hide: true,
+      querystring: Type.Object({
+        code: Type.Optional(Type.String()),
+        state: Type.Optional(Type.String()),
+        error: Type.Optional(Type.String()),
+      }),
+    },
+    handler: (request, reply) => discordV3OAuthCallback(server, request, reply),
+  })
+
+  server.get('/v2/deployments/discord/guilds/:guildId/channels', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Get Discord Guild Channels',
+      description:
+        'Fetch text channels for a Discord guild using the bot token.',
+      hide: true,
+      params: Type.Object({
+        guildId: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      getDiscordGuildChannels(server, request, reply),
   })
 
   server.get('/v2/auth/twitter/callback', {

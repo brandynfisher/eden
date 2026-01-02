@@ -1408,6 +1408,40 @@ export const updateTrigger = async (
     )
   }
 
+  // If pausing, also pause all child subscriptions
+  if (status === 'paused' && trigger.status !== 'paused') {
+    const pauseResult = await Trigger.updateMany(
+      { parent_trigger: trigger._id, deleted: { $ne: true } },
+      { $set: { status: 'paused' } },
+    )
+    console.log(
+      '[updateTrigger] Paused subscriptions:',
+      pauseResult.modifiedCount,
+      'triggers paused',
+    )
+  }
+
+  // If resuming, also resume all child subscriptions
+  if (status === 'active' && trigger.status === 'paused') {
+    const childNextRun = calculateNextScheduledRun(schedule ?? trigger.schedule)
+    const resumeResult = await Trigger.updateMany(
+      { parent_trigger: trigger._id, deleted: { $ne: true } },
+      {
+        $set: {
+          status: 'active',
+          next_scheduled_run: childNextRun,
+          error_count: 0,
+          last_error: null,
+        },
+      },
+    )
+    console.log(
+      '[updateTrigger] Resumed subscriptions:',
+      resumeResult.modifiedCount,
+      'triggers resumed',
+    )
+  }
+
   return reply.status(200).send({ trigger: updatedTrigger })
 }
 

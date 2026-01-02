@@ -265,11 +265,10 @@ export const DiscordDeploymentForm = ({
                 <DiscordChannelSelector
                   agentId={agentId}
                   selectedChannels={form.watch('channels').filter(c => c.id)}
-                  onChannelsChange={newChannels =>
-                    form.setValue('channels', newChannels, {
-                      shouldDirty: true,
-                    })
-                  }
+                  onChannelsChange={newChannels => {
+                    // Use useFieldArray's replace method to properly sync with form state
+                    channels.replace(newChannels)
+                  }}
                   isDeployed={isDeployed}
                 />
               )}
