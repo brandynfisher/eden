@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
+import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
@@ -345,6 +346,11 @@ export const IntegrationsTab = forwardRef<
           <DiscordDeploymentForm
             agentId={agent._id}
             key={`discord-${discordDeployment?._id || 'new'}`}
+            deployment={discordDeployment}
+          />
+          <DiscordV3DeploymentForm
+            agentId={agent._id}
+            key={`discord-v3-${discordDeployment?._id || 'new'}`}
             deployment={discordDeployment}
           />
           <TelegramDeploymentForm
