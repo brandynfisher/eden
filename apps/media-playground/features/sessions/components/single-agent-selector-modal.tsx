@@ -31,7 +31,9 @@ const SingleAgentSelectorModal: FC<{
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (agent: Agent) => void
-}> = ({ open, onOpenChange, onSelect }) => {
+  allowedAgentIds?: string[]
+  emptyStateText?: string
+}> = ({ open, onOpenChange, onSelect, allowedAgentIds, emptyStateText }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
   const [isNavigating, setIsNavigating] = useState(false)
@@ -40,6 +42,16 @@ const SingleAgentSelectorModal: FC<{
 
   // Get user preferences for agent sorting
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
+
+  const normalizedAllowedAgentIds = React.useMemo(() => {
+    if (!allowedAgentIds) return null
+    return Array.from(
+      new Set(allowedAgentIds.filter((id): id is string => Boolean(id))),
+    )
+  }, [allowedAgentIds])
+
+  const shouldFilterByAllowedAgents =
+    normalizedAllowedAgentIds !== null && normalizedAllowedAgentIds.length > 0
 
   // Reset state when modal closes
   useEffect(() => {
@@ -67,6 +79,7 @@ const SingleAgentSelectorModal: FC<{
             ? { excludeOwner: user._id }
             : {}),
         }),
+    ...(shouldFilterByAllowedAgents ? { _id: normalizedAllowedAgentIds } : {}),
     // Sort by total number of messages
     sort: ['stats.messageCount;-1'],
   }
@@ -169,25 +182,31 @@ const SingleAgentSelectorModal: FC<{
                 </div>
               </div>
             )}
-            <AgentsFeed
-              query={currentQuery}
-              minCols={1}
-              maxCols={5}
-              breakpoints={[
-                { minWidth: 1536, columns: 5 }, // Very wide screens - 5 columns max
-                { minWidth: 1280, columns: 4 }, // Wide screens - 4 columns
-                { minWidth: 1024, columns: 3 }, // Large desktop - 3 columns
-                { minWidth: 768, columns: 2 }, // Tablet - 2 columns
-                { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
-                { minWidth: 0, columns: 1 }, // Small mobile - 1 column
-              ]}
-              scrollRef={scrollRef}
-              hideCreateButton={true}
-              hideContextMenu={true}
-              customSort={customSort}
-              renderCard={renderCompactCard}
-              itemHeight={136}
-            />
+            {normalizedAllowedAgentIds?.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                {emptyStateText ?? 'No agents available.'}
+              </div>
+            ) : (
+              <AgentsFeed
+                query={currentQuery}
+                minCols={1}
+                maxCols={5}
+                breakpoints={[
+                  { minWidth: 1536, columns: 5 }, // Very wide screens - 5 columns max
+                  { minWidth: 1280, columns: 4 }, // Wide screens - 4 columns
+                  { minWidth: 1024, columns: 3 }, // Large desktop - 3 columns
+                  { minWidth: 768, columns: 2 }, // Tablet - 2 columns
+                  { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
+                  { minWidth: 0, columns: 1 }, // Small mobile - 1 column
+                ]}
+                scrollRef={scrollRef}
+                hideCreateButton={true}
+                hideContextMenu={true}
+                customSort={customSort}
+                renderCard={renderCompactCard}
+                itemHeight={136}
+              />
+            )}
           </div>
         </div>
       </DialogContent>

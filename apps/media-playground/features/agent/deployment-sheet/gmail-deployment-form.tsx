@@ -32,23 +32,27 @@ type GmailDeploymentFormSchema = z.infer<typeof schema>
 interface GmailDeploymentFormProps {
   agentId: string
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 export const GmailDeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: GmailDeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
 
   const isDeployed = useMemo(() => deployment !== undefined, [deployment])
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   const form = useForm<GmailDeploymentFormSchema>({
     resolver: zodResolver(schema),
@@ -71,18 +75,27 @@ export const GmailDeploymentForm = ({
     return null
   }
 
+  const open = isInline ? true : isOpen
+
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed}
         label="Gmail"
         tooltip="Configure Gmail reply behaviour"
         valid={deployment.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn(
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-4 p-4'
             : '',
           isDeployed ? 'border-success' : '',

@@ -24,6 +24,7 @@ export interface TaskV2Schema {
   progress?: number
   handler_id?: string
   performance?: { [key: string]: number }
+  metadata?: { [key: string]: unknown }
   apiKey?: ObjectId
   createdAt: Date
   updatedAt: Date
@@ -43,6 +44,7 @@ export interface TaskV2Input {
   error?: string
   handler_id?: string
   progress?: number
+  metadata?: { [key: string]: unknown }
   apiKey?: ObjectId
 }
 
@@ -93,6 +95,10 @@ export const taskSchema = new Schema<TaskV2Document>(
     },
     performance: {
       type: Schema.Types.Mixed,
+    },
+    metadata: {
+      type: Schema.Types.Mixed,
+      default: null,
     },
     progress: {
       type: Schema.Types.Number,

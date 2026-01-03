@@ -145,6 +145,16 @@ let nextConfig = {
       dynamic: 0,
       static: 180,
     },
+    turbo: {
+      resolveAlias: {
+        react: 'next/dist/compiled/react',
+        'react/jsx-runtime': 'next/dist/compiled/react/jsx-runtime',
+        'react/jsx-dev-runtime': 'next/dist/compiled/react/jsx-dev-runtime',
+        'react-dom': 'next/dist/compiled/react-dom',
+        'react-dom/client': 'next/dist/compiled/react-dom/client',
+        'react-dom/server': 'next/dist/compiled/react-dom/server.node',
+      },
+    },
   },
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],

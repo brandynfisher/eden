@@ -23,13 +23,16 @@ type DeploymentFormDto = z.infer<typeof schema>
 interface InstagramDeploymentFormProps {
   agentId: Agent['_id']
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 export const InstagramDeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: InstagramDeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
@@ -44,11 +47,12 @@ export const InstagramDeploymentForm = ({
   const wasDeployed = useRef(isDeployed)
 
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   const instagramUsername =
     deployment?.config?.instagram?.username ||
@@ -174,18 +178,27 @@ export const InstagramDeploymentForm = ({
     }
   }
 
+  const open = isInline ? true : isOpen
+
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed}
         label="Instagram"
         tooltip="Connect Instagram so your agent can publish posts"
         valid={deployment?.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn([
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',

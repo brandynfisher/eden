@@ -70,6 +70,7 @@ export const taskV2Type = Type.Object({
   args: Type.Optional(Type.Any()),
   status: Type.String(),
   performance: Type.Optional(Type.Any()),
+  metadata: Type.Optional(Type.Any()),
   result: Type.Optional(Type.Any()),
   model: Type.Optional(Type.Any()),
   error: Type.Optional(Type.Any()),

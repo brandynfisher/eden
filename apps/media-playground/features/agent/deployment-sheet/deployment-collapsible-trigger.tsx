@@ -16,6 +16,7 @@ interface DeploymentCollapsibleTriggerProps {
   label: string
   tooltip: string
   valid?: boolean
+  isStatic?: boolean
 }
 
 export const DeploymentCollapsibleTrigger = ({
@@ -24,12 +25,16 @@ export const DeploymentCollapsibleTrigger = ({
   label,
   tooltip,
   valid,
+  isStatic = false,
 }: DeploymentCollapsibleTriggerProps) => {
+  const TriggerComponent = isStatic ? 'div' : CollapsibleTrigger
+  const isExpanded = isStatic ? true : isOpen
+
   return (
-    <CollapsibleTrigger
+    <TriggerComponent
       className={cn([
         'w-full flex items-center gap-4 p-4 border transition-colors rounded-lg',
-        isOpen
+        isExpanded
           ? 'bg-muted-foreground/10 border border-gray-400/20 rounded-b-none'
           : 'border border-muted bg-popover',
         isDeployed ? 'border-success' : '',
@@ -37,12 +42,14 @@ export const DeploymentCollapsibleTrigger = ({
       ])}
     >
       <div className="flex items-center gap-2">
-        <ChevronDownIcon
-          className={cn(
-            'w-4 h-4 mr-2 transition',
-            isOpen ? 'rotate-[-180deg]' : '',
-          )}
-        />
+        {!isStatic && (
+          <ChevronDownIcon
+            className={cn(
+              'w-4 h-4 mr-2 transition',
+              isOpen ? 'rotate-[-180deg]' : '',
+            )}
+          />
+        )}
         <Label>{label}</Label>
         <TooltipProvider delayDuration={125}>
           <Tooltip>
@@ -73,6 +80,6 @@ export const DeploymentCollapsibleTrigger = ({
           {valid === false ? 'Failed' : 'Deployed'}
         </Badge>
       )}
-    </CollapsibleTrigger>
+    </TriggerComponent>
   )
 }
