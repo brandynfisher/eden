@@ -53,6 +53,7 @@ export const createNotification = async (
     }
   }
 
+  let agentDocument = null
   if (agent_id) {
     const agent = await Agent.findById(agent_id)
     if (!agent) {
@@ -60,6 +61,7 @@ export const createNotification = async (
         error: 'Agent not found',
       })
     }
+    agentDocument = agent
   }
 
   try {
@@ -138,13 +140,26 @@ export const createNotification = async (
           })
 
           if (deviceTokens.length > 0) {
+            const agentImageUrl = agentDocument?.userImage
+              ? forceCloudfrontUrl(server, agentDocument.userImage)
+              : undefined
+
             const pushPromises = deviceTokens.map(token =>
-              sendPushNotification(server, token.push_token, title, message, {
-                notification_id: notification._id.toString(),
-                type,
-                session_id,
-                ...metadata,
-              }),
+              sendPushNotification(
+                server,
+                token.push_token,
+                title,
+                message,
+                {
+                  notification_id: notification._id.toString(),
+                  type,
+                  session_id,
+                  ...metadata,
+                },
+                {
+                  imageUrl: agentImageUrl,
+                },
+              ),
             )
 
             const results = await Promise.allSettled(pushPromises)

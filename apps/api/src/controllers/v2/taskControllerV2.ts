@@ -121,6 +121,7 @@ export const createTask = async (
         args,
         public: makePublic,
         user_id: userId,
+        ...(metadata ? { metadata } : {}),
       },
     }
 
