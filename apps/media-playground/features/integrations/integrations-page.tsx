@@ -5,14 +5,6 @@ import { useAppShell } from '@/components/layout/app-shell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -31,25 +23,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import UserAvatar from '@/components/user/user-avatar'
-import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
-import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
-import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
-import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
-import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
-import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
-import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
-import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
-import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
-import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
-import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
-import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
-import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import {
   INTEGRATION_CATEGORIES,
-  INTEGRATION_DEFINITIONS,
-  IntegrationCategory,
   getIntegrationCategory,
-  getIntegrationDescription,
   getIntegrationIcon,
   getIntegrationLabel,
 } from '@/features/integrations/integration-definitions'
@@ -64,7 +40,6 @@ import axios from 'axios'
 import {
   Activity,
   AlertCircle,
-  ChevronsUpDown,
   ExternalLink,
   Filter,
   Loader2,
@@ -76,13 +51,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  type ComponentType,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 type DeploymentWithAgent = Deployment & {
@@ -94,28 +63,6 @@ type DeploymentWithAgent = Deployment & {
   }
 }
 
-type IntegrationFormProps = {
-  agentId: string
-  deployment?: Deployment
-  variant?: 'collapsible' | 'inline'
-}
-
-const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
-  discord: DiscordDeploymentForm,
-  discord_v3: DiscordV3DeploymentForm,
-  telegram: TelegramDeploymentForm,
-  twitter: TwitterDeploymentForm,
-  farcaster: FarcasterDeploymentForm,
-  instagram: InstagramDeploymentForm,
-  tiktok: TiktokDeploymentForm,
-  google_calendar: GoogleCalendarDeploymentForm,
-  shopify: ShopifyDeploymentForm,
-  printify: PrintifyDeploymentForm,
-  captions: CaptionsDeploymentForm,
-  email: EmailDeploymentForm,
-  gmail: GmailDeploymentForm,
-}
-
 const IntegrationsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
@@ -123,17 +70,11 @@ const IntegrationsPage = () => {
   const [agentFilter, setAgentFilter] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const [wizardOpen, setWizardOpen] = useState(false)
-  const [wizardStep, setWizardStep] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedAgentId, setSelectedAgentId] = useState('')
-  const [selectedPlatform, setSelectedPlatform] = useState('')
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [selectedAgentFilter, setSelectedAgentFilter] = useState<Agent | null>(
     null,
   )
   const [isAgentFilterModalOpen, setIsAgentFilterModalOpen] = useState(false)
-  const [isWizardAgentModalOpen, setIsWizardAgentModalOpen] = useState(false)
   const [deletingDeploymentId, setDeletingDeploymentId] = useState<
     string | null
   >(null)
@@ -144,7 +85,6 @@ const IntegrationsPage = () => {
   const deploymentsGate = useGatedResource(GatedResource.Deployments, {
     lockedBehavior: 'modal',
   })
-  const basePath = '/integrations'
 
   useEffect(() => {
     setConfig({
@@ -180,13 +120,6 @@ const IntegrationsPage = () => {
     )
     return unique
   }, [deployments])
-
-  const selectedAgentFromDeployments = useMemo(() => {
-    if (!selectedAgentId) return null
-    return uniqueAgents.find(agent => agent._id === selectedAgentId) ?? null
-  }, [selectedAgentId, uniqueAgents])
-
-  const effectiveSelectedAgent = selectedAgent ?? selectedAgentFromDeployments
 
   const selectedFilterAgent = useMemo(() => {
     if (selectedAgentFilter) return selectedAgentFilter
@@ -282,15 +215,6 @@ const IntegrationsPage = () => {
     return filteredDeployments.slice(startIndex, startIndex + pageSize)
   }, [currentPage, filteredDeployments])
 
-  const deployedPlatformsForSelectedAgent = useMemo(() => {
-    if (!deployments || !selectedAgentId) return new Set<string>()
-    return new Set(
-      deployments
-        .filter(deployment => deployment.agent?._id === selectedAgentId)
-        .map(deployment => deployment.platform),
-    )
-  }, [deployments, selectedAgentId])
-
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -314,40 +238,6 @@ const IntegrationsPage = () => {
       ? 'inactive'
       : 'unknown'
   }
-
-  const availablePlatforms = useMemo(
-    () => INTEGRATION_DEFINITIONS.filter(def => def.allowCreate !== false),
-    [],
-  )
-
-  const platformsByCategory = useMemo(() => {
-    return availablePlatforms.reduce(
-      (acc, platform) => {
-        acc[platform.category].push(platform)
-        return acc
-      },
-      {
-        social: [],
-        utilities: [],
-        other: [],
-      } as Record<string, typeof availablePlatforms>,
-    )
-  }, [availablePlatforms])
-
-  const selectedDeployment = useMemo(() => {
-    if (!selectedAgentId || !selectedPlatform) return undefined
-    return (deployments as DeploymentWithAgent[])?.find(
-      deployment =>
-        deployment.agent?._id === selectedAgentId &&
-        deployment.platform === selectedPlatform,
-    )
-  }, [deployments, selectedAgentId, selectedPlatform])
-
-  const isManageMode = Boolean(selectedDeployment)
-
-  const FormComponent = selectedPlatform
-    ? INTEGRATION_FORMS[selectedPlatform]
-    : undefined
 
   const handleDeleteDeployment = useCallback(
     (deployment: DeploymentWithAgent) => {
@@ -399,56 +289,7 @@ const IntegrationsPage = () => {
     [dispatch, invalidate],
   )
 
-  const openWizard = useCallback(
-    (agentId?: string, platform?: string) => {
-      const nextAgentId = agentId ?? ''
-      setSelectedAgentId(nextAgentId)
-      setSelectedPlatform(platform ?? '')
-      if (nextAgentId) {
-        const agentFromDeployments =
-          uniqueAgents.find(agent => agent._id === nextAgentId) ?? null
-        if (agentFromDeployments) {
-          setSelectedAgent(agentFromDeployments as Agent)
-        }
-      } else {
-        setSelectedAgent(null)
-      }
-      if (nextAgentId && platform) {
-        setWizardStep(2)
-      } else if (nextAgentId) {
-        setWizardStep(1)
-      } else {
-        setWizardStep(0)
-      }
-      setWizardOpen(true)
-    },
-    [uniqueAgents],
-  )
-
-  const resetWizard = () => {
-    setWizardStep(0)
-    setSelectedAgentId('')
-    setSelectedPlatform('')
-    setSelectedAgent(null)
-  }
-
   useEffect(() => {
-    const shouldOpenWizard =
-      searchParams?.get('wizard') === '1' ||
-      searchParams?.get('wizard') === 'true'
-    if (!shouldOpenWizard) return
-
-    const agentFromParams = searchParams?.get('agent') ?? undefined
-    const platformFromParams = searchParams?.get('platform') ?? undefined
-    openWizard(agentFromParams, platformFromParams)
-  }, [searchParams, openWizard])
-
-  useEffect(() => {
-    const shouldOpenWizard =
-      searchParams?.get('wizard') === '1' ||
-      searchParams?.get('wizard') === 'true'
-    if (shouldOpenWizard) return
-
     const agentFromParams = searchParams?.get('agent')
     const platformFromParams = searchParams?.get('platform')
     if (agentFromParams) {
@@ -458,6 +299,27 @@ const IntegrationsPage = () => {
       setPlatformFilter(platformFromParams)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    const shouldOpenWizard =
+      searchParams?.get('wizard') === '1' ||
+      searchParams?.get('wizard') === 'true'
+    if (!shouldOpenWizard) return
+
+    const agentFromParams = searchParams?.get('agent')
+    const platformFromParams = searchParams?.get('platform')
+    const params = new URLSearchParams()
+    if (agentFromParams) {
+      params.set('agent', agentFromParams)
+    }
+    if (platformFromParams) {
+      params.set('platform', platformFromParams)
+    }
+    const query = params.toString()
+    router.replace(
+      query ? `/integrations/wizard?${query}` : '/integrations/wizard',
+    )
+  }, [router, searchParams])
 
   useEffect(() => {
     if (!agentFilter) {
@@ -471,30 +333,6 @@ const IntegrationsPage = () => {
       setSelectedAgentFilter(agentFromDeployments as Agent)
     }
   }, [agentFilter, selectedAgentFilter, uniqueAgents])
-
-  useEffect(() => {
-    if (selectedDeployment) {
-      setWizardStep(2)
-    }
-  }, [selectedDeployment])
-
-  const handleWizardOpenChange = (open: boolean) => {
-    setWizardOpen(open)
-    if (!open) {
-      resetWizard()
-      if (searchParams?.get('wizard')) {
-        router.replace(basePath)
-      }
-    }
-  }
-
-  const handleNextStep = () => {
-    setWizardStep(prev => Math.min(prev + 1, 2))
-  }
-
-  const handlePreviousStep = () => {
-    setWizardStep(prev => Math.max(prev - 1, 0))
-  }
 
   const renderContent = () => {
     if (!deploymentsGate.isAllowed) {
@@ -556,9 +394,11 @@ const IntegrationsPage = () => {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => openWizard()} className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Integration
+            <Button asChild className="gap-2">
+              <Link href="/integrations/wizard">
+                <Plus className="h-4 w-4" />
+                New Integration
+              </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link
@@ -573,286 +413,6 @@ const IntegrationsPage = () => {
             </Button>
           </div>
         </div>
-
-        <Dialog open={wizardOpen} onOpenChange={handleWizardOpenChange}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader>
-              <DialogTitle>
-                {isManageMode ? 'Manage Integration' : 'New Integration'}
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                {isManageMode
-                  ? 'Review settings and manage the deployment.'
-                  : 'Connect an agent to a platform in three quick steps.'}
-              </DialogDescription>
-            </DialogHeader>
-
-            {!isManageMode && (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-                {[
-                  {
-                    title: 'Select Agent',
-                    description: 'Choose which agent to connect.',
-                  },
-                  {
-                    title: 'Choose Platform',
-                    description: 'Pick the destination integration.',
-                  },
-                  {
-                    title: 'Configure',
-                    description: 'Set up credentials and options.',
-                  },
-                ].map((step, index) => (
-                  <div
-                    key={step.title}
-                    className={cn(
-                      'rounded-lg border p-2 text-xs sm:p-3 sm:text-sm',
-                      wizardStep === index
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border/60 text-muted-foreground',
-                    )}
-                  >
-                    <div className="text-[10px] uppercase tracking-wide">
-                      Step {index + 1}
-                    </div>
-                    <div className="font-medium text-foreground">
-                      {step.title}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground sm:text-xs">
-                      {step.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!isManageMode && wizardStep === 0 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Select an agent</Label>
-                  <button
-                    type="button"
-                    onClick={() => setIsWizardAgentModalOpen(true)}
-                    className={cn(
-                      'group w-full flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
-                      effectiveSelectedAgent
-                        ? 'bg-muted/30 hover:bg-muted/50 hover:border-border'
-                        : 'border-dashed text-muted-foreground hover:text-foreground hover:border-border',
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      {effectiveSelectedAgent ? (
-                        <>
-                          <UserAvatar
-                            image={effectiveSelectedAgent.userImage}
-                            name={effectiveSelectedAgent.name}
-                            className="h-8 w-8"
-                          />
-                          <div className="flex-1">
-                            <div className="font-medium">
-                              {effectiveSelectedAgent.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              @{effectiveSelectedAgent.username}
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <span>Select an agent</span>
-                      )}
-                    </div>
-                    <ChevronsUpDown className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {!isManageMode && wizardStep === 1 && (
-              <div className="space-y-6">
-                {Object.entries(platformsByCategory).map(
-                  ([category, platforms]) =>
-                    platforms.length > 0 && (
-                      <div key={category} className="space-y-3">
-                        <div className="text-xs font-semibold uppercase text-muted-foreground">
-                          {
-                            INTEGRATION_CATEGORIES[
-                              category as IntegrationCategory
-                            ]
-                          }
-                        </div>
-                        <div className="grid gap-3 md:grid-cols-2">
-                          {platforms.map(platform => {
-                            const Icon = platform.icon
-                            const isAlreadyDeployed =
-                              deployedPlatformsForSelectedAgent.has(
-                                platform.platform,
-                              )
-                            const isSelected =
-                              selectedPlatform === platform.platform
-
-                            return (
-                              <button
-                                key={platform.platform}
-                                type="button"
-                                disabled={isAlreadyDeployed}
-                                onClick={() => {
-                                  if (isAlreadyDeployed) return
-                                  setSelectedPlatform(platform.platform)
-                                  setWizardStep(2)
-                                }}
-                                className={cn(
-                                  'flex w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors sm:p-4',
-                                  isAlreadyDeployed
-                                    ? 'cursor-not-allowed border-border/40 bg-muted/20 text-muted-foreground'
-                                    : isSelected
-                                    ? 'border-primary bg-primary/10'
-                                    : 'border-border/60 hover:border-border',
-                                )}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Icon className="h-4 w-4" />
-                                  <span className="font-medium">
-                                    {platform.label}
-                                  </span>
-                                  {isAlreadyDeployed && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-[10px] uppercase tracking-wide"
-                                    >
-                                      Connected
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {platform.description}
-                                </div>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ),
-                )}
-              </div>
-            )}
-
-            {wizardStep === 2 && (
-              <div className="space-y-4">
-                <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/30 p-4 md:flex-row md:items-center md:justify-between">
-                  <div className="flex items-center gap-3">
-                    {effectiveSelectedAgent?.userImage ? (
-                      <UserAvatar
-                        image={effectiveSelectedAgent.userImage}
-                        name={effectiveSelectedAgent.name}
-                        className="h-10 w-10"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-muted" />
-                    )}
-                    <div>
-                      <div className="text-xs uppercase text-muted-foreground">
-                        Agent
-                      </div>
-                      <div className="font-medium">
-                        {effectiveSelectedAgent?.name ?? 'Unknown agent'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedPlatform ? (
-                      <>
-                        {(() => {
-                          const Icon = getIntegrationIcon(selectedPlatform)
-                          return <Icon className="h-4 w-4" />
-                        })()}
-                        <span className="font-medium">
-                          {getIntegrationLabel(selectedPlatform)}
-                        </span>
-                        <Badge variant="outline" className="capitalize">
-                          {getIntegrationCategory(selectedPlatform)}
-                        </Badge>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Select a platform
-                      </span>
-                    )}
-                    {selectedDeployment && (
-                      <Badge variant="secondary">Deployed</Badge>
-                    )}
-                  </div>
-                </div>
-
-                {selectedPlatform && (
-                  <div className="text-sm text-muted-foreground">
-                    {getIntegrationDescription(selectedPlatform)}
-                  </div>
-                )}
-
-                {!isManageMode && !selectedAgentId && (
-                  <div className="text-sm text-destructive">
-                    Select an agent to continue.
-                  </div>
-                )}
-
-                {!isManageMode && !selectedPlatform && (
-                  <div className="text-sm text-destructive">
-                    Select a platform to continue.
-                  </div>
-                )}
-
-                {selectedAgentId && selectedPlatform && FormComponent ? (
-                  <FormComponent
-                    key={`${selectedAgentId}-${selectedPlatform}`}
-                    agentId={selectedAgentId}
-                    deployment={selectedDeployment}
-                    variant="inline"
-                  />
-                ) : (
-                  selectedAgentId &&
-                  selectedPlatform && (
-                    <div className="rounded-lg border border-border/60 p-4 text-sm text-muted-foreground">
-                      This integration is not yet supported in the wizard.
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-
-            <DialogFooter className="flex flex-row items-center justify-between gap-3 sm:justify-between">
-              {isManageMode ? (
-                <Button onClick={() => handleWizardOpenChange(false)}>
-                  Done
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handlePreviousStep}
-                    disabled={wizardStep === 0}
-                  >
-                    Back
-                  </Button>
-                  {wizardStep < 2 ? (
-                    <Button
-                      onClick={handleNextStep}
-                      disabled={
-                        (wizardStep === 0 && !selectedAgentId) ||
-                        (wizardStep === 1 && !selectedPlatform)
-                      }
-                    >
-                      Continue
-                    </Button>
-                  ) : (
-                    <Button onClick={() => handleWizardOpenChange(false)}>
-                      Done
-                    </Button>
-                  )}
-                </>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -1066,7 +626,7 @@ const IntegrationsPage = () => {
                             variant="ghost"
                             onClick={() =>
                               router.push(
-                                `${basePath}?wizard=1&agent=${deployment.agent?._id}&platform=${deployment.platform}`,
+                                `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
                               )
                             }
                             aria-label="Edit integration"
@@ -1168,7 +728,7 @@ const IntegrationsPage = () => {
                                   size="icon"
                                   onClick={() =>
                                     router.push(
-                                      `${basePath}?wizard=1&agent=${deployment.agent?._id}&platform=${deployment.platform}`,
+                                      `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
                                     )
                                   }
                                   title="Edit integration"
@@ -1239,18 +799,6 @@ const IntegrationsPage = () => {
           setSelectedAgentFilter(agent)
           setAgentFilter(agent._id)
           setIsAgentFilterModalOpen(false)
-        }}
-      />
-
-      <SingleAgentSelectorModal
-        open={isWizardAgentModalOpen}
-        onOpenChange={setIsWizardAgentModalOpen}
-        onSelect={agent => {
-          setSelectedAgent(agent)
-          setSelectedAgentId(agent._id)
-          setSelectedPlatform('')
-          setWizardStep(1)
-          setIsWizardAgentModalOpen(false)
         }}
       />
     </>

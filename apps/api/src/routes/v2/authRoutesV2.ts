@@ -9,7 +9,9 @@ import {
   disconnectTwitterIntegration,
   discordOAuth,
   discordV3OAuthCallback,
+  getDiscordGuildAccess,
   getDiscordGuildChannels,
+  getDiscordGuildRoles,
   getFarcasterSignerStatus,
   googleCalendarOAuthCallback,
   googleCalendarOAuthInit,
@@ -17,6 +19,7 @@ import {
   tiktokOAuth,
   twitterIntegrationOAuth,
   twitterOAuth,
+  updateDiscordGuildAccess,
 } from '../../controllers/auth/v2/authControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -70,6 +73,52 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) =>
       getDiscordGuildChannels(server, request, reply),
+  })
+
+  server.get('/v2/deployments/discord/guilds/:guildId/roles', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Get Discord Guild Roles',
+      description: 'Fetch roles for a Discord guild using the bot token.',
+      hide: true,
+      params: Type.Object({
+        guildId: Type.String(),
+      }),
+    },
+    handler: (request, reply) => getDiscordGuildRoles(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.get('/v2/deployments/discord/guilds/:guildId/access', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Get Discord Guild Access Roles',
+      description: 'Fetch configured access roles for a Discord guild.',
+      hide: true,
+      params: Type.Object({
+        guildId: Type.String(),
+      }),
+    },
+    handler: (request, reply) => getDiscordGuildAccess(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.post('/v2/deployments/discord/guilds/:guildId/access', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Update Discord Guild Access Roles',
+      description: 'Update configured access roles for a Discord guild.',
+      hide: true,
+      params: Type.Object({
+        guildId: Type.String(),
+      }),
+      body: Type.Object({
+        allowedRoleIds: Type.Array(Type.String()),
+      }),
+    },
+    handler: (request, reply) =>
+      updateDiscordGuildAccess(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 
   server.get('/v2/auth/twitter/callback', {
