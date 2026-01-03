@@ -14,6 +14,10 @@ import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
 import { Deployment, DeploymentDocument } from './Deployment'
 import { DiscordAgent, DiscordAgentDocument } from './DiscordAgent'
+import {
+  DiscordGuildAccess,
+  DiscordGuildAccessDocument,
+} from './DiscordGuildAccess'
 import { EmailDomain, EmailDomainDocument } from './EmailDomain'
 import { Embedding, EmbeddingDocument } from './Embedding'
 import { Follow, FollowDocument } from './Follow'
@@ -89,6 +93,7 @@ export interface Database {
   UserFeedbackRequest: Model<UserFeedbackRequestDocument>
   UserMigration: Model<UserMigrationDocument>
   DiscordAgent: Model<DiscordAgentDocument>
+  DiscordGuildAccess: Model<DiscordGuildAccessDocument>
   Trigger: Model<TriggerDocument>
   TransactionV2: Model<TransactionV2Document>
   Message: Model<MessageDocument>
@@ -132,6 +137,7 @@ export const models: Database = {
   UserFeedbackRequest,
   UserMigration,
   DiscordAgent,
+  DiscordGuildAccess,
   Trigger,
   TransactionV2,
   Message,

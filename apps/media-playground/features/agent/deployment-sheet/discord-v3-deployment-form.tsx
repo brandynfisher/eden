@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
@@ -12,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -20,9 +22,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@clerk/nextjs'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ExternalLink, Loader2 } from 'lucide-react'
@@ -52,12 +56,20 @@ interface DiscordGuild {
   icon?: string
   owner: boolean
   has_eden_bot: boolean
+  access?: 'admin' | 'role'
 }
 
 interface DiscordChannel {
   id: string
   name: string
   type: number
+}
+
+interface DiscordRole {
+  id: string
+  name: string
+  color?: number
+  managed?: boolean
 }
 
 interface DiscordV3DeploymentFormProps {
@@ -79,12 +91,22 @@ export const DiscordV3DeploymentForm = ({
   const [isConnecting, setIsConnecting] = useState(false)
   const [hasCompletedOAuth, setHasCompletedOAuth] = useState(false)
   const popupRef = useRef<Window | null>(null)
+  const { userId } = useAuth()
 
   const [availableServers, setAvailableServers] = useState<DiscordGuild[]>([])
   const [availableChannels, setAvailableChannels] = useState<DiscordChannel[]>(
     [],
   )
   const [isLoadingChannels, setIsLoadingChannels] = useState(false)
+  const [activeTab, setActiveTab] = useState<'deploy' | 'account'>('deploy')
+  const [accessGuildId, setAccessGuildId] = useState('')
+  const [guildRoles, setGuildRoles] = useState<DiscordRole[]>([])
+  const [allowedRoleIds, setAllowedRoleIds] = useState<string[]>([])
+  const [initialAllowedRoleIds, setInitialAllowedRoleIds] = useState<string[]>(
+    [],
+  )
+  const [isLoadingAccessRoles, setIsLoadingAccessRoles] = useState(false)
+  const [isSavingAccessRoles, setIsSavingAccessRoles] = useState(false)
 
   const form = useForm<DiscordV3FormDto>({
     resolver: zodResolver(schema),
@@ -99,6 +121,18 @@ export const DiscordV3DeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  const adminServers = useMemo(() => {
+    return availableServers.filter(
+      server => server.access === 'admin' || !server.access,
+    )
+  }, [availableServers])
+
+  const isAccessDirty = useMemo(() => {
+    if (allowedRoleIds.length !== initialAllowedRoleIds.length) return true
+    const allowedSet = new Set(allowedRoleIds)
+    return initialAllowedRoleIds.some(roleId => !allowedSet.has(roleId))
+  }, [allowedRoleIds, initialAllowedRoleIds])
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
@@ -123,6 +157,37 @@ export const DiscordV3DeploymentForm = ({
       loadChannels(selectedGuildId)
     }
   }, [selectedGuildId])
+
+  useEffect(() => {
+    if (!accessGuildId && adminServers.length > 0) {
+      setAccessGuildId(adminServers[0].id)
+    }
+  }, [accessGuildId, adminServers])
+
+  useEffect(() => {
+    if (
+      accessGuildId &&
+      adminServers.length > 0 &&
+      !adminServers.some(server => server.id === accessGuildId)
+    ) {
+      setAccessGuildId(adminServers[0].id)
+    }
+  }, [accessGuildId, adminServers])
+
+  useEffect(() => {
+    if (adminServers.length === 0) {
+      setAccessGuildId('')
+      setGuildRoles([])
+      setAllowedRoleIds([])
+      setInitialAllowedRoleIds([])
+    }
+  }, [adminServers])
+
+  useEffect(() => {
+    if (accessGuildId) {
+      loadAccessRoles(accessGuildId)
+    }
+  }, [accessGuildId])
 
   // Listen for OAuth callback postMessage
   useEffect(() => {
@@ -174,11 +239,12 @@ export const DiscordV3DeploymentForm = ({
 
     const clientId = DISCORD_CLIENT_ID
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/deployments/discord/oauth/callback`
-    const scope = 'guilds'
+    const scope = 'guilds identify'
 
     // Use same encoding as discord-auth-button
     const statePayload = JSON.stringify({
       agent_id: agentId,
+      user_id: userId,
       mode: 'popup',
     })
 
@@ -222,6 +288,85 @@ export const DiscordV3DeploymentForm = ({
     } finally {
       setIsLoadingChannels(false)
     }
+  }
+
+  const loadAccessRoles = async (guildId: string) => {
+    try {
+      setIsLoadingAccessRoles(true)
+      const [rolesResponse, accessResponse] = await Promise.all([
+        fetch(`/api/integrations/discord/guilds/${guildId}/roles`),
+        fetch(`/api/integrations/discord/guilds/${guildId}/access`),
+      ])
+
+      if (!rolesResponse.ok) {
+        const errorPayload = await rolesResponse.json().catch(() => null)
+        throw new Error(errorPayload?.message || 'Failed to load server roles')
+      }
+      if (!accessResponse.ok) {
+        const errorPayload = await accessResponse.json().catch(() => null)
+        throw new Error(errorPayload?.message || 'Failed to load access roles')
+      }
+
+      const rolesData = await rolesResponse.json()
+      const accessData = await accessResponse.json()
+
+      setGuildRoles(rolesData.roles || [])
+      const nextAllowedRoleIds = accessData.allowedRoleIds || []
+      setAllowedRoleIds(nextAllowedRoleIds)
+      setInitialAllowedRoleIds(nextAllowedRoleIds)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : undefined
+      toast.error(message || 'Failed to load server roles')
+      setGuildRoles([])
+      setAllowedRoleIds([])
+      setInitialAllowedRoleIds([])
+    } finally {
+      setIsLoadingAccessRoles(false)
+    }
+  }
+
+  const saveAccessRoles = async () => {
+    if (!accessGuildId) return
+    try {
+      setIsSavingAccessRoles(true)
+      const response = await fetch(
+        `/api/integrations/discord/guilds/${accessGuildId}/access`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ allowedRoleIds }),
+        },
+      )
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null)
+        throw new Error(
+          errorPayload?.message || 'Failed to update access roles',
+        )
+      }
+
+      const data = await response.json()
+      const nextAllowedRoleIds = data.allowedRoleIds || []
+      setAllowedRoleIds(nextAllowedRoleIds)
+      setInitialAllowedRoleIds(nextAllowedRoleIds)
+      toast.success('Access roles updated')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : undefined
+      toast.error(message || 'Failed to update access roles')
+    } finally {
+      setIsSavingAccessRoles(false)
+    }
+  }
+
+  const toggleAllowedRole = (roleId: string) => {
+    setAllowedRoleIds(current => {
+      if (current.includes(roleId)) {
+        return current.filter(id => id !== roleId)
+      }
+      return [...current, roleId]
+    })
   }
 
   const toggleChannel = (channel: DiscordChannel) => {
@@ -334,185 +479,374 @@ export const DiscordV3DeploymentForm = ({
                 </Button>
               </div>
 
-              {/* No servers found - Show bot invite */}
-              {availableServers.length === 0 ? (
-                <div className="space-y-3">
-                  <div className="p-4 text-center border border-dashed rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      No servers found where you're an admin and the Eden bot is
-                      added.
-                    </p>
-                    <Button variant="default" className="w-full" asChild>
-                      <a
-                        href={BOT_INVITE_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Add Eden Bot to Server
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Deployment Form */}
-                  <Form {...form}>
-                    <div className="space-y-4">
-                      {/* Server Selector */}
-                      <FormField
-                        control={form.control}
-                        name="guildId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Server</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a server" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {availableServers.map(server => (
-                                  <SelectItem key={server.id} value={server.id}>
-                                    {server.name}
-                                    {server.owner && (
-                                      <span className="ml-2 text-xs text-muted-foreground">
-                                        (Owner)
-                                      </span>
-                                    )}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Select the Discord server where you want to deploy
-                              this agent
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+              <Tabs
+                value={activeTab}
+                onValueChange={value =>
+                  setActiveTab(value as 'deploy' | 'account')
+                }
+                className="space-y-4"
+              >
+                <TabsList className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted/40 p-1">
+                  <TabsTrigger value="deploy" className="text-sm">
+                    Deploy
+                  </TabsTrigger>
+                  <TabsTrigger value="account" className="text-sm">
+                    Account
+                  </TabsTrigger>
+                </TabsList>
 
-                      {/* Channel Selector */}
-                      {selectedGuildId && (
-                        <div className="space-y-3">
-                          <div>
-                            <FormLabel>Channels</FormLabel>
-                            <FormDescription className="mt-1">
-                              Select channels and set read/write access for each
-                            </FormDescription>
-                          </div>
-
-                          {isLoadingChannels ? (
-                            <div className="flex items-center justify-center p-8">
-                              <Loader2 className="h-6 w-6 animate-spin" />
-                            </div>
-                          ) : availableChannels.length === 0 ? (
-                            <div className="p-4 text-sm text-muted-foreground text-center border border-dashed rounded-lg">
-                              No text channels found in this server
-                            </div>
-                          ) : (
-                            <div className="space-y-2 border rounded-lg p-3">
-                              {availableChannels.map(channel => {
-                                const isSelected = selectedChannels.some(
-                                  ch => ch.channelId === channel.id,
-                                )
-                                const channelData = selectedChannels.find(
-                                  ch => ch.channelId === channel.id,
-                                )
-
-                                return (
-                                  <div
-                                    key={channel.id}
-                                    className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
-                                  >
-                                    <div className="flex items-center gap-3 flex-1">
-                                      <Checkbox
-                                        checked={isSelected}
-                                        onCheckedChange={() =>
-                                          toggleChannel(channel)
-                                        }
-                                      />
-                                      <span className="text-sm">
-                                        #{channel.name}
-                                      </span>
-                                    </div>
-
-                                    {isSelected && (
-                                      <div className="flex items-center gap-2">
-                                        <Switch
-                                          checked={
-                                            channelData?.access === 'read_write'
-                                          }
-                                          onCheckedChange={checked =>
-                                            updateChannelAccess(
-                                              channel.id,
-                                              checked
-                                                ? 'read_write'
-                                                : 'read_only',
-                                            )
-                                          }
-                                        />
-                                        <span className="text-xs text-muted-foreground w-20">
-                                          {channelData?.access === 'read_write'
-                                            ? 'Read/Write'
-                                            : 'Read-only'}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          )}
-
-                          {selectedChannels.length > 0 && (
-                            <div className="text-xs text-muted-foreground">
-                              Selected {selectedChannels.length} channel
-                              {selectedChannels.length !== 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Bot Invite Link */}
-                      <div className="space-y-2 pt-2 border-t">
-                        <div className="text-xs text-muted-foreground">
-                          Don't see your server?
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          asChild
-                          type="button"
-                        >
+                <TabsContent value="deploy" className="space-y-4">
+                  {/* No servers found - Show bot invite */}
+                  {availableServers.length === 0 ? (
+                    <div className="space-y-3">
+                      <div className="p-4 text-center border border-dashed rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          No servers found where you&apos;re an admin or have a
+                          role that can deploy, and the Eden bot is added.
+                        </p>
+                        <Button variant="default" className="w-full" asChild>
                           <a
                             href={BOT_INVITE_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
-                            Add Eden Bot to Another Server
+                            Add Eden Bot to Server
                           </a>
                         </Button>
                       </div>
-
-                      <DeploymentFormFooter
-                        agentId={agentId}
-                        platform="discord_v3"
-                        form={form}
-                        isDeployed={isDeployed ?? false}
-                        guideUrl="https://docs.eden.art/integrations/discord"
-                        valid={deployment?.valid}
-                      />
                     </div>
-                  </Form>
-                </>
-              )}
+                  ) : (
+                    <>
+                      {/* Deployment Form */}
+                      <Form {...form}>
+                        <div className="space-y-4">
+                          {/* Server Selector */}
+                          <FormField
+                            control={form.control}
+                            name="guildId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Server</FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a server" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {availableServers.map(server => (
+                                      <SelectItem
+                                        key={server.id}
+                                        value={server.id}
+                                      >
+                                        {server.name}
+                                        {server.owner && (
+                                          <span className="ml-2 text-xs text-muted-foreground">
+                                            (Owner)
+                                          </span>
+                                        )}
+                                        {server.access === 'role' && (
+                                          <span className="ml-2 text-xs text-muted-foreground">
+                                            (Role access)
+                                          </span>
+                                        )}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  Select the Discord server where you want to
+                                  deploy this agent
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Channel Selector */}
+                          {selectedGuildId && (
+                            <div className="space-y-3">
+                              <div>
+                                <FormLabel>Channels</FormLabel>
+                                <FormDescription className="mt-1">
+                                  Select channels and set read/write access for
+                                  each
+                                </FormDescription>
+                              </div>
+
+                              {isLoadingChannels ? (
+                                <div className="flex items-center justify-center p-8">
+                                  <Loader2 className="h-6 w-6 animate-spin" />
+                                </div>
+                              ) : availableChannels.length === 0 ? (
+                                <div className="p-4 text-sm text-muted-foreground text-center border border-dashed rounded-lg">
+                                  No text channels found in this server
+                                </div>
+                              ) : (
+                                <div className="space-y-2 border rounded-lg p-3">
+                                  {availableChannels.map(channel => {
+                                    const isSelected = selectedChannels.some(
+                                      ch => ch.channelId === channel.id,
+                                    )
+                                    const channelData = selectedChannels.find(
+                                      ch => ch.channelId === channel.id,
+                                    )
+
+                                    return (
+                                      <div
+                                        key={channel.id}
+                                        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
+                                      >
+                                        <div className="flex items-center gap-3 flex-1">
+                                          <Checkbox
+                                            checked={isSelected}
+                                            onCheckedChange={() =>
+                                              toggleChannel(channel)
+                                            }
+                                          />
+                                          <span className="text-sm">
+                                            #{channel.name}
+                                          </span>
+                                        </div>
+
+                                        {isSelected && (
+                                          <div className="flex items-center gap-2">
+                                            <Switch
+                                              checked={
+                                                channelData?.access ===
+                                                'read_write'
+                                              }
+                                              onCheckedChange={checked =>
+                                                updateChannelAccess(
+                                                  channel.id,
+                                                  checked
+                                                    ? 'read_write'
+                                                    : 'read_only',
+                                                )
+                                              }
+                                            />
+                                            <span className="text-xs text-muted-foreground w-20">
+                                              {channelData?.access ===
+                                              'read_write'
+                                                ? 'Read/Write'
+                                                : 'Read-only'}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              )}
+
+                              {selectedChannels.length > 0 && (
+                                <div className="text-xs text-muted-foreground">
+                                  Selected {selectedChannels.length} channel
+                                  {selectedChannels.length !== 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground border-t pt-2">
+                            <span>Need to manage servers or roles?</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              type="button"
+                              onClick={() => setActiveTab('account')}
+                              className="h-7 text-xs"
+                            >
+                              Open account settings
+                            </Button>
+                          </div>
+
+                          <DeploymentFormFooter
+                            agentId={agentId}
+                            platform="discord_v3"
+                            form={form}
+                            isDeployed={isDeployed ?? false}
+                            guideUrl="https://docs.eden.art/integrations/discord"
+                            valid={deployment?.valid}
+                          />
+                        </div>
+                      </Form>
+                    </>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="account" className="space-y-4">
+                  <div className="rounded-lg border border-border/60 p-4 space-y-4 bg-muted/20">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium">
+                        Server access roles
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">
+                        Admins only
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Admins can deploy by default. Assign roles to let
+                      non-admins deploy agents to this server.
+                    </p>
+
+                    {adminServers.length === 0 ? (
+                      <div className="text-xs text-muted-foreground">
+                        You don&apos;t have any admin servers connected yet.
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Server</Label>
+                          <Select
+                            value={accessGuildId}
+                            onValueChange={setAccessGuildId}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a server" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {adminServers.map(server => (
+                                <SelectItem key={server.id} value={server.id}>
+                                  {server.name}
+                                  {server.owner && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      (Owner)
+                                    </span>
+                                  )}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs">
+                            Roles allowed to deploy
+                          </Label>
+                          {isLoadingAccessRoles ? (
+                            <div className="flex items-center justify-center p-6">
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            </div>
+                          ) : guildRoles.length === 0 ? (
+                            <div className="text-xs text-muted-foreground border border-dashed rounded-lg p-3 text-center">
+                              No roles found for this server.
+                            </div>
+                          ) : (
+                            <div className="space-y-2 border rounded-lg p-3 max-h-52 overflow-y-auto">
+                              {guildRoles.map(role => (
+                                <div
+                                  key={role.id}
+                                  className="flex items-center justify-between gap-3"
+                                >
+                                  <div className="flex items-center gap-3 flex-1">
+                                    <Checkbox
+                                      checked={allowedRoleIds.includes(role.id)}
+                                      onCheckedChange={() =>
+                                        toggleAllowedRole(role.id)
+                                      }
+                                    />
+                                    <span className="text-sm">{role.name}</span>
+                                  </div>
+                                  {role.managed && (
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[10px]"
+                                    >
+                                      Managed
+                                    </Badge>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className="text-xs text-muted-foreground">
+                            Tip: manage roles via Discord slash commands:
+                            <span className="ml-1 text-foreground">
+                              /eden access add-role
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="default"
+                          onClick={saveAccessRoles}
+                          disabled={
+                            isSavingAccessRoles ||
+                            isLoadingAccessRoles ||
+                            !isAccessDirty ||
+                            !accessGuildId
+                          }
+                          className="w-full"
+                        >
+                          {isSavingAccessRoles ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            'Save roles'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4 space-y-3">
+                    <div className="text-sm font-medium">
+                      Servers with Eden bot
+                    </div>
+                    {availableServers.length === 0 ? (
+                      <div className="text-xs text-muted-foreground">
+                        No servers found yet.
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {availableServers.map(server => (
+                          <div
+                            key={server.id}
+                            className="flex items-center justify-between rounded-md border border-border/50 bg-background/60 px-3 py-2 text-sm"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{server.name}</span>
+                              {server.owner && (
+                                <span className="text-xs text-muted-foreground">
+                                  (Owner)
+                                </span>
+                              )}
+                            </div>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {server.access === 'role'
+                                ? 'Role access'
+                                : 'Admin'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-xs text-muted-foreground">
+                      Add the Eden bot to another server
+                    </div>
+                    <Button variant="outline" className="w-full" asChild>
+                      <a
+                        href={BOT_INVITE_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Add Eden Bot to Another Server
+                      </a>
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>

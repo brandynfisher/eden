@@ -311,7 +311,7 @@ export const IntegrationsTab = forwardRef<
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button asChild>
-            <Link href={`/integrations?wizard=1&agent=${agent._id}`}>
+            <Link href={`/integrations/wizard?agent=${agent._id}`}>
               New Integration
             </Link>
           </Button>
@@ -398,7 +398,7 @@ export const IntegrationsTab = forwardRef<
                         <TableCell>
                           <Button variant="ghost" size="icon" asChild>
                             <Link
-                              href={`/integrations?wizard=1&agent=${agent._id}&platform=${deployment.platform}`}
+                              href={`/integrations/wizard?agent=${agent._id}&platform=${deployment.platform}`}
                               aria-label="Edit integration"
                               title="Edit integration"
                             >
