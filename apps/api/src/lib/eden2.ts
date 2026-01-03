@@ -41,6 +41,10 @@ const sendTaskCompletionNotification = async (
   task: TaskV2Document,
 ) => {
   if (!task?.user) return
+  const taskSource =
+    typeof task.metadata?.source === 'string' ? task.metadata.source : undefined
+
+  if (taskSource !== 'studio') return
 
   const creationId = extractFirstCreationId(task)
   const title = 'Your creation is ready'

@@ -63,6 +63,7 @@ interface DiscordChannel {
 interface DiscordV3DeploymentFormProps {
   agentId: Agent['_id']
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 const DISCORD_CLIENT_ID = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
@@ -71,8 +72,10 @@ const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${DISCORD
 export const DiscordV3DeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: DiscordV3DeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [hasCompletedOAuth, setHasCompletedOAuth] = useState(false)
   const popupRef = useRef<Window | null>(null)
@@ -99,11 +102,12 @@ export const DiscordV3DeploymentForm = ({
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   const cleanupPopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -258,19 +262,27 @@ export const DiscordV3DeploymentForm = ({
   }
 
   const selectedChannels = form.watch('channels')
+  const open = isInline ? true : isOpen
 
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed ?? false}
         label="Discord V3 (Beta)"
         tooltip="Deploy your agent to Discord using webhooks"
         valid={deployment?.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn([
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',

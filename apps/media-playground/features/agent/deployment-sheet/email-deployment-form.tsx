@@ -73,13 +73,16 @@ type EmailDeploymentFormSchema = z.infer<typeof schema>
 interface EmailDeploymentFormProps {
   agentId: string
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 export const EmailDeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: EmailDeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
   const [domainData, setDomainData] = useState<EmailDomainData>(undefined)
   const [isDomainLoading, setIsDomainLoading] = useState(false)
   const [isCreatingDomain, setIsCreatingDomain] = useState(false)
@@ -105,11 +108,12 @@ export const EmailDeploymentForm = ({
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   const setDomainOnForm = useCallback(
     (domain: EmailDomainData) => {
@@ -418,18 +422,27 @@ export const EmailDeploymentForm = ({
     ? 'bg-destructive/15 text-destructive border border-destructive/30'
     : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
 
+  const open = isInline ? true : isOpen
+
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed}
         label="Email"
         tooltip="Configure transactional email deployment"
         valid={deployment?.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn(
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-4 p-4'
             : '',
           isDeployed ? 'border-success' : '',

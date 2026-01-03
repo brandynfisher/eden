@@ -84,7 +84,8 @@ export const createTask = async (
       })
     }
 
-    const { tool, args, makePublic } = request.body as TasksV2CreateArguments
+    const { tool, args, makePublic, metadata } =
+      request.body as TasksV2CreateArguments
     const toolDocument = await ToolV2.findOne({ key: tool, active: true })
     if (!toolDocument) {
       return reply.status(404).send({
@@ -160,10 +161,22 @@ export const createTask = async (
 
     // If the request was authenticated with an API key, update the task to include it
     const apiKeyId = request.user?.apiKeyId
-    if (apiKeyId && task._id) {
-      await TaskV2Model.findByIdAndUpdate(task._id, { apiKey: apiKeyId })
-      // Add the apiKey to the task object for the response
-      task.apiKey = apiKeyId.toString()
+    const taskUpdates: Partial<TaskV2Document> = {}
+    if (apiKeyId) {
+      taskUpdates.apiKey = apiKeyId
+    }
+    if (metadata) {
+      taskUpdates.metadata = metadata
+    }
+
+    if (task._id && Object.keys(taskUpdates).length) {
+      await TaskV2Model.findByIdAndUpdate(task._id, taskUpdates)
+      if (apiKeyId) {
+        task.apiKey = apiKeyId.toString()
+      }
+      if (metadata) {
+        task.metadata = metadata
+      }
     }
 
     const taskWithUrls =

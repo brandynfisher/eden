@@ -45,13 +45,16 @@ type DeploymentFormDto = z.infer<typeof schema>
 interface DiscordDeploymentFormProps {
   agentId: Agent['_id']
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 export const DiscordDeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: DiscordDeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
 
   // Merge allowed channels and read-only channels into a unified list
   const getInitialChannels = () => {
@@ -97,11 +100,12 @@ export const DiscordDeploymentForm = ({
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   useEffect(() => {
     if (form.formState.submitCount > 0) {
@@ -109,18 +113,27 @@ export const DiscordDeploymentForm = ({
     }
   }, [form.formState.submitCount, form.trigger])
 
+  const open = isInline ? true : isOpen
+
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed ?? false}
         label="Discord"
         tooltip="Deploy your agent to Discord"
         valid={deployment?.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn([
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',

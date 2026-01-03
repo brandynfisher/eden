@@ -87,6 +87,7 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const router = useRouter()
   const pathname = usePathname()
+  const isStudio = pathname?.startsWith('/studio')
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -228,6 +229,7 @@ const CreationUIContainer = ({ tool }: Props) => {
         tool: tool.key,
         args: args,
         makePublic: makePublic,
+        ...(isStudio ? { metadata: { source: 'studio' } } : {}),
       })
 
       toast.success(`Task submitted`, {
