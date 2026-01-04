@@ -1121,6 +1121,31 @@ export const SessionsSidebarContent = ({
         ),
       },
       {
+        title: 'Integrations',
+        onClick: () => router.push('/integrations'),
+        isActive:
+          pathname === '/integrations' ||
+          pathname?.startsWith('/integrations/'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 22v-5" />
+            <path d="M9 8V2" />
+            <path d="M15 8V2" />
+            <path d="M18 8v4a6 6 0 0 1-12 0V8Z" />
+          </svg>
+        ),
+      },
+      {
         title: 'Explore',
         onClick: () => router.push('/explore?type=creations'),
         isActive: pathname?.startsWith('/explore'),
@@ -1477,6 +1502,41 @@ export const SessionsSidebarContent = ({
             <span>Tasks</span>
           </Button>
 
+          {/* Integrations button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/integrations')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+              pathname === '/integrations' ||
+                pathname?.startsWith('/integrations/')
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
+            )}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5"
+            >
+              <path d="M12 22v-5" />
+              <path d="M9 8V2" />
+              <path d="M15 8V2" />
+              <path d="M18 8v4a6 6 0 0 1-12 0V8Z" />
+            </svg>
+            <span>Integrations</span>
+          </Button>
+
           {/* Explore button */}
           <Button
             variant="ghost"
@@ -1662,6 +1722,40 @@ export const SessionsSidebarContent = ({
             <polyline points="12 6 12 12 16 14" />
           </svg>
           <span>Tasks</span>
+        </Button>
+
+        {/* Integrations button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/integrations')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+            pathname === '/integrations' ||
+              pathname?.startsWith('/integrations/')
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+          >
+            <path d="M12 22v-5" />
+            <path d="M9 8V2" />
+            <path d="M15 8V2" />
+            <path d="M18 8v4a6 6 0 0 1-12 0V8Z" />
+          </svg>
+          <span>Integrations</span>
         </Button>
 
         {/* Explore button */}
@@ -1865,6 +1959,41 @@ export const SessionsSidebarContent = ({
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
                 <span>Tasks</span>
+              </Button>
+
+              {/* Integrations button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/integrations')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/integrations' ||
+                    pathname?.startsWith('/integrations/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <path d="M12 22v-5" />
+                  <path d="M9 8V2" />
+                  <path d="M15 8V2" />
+                  <path d="M18 8v4a6 6 0 0 1-12 0V8Z" />
+                </svg>
+                <span>Integrations</span>
               </Button>
 
               {/* Explore button */}

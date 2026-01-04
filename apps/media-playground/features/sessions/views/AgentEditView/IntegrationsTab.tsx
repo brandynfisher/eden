@@ -1,21 +1,23 @@
 'use client'
 
 import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
-import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
-import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
-import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
-import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
-import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
-import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
-import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
-import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
-import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
-import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
-import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
-import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
+import {
+  getIntegrationCategory,
+  getIntegrationIcon,
+  getIntegrationLabel,
+} from '@/features/integrations/integration-definitions'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import {
   GatedResource,
@@ -24,7 +26,13 @@ import {
 } from '@/hooks/use-gated-resource'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { AlertCircle, BookTextIcon, Loader2 } from 'lucide-react'
+import {
+  AlertCircle,
+  BookTextIcon,
+  ExternalLink,
+  Loader2,
+  Pencil,
+} from 'lucide-react'
 import Link from 'next/link'
 import {
   forwardRef,
@@ -48,17 +56,6 @@ interface DeploymentSettingsInlineProps {
   agent: Agent
   onUnsavedChangesChange?: (hasChanges: boolean) => void
 }
-
-const UTILITIES_PLATFORMS: Deployment['platform'][] = [
-  'tiktok',
-  'instagram',
-  'google_calendar',
-  'shopify',
-  'printify',
-  'captions',
-  'email',
-  'gmail',
-]
 
 export const DeploymentSettingsInline = forwardRef<
   DeploymentSettingsHandle,
@@ -253,46 +250,26 @@ export const IntegrationsTab = forwardRef<
   const loadingState = deploymentsQuery.isLoading || isLoading
   const errorState = deploymentsQuery.isError || isError
 
-  const gmailDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'gmail',
-  )
-  const discordDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'discord',
-  )
-  const telegramDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'telegram',
-  )
-  const twitterDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'twitter',
-  )
-  const farcasterDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'farcaster',
-  )
-  const shopifyDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'shopify',
-  )
-  const printifyDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'printify',
-  )
-  const captionsDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'captions',
-  )
-  const emailDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'email',
-  )
-  const googleCalendarDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'google_calendar',
-  )
-  const instagramDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'instagram',
-  )
-  const tiktokDeployment = visibleDeployments?.find(
-    deployment => deployment.platform === 'tiktok',
-  )
-  const shouldShowUtilities = useMemo(
-    () => UTILITIES_PLATFORMS.some(showIntegration),
-    [showIntegration],
-  )
+  const getDeploymentStatus = (deployment: Deployment) => {
+    return deployment.valid === true
+      ? 'active'
+      : deployment.valid === false
+      ? 'inactive'
+      : 'unknown'
+  }
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'default'
+      case 'inactive':
+        return 'secondary'
+      default:
+        return 'outline'
+    }
+  }
+
+  const integrations = visibleDeployments ?? []
 
   if (!deploymentsGate.isAllowed) {
     return (
@@ -324,117 +301,120 @@ export const IntegrationsTab = forwardRef<
   }
 
   return (
-    <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">
-            Social Platforms
-          </h2>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-lg font-medium text-foreground">Integrations</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage integrations for this agent in the Integrations hub.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild>
+            <Link href={`/integrations/wizard?agent=${agent._id}`}>
+              New Integration
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={`/integrations?agent=${agent._id}`}>
+              Open Integrations
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
             asChild
             className="border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/70 text-purple-300"
           >
-            <Link href="https://docs.eden.art/integrations" target="_blank">
-              <BookTextIcon className="size-4 mr-2" />
+            <Link
+              href="https://docs.eden.art/integrations"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2"
+            >
+              <BookTextIcon className="size-4" />
               Integration Guide
+              <ExternalLink className="size-4" />
             </Link>
           </Button>
         </div>
-        <div className="space-y-4">
-          <DiscordDeploymentForm
-            agentId={agent._id}
-            key={`discord-${discordDeployment?._id || 'new'}`}
-            deployment={discordDeployment}
-          />
-          <DiscordV3DeploymentForm
-            agentId={agent._id}
-            key={`discord-v3-${discordDeployment?._id || 'new'}`}
-            deployment={discordDeployment}
-          />
-          <TelegramDeploymentForm
-            agentId={agent._id}
-            key={`telegram-${telegramDeployment?._id || 'new'}`}
-            deployment={telegramDeployment}
-          />
-          <TwitterDeploymentForm
-            agentId={agent._id}
-            key={`twitter-${twitterDeployment?._id || 'new'}`}
-            deployment={twitterDeployment}
-          />
-          <FarcasterDeploymentForm
-            agentId={agent._id}
-            key={`farcaster-${farcasterDeployment?._id || 'new'}`}
-            deployment={farcasterDeployment}
-          />
-        </div>
       </div>
 
-      {shouldShowUtilities && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-          <h2 className="text-lg font-medium text-foreground">Utilities</h2>
-          <div className="space-y-4">
-            {showIntegration('instagram') && (
-              <InstagramDeploymentForm
-                agentId={agent._id}
-                key={`instagram-${instagramDeployment?._id || 'new'}`}
-                deployment={instagramDeployment}
-              />
-            )}
-            {showIntegration('tiktok') && (
-              <TiktokDeploymentForm
-                agentId={agent._id}
-                key={`tiktok-${tiktokDeployment?._id || 'new'}`}
-                deployment={tiktokDeployment}
-              />
-            )}
-            {showIntegration('google_calendar') && (
-              <GoogleCalendarDeploymentForm
-                agentId={agent._id}
-                key={`google_calendar-${
-                  googleCalendarDeployment?._id || 'new'
-                }`}
-                deployment={googleCalendarDeployment}
-              />
-            )}
-            {showIntegration('shopify') && (
-              <ShopifyDeploymentForm
-                agentId={agent._id}
-                key={`shopify-${shopifyDeployment?._id || 'new'}`}
-                deployment={shopifyDeployment}
-              />
-            )}
-            {showIntegration('printify') && (
-              <PrintifyDeploymentForm
-                agentId={agent._id}
-                key={`printify-${printifyDeployment?._id || 'new'}`}
-                deployment={printifyDeployment}
-              />
-            )}
-            {showIntegration('captions') && (
-              <CaptionsDeploymentForm
-                agentId={agent._id}
-                key={`captions-${captionsDeployment?._id || 'new'}`}
-                deployment={captionsDeployment}
-              />
-            )}
-            {showIntegration('email') && (
-              <EmailDeploymentForm
-                agentId={agent._id}
-                key={`email-${emailDeployment?._id || 'new'}`}
-                deployment={emailDeployment}
-              />
-            )}
-            {showIntegration('gmail') && gmailDeployment && (
-              <GmailDeploymentForm
-                agentId={agent._id}
-                deployment={gmailDeployment}
-              />
-            )}
-          </div>
-        </div>
-      )}
+      <Card>
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base font-medium">
+            Connected Integrations
+          </CardTitle>
+          <Badge variant="outline">{integrations.length} total</Badge>
+        </CardHeader>
+        <CardContent className="p-0">
+          {integrations.length === 0 ? (
+            <div className="flex flex-col gap-2 p-6 text-sm text-muted-foreground">
+              <p>No integrations connected yet.</p>
+              <p>
+                Create a new integration to connect this agent to a platform.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {integrations.map(deployment => {
+                    const Icon = getIntegrationIcon(deployment.platform)
+                    return (
+                      <TableRow key={deployment._id}>
+                        <TableCell className="py-3">
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-muted/40">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex flex-col leading-tight">
+                              <span className="font-medium">
+                                {getIntegrationLabel(deployment.platform)}
+                              </span>
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {getIntegrationCategory(deployment.platform)}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={getStatusVariant(
+                              getDeploymentStatus(deployment),
+                            )}
+                            className="capitalize"
+                          >
+                            {getDeploymentStatus(deployment)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link
+                              href={`/integrations/wizard?agent=${agent._id}&platform=${deployment.platform}`}
+                              aria-label="Edit integration"
+                              title="Edit integration"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 })

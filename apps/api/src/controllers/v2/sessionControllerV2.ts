@@ -11,6 +11,7 @@ import { UserPreferences } from '../../models/UserPreferences'
 import { Message } from '../../models/v2/Message'
 import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
+import { forceCloudfrontUrl } from '../../plugins/s3Plugin'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { sendPushNotification } from '../../services/pushNotificationService'
@@ -111,6 +112,27 @@ const shouldThrottleSessionMessageNotification = async (
   }
 }
 
+const formatSessionMessageTitle = (
+  agentName?: string | null,
+  sessionTitle?: string | null,
+) => {
+  const cleanAgentName = agentName?.trim()
+  const cleanSessionTitle = sessionTitle?.trim()
+  if (cleanAgentName && cleanSessionTitle) {
+    return `${cleanAgentName} (${cleanSessionTitle})`
+  }
+  if (cleanAgentName) return cleanAgentName
+  if (cleanSessionTitle) return cleanSessionTitle
+  return 'New message'
+}
+
+const formatSessionMessageBody = (content?: string) => {
+  if (!content) return 'You have a new message'
+  const snippet = content.replace(/\s+/g, ' ').trim()
+  if (!snippet) return 'You have a new message'
+  return snippet.length > 140 ? `${snippet.slice(0, 140)}…` : snippet
+}
+
 const sendSessionMessageNotification = async (
   server: FastifyInstance,
   session: any,
@@ -129,13 +151,33 @@ const sendSessionMessageNotification = async (
 
   if (uniqueRecipientIds.length === 0) return
 
-  const title = session.title
-    ? `New message in ${session.title}`
-    : 'New session message'
+  let agentId: ObjectId | undefined
+  let agentName: string | undefined
+  let agentImageUrl: string | undefined
+  const rawAgentId =
+    session?.last_actor_id ||
+    (Array.isArray(session?.agents) && session.agents.length > 0
+      ? session.agents[0]
+      : null)
+  if (rawAgentId) {
+    agentId =
+      rawAgentId instanceof mongoose.Types.ObjectId
+        ? rawAgentId
+        : new mongoose.Types.ObjectId(rawAgentId.toString())
+  }
 
-  const snippet = content
-    ? content.substring(0, 140) + (content.length > 140 ? '…' : '')
-    : 'You have a new message'
+  if (agentId) {
+    const agent = await Agent.findById(agentId)
+      .select('name username userImage')
+      .lean()
+    agentName = agent?.name || agent?.username
+    if (agent?.userImage) {
+      agentImageUrl = forceCloudfrontUrl(server, agent.userImage)
+    }
+  }
+
+  const title = formatSessionMessageTitle(agentName, session.title)
+  const snippet = formatSessionMessageBody(content)
 
   for (const recipientId of uniqueRecipientIds) {
     const userObjectId = new ObjectId(recipientId)
@@ -163,6 +205,7 @@ const sendSessionMessageNotification = async (
       message: snippet,
       priority: 'normal',
       session: session._id,
+      agent: agentId,
       action_url: `/sessions/${session._id.toString()}`,
       channels: ['in_app', 'push'],
       delivered_channels: [],
@@ -182,12 +225,22 @@ const sendSessionMessageNotification = async (
       if (deviceTokens.length) {
         const results = await Promise.allSettled(
           deviceTokens.map(token =>
-            sendPushNotification(server, token.push_token, title, snippet, {
-              notification_id: notification._id.toString(),
-              type: 'session_message',
-              session_id: session._id.toString(),
-              action_url: `/sessions/${session._id.toString()}`,
-            }),
+            sendPushNotification(
+              server,
+              token.push_token,
+              title,
+              snippet,
+              {
+                notification_id: notification._id.toString(),
+                type: 'session_message',
+                session_id: session._id.toString(),
+                agent_id: agentId?.toString(),
+                action_url: `/sessions/${session._id.toString()}`,
+              },
+              {
+                imageUrl: agentImageUrl,
+              },
+            ),
           ),
         )
 

@@ -42,6 +42,7 @@ const ConditionalHeader = () => {
     pathname?.startsWith('/create') ||
     pathname?.startsWith('/realtime') ||
     pathname?.startsWith('/tasks') ||
+    pathname?.startsWith('/integrations') ||
     pathname?.startsWith('/new') ||
     pathname?.startsWith('/train') ||
     pathname?.startsWith('/native-bridge') ||

@@ -21,7 +21,6 @@ import {
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
   AgentsUpdateDeploymentArguments,
-  FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -207,12 +206,6 @@ export const deployAgent = async (
 
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
-
-  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
-    return reply.status(401).send({
-      error: 'You are not authorized to use this feature.',
-    })
-  }
 
   if (!agent) {
     return reply.status(404).send({

@@ -1,5 +1,6 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -206,15 +207,41 @@ const NotificationDropdown = () => {
                       )
                     }
                   >
-                    <div className="flex items-start gap-2">
-                      <span
-                        className={cn(
-                          'mt-1 h-2 w-2 rounded-full flex-shrink-0',
-                          notification.read
-                            ? 'bg-muted-foreground/40'
-                            : 'bg-primary',
-                        )}
-                      />
+                    <div className="flex items-start gap-3">
+                      {notification.agent ? (
+                        <div className="relative mt-0.5">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={notification.agent.userImage || ''}
+                              alt={notification.agent.name || 'Agent'}
+                            />
+                            <AvatarFallback>
+                              {
+                                (notification.agent.name ||
+                                  notification.agent.username ||
+                                  'A')[0]
+                              }
+                            </AvatarFallback>
+                          </Avatar>
+                          <span
+                            className={cn(
+                              'absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-background',
+                              notification.read
+                                ? 'bg-muted-foreground/40'
+                                : 'bg-primary',
+                            )}
+                          />
+                        </div>
+                      ) : (
+                        <span
+                          className={cn(
+                            'mt-1 h-2 w-2 rounded-full flex-shrink-0',
+                            notification.read
+                              ? 'bg-muted-foreground/40'
+                              : 'bg-primary',
+                          )}
+                        />
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">
@@ -227,11 +254,6 @@ const NotificationDropdown = () => {
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-3">
                           {notification.message}
                         </p>
-                        {notification.agent?.name ? (
-                          <p className="text-xs text-muted-foreground/70 mt-1">
-                            Agent: {notification.agent.name}
-                          </p>
-                        ) : null}
                         <div className="mt-2 flex gap-2">
                           <Button
                             size="sm"

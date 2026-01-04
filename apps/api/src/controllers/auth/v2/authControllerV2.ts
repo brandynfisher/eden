@@ -1,5 +1,6 @@
 import { Agent } from '../../../models/Agent'
 import { Deployment } from '../../../models/Deployment'
+import { DiscordGuildAccess } from '../../../models/DiscordGuildAccess'
 import { Manna } from '../../../models/Manna'
 import { Transaction } from '../../../models/Transaction'
 import { User } from '../../../models/User'
@@ -1639,6 +1640,95 @@ export const disconnectGoogleCalendar = async (
   }
 }
 
+const DISCORD_ADMINISTRATOR = 0x8
+const DISCORD_MANAGE_GUILD = 0x20
+
+const hasGuildAdminPermissions = (permissions: number) =>
+  Boolean(
+    permissions & DISCORD_ADMINISTRATOR || permissions & DISCORD_MANAGE_GUILD,
+  )
+
+const fetchDiscordUser = async (accessToken: string) => {
+  const response = await axios.get('https://discord.com/api/users/@me', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+  return response.data
+}
+
+const fetchDiscordGuildRoles = async (botToken: string, guildId: string) => {
+  const response = await axios.get(
+    `https://discord.com/api/v10/guilds/${guildId}/roles`,
+    {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    },
+  )
+  return response.data
+}
+
+const fetchDiscordMemberRoles = async (
+  botToken: string,
+  guildId: string,
+  userId: string,
+) => {
+  const response = await axios.get(
+    `https://discord.com/api/v10/guilds/${guildId}/members/${userId}`,
+    {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    },
+  )
+  return response.data?.roles ?? []
+}
+
+const checkBotInGuild = async (botToken: string, guildId: string) => {
+  try {
+    await axios.get(`https://discord.com/api/v10/guilds/${guildId}`, {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const userIsGuildAdmin = async (
+  botToken: string,
+  guildId: string,
+  userDiscordId: string,
+) => {
+  const [guildResponse, memberRoles, roles] = await Promise.all([
+    axios.get(`https://discord.com/api/v10/guilds/${guildId}`, {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    }),
+    fetchDiscordMemberRoles(botToken, guildId, userDiscordId),
+    fetchDiscordGuildRoles(botToken, guildId),
+  ])
+
+  if (guildResponse.data?.owner_id === userDiscordId) {
+    return true
+  }
+
+  const permissionsByRole = new Map<string, number>(
+    roles.map((role: any) => [
+      String(role.id),
+      Number.parseInt(String(role.permissions ?? '0'), 10),
+    ]),
+  )
+  const roleIds = Array.from(new Set([guildId, ...memberRoles]))
+  return roleIds.some(roleId =>
+    hasGuildAdminPermissions(permissionsByRole.get(roleId) ?? 0),
+  )
+}
+
 export const discordV3OAuthCallback = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -1695,7 +1785,9 @@ export const discordV3OAuthCallback = async (
     return sendPopupResponse(false, undefined, 'Missing code or state')
   }
 
-  let parsedState: { agent_id?: string; mode?: string } | undefined
+  let parsedState:
+    | { agent_id?: string; mode?: string; user_id?: string }
+    | undefined
   try {
     parsedState = JSON.parse(state)
   } catch {
@@ -1723,7 +1815,7 @@ export const discordV3OAuthCallback = async (
         code,
         redirect_uri: `${server.config.API_URL}/v2/deployments/discord/oauth/callback`,
         grant_type: 'authorization_code',
-        scope: 'guilds',
+        scope: 'guilds identify',
       }),
       {
         headers: {
@@ -1734,47 +1826,93 @@ export const discordV3OAuthCallback = async (
 
     const { access_token } = tokenResponse.data
 
-    // Fetch user's guilds
-    const guildsResponse = await axios.get(
-      'https://discord.com/api/users/@me/guilds',
-      {
+    const [discordUser, guildsResponse] = await Promise.all([
+      fetchDiscordUser(access_token),
+      axios.get('https://discord.com/api/users/@me/guilds', {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
-      },
-    )
+      }),
+    ])
 
+    const discordUserId = discordUser?.id
+    const discordUsername = discordUser?.username
+    const userIdFromState = parsedState?.user_id
     const allGuilds = guildsResponse.data
 
-    // Filter guilds where user has admin/manage server permissions
-    const ADMINISTRATOR = 0x8
-    const MANAGE_GUILD = 0x20
-
-    const adminGuilds = allGuilds.filter((guild: any) => {
-      const permissions = parseInt(guild.permissions)
-      return permissions & ADMINISTRATOR || permissions & MANAGE_GUILD
-    })
-
-    // Check which guilds have the bot
     const botToken = server.config.DISCORD_BOT_TOKEN
+    if (!botToken) {
+      return sendPopupResponse(
+        false,
+        undefined,
+        'Discord bot token not configured',
+      )
+    }
     const availableGuilds = []
+    const guildIds = allGuilds.map((guild: any) => guild.id)
+    const accessDocs = await DiscordGuildAccess.find({
+      guild_id: { $in: guildIds },
+    })
+    const accessByGuild = new Map(
+      accessDocs.map(doc => [doc.guild_id, doc.allowed_role_ids ?? []]),
+    )
 
-    for (const guild of adminGuilds) {
-      try {
-        await axios.get(`https://discord.com/api/v10/guilds/${guild.id}`, {
-          headers: {
-            Authorization: `Bot ${botToken}`,
-          },
-        })
-        // Bot is in guild
-        availableGuilds.push({
-          id: guild.id,
-          name: guild.name,
-          icon: guild.icon,
-          owner: guild.owner || false,
-        })
-      } catch {
-        // Bot not in guild, skip
+    for (const guild of allGuilds) {
+      const permissions = parseInt(guild.permissions)
+      const isAdmin = hasGuildAdminPermissions(permissions)
+      const allowedRoleIds = accessByGuild.get(guild.id) ?? []
+
+      if (!isAdmin && allowedRoleIds.length === 0) {
+        continue
+      }
+
+      if (!isAdmin && !discordUserId) {
+        continue
+      }
+
+      const hasBot = await checkBotInGuild(botToken, guild.id)
+      if (!hasBot) {
+        continue
+      }
+
+      if (!isAdmin && discordUserId) {
+        try {
+          const memberRoles = await fetchDiscordMemberRoles(
+            botToken,
+            guild.id,
+            discordUserId,
+          )
+          const isRoleAllowed = allowedRoleIds.some(roleId =>
+            memberRoles.includes(roleId),
+          )
+          if (!isRoleAllowed) {
+            continue
+          }
+        } catch {
+          continue
+        }
+      }
+
+      availableGuilds.push({
+        id: guild.id,
+        name: guild.name,
+        icon: guild.icon,
+        owner: guild.owner || false,
+        access: isAdmin ? 'admin' : 'role',
+      })
+    }
+
+    if (discordUserId && userIdFromState) {
+      let user = await User.findOne({ userId: userIdFromState })
+      if (!user && server.mongoose?.isObjectIdOrHexString?.(userIdFromState)) {
+        user = await User.findById(userIdFromState)
+      }
+      if (user) {
+        user.discordId = discordUserId
+        if (discordUsername) {
+          user.discordUsername = discordUsername
+        }
+        await user.save()
       }
     }
 
@@ -1819,6 +1957,123 @@ export const getDiscordGuildChannels = async (
     server.log.error({ error, guildId }, 'Failed to fetch guild channels')
     return reply.status(500).send({
       message: 'Failed to fetch channels',
+    })
+  }
+}
+
+export const getDiscordGuildRoles = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { guildId } = request.params as { guildId: string }
+  const botToken = server.config.DISCORD_BOT_TOKEN
+
+  if (!botToken) {
+    return reply.status(500).send({
+      message: 'Discord bot token not configured',
+    })
+  }
+
+  try {
+    const roles = await fetchDiscordGuildRoles(botToken, guildId)
+    const filteredRoles = roles
+      .filter((role: any) => role.id !== guildId)
+      .map((role: any) => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        managed: role.managed,
+      }))
+
+    return reply.send({ roles: filteredRoles })
+  } catch (error: any) {
+    server.log.error({ error, guildId }, 'Failed to fetch guild roles')
+    return reply.status(500).send({
+      message: 'Failed to fetch roles',
+    })
+  }
+}
+
+export const getDiscordGuildAccess = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { guildId } = request.params as { guildId: string }
+
+  try {
+    const access = await DiscordGuildAccess.findOne({ guild_id: guildId })
+    return reply.send({
+      guildId,
+      allowedRoleIds: access?.allowed_role_ids ?? [],
+    })
+  } catch (error: any) {
+    server.log.error({ error, guildId }, 'Failed to fetch guild access roles')
+    return reply.status(500).send({
+      message: 'Failed to fetch access roles',
+    })
+  }
+}
+
+export const updateDiscordGuildAccess = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { guildId } = request.params as { guildId: string }
+  const { allowedRoleIds } = request.body as { allowedRoleIds?: string[] }
+  const botToken = server.config.DISCORD_BOT_TOKEN
+
+  if (!botToken) {
+    return reply.status(500).send({
+      message: 'Discord bot token not configured',
+    })
+  }
+
+  if (!request.user?.userId) {
+    return reply.status(401).send({ message: 'Unauthorized' })
+  }
+
+  const user = await User.findById(request.user.userId)
+  if (!user?.discordId) {
+    return reply.status(400).send({
+      message: 'Discord account not linked for this user',
+    })
+  }
+
+  try {
+    const canManage = await userIsGuildAdmin(botToken, guildId, user.discordId)
+
+    if (!canManage) {
+      return reply.status(403).send({
+        message: 'You do not have permission to manage this server',
+      })
+    }
+
+    const sanitizedRoles = Array.from(
+      new Set((allowedRoleIds ?? []).filter(roleId => Boolean(roleId))),
+    )
+
+    const access = await DiscordGuildAccess.findOneAndUpdate(
+      { guild_id: guildId },
+      {
+        guild_id: guildId,
+        allowed_role_ids: sanitizedRoles,
+        updated_by_user_id: user._id,
+        updated_by_discord_id: user.discordId,
+      },
+      { upsert: true, new: true },
+    )
+
+    return reply.send({
+      guildId,
+      allowedRoleIds: access?.allowed_role_ids ?? [],
+    })
+  } catch (error: any) {
+    server.log.error({ error, guildId }, 'Failed to update guild access roles')
+    return reply.status(500).send({
+      message: 'Failed to update access roles',
     })
   }
 }
