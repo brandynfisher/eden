@@ -17,6 +17,7 @@ export interface TasksV2CreateArguments extends WebAPICallOptions {
   tool: string
   args?: any
   makePublic?: boolean
+  metadata?: Record<string, unknown>
 }
 
 export interface TasksV2ListArguments
@@ -239,6 +240,7 @@ export type TaskV2 = {
     waitTime?: number
     runTime?: number
   }
+  metadata?: Record<string, unknown>
   apiKey?: string
   createdAt: Date
   updatedAt: Date

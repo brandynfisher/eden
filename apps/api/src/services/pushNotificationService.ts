@@ -9,6 +9,9 @@ export async function sendPushNotification(
   title: string,
   message: string,
   data?: any,
+  options?: {
+    imageUrl?: string
+  },
 ) {
   // Check that all your push tokens appear to be valid Expo push tokens
   if (!Expo.isExpoPushToken(pushToken)) {
@@ -16,16 +19,31 @@ export async function sendPushNotification(
     return { success: false, error: 'Invalid push token' }
   }
 
-  const messages: ExpoPushMessage[] = [
-    {
-      to: pushToken,
-      sound: 'default',
-      title,
-      body: message,
-      data: data || {},
-      priority: 'default',
-    },
-  ]
+  type ExpoPushMessageWithRichContent = ExpoPushMessage & {
+    richContent?: { image: string }
+    mutableContent?: boolean
+  }
+
+  const payloadData = { ...(data || {}) }
+  if (options?.imageUrl) {
+    payloadData.image = options.imageUrl
+  }
+
+  const notificationMessage: ExpoPushMessageWithRichContent = {
+    to: pushToken,
+    sound: 'default',
+    title,
+    body: message,
+    data: payloadData,
+    priority: 'default',
+  }
+
+  if (options?.imageUrl) {
+    notificationMessage.richContent = { image: options.imageUrl }
+    notificationMessage.mutableContent = true
+  }
+
+  const messages: ExpoPushMessage[] = [notificationMessage]
 
   try {
     const chunks = expo.chunkPushNotifications(messages)
@@ -36,7 +54,10 @@ export async function sendPushNotification(
         const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
         tickets.push(...ticketChunk)
       } catch (error) {
-        server.log.error({ err: error }, 'Error sending push notification chunk')
+        server.log.error(
+          { err: error },
+          'Error sending push notification chunk',
+        )
       }
     }
 
@@ -46,9 +67,7 @@ export async function sendPushNotification(
       if (ticket.status === 'ok') {
         receiptIds.push(ticket.id)
       } else {
-        server.log.error(
-          `Error sending push notification: ${ticket.message}`,
-        )
+        server.log.error(`Error sending push notification: ${ticket.message}`)
       }
     }
 
@@ -61,4 +80,3 @@ export async function sendPushNotification(
     }
   }
 }
-

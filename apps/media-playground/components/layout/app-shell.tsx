@@ -63,7 +63,7 @@ const DISABLE_PREFIXES = [
   '/creations',
   '/native-bridge',
 ]
-const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks']
+const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks', '/integrations']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'
 
 const shouldDisableShell = (pathname?: string | null) => {

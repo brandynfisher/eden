@@ -8,6 +8,7 @@ const createTask = async (
   tool: string,
   args: TaskV2['args'],
   makePublic: boolean,
+  metadata: Record<string, unknown> | undefined,
   eden: EdenClient,
 ) => {
   return eden.tasks
@@ -15,6 +16,7 @@ const createTask = async (
       tool,
       args,
       makePublic,
+      metadata,
     })
     .then(response => {
       if (!response || response.message) {
@@ -107,6 +109,7 @@ export async function POST(request: NextRequest) {
       requestJson.tool,
       requestJson.args,
       requestJson.makePublic,
+      requestJson.metadata,
       eden,
     )
     const createdTaskJson = await createdTaskResponse.json()

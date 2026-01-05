@@ -65,13 +65,16 @@ interface GoogleCalendarOAuthResult {
 interface GoogleCalendarDeploymentFormProps {
   agentId: Agent['_id']
   deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
 }
 
 export const GoogleCalendarDeploymentForm = ({
   agentId,
   deployment,
+  variant = 'collapsible',
 }: GoogleCalendarDeploymentFormProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const isInline = variant === 'inline'
+  const [isOpen, setIsOpen] = useState(isInline ? true : false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [oauthResult, setOauthResult] =
     useState<GoogleCalendarOAuthResult | null>(null)
@@ -97,11 +100,12 @@ export const GoogleCalendarDeploymentForm = ({
 
   const wasDeployed = useRef(isDeployed)
   useEffect(() => {
+    if (isInline) return
     if (wasDeployed.current && !isDeployed) {
       setIsOpen(false)
     }
     wasDeployed.current = isDeployed
-  }, [isDeployed])
+  }, [isDeployed, isInline])
 
   // Check if Google Calendar is connected by looking at deployment config
   // (secrets are encrypted and not available to frontend)
@@ -273,18 +277,27 @@ export const GoogleCalendarDeploymentForm = ({
     c => c.id === selectedCalendarId,
   )
 
+  const open = isInline ? true : isOpen
+
   return (
-    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible
+      className="w-full"
+      open={open}
+      onOpenChange={value => {
+        if (!isInline) setIsOpen(value)
+      }}
+    >
       <DeploymentCollapsibleTrigger
-        isOpen={isOpen}
+        isOpen={open}
         isDeployed={isDeployed}
         label="Google Calendar"
         tooltip="Allow your agent to read and manage your Google Calendar events"
         valid={deployment?.valid}
+        isStatic={isInline}
       />
       <CollapsibleContent
         className={cn([
-          isOpen
+          open
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',
