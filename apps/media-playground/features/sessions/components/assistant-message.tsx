@@ -23,7 +23,6 @@ type AssistantMessageProps = {
   onSessionClick?: (sessionId: string) => void
 }
 
-// Discord icon component
 const DiscordIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
