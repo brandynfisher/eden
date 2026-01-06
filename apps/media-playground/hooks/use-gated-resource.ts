@@ -9,12 +9,6 @@ import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
   'tiktok',
   'instagram',
-  'google_calendar',
-  'shopify',
-  'printify',
-  'captions',
-  'email',
-  'gmail',
 ])
 
 export enum GatedResource {

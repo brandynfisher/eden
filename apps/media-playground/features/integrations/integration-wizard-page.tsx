@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import UserAvatar from '@/components/user/user-avatar'
-import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
@@ -15,8 +14,6 @@ import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farca
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
 import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
 import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
-import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
-import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
@@ -31,7 +28,11 @@ import {
 } from '@/features/integrations/integration-definitions'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useUserDeploymentsQuery } from '@/hooks/query/use-user-deployments-query'
-import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
+import {
+  GatedResource,
+  PREVIEW_ONLY_DEPLOYMENT_PLATFORMS,
+  useGatedResource,
+} from '@/hooks/use-gated-resource'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import {
@@ -66,6 +67,8 @@ type IntegrationFormProps = {
   variant?: 'collapsible' | 'inline'
 }
 
+const WIZARD_EXCLUDED_PLATFORMS = new Set(['shopify', 'printify', 'captions'])
+
 const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   discord: DiscordDeploymentForm,
   discord_v3: DiscordV3DeploymentForm,
@@ -75,9 +78,6 @@ const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   instagram: InstagramDeploymentForm,
   tiktok: TiktokDeploymentForm,
   google_calendar: GoogleCalendarDeploymentForm,
-  shopify: ShopifyDeploymentForm,
-  printify: PrintifyDeploymentForm,
-  captions: CaptionsDeploymentForm,
   email: EmailDeploymentForm,
   gmail: GmailDeploymentForm,
 }
@@ -146,8 +146,19 @@ const IntegrationWizardPage = () => {
   }, [deployments, selectedAgentId])
 
   const availablePlatforms = useMemo(
-    () => INTEGRATION_DEFINITIONS.filter(def => def.allowCreate !== false),
-    [],
+    () =>
+      INTEGRATION_DEFINITIONS.filter(def => {
+        if (def.allowCreate === false) return false
+        if (WIZARD_EXCLUDED_PLATFORMS.has(def.platform)) return false
+        if (
+          !deploymentsGate.isPreviewUser &&
+          PREVIEW_ONLY_DEPLOYMENT_PLATFORMS.has(def.platform)
+        ) {
+          return false
+        }
+        return true
+      }),
+    [deploymentsGate.isPreviewUser],
   )
 
   const platformsByCategory = useMemo(() => {
