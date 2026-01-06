@@ -2,6 +2,7 @@
 
 import { AgentWorkspaces } from './components/agent-workspaces'
 import { SharedChildSessionSidebar } from './components/shared-child-session-sidebar'
+import { ViewModerator } from './components/view-moderator'
 import {
   getEffectiveSender,
   groupConsecutiveMessages,
@@ -52,6 +53,28 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
   const agents = session?.agents || []
   const childShares = sharedSessionData?.share?.child_shares
   const hasChildShares = childShares && Object.keys(childShares).length > 0
+
+  // Find the moderator workspace share ID
+  // The moderator_session maps to a child session, we need to find its share
+  const moderatorShareId = useMemo(() => {
+    if (
+      !childShares ||
+      !session?.agent_sessions ||
+      !session?.moderator_session
+    ) {
+      return null
+    }
+    // Find which agent ID has the moderator_session value
+    const moderatorSessionId = session.moderator_session?.toString()
+    for (const [agentId, childSessionId] of Object.entries(
+      session.agent_sessions,
+    )) {
+      if (childSessionId?.toString() === moderatorSessionId) {
+        return childShares[agentId] || null
+      }
+    }
+    return null
+  }, [childShares, session?.agent_sessions, session?.moderator_session])
 
   // Handle opening a workspace via its share_id
   const handleOpenWorkspace = (shareId: string) => {
@@ -107,7 +130,7 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
   return (
     <div className="h-full flex">
       <div className="flex-1 overflow-y-auto relative">
-        {/* Floating controls - Agent Workspaces + Moderator toggle - desktop only */}
+        {/* Floating controls - Agent Workspaces + Moderator Workspace + Moderator toggle - desktop only */}
         <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
           {/* Show Agent Workspaces if we have child_shares */}
           {hasChildShares && (
@@ -115,6 +138,13 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
               agents={agents}
               agentSessions={childShares}
               onOpenWorkspace={handleOpenWorkspace}
+            />
+          )}
+          {/* Show Moderator Workspace button if available */}
+          {moderatorShareId && (
+            <ViewModerator
+              moderatorSessionId={moderatorShareId}
+              onOpenModerator={handleOpenWorkspace}
             />
           )}
           {/* Moderator messages toggle - only show for automatic sessions */}
@@ -148,8 +178,10 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
             </p>
           </div>
 
-          {/* Mobile-only controls - Agent Workspaces + Moderator toggle */}
-          {(hasChildShares || session?.session_type === 'automatic') && (
+          {/* Mobile-only controls - Agent Workspaces + Moderator Workspace + Moderator toggle */}
+          {(hasChildShares ||
+            moderatorShareId ||
+            session?.session_type === 'automatic') && (
             <div className="md:hidden flex flex-wrap gap-2 mb-4">
               {hasChildShares && (
                 <AgentWorkspaces
@@ -158,6 +190,12 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
                   onOpenWorkspace={handleOpenWorkspace}
                   label="Workspaces"
                   alwaysShowLabel
+                />
+              )}
+              {moderatorShareId && (
+                <ViewModerator
+                  moderatorSessionId={moderatorShareId}
+                  onOpenModerator={handleOpenWorkspace}
                 />
               )}
               {session?.session_type === 'automatic' && (

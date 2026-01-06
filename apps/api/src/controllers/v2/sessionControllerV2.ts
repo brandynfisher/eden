@@ -2277,7 +2277,7 @@ export const getSharedSession = async (
       .populate({
         path: 'session',
         select:
-          '_id title context agents session_type agent_sessions createdAt',
+          '_id title context agents session_type agent_sessions moderator_session createdAt',
         populate: [
           {
             path: 'agents',
