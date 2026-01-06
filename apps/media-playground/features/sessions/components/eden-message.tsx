@@ -1,6 +1,8 @@
 'use client'
 
 import { LLMCallButton } from './llm-call-modal'
+import { MessageAttachment } from './message-attachment'
+import { LightboxGallery } from '@/components/media/lightbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getCloudfrontUrl } from '@/lib/media'
@@ -726,10 +728,27 @@ function PrivateMessageDisplay({
           <span className="text-xs">to {recipientNames}</span>
         </div>
 
+        {/* Attachments (images, etc.) */}
+        {message.attachments && message.attachments.length > 0 && (
+          <LightboxGallery galleryKey={message._id}>
+            <div className="flex flex-wrap gap-2 mt-2 mb-1">
+              {message.attachments.map((attachment, index) => (
+                <MessageAttachment
+                  key={attachment}
+                  url={attachment}
+                  index={index}
+                />
+              ))}
+            </div>
+          </LightboxGallery>
+        )}
+
         {/* Content */}
-        <div className="text-foreground leading-relaxed mt-1">
-          {message.content}
-        </div>
+        {message.content && (
+          <div className="text-foreground leading-relaxed mt-1">
+            {message.content}
+          </div>
+        )}
 
         {/* Timestamp and metadata */}
         <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
