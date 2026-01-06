@@ -49,6 +49,7 @@ const SOCIAL_TOOLS = {
     abraham_daily: {},
     media_editor: {},
     post_to_chatroom: {},
+    chat: {},
   },
 
   // Covenant tools - use CovenantEmbed
@@ -121,6 +122,8 @@ const SOCIAL_TOOLS = {
   JSON_TOOLS: {
     display: {},
     eden_search: {},
+    vote: {},
+    get_vote: {},
   },
 } as const
 

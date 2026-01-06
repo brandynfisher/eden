@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronRight,
+  Lock,
   Trophy,
   UserMinus,
   UserPlus,
@@ -458,6 +459,75 @@ function DefaultConductorMessage({
   )
 }
 
+// PRIVATE MESSAGE component - displays agent-to-agent private messages
+function PrivateMessageDisplay({
+  message,
+  TimeAgo,
+}: {
+  message: Message
+  TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
+}) {
+  const { eden_message_data, content } = message
+  const sender = eden_message_data?.sender
+  const recipients = eden_message_data?.agents || []
+
+  const senderImageUrl = sender?.avatar
+    ? sender.avatar.startsWith('https://')
+      ? sender.avatar
+      : getCloudfrontUrl(sender.avatar)
+    : undefined
+
+  const senderName = sender?.name || 'Unknown'
+  const recipientNames = recipients.map(r => r.name).join(', ')
+
+  return (
+    <div className="flex gap-3 pt-3 pb-5 group">
+      {/* Sender avatar */}
+      <Avatar className="h-10 w-10 shrink-0 mt-1">
+        {senderImageUrl && (
+          <AvatarImage src={senderImageUrl} alt={senderName} />
+        )}
+        <AvatarFallback className="text-sm bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+          {senderName.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="flex-1 min-w-0">
+        {/* Sender name */}
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm font-semibold text-foreground uppercase">
+            {senderName}
+          </span>
+        </div>
+
+        {/* Private message indicator - who it's sent to */}
+        <div className="flex items-center gap-1.5 mb-2 text-red-500 dark:text-red-400">
+          <Lock className="h-3.5 w-3.5" />
+          <span className="text-xs font-medium">
+            Private to {recipientNames}
+          </span>
+        </div>
+
+        {/* Message content */}
+        <div className="text-base text-foreground leading-relaxed">
+          {content}
+        </div>
+
+        {/* Timestamp and metadata */}
+        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className="text-xs text-muted-foreground"
+            title={new Date(message.createdAt).toLocaleString()}
+          >
+            <TimeAgo date={new Date(message.createdAt)} />
+          </div>
+          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const EdenMessage = ({
   message,
   agents,
@@ -586,6 +656,11 @@ export const EdenMessage = ({
         </div>
       </div>
     )
+  }
+
+  // Handle private messages
+  if (message_type === 'private_message') {
+    return <PrivateMessageDisplay message={message} TimeAgo={TimeAgo} />
   }
 
   const isAgentAdd = message_type === 'agent_add'

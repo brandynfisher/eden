@@ -23,6 +23,7 @@ import {
   listSessions,
   listUserShares,
   renameSession,
+  triggerNextTurn,
   updateSessionPermissions,
   updateSessionStatus,
 } from '../../controllers/v2/sessionControllerV2'
@@ -649,6 +650,51 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => updateSessionStatus(server, request, reply),
+  })
+
+  server.post<{
+    Body: {
+      session_id: string
+    }
+  }>('/v2/sessions/next-turn', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Trigger Next Turn',
+      description:
+        'Trigger the next turn immediately in an automatic session, skipping the delay interval.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          session_id: Type.Optional(Type.String()),
+          error: Type.Optional(Type.String()),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        401: Type.Object({
+          message: Type.String(),
+        }),
+        403: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => triggerNextTurn(server, request, reply),
   })
 
   // Session Share Routes

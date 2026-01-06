@@ -16,6 +16,10 @@ These documents provide deep-dive context that is too detailed for the main CLAU
 
 - **[new_agent_context.md](./new_agent_context.md)** - Agent creation flow at `/new/agent`, form components, validation schema, API routes, and state management
 
+### Session Systems
+
+- **[automatic-sessions.md](./automatic-sessions.md)** - Automatic (multi-agent) session system: conductor orchestration, session types (passive/natural/automatic), status management, conductor messages, and UI components
+
 ## When to Use These Docs
 
 Claude should reference these documents when:

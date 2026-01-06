@@ -82,6 +82,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
     'abraham_daily',
     'media_editor',
     'post_to_chatroom',
+    'chat',
   ]
 
   // Get completed tool calls with results

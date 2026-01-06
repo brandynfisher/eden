@@ -2,6 +2,7 @@
 
 import { AgentAvatarsMenu } from './components/agent-avatars-menu'
 import { AgentWorkspaces } from './components/agent-workspaces'
+import { AutomaticSessionControls } from './components/automatic-session-controls'
 import { ChildSessionSidebar } from './components/child-session-sidebar'
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
@@ -11,8 +12,8 @@ import {
   SessionSettingsModal,
 } from './components/session-settings-modal'
 import { SessionShareButton } from './components/session-share-button'
-import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
+import { ViewModerator } from './components/view-moderator'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
@@ -1821,24 +1822,8 @@ const Session = ({
             )}
           </div>
 
-          {/* Right section - Share, New Chat/Session (no Status Toggle for chat) */}
+          {/* Right section - Share, New Chat/Session */}
           <div className="flex items-center gap-2">
-            {/* Status Toggle - only show for automatic sessions, not chat */}
-            {!ischatRoute &&
-              canManageSession &&
-              session.session_type === 'automatic' && (
-                <SessionStatusToggle
-                  sessionId={sessionId as string}
-                  currentStatus={session.status}
-                  onStatusChange={newStatus => {
-                    // Update session in cache
-                    if (session) {
-                      session.status = newStatus
-                    }
-                  }}
-                />
-              )}
-
             {/* Settings/Memories button - show for single agent in chat route */}
             {ischatRoute && session.agents?.length === 1 && (
               <button
@@ -1943,7 +1928,7 @@ const Session = ({
               'flex flex-col justify-center items-center',
           )}
         >
-          {/* Floating controls - Agent Workspaces + Conductor toggle - desktop only */}
+          {/* Floating controls - Agent Workspaces + Moderator + Conductor toggle - desktop only */}
           <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
             {session?.agent_sessions &&
               Object.keys(session.agent_sessions).length > 0 && (
@@ -1953,6 +1938,13 @@ const Session = ({
                   onOpenWorkspace={handleChildSessionClick}
                 />
               )}
+            {/* View Moderator - only show for automatic sessions with moderator_session */}
+            {session?.moderator_session && (
+              <ViewModerator
+                moderatorSessionId={session.moderator_session}
+                onOpenModerator={handleChildSessionClick}
+              />
+            )}
             {/* Conductor messages toggle - only show for automatic sessions */}
             {session?.session_type === 'automatic' && (
               <button
@@ -1972,9 +1964,10 @@ const Session = ({
             )}
           </div>
           <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
-            {/* Mobile-only controls - Agent Workspaces + Conductor toggle */}
+            {/* Mobile-only controls - Agent Workspaces + Moderator + Conductor toggle */}
             {((session?.agent_sessions &&
               Object.keys(session.agent_sessions).length > 0) ||
+              session?.moderator_session ||
               session?.session_type === 'automatic') && (
               <div className="md:hidden flex flex-wrap gap-2 mb-4">
                 {session?.agent_sessions &&
@@ -1987,6 +1980,13 @@ const Session = ({
                       alwaysShowLabel
                     />
                   )}
+                {/* View Moderator - mobile */}
+                {session?.moderator_session && (
+                  <ViewModerator
+                    moderatorSessionId={session.moderator_session}
+                    onOpenModerator={handleChildSessionClick}
+                  />
+                )}
                 {session?.session_type === 'automatic' && (
                   <button
                     onClick={() =>
@@ -2558,7 +2558,19 @@ const Session = ({
 
       {!isReadOnlySession && (
         <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
-          <div className="max-w-[51rem] mx-auto w-full">
+          <div className="max-w-[51rem] mx-auto w-full space-y-4">
+            {/* Automatic session controls - shown above message input for automatic sessions */}
+            {session?.session_type === 'automatic' && canManageSession && (
+              <AutomaticSessionControls
+                session={session}
+                onStatusChange={newStatus => {
+                  // Update session in cache
+                  if (session) {
+                    session.status = newStatus
+                  }
+                }}
+              />
+            )}
             <MessageInput
               sessionId={currentSessionId as string}
               enableVoiceInput={true}

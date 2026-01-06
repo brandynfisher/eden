@@ -44,6 +44,8 @@ export interface SessionSchema {
   }
   /** Maps agent IDs to their private workspace session IDs */
   agent_sessions?: Record<string, ObjectId | string>
+  /** Session ID for the moderator's internal workspace (automatic sessions) */
+  moderator_session?: ObjectId | string
   createdAt: Date
   updatedAt: Date
 }
@@ -161,6 +163,11 @@ export const sessionSchema = new Schema<SessionDocument>(
     },
     agent_sessions: {
       type: Schema.Types.Mixed,
+      default: null,
+    },
+    moderator_session: {
+      type: Schema.Types.ObjectId,
+      ref: 'sessions',
       default: null,
     },
     deleted: {

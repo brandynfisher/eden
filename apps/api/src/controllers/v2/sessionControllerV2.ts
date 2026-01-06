@@ -3191,3 +3191,91 @@ export const addToolCallToMessage = async (
     return reply.status(500).send({ message: 'Internal server error' })
   }
 }
+
+/**
+ * Trigger the next turn in an automatic session immediately.
+ * This skips the delay interval and tells the compute API to run the next step now.
+ */
+export const triggerNextTurn = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { session_id } = request.body as {
+    session_id: string
+  }
+  const currentUserId = request.user.userId
+
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'Missing session_id',
+    })
+  }
+
+  try {
+    // First, get the session to check ownership and type
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Check if the user owns the session
+    if (session.owner.toString() !== currentUserId.toString()) {
+      return reply.status(403).send({
+        message: 'User not authorized to control this session',
+      })
+    }
+
+    // Check if session is automatic type
+    if (session.session_type !== 'automatic') {
+      return reply.status(400).send({
+        message: 'Next turn can only be triggered for automatic sessions',
+      })
+    }
+
+    // Check if session is active (only active sessions can have next turn triggered)
+    if (session.status !== 'active') {
+      return reply.status(400).send({
+        message: 'Session must be active to trigger next turn',
+      })
+    }
+
+    // Forward the request to compute API
+    const edenComputeRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/next-turn`,
+      data: { session_id },
+    }
+
+    const edenComputeResponse = await axios.post(
+      edenComputeRequest.endpoint,
+      edenComputeRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = edenComputeResponse.data
+
+    return reply.status(200).send(response)
+  } catch (error) {
+    server.log.error({ err: error }, 'Error triggering next turn:')
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status || 500
+      const message =
+        error.response?.data?.message || 'Failed to trigger next turn'
+
+      return reply.status(status).send({
+        message,
+      })
+    }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}

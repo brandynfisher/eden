@@ -23,6 +23,7 @@ export type EdenMessageType =
   | 'conductor_turn'
   | 'conductor_hint'
   | 'conductor_finish'
+  | 'private_message'
 
 export type EdenMessageAgentData = {
   id: string
@@ -33,6 +34,8 @@ export type EdenMessageAgentData = {
 export type EdenMessageData = {
   message_type: EdenMessageType
   agents?: EdenMessageAgentData[]
+  /** Sender agent for private messages */
+  sender?: EdenMessageAgentData
   error?: string
 }
 
