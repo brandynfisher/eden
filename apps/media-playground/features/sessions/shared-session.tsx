@@ -2,7 +2,11 @@
 
 import { AgentWorkspaces } from './components/agent-workspaces'
 import { SharedChildSessionSidebar } from './components/shared-child-session-sidebar'
-import { groupConsecutiveMessages } from './utils/group-messages'
+import {
+  getEffectiveSender,
+  groupConsecutiveMessages,
+  isOrchestratorMessage,
+} from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -21,7 +25,7 @@ interface SharedSessionProps {
 
 export const SharedSession = ({ shareId }: SharedSessionProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [showConductorMessages, setShowConductorMessages] = useState(false)
+  const [showModeratorMessages, setShowModeratorMessages] = useState(false)
   const [childShareId, setChildShareId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
 
@@ -103,7 +107,7 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
   return (
     <div className="h-full flex">
       <div className="flex-1 overflow-y-auto relative">
-        {/* Floating controls - Agent Workspaces + Conductor toggle - desktop only */}
+        {/* Floating controls - Agent Workspaces + Moderator toggle - desktop only */}
         <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
           {/* Show Agent Workspaces if we have child_shares */}
           {hasChildShares && (
@@ -113,21 +117,21 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
               onOpenWorkspace={handleOpenWorkspace}
             />
           )}
-          {/* Conductor messages toggle - only show for automatic sessions */}
+          {/* Moderator messages toggle - only show for automatic sessions */}
           {session?.session_type === 'automatic' && (
             <button
-              onClick={() => setShowConductorMessages(!showConductorMessages)}
+              onClick={() => setShowModeratorMessages(!showModeratorMessages)}
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full',
                 'text-sm font-medium transition-colors',
                 'border border-blue-500/30',
-                showConductorMessages
+                showModeratorMessages
                   ? 'bg-blue-600 text-white hover:bg-blue-500'
                   : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
               )}
             >
               <BrainIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">View Conductor</span>
+              <span className="hidden sm:inline">View Moderator</span>
             </button>
           )}
         </div>
@@ -144,7 +148,7 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
             </p>
           </div>
 
-          {/* Mobile-only controls - Agent Workspaces + Conductor toggle */}
+          {/* Mobile-only controls - Agent Workspaces + Moderator toggle */}
           {(hasChildShares || session?.session_type === 'automatic') && (
             <div className="md:hidden flex flex-wrap gap-2 mb-4">
               {hasChildShares && (
@@ -159,19 +163,19 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
               {session?.session_type === 'automatic' && (
                 <button
                   onClick={() =>
-                    setShowConductorMessages(!showConductorMessages)
+                    setShowModeratorMessages(!showModeratorMessages)
                   }
                   className={cn(
                     'flex items-center gap-2 px-3 py-1.5 rounded-full',
                     'text-sm font-medium transition-colors',
                     'border border-blue-500/30',
-                    showConductorMessages
+                    showModeratorMessages
                       ? 'bg-blue-600 text-white hover:bg-blue-500'
                       : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
                   )}
                 >
                   <BrainIcon className="w-4 h-4" />
-                  <span>View Conductor</span>
+                  <span>View Moderator</span>
                 </button>
               )}
             </div>
@@ -179,8 +183,12 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
 
           {/* Messages */}
           <div className="space-y-6">
-            {messageGroups.map(group =>
-              group.map((message: Message) => {
+            {messageGroups.map(group => {
+              const firstMessage = group[0]
+              const effectiveSender = getEffectiveSender(firstMessage)
+              const isModeratorGroup = effectiveSender === 'eden'
+
+              return group.map((message: Message, index: number) => {
                 if (message.role === 'user') {
                   return (
                     <UserMessage
@@ -189,12 +197,35 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
                       session={share.session}
                     />
                   )
+                } else if (isModeratorGroup) {
+                  // Moderator group: mix of orchestrator eden messages and assistant messages from eden
+                  if (isOrchestratorMessage(message)) {
+                    return (
+                      <EdenMessage
+                        key={message._id}
+                        message={message}
+                        agents={agents}
+                        showModeratorMessages={showModeratorMessages}
+                        showAvatar={index === 0}
+                      />
+                    )
+                  } else {
+                    return (
+                      <OtherMessage
+                        key={message._id}
+                        message={message}
+                        sessionId={share.session._id}
+                        showAvatar={index === 0}
+                      />
+                    )
+                  }
                 } else if (message.role === 'assistant') {
                   return (
                     <OtherMessage
                       key={message._id}
                       message={message}
                       sessionId={share.session._id}
+                      showAvatar={index === 0}
                     />
                   )
                 } else if (
@@ -206,13 +237,13 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
                       key={message._id}
                       message={message}
                       agents={agents}
-                      showConductorMessages={showConductorMessages}
+                      showModeratorMessages={showModeratorMessages}
                     />
                   )
                 }
                 return null
-              }),
-            )}
+              })
+            })}
             {/* Invisible element to scroll to */}
             <div ref={messagesEndRef} />
           </div>

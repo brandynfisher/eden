@@ -12,17 +12,22 @@ import {
   ChevronRight,
   Lock,
   Trophy,
+  UserIcon,
   UserMinus,
   UserPlus,
   Users,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
-import { useState } from 'react'
+import Link from 'next/link'
+import React, { useState } from 'react'
 
 interface EdenMessageProps {
   message: Message
   agents?: Agent[]
-  showConductorMessages?: boolean
+  /** Show moderator messages (and legacy conductor messages for backwards compatibility) */
+  showModeratorMessages?: boolean
+  /** Whether to show the avatar (for grouping consecutive messages) */
+  showAvatar?: boolean
 }
 
 // Parsed content types
@@ -46,6 +51,24 @@ type AgentContext = {
 type ConductorInitContent = {
   shared_understanding?: string
   agent_contexts?: AgentContext[]
+}
+
+type Vote = {
+  voter: string
+  choice: string
+  reasoning?: string
+}
+
+type ModeratorVoteContent = {
+  topic?: string
+  choices?: string[]
+  voters?: string[]
+  votes?: Vote[]
+}
+
+type ModeratorPromptContent = {
+  agent?: string
+  hint?: string
 }
 
 // Helper to truncate text to ~N words
@@ -151,7 +174,7 @@ function ConductorFinishMessage({
   const [showSummary, setShowSummary] = useState(false)
 
   return (
-    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
+    <div className="pt-1 pb-3 group">
       <div className="max-w-[42rem]">
         <div className="text-[0.62rem] font-medium text-amber-600/70 dark:text-amber-400/60 mb-1 px-1 flex items-center gap-1">
           <Trophy className="h-3 w-3" />
@@ -227,7 +250,7 @@ function ConductorTurnMessage({
   const needsTruncation = reasoning.split(/\s+/).length > 20
 
   return (
-    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
+    <div className="pt-1 pb-3 group">
       <div className="max-w-[42rem]">
         <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
           CONDUCTOR TURN
@@ -318,11 +341,8 @@ function ConductorInitMessage({
   TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
 }) {
   return (
-    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
+    <div className="pt-1 pb-3 group">
       <div className="max-w-[42rem]">
-        <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
-          CONDUCTOR INIT
-        </div>
         <div className="bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3 space-y-3">
           {/* Shared understanding - truncated with expand */}
           {content.shared_understanding && (
@@ -380,6 +400,181 @@ function ConductorInitMessage({
   )
 }
 
+// MODERATOR VOTE component - displays voting results with avatars
+function ModeratorVoteMessage({
+  content,
+  message,
+  agents,
+  TimeAgo,
+}: {
+  content: ModeratorVoteContent
+  message: Message
+  agents?: Agent[]
+  TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
+}) {
+  const [expandedVotes, setExpandedVotes] = useState<Set<number>>(new Set())
+  const REASONING_CHAR_LIMIT = 100
+
+  const toggleExpanded = (index: number) => {
+    setExpandedVotes(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
+  }
+
+  const votes = content.votes || []
+
+  return (
+    <div className="pt-1 pb-3 group">
+      <div className="max-w-[42rem]">
+        <div className="text-[0.62rem] font-medium text-purple-600/70 dark:text-purple-400/60 mb-1 px-1 flex items-center gap-1">
+          <Users className="h-3 w-3" />
+          VOTE RESULTS
+        </div>
+        <div className="bg-purple-50/60 dark:bg-purple-900/10 border border-purple-200/50 dark:border-purple-700/30 rounded-lg px-4 py-3">
+          {/* Topic */}
+          {content.topic && (
+            <div className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-3">
+              {content.topic}
+            </div>
+          )}
+
+          {/* Votes */}
+          <div className="space-y-3">
+            {votes.map((vote, idx) => {
+              const voterAgent = getAgentByUsername(agents, vote.voter)
+              const isExpanded = expandedVotes.has(idx)
+              const hasLongReasoning =
+                vote.reasoning && vote.reasoning.length > REASONING_CHAR_LIMIT
+
+              return (
+                <div key={idx} className="flex items-start gap-3">
+                  {/* Voter avatar */}
+                  <SmallAgentAvatar
+                    agent={voterAgent}
+                    username={vote.voter}
+                    className="mt-0.5"
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    {/* Voter name and choice */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-purple-800/80 dark:text-purple-200/80">
+                        {voterAgent?.name || vote.voter}
+                      </span>
+                      <span className="text-xs text-purple-600/60 dark:text-purple-400/50">
+                        voted for
+                      </span>
+                      <span className="text-sm font-semibold text-purple-900 dark:text-purple-100 bg-purple-200/50 dark:bg-purple-700/30 px-2 py-0.5 rounded">
+                        {vote.choice}
+                      </span>
+                    </div>
+
+                    {/* Reasoning (if present) */}
+                    {vote.reasoning && (
+                      <div className="mt-1 text-xs text-purple-700/60 dark:text-purple-300/50 italic">
+                        {hasLongReasoning && !isExpanded ? (
+                          <>
+                            {vote.reasoning.slice(0, REASONING_CHAR_LIMIT)}
+                            <button
+                              onClick={() => toggleExpanded(idx)}
+                              className="text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 ml-1 not-italic"
+                            >
+                              ...more
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            {vote.reasoning}
+                            {hasLongReasoning && (
+                              <button
+                                onClick={() => toggleExpanded(idx)}
+                                className="text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 ml-1 not-italic"
+                              >
+                                [less]
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className="text-xs text-muted-foreground"
+            title={new Date(message.createdAt).toLocaleString()}
+          >
+            <TimeAgo date={new Date(message.createdAt)} />
+          </div>
+          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// MODERATOR PROMPT component - displays the prompt sent to a specific agent
+function ModeratorPromptMessage({
+  content,
+  message,
+  agents,
+  TimeAgo,
+}: {
+  content: ModeratorPromptContent
+  message: Message
+  agents?: Agent[]
+  TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
+}) {
+  const targetAgent = content.agent
+    ? getAgentByUsername(agents, content.agent)
+    : undefined
+
+  return (
+    <div className="pt-1 pb-3 group">
+      <div className="max-w-[42rem]">
+        <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
+          NEXT UP
+        </div>
+        <div className="bg-blue-100/40 dark:bg-blue-900/15 border border-blue-200/50 dark:border-blue-800/30 rounded-lg px-4 py-3">
+          {/* Target agent */}
+          <div className="flex items-center gap-2">
+            <SmallAgentAvatar agent={targetAgent} username={content.agent} />
+            <span className="text-sm font-medium text-blue-800/80 dark:text-blue-200/80">
+              {targetAgent?.name || content.agent}
+            </span>
+          </div>
+
+          {/* Hint/prompt */}
+          {content.hint && (
+            <div className="mt-2 text-sm text-blue-900/70 dark:text-blue-100/60 italic">
+              &ldquo;{content.hint}&rdquo;
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className="text-xs text-muted-foreground"
+            title={new Date(message.createdAt).toLocaleString()}
+          >
+            <TimeAgo date={new Date(message.createdAt)} />
+          </div>
+          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Default conductor message (trigger, conductor_hint, or fallback)
 function DefaultConductorMessage({
   label,
@@ -411,7 +606,7 @@ function DefaultConductorMessage({
     : displayContent
 
   return (
-    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
+    <div className="pt-1 pb-3 group">
       <div className="max-w-[42rem]">
         <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
           {label}
@@ -460,6 +655,7 @@ function DefaultConductorMessage({
 }
 
 // PRIVATE MESSAGE component - displays agent-to-agent private messages
+// Styled to match normal messages with avatar on left, content stacked on right
 function PrivateMessageDisplay({
   message,
   TimeAgo,
@@ -467,50 +663,72 @@ function PrivateMessageDisplay({
   message: Message
   TimeAgo: ReturnType<typeof useTimeAgo>['TimeAgo']
 }) {
-  const { eden_message_data, content } = message
-  const sender = eden_message_data?.sender
+  const { eden_message_data } = message
   const recipients = eden_message_data?.agents || []
 
-  const senderImageUrl = sender?.avatar
-    ? sender.avatar.startsWith('https://')
-      ? sender.avatar
-      : getCloudfrontUrl(sender.avatar)
+  // Use message.sender consistently (same as AssistantMessage)
+  const sender = message.sender
+  const senderImageUrl = sender?.userImage
+    ? sender.userImage.startsWith('https://')
+      ? sender.userImage
+      : getCloudfrontUrl(sender.userImage)
     : undefined
 
-  const senderName = sender?.name || 'Unknown'
+  // Show "Moderator" if sender username is "eden"
+  const isEdenSender = sender?.username?.toLowerCase() === 'eden'
+  const senderName = isEdenSender ? 'Moderator' : sender?.name || 'Unknown'
   const recipientNames = recipients.map(r => r.name).join(', ')
+  const profileIdentifier = sender?.username || sender?._id || ''
+  const shouldMakeClickable = !!profileIdentifier
 
   return (
-    <div className="flex gap-3 pt-3 pb-5 group">
-      {/* Sender avatar */}
-      <Avatar className="h-10 w-10 shrink-0 mt-1">
-        {senderImageUrl && (
-          <AvatarImage src={senderImageUrl} alt={senderName} />
+    <div className="flex gap-3 py-2 px-2 group">
+      {/* Avatar - left column */}
+      <div className="flex-shrink-0">
+        {shouldMakeClickable ? (
+          <Link href={`/agents/${profileIdentifier}`}>
+            <Avatar className="w-12 h-12 cursor-pointer hover:opacity-80 transition-opacity">
+              <AvatarImage src={senderImageUrl} />
+              <AvatarFallback>
+                <UserIcon className="w-4 h-4" />
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        ) : (
+          <Avatar className="w-12 h-12">
+            <AvatarImage src={senderImageUrl} />
+            <AvatarFallback>
+              <UserIcon className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
         )}
-        <AvatarFallback className="text-sm bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
-          {senderName.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      </div>
 
+      {/* Right column - name, private indicator, content stacked */}
       <div className="flex-1 min-w-0">
-        {/* Sender name */}
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-semibold text-foreground uppercase">
-            {senderName}
-          </span>
+        {/* Name */}
+        <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+          {shouldMakeClickable ? (
+            <Link
+              href={`/agents/${profileIdentifier}`}
+              className="hover:underline"
+            >
+              {senderName}
+            </Link>
+          ) : (
+            senderName
+          )}
         </div>
 
-        {/* Private message indicator - who it's sent to */}
-        <div className="flex items-center gap-1.5 mb-2 text-red-500 dark:text-red-400">
-          <Lock className="h-3.5 w-3.5" />
-          <span className="text-xs font-medium">
-            Private to {recipientNames}
-          </span>
+        {/* Private indicator */}
+        <div className="flex items-center gap-1 text-red-500/70 dark:text-red-400/70 mt-0.5">
+          <Lock className="h-3 w-3" />
+          <span className="text-xs">to {recipientNames}</span>
         </div>
 
-        {/* Message content */}
-        <div className="text-base text-foreground leading-relaxed">
-          {content}
+        {/* Content */}
+        <div className="text-foreground leading-relaxed mt-1">
+          {message.content}
         </div>
 
         {/* Timestamp and metadata */}
@@ -528,29 +746,111 @@ function PrivateMessageDisplay({
   )
 }
 
+// Wrapper component for orchestrator messages with avatar display
+// Avatar on left, content stacked vertically on right
+function OrchestratorMessageWrapper({
+  children,
+  showAvatar = true,
+  message,
+}: {
+  children: React.ReactNode
+  showAvatar?: boolean
+  message: Message
+}) {
+  // Use message.sender consistently (same as AssistantMessage)
+  const sender = message.sender
+  const senderImageUrl = sender?.userImage
+    ? sender.userImage.startsWith('https://')
+      ? sender.userImage
+      : getCloudfrontUrl(sender.userImage)
+    : undefined
+
+  const profileIdentifier = sender?.username || sender?._id || 'eden'
+  const shouldMakeClickable = !!profileIdentifier
+
+  return (
+    <div className="flex gap-3 py-2 px-2 group">
+      {/* Avatar - left column */}
+      <div className="w-12 flex-shrink-0">
+        {showAvatar ? (
+          shouldMakeClickable ? (
+            <Link href={`/agents/${profileIdentifier}`}>
+              <Avatar className="w-12 h-12 cursor-pointer hover:opacity-80 transition-opacity">
+                <AvatarImage src={senderImageUrl} />
+                <AvatarFallback>
+                  <UserIcon className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          ) : (
+            <Avatar className="w-12 h-12">
+              <AvatarFallback>
+                <UserIcon className="w-4 h-4" />
+              </AvatarFallback>
+            </Avatar>
+          )
+        ) : null}
+      </div>
+
+      {/* Right column - name and content stacked */}
+      <div className="flex-1 min-w-0">
+        {showAvatar && (
+          <div className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+            {shouldMakeClickable ? (
+              <Link
+                href={`/agents/${profileIdentifier}`}
+                className="hover:underline"
+              >
+                MODERATOR
+              </Link>
+            ) : (
+              'MODERATOR'
+            )}
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export const EdenMessage = ({
   message,
   agents,
-  showConductorMessages = false,
+  showModeratorMessages = false,
+  showAvatar = true,
 }: EdenMessageProps) => {
   const { eden_message_data, content } = message
   const { TimeAgo } = useTimeAgo()
 
-  // Handle conductor message types
-  const conductorTypes = [
+  // Handle conductor and moderator message types (moderator is the new version, conductor is legacy)
+  const orchestratorTypes = [
     'trigger',
+    // Legacy conductor types
     'conductor_init',
     'conductor_turn',
     'conductor_hint',
     'conductor_finish',
+    // New moderator types
+    'moderator_start',
+    'moderator_prompt',
+    'moderator_vote',
+    'moderator_finish',
   ]
 
-  // Types to hide when conductor toggle is off (always show init and finish)
-  const hiddenWhenToggleOff = ['conductor_turn', 'conductor_hint']
+  // Types to hide when moderator toggle is off
+  // Always show: conductor_init, conductor_finish, moderator_start, moderator_finish
+  // Hide when toggle off: conductor_turn, conductor_hint, moderator_prompt, moderator_vote
+  const hiddenWhenToggleOff = [
+    'conductor_turn',
+    'conductor_hint',
+    'moderator_prompt',
+    'moderator_vote',
+  ]
 
-  // Hide conductor_turn and conductor_hint if toggle is off
+  // Hide certain types if toggle is off
   if (
-    !showConductorMessages &&
+    !showModeratorMessages &&
     eden_message_data?.message_type &&
     hiddenWhenToggleOff.includes(eden_message_data.message_type)
   ) {
@@ -559,7 +859,7 @@ export const EdenMessage = ({
 
   if (
     eden_message_data?.message_type &&
-    conductorTypes.includes(eden_message_data.message_type) &&
+    orchestratorTypes.includes(eden_message_data.message_type) &&
     content
   ) {
     const trimmedContent = content.trim()
@@ -570,12 +870,26 @@ export const EdenMessage = ({
     try {
       parsedContent = JSON.parse(trimmedContent)
     } catch {
-      // Not JSON, will use default display
+      // Try again with single quotes replaced (backend sometimes uses single quotes)
+      try {
+        // Replace single quotes with double quotes for JSON values
+        const fixedContent = trimmedContent.replace(/'/g, '"')
+        parsedContent = JSON.parse(fixedContent)
+      } catch {
+        // Not JSON, will use default display
+      }
     }
 
-    // CONDUCTOR_FINISH - special display with outcome + expandable summary
-    if (String(messageType) === 'conductor_finish' && parsedContent) {
-      return (
+    // Build the orchestrator content based on message type
+    let orchestratorContent: React.ReactNode = null
+
+    // CONDUCTOR_FINISH or MODERATOR_FINISH - special display with outcome + expandable summary
+    if (
+      (String(messageType) === 'conductor_finish' ||
+        String(messageType) === 'moderator_finish') &&
+      parsedContent
+    ) {
+      orchestratorContent = (
         <ConductorFinishMessage
           content={parsedContent as ConductorFinishContent}
           message={message}
@@ -583,10 +897,9 @@ export const EdenMessage = ({
         />
       )
     }
-
     // CONDUCTOR_TURN - reasoning (truncated) + speaker avatar + hint
-    if (String(messageType) === 'conductor_turn' && parsedContent) {
-      return (
+    else if (String(messageType) === 'conductor_turn' && parsedContent) {
+      orchestratorContent = (
         <ConductorTurnMessage
           content={parsedContent as ConductorTurnContent}
           message={message}
@@ -595,10 +908,13 @@ export const EdenMessage = ({
         />
       )
     }
-
-    // CONDUCTOR_INIT - shared understanding + agent contexts
-    if (String(messageType) === 'conductor_init' && parsedContent) {
-      return (
+    // CONDUCTOR_INIT or MODERATOR_START - shared understanding + agent contexts
+    else if (
+      (String(messageType) === 'conductor_init' ||
+        String(messageType) === 'moderator_start') &&
+      parsedContent
+    ) {
+      orchestratorContent = (
         <ConductorInitMessage
           content={parsedContent as ConductorInitContent}
           message={message}
@@ -607,24 +923,58 @@ export const EdenMessage = ({
         />
       )
     }
-
-    // Default display for trigger, conductor_hint, or unparseable content
-    const labelMap: Record<string, string> = {
-      trigger: 'TASK',
-      conductor_init: 'CONDUCTOR INIT',
-      conductor_turn: 'CONDUCTOR TURN',
-      conductor_hint: 'CONDUCTOR HINT',
-      conductor_finish: 'CONDUCTOR FINISH',
+    // MODERATOR_VOTE - voting results with avatars
+    else if (String(messageType) === 'moderator_vote' && parsedContent) {
+      orchestratorContent = (
+        <ModeratorVoteMessage
+          content={parsedContent as ModeratorVoteContent}
+          message={message}
+          agents={agents}
+          TimeAgo={TimeAgo}
+        />
+      )
     }
-    const label = labelMap[messageType] || 'EDEN'
+    // MODERATOR_PROMPT - prompt sent to a specific agent
+    else if (String(messageType) === 'moderator_prompt' && parsedContent) {
+      orchestratorContent = (
+        <ModeratorPromptMessage
+          content={parsedContent as ModeratorPromptContent}
+          message={message}
+          agents={agents}
+          TimeAgo={TimeAgo}
+        />
+      )
+    }
+    // Default display for trigger, conductor_hint, or unparseable content
+    else {
+      const labelMap: Record<string, string> = {
+        trigger: 'TASK',
+        conductor_init: 'MODERATOR',
+        conductor_turn: 'CONDUCTOR TURN',
+        conductor_hint: 'CONDUCTOR HINT',
+        conductor_finish: 'CONDUCTOR FINISH',
+        moderator_start: 'MODERATOR',
+        moderator_prompt: 'MODERATOR PROMPT',
+        moderator_vote: 'MODERATOR VOTE',
+        moderator_finish: 'MODERATOR FINISH',
+      }
+      const label = labelMap[messageType] || 'EDEN'
 
+      orchestratorContent = (
+        <DefaultConductorMessage
+          label={label}
+          content={trimmedContent}
+          message={message}
+          TimeAgo={TimeAgo}
+        />
+      )
+    }
+
+    // Wrap orchestrator content with avatar display
     return (
-      <DefaultConductorMessage
-        label={label}
-        content={trimmedContent}
-        message={message}
-        TimeAgo={TimeAgo}
-      />
+      <OrchestratorMessageWrapper showAvatar={showAvatar} message={message}>
+        {orchestratorContent}
+      </OrchestratorMessageWrapper>
     )
   }
 

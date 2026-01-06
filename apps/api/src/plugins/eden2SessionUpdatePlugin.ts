@@ -1,12 +1,11 @@
 import { handleSessionUpdateStreamEvent } from '../lib/eden2'
 import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
+import { ensureSenderPopulated } from '../utils/edenAgentUtils'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument } from 'mongodb'
 
 const WATCHED_COLLECTION = 'messages'
-
-// Helper functions removed since we're now watching the messages collection directly
 
 export const registerEden2SessionUpdates: FastifyPluginAsync =
   async fastify => {
@@ -71,6 +70,9 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
               select: '_id username userImage name',
             })
 
+            // Ensure eden agent sender is properly populated for orchestrator messages
+            await ensureSenderPopulated(messageDoc)
+
             await handleSessionUpdateStreamEvent(fastify, session, [messageDoc])
           } else if (data.operationType === 'update') {
             const messageDoc = data.fullDocument
@@ -111,6 +113,9 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
               path: 'sender',
               select: '_id username userImage name',
             })
+
+            // Ensure eden agent sender is properly populated for orchestrator messages
+            await ensureSenderPopulated(messageDoc)
 
             // Populate any nested tool call creations if they exist
             if (messageDoc.tool_calls?.length) {

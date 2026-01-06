@@ -19,15 +19,22 @@ export type EdenMessageType =
   | 'agent_remove'
   | 'rate_limit'
   | 'trigger'
+  // Legacy conductor types (deprecated, use moderator_* instead)
   | 'conductor_init'
   | 'conductor_turn'
   | 'conductor_hint'
   | 'conductor_finish'
+  // New moderator types
+  | 'moderator_start'
+  | 'moderator_prompt'
+  | 'moderator_vote'
+  | 'moderator_finish'
   | 'private_message'
 
 export type EdenMessageAgentData = {
   id: string
   name: string
+  username?: string
   avatar?: string
 }
 

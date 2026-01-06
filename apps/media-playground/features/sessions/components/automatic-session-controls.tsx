@@ -46,35 +46,33 @@ export function AutomaticSessionControls({
   )
   const { toast } = useToast()
 
-  // Get delay interval from session settings (default to 60 seconds)
-  const delayInterval = session.settings?.delay_interval || 60
-
   // Sync status with session prop
   useEffect(() => {
     setStatus(session.status)
   }, [session.status])
 
-  // Start countdown when session is active (keep running during 'running' state too)
-  // Note: 'running' status comes from eve but isn't in SDK types
+  // Calculate countdown based on waiting_until from server
   useEffect(() => {
     const isSessionRunningOrActive =
       status === 'active' || (status as string) === 'running'
 
-    if (isSessionRunningOrActive && delayInterval > 0) {
-      // Only start countdown if not already running
-      if (countdownIntervalRef.current === null) {
-        setCountdown(delayInterval)
-
-        countdownIntervalRef.current = setInterval(() => {
-          setCountdown(prev => {
-            if (prev === null || prev <= 1) {
-              // Reset countdown when it reaches 0
-              return delayInterval
-            }
-            return prev - 1
-          })
-        }, 1000)
+    if (isSessionRunningOrActive && session.waiting_until) {
+      // Use server-provided waiting_until for countdown
+      const updateCountdown = () => {
+        const waitingUntil = new Date(session.waiting_until!).getTime()
+        const now = Date.now()
+        const remainingSeconds = Math.max(
+          0,
+          Math.floor((waitingUntil - now) / 1000),
+        )
+        setCountdown(remainingSeconds)
       }
+
+      // Update immediately
+      updateCountdown()
+
+      // Update every second
+      countdownIntervalRef.current = setInterval(updateCountdown, 1000)
     } else if (status === 'paused') {
       // Clear countdown when paused
       setCountdown(null)
@@ -82,6 +80,9 @@ export function AutomaticSessionControls({
         clearInterval(countdownIntervalRef.current)
         countdownIntervalRef.current = null
       }
+    } else if (isSessionRunningOrActive && !session.waiting_until) {
+      // No waiting_until means currently executing a turn
+      setCountdown(null)
     }
 
     return () => {
@@ -90,7 +91,7 @@ export function AutomaticSessionControls({
         countdownIntervalRef.current = null
       }
     }
-  }, [status, delayInterval])
+  }, [status, session.waiting_until])
 
   const handleToggleStatus = useCallback(async () => {
     // If paused, start. If active or running, pause.
@@ -166,8 +167,8 @@ export function AutomaticSessionControls({
       const result = await response.json()
 
       if (result.success) {
-        // Reset countdown
-        setCountdown(delayInterval)
+        // Clear countdown - server will provide new waiting_until
+        setCountdown(null)
 
         toast({
           title: 'Next turn triggered',
@@ -189,16 +190,23 @@ export function AutomaticSessionControls({
     } finally {
       setIsNexting(false)
     }
-  }, [session._id, delayInterval, toast])
+  }, [session._id, toast])
 
   const isPaused = status === 'paused'
   const isActive = status === 'active'
   // Note: 'running' status comes from eve but isn't in SDK types
   const isRunning = (status as string) === 'running'
 
-  // Check if session has finished (has conductor_finish message)
+  // Determine if we're waiting for next turn (has waiting_until) vs actively executing
+  const isWaiting =
+    (isActive || isRunning) && countdown !== null && countdown > 0
+  const isExecuting = (isActive || isRunning) && countdown === null
+
+  // Check if session has finished (has conductor_finish or moderator_finish message)
   const hasFinished = session.messages?.some(
-    m => m.eden_message_data?.message_type === 'conductor_finish',
+    m =>
+      m.eden_message_data?.message_type === 'conductor_finish' ||
+      m.eden_message_data?.message_type === 'moderator_finish',
   )
 
   // Don't show controls if session has finished
@@ -228,17 +236,17 @@ export function AutomaticSessionControls({
       ) : isActive || isRunning ? (
         // Active/Running state - show Pause, countdown/running indicator, and Next buttons
         <div className="flex items-center gap-3">
-          {/* Pause button */}
+          {/* Pause button - always available */}
           <button
             onClick={handleToggleStatus}
-            disabled={isUpdating || isRunning}
+            disabled={isUpdating}
             className={cn(
               'flex-shrink-0 py-3 px-5 rounded-xl font-medium transition-all',
               'bg-yellow-600 hover:bg-yellow-500 text-white',
               'flex items-center gap-2',
               'shadow-md hover:shadow-lg',
               'border border-yellow-500/50',
-              (isUpdating || isRunning) && 'opacity-70 cursor-not-allowed',
+              isUpdating && 'opacity-70 cursor-not-allowed',
             )}
           >
             <Pause className="h-5 w-5" />
@@ -247,38 +255,38 @@ export function AutomaticSessionControls({
 
           {/* Center section - Running indicator or Countdown */}
           <div className="flex-1 text-center">
-            {isRunning ? (
-              // Running state - show running indicator
+            {isExecuting ? (
+              // Currently executing a turn - show running indicator
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="h-5 w-5 animate-spin text-green-500" />
                 <span className="text-lg font-semibold text-green-500">
                   Running...
                 </span>
               </div>
-            ) : delayInterval > 0 && countdown !== null ? (
-              // Active state with countdown
+            ) : isWaiting ? (
+              // Waiting for next turn - show countdown
               <>
                 <div className="text-sm text-muted-foreground">
                   Next turn in
                 </div>
                 <div className="text-xl font-semibold text-foreground">
-                  {formatCountdown(countdown)}
+                  {formatCountdown(countdown!)}
                 </div>
               </>
             ) : null}
           </div>
 
-          {/* Next button */}
+          {/* Next button - disabled while executing */}
           <button
             onClick={handleNextTurn}
-            disabled={isNexting || isUpdating || isRunning}
+            disabled={isNexting || isUpdating || isExecuting}
             className={cn(
               'flex-shrink-0 py-3 px-5 rounded-xl font-medium transition-all',
               'bg-green-600 hover:bg-green-500 text-white',
               'flex items-center gap-2',
               'shadow-md hover:shadow-lg',
               'border border-green-500/50',
-              (isNexting || isUpdating || isRunning) &&
+              (isNexting || isUpdating || isExecuting) &&
                 'opacity-70 cursor-not-allowed',
             )}
           >

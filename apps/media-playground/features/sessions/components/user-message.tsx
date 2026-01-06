@@ -29,7 +29,7 @@ export const UserMessage = ({
   // Check if this is a multi-agent session and if the message has no mentions
   const isMultiAgentSession = session?.agents && session.agents.length > 1
   const hasMentions = message.content && /@\S+/.test(message.content)
-  const shouldShowTip = isMultiAgentSession && !hasMentions
+  const shouldShowTip = isMultiAgentSession && !hasMentions && false
   const trimmedContent = message.content?.trim() ?? ''
   const contentLen = trimmedContent.length
   const isHuge = contentLen > 40000 // character threshold

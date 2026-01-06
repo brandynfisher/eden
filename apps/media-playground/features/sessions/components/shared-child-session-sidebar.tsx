@@ -9,7 +9,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
 import { XIcon } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 interface SharedChildSessionSidebarProps {
   shareId: string
@@ -24,6 +24,7 @@ export const SharedChildSessionSidebar = ({
 }: SharedChildSessionSidebarProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
 
   const {
     data: sharedData,
@@ -37,9 +38,29 @@ export const SharedChildSessionSidebar = ({
   const session = sharedData?.share?.session
   const messages = sharedData?.share?.messages || []
 
-  // Scroll to bottom when messages change - only within this container
+  // Check if user is scrolled to bottom (with 50px threshold)
+  const checkIsAtBottom = useCallback(() => {
+    const container = scrollContainerRef.current
+    if (!container) return true
+    const threshold = 50
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <=
+      threshold
+    )
+  }, [])
+
+  // Handle scroll events to track if user is at bottom
+  const handleScroll = useCallback(() => {
+    isAtBottomRef.current = checkIsAtBottom()
+  }, [checkIsAtBottom])
+
+  // Scroll to bottom when messages change - only if user is already at bottom
   useEffect(() => {
-    if (messages.length > 0 && scrollContainerRef.current) {
+    if (
+      messages.length > 0 &&
+      scrollContainerRef.current &&
+      isAtBottomRef.current
+    ) {
       scrollContainerRef.current.scrollTop =
         scrollContainerRef.current.scrollHeight
     }
@@ -94,6 +115,7 @@ export const SharedChildSessionSidebar = ({
       {/* Messages area */}
       <div
         ref={scrollContainerRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-4 space-y-4"
       >
         {isLoading ? (

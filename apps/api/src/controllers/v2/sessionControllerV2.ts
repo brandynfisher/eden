@@ -15,6 +15,7 @@ import { forceCloudfrontUrl } from '../../plugins/s3Plugin'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { sendPushNotification } from '../../services/pushNotificationService'
+import { ensureMessagesSenderPopulated } from '../../utils/edenAgentUtils'
 import {
   createIdOrSlugQuery,
   createMultiFieldQuery,
@@ -796,12 +797,6 @@ export const createSessionMessage = async (
         message: 'You do not have access to this session',
       })
     }
-
-    // For automatic sessions, set status to 'paused' when a new message is submitted
-    if (session.session_type === 'automatic' && session.status !== 'paused') {
-      session.status = 'paused'
-      await session.save()
-    }
   }
 
   const userDocument = await User.findById(userId)
@@ -1290,6 +1285,9 @@ export const getSession = async (
         ? messages.slice(0, limit).reverse()
         : messages.reverse()
 
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(paginatedMessages)
+
     // Check if there are more messages by looking for ANY message older than our oldest
     // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
     let hasMore = false
@@ -1504,6 +1502,9 @@ export const getSessionMessages = async (
       messages.length > limit
         ? messages.slice(0, limit).reverse()
         : messages.reverse()
+
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(paginatedMessages)
 
     // Check if there are more messages by looking for ANY message older than our oldest
     // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
@@ -2311,6 +2312,9 @@ export const getSharedSession = async (
       .select(
         '_id content sender role eden_message_data tool_calls thought attachments createdAt llm_call',
       )
+
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(messages)
 
     return reply.status(200).send({
       share: {

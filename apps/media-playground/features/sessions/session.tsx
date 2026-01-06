@@ -19,7 +19,11 @@ import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
 import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
-import { groupConsecutiveMessages } from './utils/group-messages'
+import {
+  getEffectiveSender,
+  groupConsecutiveMessages,
+  isOrchestratorMessage,
+} from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -150,7 +154,7 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
-  const [showConductorMessages, setShowConductorMessages] = useState(false)
+  const [showModeratorMessages, setShowModeratorMessages] = useState(false)
   const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
@@ -1380,6 +1384,17 @@ const Session = ({
 
       // If sender already has username and userImage, no need to enrich
       if (message.sender?.username && message.sender?.userImage) {
+        // Still check if this is the moderator agent (username "eden")
+        const isModerator = message.sender.username?.toLowerCase() === 'eden'
+        if (isModerator) {
+          return {
+            ...message,
+            sender: {
+              ...message.sender,
+              name: 'Moderator',
+            },
+          }
+        }
         return message
       }
 
@@ -1397,13 +1412,19 @@ const Session = ({
         return message
       }
 
+      // Check if this is the moderator agent (username "eden")
+      const senderUsername = message.sender?.username || matchingAgent.username
+      const isModerator = senderUsername?.toLowerCase() === 'eden'
+
       // Merge sender with agent data (sender data takes precedence if present)
       return {
         ...message,
         sender: {
           _id: message.sender?._id || matchingAgent._id,
-          username: message.sender?.username || matchingAgent.username,
-          name: message.sender?.name || matchingAgent.name,
+          username: senderUsername,
+          name: isModerator
+            ? 'Moderator'
+            : message.sender?.name || matchingAgent.name,
           userImage:
             message.sender?.userImage ||
             (matchingAgent.userImage?.startsWith('https://')
@@ -1945,21 +1966,21 @@ const Session = ({
                 onOpenModerator={handleChildSessionClick}
               />
             )}
-            {/* Conductor messages toggle - only show for automatic sessions */}
+            {/* Moderator messages toggle - only show for automatic sessions */}
             {session?.session_type === 'automatic' && (
               <button
-                onClick={() => setShowConductorMessages(!showConductorMessages)}
+                onClick={() => setShowModeratorMessages(!showModeratorMessages)}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-full',
                   'text-sm font-medium transition-colors',
                   'border border-blue-500/30',
-                  showConductorMessages
+                  showModeratorMessages
                     ? 'bg-blue-600 text-white hover:bg-blue-500'
                     : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
                 )}
               >
                 <BrainIcon className="w-4 h-4" />
-                <span className="hidden sm:inline">View Conductor</span>
+                <span className="hidden sm:inline">View Moderator</span>
               </button>
             )}
           </div>
@@ -1990,19 +2011,19 @@ const Session = ({
                 {session?.session_type === 'automatic' && (
                   <button
                     onClick={() =>
-                      setShowConductorMessages(!showConductorMessages)
+                      setShowModeratorMessages(!showModeratorMessages)
                     }
                     className={cn(
                       'flex items-center gap-2 px-3 py-1.5 rounded-full',
                       'text-sm font-medium transition-colors',
                       'border border-blue-500/30',
-                      showConductorMessages
+                      showModeratorMessages
                         ? 'bg-blue-600 text-white hover:bg-blue-500'
                         : 'bg-transparent text-blue-600 dark:text-blue-400 hover:bg-blue-600/10',
                     )}
                   >
                     <BrainIcon className="w-4 h-4" />
-                    <span>View Conductor</span>
+                    <span>View Moderator</span>
                   </button>
                 )}
               </div>
@@ -2105,67 +2126,110 @@ const Session = ({
                   return (
                     <>
                       {/* Show existing messages */}
-                      {messageGroups.map(group => (
-                        <div key={group[0]._id}>
-                          {group[0].role === 'eden'
-                            ? group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <EdenMessage
-                                    message={message}
-                                    agents={session?.agents}
-                                    showConductorMessages={
-                                      showConductorMessages
-                                    }
-                                  />
-                                </div>
-                              ))
-                            : group[0].role === 'system'
-                            ? group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <SystemMessage message={message} />
-                                </div>
-                              ))
-                            : isOwnMessage(group[0].sender?._id)
-                            ? group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <UserMessage
-                                    message={message}
-                                    session={session}
-                                  />
-                                </div>
-                              ))
-                            : group
-                                .filter(message => message.role !== 'tool')
-                                .map((message, index) => (
+                      {messageGroups.map(group => {
+                        const firstMessage = group[0]
+                        const isNonOrchestratorEden =
+                          firstMessage.role === 'eden' &&
+                          !isOrchestratorMessage(firstMessage)
+                        const effectiveSender = getEffectiveSender(firstMessage)
+                        const isModeratorGroup = effectiveSender === 'eden'
+
+                        return (
+                          <div key={firstMessage._id}>
+                            {isNonOrchestratorEden
+                              ? // Non-orchestrator eden messages (agent_add, rate_limit, private_message)
+                                group.map(message => (
                                   <div
                                     key={message._id}
                                     data-message-id={message._id}
                                     className="transition-colors duration-500"
                                   >
-                                    <AssistantMessage
-                                      sessionId={sessionId as string}
-                                      message={enrichMessageSender(message)}
-                                      showAvatar={index === 0}
-                                      isStreamingTokens={false}
-                                      isChatRoute={ischatRoute}
-                                      onSessionClick={handleChildSessionClick}
+                                    <EdenMessage
+                                      message={message}
+                                      agents={session?.agents}
+                                      showModeratorMessages={
+                                        showModeratorMessages
+                                      }
                                     />
                                   </div>
-                                ))}
-                        </div>
-                      ))}
+                                ))
+                              : firstMessage.role === 'system'
+                              ? group.map(message => (
+                                  <div
+                                    key={message._id}
+                                    data-message-id={message._id}
+                                    className="transition-colors duration-500"
+                                  >
+                                    <SystemMessage message={message} />
+                                  </div>
+                                ))
+                              : isOwnMessage(firstMessage.sender?._id)
+                              ? group.map(message => (
+                                  <div
+                                    key={message._id}
+                                    data-message-id={message._id}
+                                    className="transition-colors duration-500"
+                                  >
+                                    <UserMessage
+                                      message={message}
+                                      session={session}
+                                    />
+                                  </div>
+                                ))
+                              : isModeratorGroup
+                              ? // Moderator group: mix of orchestrator eden messages and assistant messages from eden
+                                group
+                                  .filter(message => message.role !== 'tool')
+                                  .map((message, index) => (
+                                    <div
+                                      key={message._id}
+                                      data-message-id={message._id}
+                                      className="transition-colors duration-500"
+                                    >
+                                      {isOrchestratorMessage(message) ? (
+                                        <EdenMessage
+                                          message={message}
+                                          agents={session?.agents}
+                                          showModeratorMessages={
+                                            showModeratorMessages
+                                          }
+                                          showAvatar={index === 0}
+                                        />
+                                      ) : (
+                                        <AssistantMessage
+                                          sessionId={sessionId as string}
+                                          message={enrichMessageSender(message)}
+                                          showAvatar={index === 0}
+                                          isStreamingTokens={false}
+                                          isChatRoute={ischatRoute}
+                                          onSessionClick={
+                                            handleChildSessionClick
+                                          }
+                                        />
+                                      )}
+                                    </div>
+                                  ))
+                              : group
+                                  .filter(message => message.role !== 'tool')
+                                  .map((message, index) => (
+                                    <div
+                                      key={message._id}
+                                      data-message-id={message._id}
+                                      className="transition-colors duration-500"
+                                    >
+                                      <AssistantMessage
+                                        sessionId={sessionId as string}
+                                        message={enrichMessageSender(message)}
+                                        showAvatar={index === 0}
+                                        isStreamingTokens={false}
+                                        isChatRoute={ischatRoute}
+                                        onSessionClick={handleChildSessionClick}
+                                      />
+                                    </div>
+                                  ))}
+                          </div>
+                        )
+                      })}
 
                       {/* Render standalone loaders for agents waiting to respond */}
                       {Array.from(agentsWaitingToRespond).map(agentId => {
@@ -2404,65 +2468,108 @@ const Session = ({
                 // Normal case - show messages
                 return (
                   <>
-                    {messageGroups.map(group => (
-                      <div key={group[0]._id}>
-                        {group[0].role === 'eden'
-                          ? group.map(message => (
-                              <div
-                                key={message._id}
-                                data-message-id={message._id}
-                                className="transition-colors duration-500"
-                              >
-                                <EdenMessage
-                                  message={message}
-                                  agents={session?.agents}
-                                  showConductorMessages={showConductorMessages}
-                                />
-                              </div>
-                            ))
-                          : group[0].role === 'system'
-                          ? group.map(message => (
-                              <div
-                                key={message._id}
-                                data-message-id={message._id}
-                                className="transition-colors duration-500"
-                              >
-                                <SystemMessage message={message} />
-                              </div>
-                            ))
-                          : isOwnMessage(group[0].sender?._id)
-                          ? group.map(message => (
-                              <div
-                                key={message._id}
-                                data-message-id={message._id}
-                                className="transition-colors duration-500"
-                              >
-                                <UserMessage
-                                  message={message}
-                                  session={session}
-                                />
-                              </div>
-                            ))
-                          : group
-                              .filter(message => message.role !== 'tool')
-                              .map((message, index) => (
+                    {messageGroups.map(group => {
+                      const firstMessage = group[0]
+                      const isNonOrchestratorEden =
+                        firstMessage.role === 'eden' &&
+                        !isOrchestratorMessage(firstMessage)
+                      const effectiveSender = getEffectiveSender(firstMessage)
+                      const isModeratorGroup = effectiveSender === 'eden'
+
+                      return (
+                        <div key={firstMessage._id}>
+                          {isNonOrchestratorEden
+                            ? // Non-orchestrator eden messages (agent_add, rate_limit, private_message)
+                              group.map(message => (
                                 <div
                                   key={message._id}
                                   data-message-id={message._id}
                                   className="transition-colors duration-500"
                                 >
-                                  <AssistantMessage
-                                    sessionId={sessionId as string}
-                                    message={enrichMessageSender(message)}
-                                    isStreamingTokens={false}
-                                    showAvatar={index === 0}
-                                    isChatRoute={ischatRoute}
-                                    onSessionClick={handleChildSessionClick}
+                                  <EdenMessage
+                                    message={message}
+                                    agents={session?.agents}
+                                    showModeratorMessages={
+                                      showModeratorMessages
+                                    }
                                   />
                                 </div>
-                              ))}
-                      </div>
-                    ))}
+                              ))
+                            : firstMessage.role === 'system'
+                            ? group.map(message => (
+                                <div
+                                  key={message._id}
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <SystemMessage message={message} />
+                                </div>
+                              ))
+                            : isOwnMessage(firstMessage.sender?._id)
+                            ? group.map(message => (
+                                <div
+                                  key={message._id}
+                                  data-message-id={message._id}
+                                  className="transition-colors duration-500"
+                                >
+                                  <UserMessage
+                                    message={message}
+                                    session={session}
+                                  />
+                                </div>
+                              ))
+                            : isModeratorGroup
+                            ? // Moderator group: mix of orchestrator eden messages and assistant messages from eden
+                              group
+                                .filter(message => message.role !== 'tool')
+                                .map((message, index) => (
+                                  <div
+                                    key={message._id}
+                                    data-message-id={message._id}
+                                    className="transition-colors duration-500"
+                                  >
+                                    {isOrchestratorMessage(message) ? (
+                                      <EdenMessage
+                                        message={message}
+                                        agents={session?.agents}
+                                        showModeratorMessages={
+                                          showModeratorMessages
+                                        }
+                                        showAvatar={index === 0}
+                                      />
+                                    ) : (
+                                      <AssistantMessage
+                                        sessionId={sessionId as string}
+                                        message={enrichMessageSender(message)}
+                                        showAvatar={index === 0}
+                                        isStreamingTokens={false}
+                                        isChatRoute={ischatRoute}
+                                        onSessionClick={handleChildSessionClick}
+                                      />
+                                    )}
+                                  </div>
+                                ))
+                            : group
+                                .filter(message => message.role !== 'tool')
+                                .map((message, index) => (
+                                  <div
+                                    key={message._id}
+                                    data-message-id={message._id}
+                                    className="transition-colors duration-500"
+                                  >
+                                    <AssistantMessage
+                                      sessionId={sessionId as string}
+                                      message={enrichMessageSender(message)}
+                                      isStreamingTokens={false}
+                                      showAvatar={index === 0}
+                                      isChatRoute={ischatRoute}
+                                      onSessionClick={handleChildSessionClick}
+                                    />
+                                  </div>
+                                ))}
+                        </div>
+                      )
+                    })}
 
                     {/* Render standalone loaders for agents waiting to respond */}
                     {Array.from(agentsWaitingToRespond).map(agentId => {

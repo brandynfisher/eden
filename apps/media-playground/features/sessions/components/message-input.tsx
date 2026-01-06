@@ -24,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
@@ -39,7 +38,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
   AlertTriangleIcon,
-  ClockIcon,
   CrownIcon,
   LoaderIcon,
   MessageSquareIcon,
@@ -152,7 +150,6 @@ export const MessageInput = ({
   sessionId,
   onStreamingMessage,
   enableVoiceInput = false,
-  agent: propAgent,
   placeholder = 'Write a message...',
   expanded = false,
   onTranscribingChange,
@@ -168,17 +165,11 @@ export const MessageInput = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  // Get full agent data for the first agent (most common case)
-  const firstAgentId = session?.agents?.[0]?._id
-  const { agent: fullAgent } = useAgentQuery({
-    key: firstAgentId!,
-    enabled: !!firstAgentId,
-  })
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isThinkingEnabled, setIsThinkingEnabled] = useState(false)
+  const isThinkingEnabled = false
   const accept = 'image/*,video/*,/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
   const awaitingNativePermissionRef = useRef(false)
@@ -193,11 +184,6 @@ export const MessageInput = ({
   // Character limit based on subscription tier
   const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
   const characterLimit = getCharacterLimit(subscriptionTier)
-
-  // Check if the agent has reasoning capability (high model profile)
-  // Use prop agent if available (for welcome screen), otherwise use session agent
-  const activeAgent = propAgent || fullAgent
-  const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
 
   // Tap-to-record for voice input
   const handleVoiceTranscription = useCallback(
@@ -919,45 +905,6 @@ export const MessageInput = ({
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-
-                        {/* Think toggle - only show for reasoning agents */}
-                        {hasReasoningAgent && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant={
-                                    isThinkingEnabled ? 'default' : 'ghost'
-                                  }
-                                  className={cn(
-                                    'h-8 px-2 transition-all flex items-center gap-1',
-                                    isThinkingEnabled &&
-                                      'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
-                                  )}
-                                  onClick={() => {
-                                    const newValue = !isThinkingEnabled
-                                    setIsThinkingEnabled(newValue)
-                                  }}
-                                  disabled={isSubmitting}
-                                >
-                                  <ClockIcon className="w-4 h-4" />
-                                  <span className="text-xs font-medium">
-                                    Think
-                                  </span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  {isThinkingEnabled
-                                    ? 'Thinking enabled'
-                                    : 'Enable thinking'}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
                       </div>
 
                       {/* Right side buttons */}
@@ -1120,45 +1067,6 @@ export const MessageInput = ({
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-
-                      {/* Think toggle */}
-                      {hasReasoningAgent && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant={
-                                  isThinkingEnabled ? 'default' : 'ghost'
-                                }
-                                className={cn(
-                                  'h-8 px-2 transition-all flex items-center gap-1',
-                                  isThinkingEnabled &&
-                                    'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
-                                )}
-                                onClick={() => {
-                                  const newValue = !isThinkingEnabled
-                                  setIsThinkingEnabled(newValue)
-                                }}
-                                disabled={isSubmitting}
-                              >
-                                <ClockIcon className="w-4 h-4" />
-                                <span className="text-xs font-medium">
-                                  Think
-                                </span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {isThinkingEnabled
-                                  ? 'Thinking enabled'
-                                  : 'Enable thinking'}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
                     </div>
 
                     {/* Inline textarea */}
