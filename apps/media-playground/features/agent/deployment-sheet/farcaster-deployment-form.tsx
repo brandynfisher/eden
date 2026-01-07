@@ -144,7 +144,7 @@ export const FarcasterDeploymentForm = ({
       setSignerApprovalUrl(signer_approval_url)
       setSignerStatus(status)
 
-      toast.success('Signer created! Please approve in Warpcast...', {
+      toast.success('Signer created! Please approve in Farcaster...', {
         richColors: true,
         dismissible: true,
       })
@@ -335,7 +335,7 @@ export const FarcasterDeploymentForm = ({
                       rel="noopener noreferrer"
                       className="block text-center text-sm text-blue-600 hover:underline md:hidden"
                     >
-                      Open in Warpcast
+                      Open in Farcaster
                     </a>
                   </div>
                 )}

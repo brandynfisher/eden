@@ -97,6 +97,12 @@ const defaultImageRemotePatterns = [
   },
   {
     protocol: 'https',
+    hostname: 'farcaster.xyz',
+    port: '',
+    pathname: '**',
+  },
+  {
+    protocol: 'https',
     hostname: 'x.com',
     port: '',
     pathname: '**',

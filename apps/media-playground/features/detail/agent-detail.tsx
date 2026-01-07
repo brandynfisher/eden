@@ -490,7 +490,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     )}
                     {agent.social_accounts?.farcaster && (
                       <Link
-                        href={`https://warpcast.com/${agent.social_accounts.farcaster}`}
+                        href={`https://farcaster.xyz/${agent.social_accounts.farcaster}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#855DCD] hover:opacity-80 transition-opacity"

@@ -44,7 +44,7 @@ class FarcasterEmbedErrorBoundary extends Component<
             rel="noopener noreferrer"
             className="text-xs text-blue-500 hover:underline block mt-1"
           >
-            View on Warpcast
+            View on Farcaster
           </a>
         </div>
       )
@@ -66,7 +66,7 @@ const SafeFarcasterEmbed: React.FC<{ url: string }> = ({ url }) => {
           rel="noopener noreferrer"
           className="text-blue-500 hover:underline"
         >
-          View on Warpcast
+          View on Farcaster
         </a>
       </div>
       <FarcasterEmbedErrorBoundary url={url}>
