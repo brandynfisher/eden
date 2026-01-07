@@ -25,11 +25,13 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
+import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@clerk/nextjs'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ExternalLink, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -89,9 +91,17 @@ export const DiscordV3DeploymentForm = ({
   const isInline = variant === 'inline'
   const [isOpen, setIsOpen] = useState(isInline ? true : false)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [isRefreshingServers, setIsRefreshingServers] = useState(false)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
   const [hasCompletedOAuth, setHasCompletedOAuth] = useState(false)
   const popupRef = useRef<Window | null>(null)
-  const { userId } = useAuth()
+  const { userId, isSignedIn } = useAuth()
+  const {
+    user,
+    invalidate: invalidateMe,
+    isLoading: isAccountLoading,
+  } = useMe({ isAuthenticated: Boolean(isSignedIn) })
+  const isDiscordLinked = Boolean(user?.discordId)
 
   const [availableServers, setAvailableServers] = useState<DiscordGuild[]>([])
   const [availableChannels, setAvailableChannels] = useState<DiscordChannel[]>(
@@ -151,44 +161,6 @@ export const DiscordV3DeploymentForm = ({
     setIsConnecting(false)
   }, [])
 
-  // Load channels when guild is selected
-  useEffect(() => {
-    if (selectedGuildId) {
-      loadChannels(selectedGuildId)
-    }
-  }, [selectedGuildId])
-
-  useEffect(() => {
-    if (!accessGuildId && adminServers.length > 0) {
-      setAccessGuildId(adminServers[0].id)
-    }
-  }, [accessGuildId, adminServers])
-
-  useEffect(() => {
-    if (
-      accessGuildId &&
-      adminServers.length > 0 &&
-      !adminServers.some(server => server.id === accessGuildId)
-    ) {
-      setAccessGuildId(adminServers[0].id)
-    }
-  }, [accessGuildId, adminServers])
-
-  useEffect(() => {
-    if (adminServers.length === 0) {
-      setAccessGuildId('')
-      setGuildRoles([])
-      setAllowedRoleIds([])
-      setInitialAllowedRoleIds([])
-    }
-  }, [adminServers])
-
-  useEffect(() => {
-    if (accessGuildId) {
-      loadAccessRoles(accessGuildId)
-    }
-  }, [accessGuildId])
-
   // Listen for OAuth callback postMessage
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -206,6 +178,8 @@ export const DiscordV3DeploymentForm = ({
         const guilds = event.data.guilds || []
         setHasCompletedOAuth(true)
         setAvailableServers(guilds)
+
+        await invalidateMe()
 
         toast.success('Discord connected', {
           description: `Found ${guilds.length} server${
@@ -232,7 +206,7 @@ export const DiscordV3DeploymentForm = ({
       window.clearInterval(interval)
       cleanupPopup()
     }
-  }, [cleanupPopup])
+  }, [cleanupPopup, invalidateMe])
 
   const handleConnectDiscord = async () => {
     setIsConnecting(true)
@@ -269,7 +243,7 @@ export const DiscordV3DeploymentForm = ({
     popupRef.current = popup
   }
 
-  const loadChannels = async (guildId: string) => {
+  const loadChannels = useCallback(async (guildId: string) => {
     try {
       setIsLoadingChannels(true)
       const response = await fetch(
@@ -288,9 +262,52 @@ export const DiscordV3DeploymentForm = ({
     } finally {
       setIsLoadingChannels(false)
     }
-  }
+  }, [])
 
-  const loadAccessRoles = async (guildId: string) => {
+  const refreshAvailableServers = useCallback(
+    async (options?: { showToast?: boolean }) => {
+      const showToast = options?.showToast ?? true
+      try {
+        setIsRefreshingServers(true)
+        const response = await fetch('/api/integrations/discord/guilds')
+
+        if (!response.ok) {
+          const errorPayload = await response.json().catch(() => null)
+          throw new Error(
+            errorPayload?.message || 'Failed to refresh Discord servers',
+          )
+        }
+
+        const data = await response.json()
+        const guilds = data?.guilds ?? []
+        setAvailableServers(guilds)
+        setHasCompletedOAuth(true)
+
+        const currentGuildId = form.getValues('guildId')
+        if (currentGuildId) {
+          await loadChannels(currentGuildId)
+        }
+
+        if (showToast) {
+          toast.success('Discord refreshed', {
+            description: `Found ${guilds.length} server${
+              guilds.length !== 1 ? 's' : ''
+            }`,
+          })
+        }
+      } catch (error) {
+        if (showToast) {
+          const message = error instanceof Error ? error.message : undefined
+          toast.error(message || 'Failed to refresh Discord servers')
+        }
+      } finally {
+        setIsRefreshingServers(false)
+      }
+    },
+    [form, loadChannels],
+  )
+
+  const loadAccessRoles = useCallback(async (guildId: string) => {
     try {
       setIsLoadingAccessRoles(true)
       const [rolesResponse, accessResponse] = await Promise.all([
@@ -323,7 +340,7 @@ export const DiscordV3DeploymentForm = ({
     } finally {
       setIsLoadingAccessRoles(false)
     }
-  }
+  }, [])
 
   const saveAccessRoles = async () => {
     if (!accessGuildId) return
@@ -406,6 +423,84 @@ export const DiscordV3DeploymentForm = ({
     form.setValue('channels', newChannels)
   }
 
+  useEffect(() => {
+    if (!user?.discordId) {
+      return
+    }
+    if (isDeployed || !hasCompletedOAuth) {
+      refreshAvailableServers({ showToast: false })
+    }
+  }, [hasCompletedOAuth, isDeployed, refreshAvailableServers, user?.discordId])
+
+  // Load channels when guild is selected
+  useEffect(() => {
+    if (selectedGuildId) {
+      loadChannels(selectedGuildId)
+    }
+  }, [selectedGuildId, loadChannels])
+
+  useEffect(() => {
+    if (!accessGuildId && adminServers.length > 0) {
+      setAccessGuildId(adminServers[0].id)
+    }
+  }, [accessGuildId, adminServers])
+
+  useEffect(() => {
+    if (
+      accessGuildId &&
+      adminServers.length > 0 &&
+      !adminServers.some(server => server.id === accessGuildId)
+    ) {
+      setAccessGuildId(adminServers[0].id)
+    }
+  }, [accessGuildId, adminServers])
+
+  useEffect(() => {
+    if (adminServers.length === 0) {
+      setAccessGuildId('')
+      setGuildRoles([])
+      setAllowedRoleIds([])
+      setInitialAllowedRoleIds([])
+    }
+  }, [adminServers])
+
+  useEffect(() => {
+    if (accessGuildId) {
+      loadAccessRoles(accessGuildId)
+    }
+  }, [accessGuildId, loadAccessRoles])
+
+  const handleDisconnectDiscord = async () => {
+    try {
+      setIsDisconnecting(true)
+      const response = await fetch('/api/auth/discord', { method: 'DELETE' })
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null)
+        throw new Error(
+          errorPayload?.message || 'Failed to disconnect Discord account',
+        )
+      }
+
+      await invalidateMe()
+      setHasCompletedOAuth(false)
+      setAvailableServers([])
+      setAvailableChannels([])
+      setAccessGuildId('')
+      setGuildRoles([])
+      setAllowedRoleIds([])
+      setInitialAllowedRoleIds([])
+      form.reset({ guildId: '', channels: [] })
+
+      toast.success('Discord account disconnected')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : undefined
+      toast.error(message || 'Failed to disconnect Discord account')
+    } finally {
+      setIsDisconnecting(false)
+    }
+  }
+
   const selectedChannels = form.watch('channels')
   const open = isInline ? true : isOpen
 
@@ -420,8 +515,8 @@ export const DiscordV3DeploymentForm = ({
       <DeploymentCollapsibleTrigger
         isOpen={open}
         isDeployed={isDeployed ?? false}
-        label="Discord V3 (Beta)"
-        tooltip="Deploy your agent to Discord using webhooks"
+        label="Discord"
+        tooltip="Deploy your agent to Discord with OAuth"
         valid={deployment?.valid}
         isStatic={isInline}
       />
@@ -436,7 +531,7 @@ export const DiscordV3DeploymentForm = ({
       >
         <div className="flex flex-col w-full space-y-4 p-4">
           {/* OAuth First - Show connect button if haven't completed OAuth */}
-          {!hasCompletedOAuth && !isDeployed ? (
+          {!isDiscordLinked ? (
             <>
               <Button
                 onClick={handleConnectDiscord}
@@ -458,23 +553,27 @@ export const DiscordV3DeploymentForm = ({
               {/* Connected Status */}
               <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <span className="text-sm text-green-800 dark:text-green-200">
-                  Discord connected - {availableServers.length} server
+                  Discord connected
+                  {user?.discordUsername || user?.discordId
+                    ? ` as ${user?.discordUsername ?? user?.discordId}`
+                    : ''}{' '}
+                  - {availableServers.length} server
                   {availableServers.length !== 1 ? 's' : ''}
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleConnectDiscord}
-                  disabled={isConnecting}
+                  onClick={() => refreshAvailableServers()}
+                  disabled={isRefreshingServers}
                   className="h-7 text-xs"
                 >
-                  {isConnecting ? (
+                  {isRefreshingServers ? (
                     <>
                       <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                       Refreshing...
                     </>
                   ) : (
-                    'Reconnect'
+                    'Refresh'
                   )}
                 </Button>
               </div>
@@ -503,6 +602,10 @@ export const DiscordV3DeploymentForm = ({
                         <p className="text-sm text-muted-foreground mb-3">
                           No servers found where you&apos;re an admin or have a
                           role that can deploy, and the Eden bot is added.
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          After adding the bot to a server, click Refresh to
+                          reload this list.
                         </p>
                         <Button variant="default" className="w-full" asChild>
                           <a
@@ -680,6 +783,66 @@ export const DiscordV3DeploymentForm = ({
                 </TabsContent>
 
                 <TabsContent value="account" className="space-y-4">
+                  <div className="rounded-lg border border-border/60 p-4 space-y-3 bg-muted/20">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium">Discord account</div>
+                      {isDiscordLinked && (
+                        <Badge variant="outline" className="text-[10px]">
+                          Connected
+                        </Badge>
+                      )}
+                    </div>
+                    {isDiscordLinked ? (
+                      <p className="text-xs text-muted-foreground">
+                        Connected as{' '}
+                        <span className="text-foreground">
+                          {user?.discordUsername ?? user?.discordId}
+                        </span>
+                        .
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Connect a Discord account to load your servers.
+                      </p>
+                    )}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Button
+                        variant="default"
+                        onClick={handleConnectDiscord}
+                        disabled={isConnecting || Boolean(isAccountLoading)}
+                      >
+                        {isConnecting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : isDiscordLinked ? (
+                          'Connect different account'
+                        ) : (
+                          'Connect Discord account'
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleDisconnectDiscord}
+                        disabled={
+                          !isDiscordLinked ||
+                          isDisconnecting ||
+                          Boolean(isAccountLoading)
+                        }
+                      >
+                        {isDisconnecting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Disconnecting...
+                          </>
+                        ) : (
+                          'Disconnect'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
                   <div className="rounded-lg border border-border/60 p-4 space-y-4 bg-muted/20">
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-sm font-medium">
@@ -843,6 +1006,22 @@ export const DiscordV3DeploymentForm = ({
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Add Eden Bot to Another Server
                       </a>
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4 space-y-2 bg-muted/20">
+                    <div className="text-sm font-medium">Advanced setup</div>
+                    <p className="text-xs text-muted-foreground">
+                      Use a discord bot token and manual channel IDs. Only
+                      recommended for advanced users who are sure that they want
+                      this option.
+                    </p>
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link
+                        href={`/integrations/wizard?agent=${agentId}&platform=discord`}
+                      >
+                        Advanced setup (with token)
+                      </Link>
                     </Button>
                   </div>
                 </TabsContent>

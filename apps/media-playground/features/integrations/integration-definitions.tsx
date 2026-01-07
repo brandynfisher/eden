@@ -30,18 +30,19 @@ export const INTEGRATION_CATEGORIES: Record<IntegrationCategory, string> = {
 
 export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
   {
-    platform: 'discord',
+    platform: 'discord_v3',
     label: 'Discord',
-    description: 'Deploy your agent to Discord servers.',
+    description: 'OAuth-based Discord setup with channel permissions.',
     category: 'social',
     icon: MessageCircle,
   },
   {
-    platform: 'discord_v3',
-    label: 'Discord V3 (Beta)',
-    description: 'OAuth-based Discord setup with channel permissions.',
+    platform: 'discord',
+    label: 'Discord (Bot token)',
+    description: 'Legacy bot-token setup with manual channel selection.',
     category: 'social',
     icon: MessageCircle,
+    allowCreate: false,
   },
   {
     platform: 'telegram',

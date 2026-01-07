@@ -27,6 +27,7 @@ import {
   getIntegrationLabel,
 } from '@/features/integrations/integration-definitions'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useUserDeploymentsQuery } from '@/hooks/query/use-user-deployments-query'
 import {
   GatedResource,
@@ -49,6 +50,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
@@ -67,7 +69,12 @@ type IntegrationFormProps = {
   variant?: 'collapsible' | 'inline'
 }
 
-const WIZARD_EXCLUDED_PLATFORMS = new Set(['shopify', 'printify', 'captions'])
+const WIZARD_EXCLUDED_PLATFORMS = new Set([
+  'shopify',
+  'printify',
+  'captions',
+  'discord',
+])
 
 const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   discord: DiscordDeploymentForm,
@@ -134,7 +141,22 @@ const IntegrationWizardPage = () => {
     return uniqueAgents.find(agent => agent._id === selectedAgentId) ?? null
   }, [selectedAgentId, uniqueAgents])
 
-  const effectiveSelectedAgent = selectedAgent ?? selectedAgentFromDeployments
+  const selectedAgentQuery = useAgentQuery({
+    key: selectedAgentId,
+    enabled: Boolean(selectedAgentId) && !selectedAgentFromDeployments,
+    refetchOnWindowFocus: false,
+  })
+
+  const effectiveSelectedAgent =
+    selectedAgent ??
+    selectedAgentFromDeployments ??
+    selectedAgentQuery.agent ??
+    null
+  const isLoadingSelectedAgent =
+    Boolean(selectedAgentId) &&
+    selectedAgentQuery.isLoading &&
+    !selectedAgentFromDeployments &&
+    !selectedAgent
 
   const deployedPlatformsForSelectedAgent = useMemo(() => {
     if (!deployments || !selectedAgentId) return new Set<string>()
@@ -241,10 +263,18 @@ const IntegrationWizardPage = () => {
     [router, searchParams],
   )
 
+  const lastUrlParamsRef = useRef<{ agent: string; platform: string } | null>(
+    null,
+  )
+
   useEffect(() => {
     const agentFromParams = searchParams?.get('agent') ?? undefined
     const platformFromParams = searchParams?.get('platform') ?? undefined
     if (!agentFromParams && !platformFromParams) return
+    lastUrlParamsRef.current = {
+      agent: agentFromParams ?? '',
+      platform: platformFromParams ?? '',
+    }
     openWizard(agentFromParams, platformFromParams)
   }, [openWizard, searchParams])
 
@@ -252,6 +282,14 @@ const IntegrationWizardPage = () => {
     const agentParam = searchParams?.get('agent') ?? ''
     const platformParam = searchParams?.get('platform') ?? ''
     if (agentParam === selectedAgentId && platformParam === selectedPlatform) {
+      lastUrlParamsRef.current = null
+      return
+    }
+    if (
+      lastUrlParamsRef.current &&
+      lastUrlParamsRef.current.agent === agentParam &&
+      lastUrlParamsRef.current.platform === platformParam
+    ) {
       return
     }
     updateWizardQuery(selectedAgentId, selectedPlatform)
@@ -454,6 +492,8 @@ const IntegrationWizardPage = () => {
                             </div>
                           </div>
                         </>
+                      ) : isLoadingSelectedAgent ? (
+                        <span>Loading agent...</span>
                       ) : (
                         <span>Select an agent</span>
                       )}
@@ -551,7 +591,9 @@ const IntegrationWizardPage = () => {
                         Agent
                       </div>
                       <div className="font-medium">
-                        {effectiveSelectedAgent?.name ?? 'Unknown agent'}
+                        {isLoadingSelectedAgent
+                          ? 'Loading agent...'
+                          : effectiveSelectedAgent?.name ?? 'Unknown agent'}
                       </div>
                     </div>
                   </div>
