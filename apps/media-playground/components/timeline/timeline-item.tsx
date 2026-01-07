@@ -93,7 +93,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
               ].map((_e, i) => (
                 <div
                   key={i}
-                  className="relative flex justify-center items-center bg-transparent"
+                  className="relative flex justify-center items-center bg-transparent w-full"
                   style={{
                     aspectRatio:
                       (item.args?.width ?? 1024) /
@@ -102,15 +102,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   }}
                 >
                   <div className="relative flex items-center justify-center w-full h-full max-w-[min(80vw,960px)] max-h-[min(70vh,960px)]">
-                    <div
-                      className="relative bg-accent z-10 rounded-md w-full h-full flex items-center justify-center"
-                      style={{
-                        aspectRatio:
-                          (item.args?.width ?? 1024) /
-                            (item.args?.height ?? 1024) ||
-                          (item.output_type === 'audio' ? 3 : 1),
-                      }}
-                    >
+                    <div className="relative bg-accent z-10 rounded-md w-full h-full flex items-center justify-center">
                       <div className="absolute flex flex-col items-center justify-center gap-4 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse px-4">
                         <div className="flex items-center justify-center gap-2">
                           <TaskStatusBadge
