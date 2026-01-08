@@ -88,6 +88,7 @@ export default function Webview() {
   const [error, setError] = useState<string | null>(null)
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
+  const [webviewKey, setWebviewKey] = useState(0)
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
@@ -168,6 +169,13 @@ export default function Webview() {
   const resetWebview = async () => {
     // Recreate bridge so we don't show stale /settings or stuck pages
     await openWebviewWithSession()
+  }
+
+  const reloadWebview = () => {
+    const nextUrl = currentUrl || initialUrl || WEB_URL
+    setInitialUrl(nextUrl)
+    setCurrentUrl(nextUrl)
+    setWebviewKey(prev => prev + 1)
   }
 
   useEffect(() => {
@@ -355,12 +363,15 @@ export default function Webview() {
           )}
           <View style={styles.webviewContainer} {...panResponder.panHandlers}>
             <WebView
+              key={webviewKey}
               ref={webRef}
               source={{ uri: initialUrl }}
               onMessage={handleMessage}
               onNavigationStateChange={state => {
                 setCurrentUrl(state.url)
               }}
+              onContentProcessDidTerminate={reloadWebview}
+              onRenderProcessGone={reloadWebview}
               javaScriptEnabled
               domStorageEnabled
               sharedCookiesEnabled

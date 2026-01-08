@@ -9,17 +9,101 @@ import TimelineItemModelResult from '@/components/timeline/timeline-item-model-r
 import LoraTrainingProgress from '@/components/training/lora-training-progress'
 import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError } from 'axios'
-import React, { Suspense, useCallback, useState } from 'react'
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 type Props = {
   item: TaskV2
   queryKey: QueryKey
+}
+
+const PendingMediaPlaceholder = ({
+  task,
+  showStatus,
+  pendingLabel,
+}: {
+  task: TaskV2
+  showStatus: boolean
+  pendingLabel: string
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState<number | null>(null)
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current?.parentElement) {
+        setContainerWidth(containerRef.current.parentElement.clientWidth)
+      }
+    }
+    updateWidth()
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
+  const width = task.args?.width ?? 1024
+  const height = task.args?.height ?? 1024
+  const aspectRatio =
+    (width && height ? width / height : undefined) ||
+    (task.output_type === 'audio' ? 3 : 1)
+
+  const maxHeight =
+    typeof window !== 'undefined' ? window.innerHeight * 0.6 : 600
+  const availableWidth = containerWidth ?? 800
+
+  let computedWidth = availableWidth
+  let computedHeight = computedWidth / aspectRatio
+
+  if (computedHeight > maxHeight) {
+    computedHeight = maxHeight
+    computedWidth = computedHeight * aspectRatio
+  }
+
+  if (computedWidth > availableWidth) {
+    computedWidth = availableWidth
+    computedHeight = computedWidth / aspectRatio
+  }
+
+  return (
+    <div className="p-2 bg-secondary rounded-md overflow-hidden max-w-full">
+      <div className="relative">
+        <div
+          ref={containerRef}
+          className="relative bg-accent z-10 rounded-md mx-auto overflow-hidden"
+          style={{
+            width: computedWidth,
+            height: computedHeight,
+            maxWidth: '100%',
+          }}
+        >
+          <Skeleton className="absolute inset-0 rounded-md border border-secondary/40 bg-muted/40" />
+          {showStatus ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <TaskStatusBadge
+                  status={task.status}
+                  hideText={true}
+                  output_type={task.output_type}
+                />
+                <span>{pendingLabel}</span>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const TimelineItem = ({ item, queryKey }: Props) => {
@@ -63,6 +147,19 @@ const TimelineItem = ({ item, queryKey }: Props) => {
   }, [])
 
   const num_samples = (item.args?.n_samples ?? item.args?.num_outputs) || false
+  const resultCount =
+    item.result && Array.isArray(item.result) ? item.result.length : 0
+  const expectedCount = num_samples || 1
+  const pendingCount =
+    item.status === TaskV2Status.Pending || item.status === TaskV2Status.Running
+      ? Math.max(expectedCount - resultCount, 0)
+      : 0
+  const pendingLabel =
+    item.status === TaskV2Status.Pending
+      ? 'Waiting to start...'
+      : item.output_type === 'lora'
+      ? `Training ${item.output_type}... `
+      : `Generating ${item.output_type}... `
 
   return (
     <div
@@ -81,53 +178,22 @@ const TimelineItem = ({ item, queryKey }: Props) => {
           ])}
           style={{ gridAutoRows: 'auto' }}
         >
-          {item.status === 'pending' || item.status === 'running' ? (
+          {pendingCount > 0 ? (
             <>
-              {[
-                ...Array(
-                  (num_samples || 1) -
-                    (item.result && Array.isArray(item.result)
-                      ? item.result.length
-                      : 0),
-                ),
-              ].map((_e, i) => (
-                <div
-                  key={i}
-                  className="relative flex justify-center items-center bg-transparent w-full"
-                  style={{
-                    aspectRatio:
-                      (item.args?.width ?? 1024) /
-                        (item.args?.height ?? 1024) ||
-                      (item.output_type === 'audio' ? 3 : 1),
-                  }}
-                >
-                  <div className="relative flex items-center justify-center w-full h-full max-w-[min(80vw,960px)] max-h-[min(70vh,960px)]">
-                    <div className="relative bg-accent z-10 rounded-md w-full h-full flex items-center justify-center">
-                      <div className="absolute flex flex-col items-center justify-center gap-4 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <TaskStatusBadge
-                            status={item.status}
-                            hideText={true}
-                            output_type={item.output_type}
-                          />
-                          {item.status === 'pending'
-                            ? 'Waiting to start...'
-                            : item.output_type === 'lora'
-                            ? `Training ${item.output_type}... `
-                            : `Generating ${item.output_type}... `}
-                        </div>
-                        {item.output_type === 'lora' &&
-                          item.status === 'running' && (
-                            <LoraTrainingProgress
-                              task={item}
-                              maxTrainSteps={item.args?.max_train_steps || 200}
-                            />
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {Array.from({ length: pendingCount }).map((_item, index) => (
+                <PendingMediaPlaceholder
+                  key={`${item._id}_pending_${index}`}
+                  task={item}
+                  showStatus={true}
+                  pendingLabel={pendingLabel}
+                />
               ))}
+              {item.output_type === 'lora' && item.status === 'running' && (
+                <LoraTrainingProgress
+                  task={item}
+                  maxTrainSteps={item.args?.max_train_steps || 200}
+                />
+              )}
             </>
           ) : null}
 

@@ -26,6 +26,7 @@ type Props = {
   render: ({ item }: { item: TaskV2 }) => React.JSX.Element
   query: { [key: string]: unknown }
   queryKey: QueryKey
+  filterItem?: (item: TaskV2) => boolean
 }
 
 const ListVirtualizerVertical = ({
@@ -33,6 +34,7 @@ const ListVirtualizerVertical = ({
   render,
   query,
   queryKey,
+  filterItem,
 }: Props) => {
   const { openSignIn } = useClerk()
   const { user } = useAuthState()
@@ -98,8 +100,10 @@ const ListVirtualizerVertical = ({
   })
 
   const allRows = useMemo(() => {
-    return data?.pages?.flatMap(d => d.docs) || []
-  }, [data])
+    const rows = data?.pages?.flatMap(d => d.docs) || []
+    const definedRows = rows.filter((row): row is TaskV2 => !!row)
+    return filterItem ? definedRows.filter(filterItem) : definedRows
+  }, [data, filterItem])
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,

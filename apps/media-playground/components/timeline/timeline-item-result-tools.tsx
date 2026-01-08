@@ -207,7 +207,7 @@ const TimelineItemResultTools = ({ output, queryKey, className }: Props) => {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1 justify-end">
+          <div className="flex flex-wrap items-center gap-2 justify-end">
             <Suspense>
               <div className="[&_button]:h-8 [&_button]:bg-black/40 [&_button]:hover:bg-black/60 [&_button]:text-white [&_button]:border-0 [&_button]:p-0.5">
                 <PrivacyToggle
