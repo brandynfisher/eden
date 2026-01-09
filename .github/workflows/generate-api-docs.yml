@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: eden
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Generate OpenAPI specification
         working-directory: eden/apps/api
