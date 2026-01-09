@@ -8,13 +8,11 @@ import { convertObj } from 'swagger2openapi'
 async function generateOpenAPISpec() {
   console.log('🚀 Starting OpenAPI generation...')
 
-  // Load environment variables
   const envFile = process.env.DOTENV_PATH || '.env.eden'
   dotenvConfig({ path: envFile })
   console.log(`📋 Using environment file: ${envFile}`)
 
   try {
-    // Create a server instance with dummy handlers
     const server = await createServer({
       taskHandlers: dummyTaskHandlers,
     })
