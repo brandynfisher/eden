@@ -70,18 +70,26 @@ const AccountMenuContent = ({
   side,
   align,
 }: AccountMenuContentProps) => {
-  const [hasOpenDialog, setHasOpenDialog] = useState(false)
+  const [redeemVoucherOpen, setRedeemVoucherOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const focusRef = useRef<HTMLButtonElement | null>(null)
+  const hasOpenDialog = redeemVoucherOpen || feedbackOpen
 
   function handleDialogItemSelect() {
     focusRef.current = triggerRef?.current ?? null
   }
 
-  function handleDialogItemOpenChange(open: boolean) {
-    setHasOpenDialog(open)
-    if (!open) {
-      setDropdownOpen(false)
+  const handleDialogItemOpenChange =
+    (setOpen: (open: boolean) => void) => (open: boolean) => {
+      setOpen(open)
+      if (!open) {
+        setDropdownOpen(false)
+      }
     }
+
+  const closeRedeemVoucherDialog = () => {
+    setRedeemVoucherOpen(false)
+    setDropdownOpen(false)
   }
 
   const openSettingsTab = (tab?: string) => {
@@ -203,7 +211,8 @@ const AccountMenuContent = ({
 
       <DialogMenuItem
         onSelect={handleDialogItemSelect}
-        onOpenChange={handleDialogItemOpenChange}
+        onOpenChange={handleDialogItemOpenChange(setRedeemVoucherOpen)}
+        open={redeemVoucherOpen}
         triggerChildren={
           <>
             <TicketIcon className="mr-2 h-4 w-4" />
@@ -211,7 +220,7 @@ const AccountMenuContent = ({
           </>
         }
       >
-        <RedeemVoucherForm />
+        <RedeemVoucherForm onSuccess={closeRedeemVoucherDialog} />
       </DialogMenuItem>
 
       <DropdownMenuItem
@@ -229,7 +238,8 @@ const AccountMenuContent = ({
 
       <DialogMenuItem
         onSelect={handleDialogItemSelect}
-        onOpenChange={handleDialogItemOpenChange}
+        onOpenChange={handleDialogItemOpenChange(setFeedbackOpen)}
+        open={feedbackOpen}
         triggerChildren={
           <>
             <MessageSquareIcon className="mr-2 h-4 w-4" />
