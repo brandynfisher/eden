@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate OpenAPI specification
         working-directory: eden/apps/api
-        run: npm run generate:openapi
+        run: yarn run generate:openapi
         env:
           DOTENV_PATH: .env.example
 

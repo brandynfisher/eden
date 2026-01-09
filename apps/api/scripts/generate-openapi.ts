@@ -13,7 +13,6 @@ async function generateOpenAPISpec() {
   console.log(`📋 Using environment file: ${envFile}`)
 
   try {
-    // Create a server instance with dummy handlers
     const server = await createServer({
       taskHandlers: dummyTaskHandlers,
     })
