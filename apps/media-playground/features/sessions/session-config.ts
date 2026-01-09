@@ -1,1 +1,1 @@
-export const MAX_AGENTS = 8
+export const MAX_AGENTS = 12

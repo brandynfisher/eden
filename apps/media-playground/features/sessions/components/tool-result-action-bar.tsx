@@ -195,6 +195,7 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
     'abraham_daily',
     'media_editor',
     'post_to_chatroom',
+    'chat',
   ]
 
   // Get completed tool calls with results that have creation IDs

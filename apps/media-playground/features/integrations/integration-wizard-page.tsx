@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import UserAvatar from '@/components/user/user-avatar'
-import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
@@ -15,8 +14,6 @@ import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farca
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
 import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
 import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
-import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
-import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
@@ -30,8 +27,13 @@ import {
   getIntegrationLabel,
 } from '@/features/integrations/integration-definitions'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useUserDeploymentsQuery } from '@/hooks/query/use-user-deployments-query'
-import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
+import {
+  GatedResource,
+  PREVIEW_ONLY_DEPLOYMENT_PLATFORMS,
+  useGatedResource,
+} from '@/hooks/use-gated-resource'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import {
@@ -48,6 +50,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 
@@ -66,6 +69,13 @@ type IntegrationFormProps = {
   variant?: 'collapsible' | 'inline'
 }
 
+const WIZARD_EXCLUDED_PLATFORMS = new Set([
+  'shopify',
+  'printify',
+  'captions',
+  'discord',
+])
+
 const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   discord: DiscordDeploymentForm,
   discord_v3: DiscordV3DeploymentForm,
@@ -75,9 +85,6 @@ const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   instagram: InstagramDeploymentForm,
   tiktok: TiktokDeploymentForm,
   google_calendar: GoogleCalendarDeploymentForm,
-  shopify: ShopifyDeploymentForm,
-  printify: PrintifyDeploymentForm,
-  captions: CaptionsDeploymentForm,
   email: EmailDeploymentForm,
   gmail: GmailDeploymentForm,
 }
@@ -134,7 +141,22 @@ const IntegrationWizardPage = () => {
     return uniqueAgents.find(agent => agent._id === selectedAgentId) ?? null
   }, [selectedAgentId, uniqueAgents])
 
-  const effectiveSelectedAgent = selectedAgent ?? selectedAgentFromDeployments
+  const selectedAgentQuery = useAgentQuery({
+    key: selectedAgentId,
+    enabled: Boolean(selectedAgentId) && !selectedAgentFromDeployments,
+    refetchOnWindowFocus: false,
+  })
+
+  const effectiveSelectedAgent =
+    selectedAgent ??
+    selectedAgentFromDeployments ??
+    selectedAgentQuery.agent ??
+    null
+  const isLoadingSelectedAgent =
+    Boolean(selectedAgentId) &&
+    selectedAgentQuery.isLoading &&
+    !selectedAgentFromDeployments &&
+    !selectedAgent
 
   const deployedPlatformsForSelectedAgent = useMemo(() => {
     if (!deployments || !selectedAgentId) return new Set<string>()
@@ -146,8 +168,19 @@ const IntegrationWizardPage = () => {
   }, [deployments, selectedAgentId])
 
   const availablePlatforms = useMemo(
-    () => INTEGRATION_DEFINITIONS.filter(def => def.allowCreate !== false),
-    [],
+    () =>
+      INTEGRATION_DEFINITIONS.filter(def => {
+        if (def.allowCreate === false) return false
+        if (WIZARD_EXCLUDED_PLATFORMS.has(def.platform)) return false
+        if (
+          !deploymentsGate.isPreviewUser &&
+          PREVIEW_ONLY_DEPLOYMENT_PLATFORMS.has(def.platform)
+        ) {
+          return false
+        }
+        return true
+      }),
+    [deploymentsGate.isPreviewUser],
   )
 
   const platformsByCategory = useMemo(() => {
@@ -230,10 +263,18 @@ const IntegrationWizardPage = () => {
     [router, searchParams],
   )
 
+  const lastUrlParamsRef = useRef<{ agent: string; platform: string } | null>(
+    null,
+  )
+
   useEffect(() => {
     const agentFromParams = searchParams?.get('agent') ?? undefined
     const platformFromParams = searchParams?.get('platform') ?? undefined
     if (!agentFromParams && !platformFromParams) return
+    lastUrlParamsRef.current = {
+      agent: agentFromParams ?? '',
+      platform: platformFromParams ?? '',
+    }
     openWizard(agentFromParams, platformFromParams)
   }, [openWizard, searchParams])
 
@@ -241,6 +282,14 @@ const IntegrationWizardPage = () => {
     const agentParam = searchParams?.get('agent') ?? ''
     const platformParam = searchParams?.get('platform') ?? ''
     if (agentParam === selectedAgentId && platformParam === selectedPlatform) {
+      lastUrlParamsRef.current = null
+      return
+    }
+    if (
+      lastUrlParamsRef.current &&
+      lastUrlParamsRef.current.agent === agentParam &&
+      lastUrlParamsRef.current.platform === platformParam
+    ) {
       return
     }
     updateWizardQuery(selectedAgentId, selectedPlatform)
@@ -443,6 +492,8 @@ const IntegrationWizardPage = () => {
                             </div>
                           </div>
                         </>
+                      ) : isLoadingSelectedAgent ? (
+                        <span>Loading agent...</span>
                       ) : (
                         <span>Select an agent</span>
                       )}
@@ -540,7 +591,9 @@ const IntegrationWizardPage = () => {
                         Agent
                       </div>
                       <div className="font-medium">
-                        {effectiveSelectedAgent?.name ?? 'Unknown agent'}
+                        {isLoadingSelectedAgent
+                          ? 'Loading agent...'
+                          : effectiveSelectedAgent?.name ?? 'Unknown agent'}
                       </div>
                     </div>
                   </div>

@@ -10,6 +10,7 @@ import {
   addDocIfNotExistInPage,
   updateDocInPage,
 } from '@/lib/query/cache-updates'
+import { isMediaTimelineTask } from '@/lib/task-filters'
 import { useTaskStatus } from '@/providers/task-status-provider'
 import { TaskV2, TasksV2ListArguments, ToolV2 } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
@@ -135,6 +136,7 @@ const Timeline = ({ tool, subscribeToAll = false }: Props) => {
             apiEndpoint={'/api/tasks/list'}
             query={query}
             queryKey={queryKey}
+            filterItem={isMediaTimelineTask}
             render={item => (
               <TimelineItem item={item.item} queryKey={queryKey} />
             )}

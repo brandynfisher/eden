@@ -1,10 +1,16 @@
+'use client'
+
+import { LLMCallButton } from './llm-call-modal'
 import { Message } from '@edenlabs/eden-sdk'
+import { useTimeAgo } from 'next-timeago'
 
 interface SystemMessageProps {
   message: Message
 }
 
 export const SystemMessage = ({ message }: SystemMessageProps) => {
+  const { TimeAgo } = useTimeAgo()
+
   if (!message.content) return null
 
   // Check if this is a trigger context message
@@ -25,7 +31,7 @@ export const SystemMessage = ({ message }: SystemMessageProps) => {
   const trimmedContent = message.content.trim()
 
   return (
-    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)]">
+    <div className="pt-3 pb-5 pl-[calc(3rem+0.75rem)] group">
       <div className="max-w-[42rem]">
         <div className="text-[0.62rem] font-medium text-blue-600/50 dark:text-blue-400/50 mb-1 px-1">
           {label}
@@ -36,6 +42,15 @@ export const SystemMessage = ({ message }: SystemMessageProps) => {
               {trimmedContent}
             </pre>
           </div>
+        </div>
+        <div className="flex items-center gap-2 mt-2 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className="text-xs text-muted-foreground"
+            title={new Date(message.createdAt).toLocaleString()}
+          >
+            <TimeAgo date={new Date(message.createdAt)} />
+          </div>
+          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
         </div>
       </div>
     </div>

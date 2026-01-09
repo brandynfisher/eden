@@ -15,6 +15,7 @@ import { forceCloudfrontUrl } from '../../plugins/s3Plugin'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { sendPushNotification } from '../../services/pushNotificationService'
+import { ensureMessagesSenderPopulated } from '../../utils/edenAgentUtils'
 import {
   createIdOrSlugQuery,
   createMultiFieldQuery,
@@ -796,12 +797,6 @@ export const createSessionMessage = async (
         message: 'You do not have access to this session',
       })
     }
-
-    // For automatic sessions, set status to 'paused' when a new message is submitted
-    if (session.session_type === 'automatic' && session.status !== 'paused') {
-      session.status = 'paused'
-      await session.save()
-    }
   }
 
   const userDocument = await User.findById(userId)
@@ -1290,6 +1285,9 @@ export const getSession = async (
         ? messages.slice(0, limit).reverse()
         : messages.reverse()
 
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(paginatedMessages)
+
     // Check if there are more messages by looking for ANY message older than our oldest
     // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
     let hasMore = false
@@ -1504,6 +1502,9 @@ export const getSessionMessages = async (
       messages.length > limit
         ? messages.slice(0, limit).reverse()
         : messages.reverse()
+
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(paginatedMessages)
 
     // Check if there are more messages by looking for ANY message older than our oldest
     // This fixes a bug where gaps of filtered-out messages would cause hasMore to be false prematurely
@@ -2276,7 +2277,7 @@ export const getSharedSession = async (
       .populate({
         path: 'session',
         select:
-          '_id title context agents session_type agent_sessions createdAt',
+          '_id title context agents session_type agent_sessions moderator_session createdAt',
         populate: [
           {
             path: 'agents',
@@ -2311,6 +2312,9 @@ export const getSharedSession = async (
       .select(
         '_id content sender role eden_message_data tool_calls thought attachments createdAt llm_call',
       )
+
+    // Ensure eden agent sender is properly populated for orchestrator messages
+    await ensureMessagesSenderPopulated(messages)
 
     return reply.status(200).send({
       share: {
@@ -3189,5 +3193,93 @@ export const addToolCallToMessage = async (
   } catch (err) {
     server.log.error({ err }, 'Error adding tool call to message:')
     return reply.status(500).send({ message: 'Internal server error' })
+  }
+}
+
+/**
+ * Trigger the next turn in an automatic session immediately.
+ * This skips the delay interval and tells the compute API to run the next step now.
+ */
+export const triggerNextTurn = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { session_id } = request.body as {
+    session_id: string
+  }
+  const currentUserId = request.user.userId
+
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'Missing session_id',
+    })
+  }
+
+  try {
+    // First, get the session to check ownership and type
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Check if the user owns the session
+    if (session.owner.toString() !== currentUserId.toString()) {
+      return reply.status(403).send({
+        message: 'User not authorized to control this session',
+      })
+    }
+
+    // Check if session is automatic type
+    if (session.session_type !== 'automatic') {
+      return reply.status(400).send({
+        message: 'Next turn can only be triggered for automatic sessions',
+      })
+    }
+
+    // Check if session is active (only active sessions can have next turn triggered)
+    if (session.status !== 'active') {
+      return reply.status(400).send({
+        message: 'Session must be active to trigger next turn',
+      })
+    }
+
+    // Forward the request to compute API
+    const edenComputeRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/next-turn`,
+      data: { session_id },
+    }
+
+    const edenComputeResponse = await axios.post(
+      edenComputeRequest.endpoint,
+      edenComputeRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = edenComputeResponse.data
+
+    return reply.status(200).send(response)
+  } catch (error) {
+    server.log.error({ err: error }, 'Error triggering next turn:')
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status || 500
+      const message =
+        error.response?.data?.message || 'Failed to trigger next turn'
+
+      return reply.status(status).send({
+        message,
+      })
+    }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
   }
 }

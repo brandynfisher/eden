@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { openUserSettingsModal } from '@/lib/user-settings'
 import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth } from '@clerk/nextjs'
@@ -39,6 +40,7 @@ const NotificationDropdown = () => {
   const [hasFetchedOnOpen, setHasFetchedOnOpen] = useState(false)
   const [hasMarkedOnOpen, setHasMarkedOnOpen] = useState(false)
   const [isArchivingAll, setIsArchivingAll] = useState(false)
+  const settingsModalPrefix = 'modal:user-settings'
 
   useEffect(() => {
     if (!open) {
@@ -86,7 +88,15 @@ const NotificationDropdown = () => {
     try {
       await markAsRead([id])
       if (actionUrl) {
-        if (actionUrl.startsWith('http')) {
+        if (actionUrl.startsWith(settingsModalPrefix)) {
+          const queryStart = actionUrl.indexOf('?')
+          const params =
+            queryStart >= 0
+              ? new URLSearchParams(actionUrl.slice(queryStart + 1))
+              : new URLSearchParams()
+          const tab = params.get('tab') || undefined
+          openUserSettingsModal(tab)
+        } else if (actionUrl.startsWith('http')) {
           window.open(actionUrl, '_blank')
         } else {
           router.push(actionUrl)

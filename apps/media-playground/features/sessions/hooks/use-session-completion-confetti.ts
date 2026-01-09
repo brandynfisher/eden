@@ -29,15 +29,19 @@ export const useSessionCompletionConfetti = ({
     // Check if this is an automatic session
     if (session.session_type !== SessionType.AUTOMATIC) return
 
-    // Check if there's a conductor_finish message with content (outcome)
-    const hasConductorFinish = session.messages?.some(
-      message =>
-        message.eden_message_data?.message_type &&
-        String(message.eden_message_data.message_type) === 'conductor_finish' &&
-        message.content?.trim(),
-    )
+    // Check if there's a conductor_finish or moderator_finish message with content (outcome)
+    const hasFinishMessage = session.messages?.some(message => {
+      const messageType = message.eden_message_data?.message_type
+        ? String(message.eden_message_data.message_type)
+        : null
+      return (
+        (messageType === 'conductor_finish' ||
+          messageType === 'moderator_finish') &&
+        message.content?.trim()
+      )
+    })
 
-    if (!hasConductorFinish) return
+    if (!hasFinishMessage) return
 
     // Fire confetti!
     hasFiredRef.current = true

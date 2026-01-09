@@ -270,4 +270,5 @@ export enum FeatureFlag {
   ToolAccessVeo3 = 'tool_access_veo3',
   ToolAccessPremiumSocialMedia = 'tool_access_premium_social_media',
   EdenAdmin = 'eden_admin',
+  MarsCollege26 = 'mars_college_26',
 }

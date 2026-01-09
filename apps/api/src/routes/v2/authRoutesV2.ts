@@ -9,6 +9,7 @@ import {
   disconnectTwitterIntegration,
   discordOAuth,
   discordV3OAuthCallback,
+  getDiscordAvailableGuilds,
   getDiscordGuildAccess,
   getDiscordGuildChannels,
   getDiscordGuildRoles,
@@ -58,6 +59,19 @@ const authRoutes: FastifyPluginAsync = async server => {
       }),
     },
     handler: (request, reply) => discordV3OAuthCallback(server, request, reply),
+  })
+
+  server.get('/v2/deployments/discord/guilds', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Get Discord Guilds',
+      description:
+        'Fetch Discord guilds available for the current user without re-authentication.',
+      hide: true,
+    },
+    handler: (request, reply) =>
+      getDiscordAvailableGuilds(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 
   server.get('/v2/deployments/discord/guilds/:guildId/channels', {

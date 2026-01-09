@@ -611,6 +611,10 @@ export type SessionV2 = {
   extras?: SessionExtras
   /** Maps agent IDs to their private workspace session IDs */
   agent_sessions?: Record<string, string>
+  /** Session ID for the moderator's internal workspace (automatic sessions) */
+  moderator_session?: string
+  /** When the next automatic session turn will execute */
+  waiting_until?: Date
   /** Permission level for the authenticated user when present */
   permission_level_for_user?: SessionPermissionLevel
   deleted?: boolean

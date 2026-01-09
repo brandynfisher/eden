@@ -27,8 +27,12 @@ const DiscordIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-// Helper to format display name (strips discord_ prefix)
+// Helper to format display name (strips discord_ prefix, shows "Moderator" for eden)
 const formatDisplayName = (name?: string, username?: string) => {
+  // Check if this is the moderator agent (username "eden")
+  if (username?.toLowerCase() === 'eden') {
+    return { displayName: 'Moderator', isDiscord: false }
+  }
   const rawName = name || username || ''
   if (rawName.toLowerCase().startsWith('discord_')) {
     return { displayName: rawName.slice(8), isDiscord: true }

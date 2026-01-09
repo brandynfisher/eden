@@ -5,16 +5,15 @@ import { updateSubscriptionGateModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 
+export const PREVIEW_ACCESS_FEATURE_FLAGS = new Set<FeatureFlag>([
+  FeatureFlag.Preview,
+  FeatureFlag.MarsCollege26,
+])
+
 // Preview-only deployment platforms (anything not explicitly stable)
 export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
   'tiktok',
   'instagram',
-  'google_calendar',
-  'shopify',
-  'printify',
-  'captions',
-  'email',
-  'gmail',
 ])
 
 export enum GatedResource {
@@ -136,8 +135,8 @@ export const useGatedResource = (
     baseConfig.type === 'subscription'
       ? baseConfig.allowPreviewFlag
       : baseConfig.featureFlag
-  const hasGlobalPreviewFlag = !!user?.featureFlags?.includes(
-    FeatureFlag.Preview,
+  const hasGlobalPreviewFlag = !!user?.featureFlags?.some(flag =>
+    PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
   )
   const isPreviewUser =
     hasGlobalPreviewFlag ||
