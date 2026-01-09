@@ -9,14 +9,21 @@ type Props = {
   triggerChildren: ReactNode
   onSelect?: () => void
   onOpenChange: (open: boolean) => void
+  open?: boolean
 } & PropsWithChildren
 
 const DialogMenuItem = forwardRef(
   (props: Props, forwardedRef: ForwardedRef<HTMLDivElement>) => {
-    const { triggerChildren, children, onSelect, onOpenChange, ...itemProps } =
-      props
+    const {
+      triggerChildren,
+      children,
+      onSelect,
+      onOpenChange,
+      open,
+      ...itemProps
+    } = props
     return (
-      <Dialog onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
           <DropdownMenuItem
             {...itemProps}

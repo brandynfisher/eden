@@ -3,7 +3,7 @@
   "info": {
     "title": "@fastify/swagger",
     "description": "API for Eden.art platform",
-    "version": "8.14.0"
+    "version": "8.15.0"
   },
   "paths": {
     "/agent_creation/extract_prompts": {
@@ -228,6 +228,9 @@
                     "type": "string"
                   },
                   "image": {
+                    "type": "string"
+                  },
+                  "website": {
                     "type": "string"
                   },
                   "public": {
@@ -478,6 +481,9 @@
                     "type": "string"
                   },
                   "image": {
+                    "type": "string"
+                  },
+                  "website": {
                     "type": "string"
                   },
                   "public": {
@@ -949,6 +955,138 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/agents/{agentId}/email/domain": {
+      "post": {
+        "summary": "Create Mailgun Domain",
+        "tags": ["Agents"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string"
+                  }
+                },
+                "required": ["domain"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {}
+                  },
+                  "required": ["domain"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get Mailgun Domain",
+        "tags": ["Agents"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "refresh",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {}
+                  },
+                  "required": ["domain"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Mailgun Domain",
+        "tags": ["Agents"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
                 }
               }
             }
@@ -1440,6 +1578,340 @@
         }
       }
     },
+    "/v2/agents/{agentId}/deployments/discord/channels": {
+      "get": {
+        "summary": "Get Discord Channels",
+        "description": "Retrieve available Discord guilds and channels for an agent with a Discord deployment.",
+        "tags": ["Agents - Deployments"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "guilds": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "icon": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "nullable": true
+                              }
+                            ]
+                          },
+                          "member_count": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "nullable": true
+                              }
+                            ]
+                          },
+                          "channels": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "number"
+                                },
+                                "type_name": {
+                                  "type": "string"
+                                },
+                                "category_id": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "nullable": true
+                                    }
+                                  ]
+                                },
+                                "category_name": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "nullable": true
+                                    }
+                                  ]
+                                },
+                                "position": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": ["id", "name", "type", "type_name"]
+                            }
+                          }
+                        },
+                        "required": ["id", "name", "channels"]
+                      }
+                    },
+                    "last_refreshed_at": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "nullable": true
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["guilds"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/agents/{agentId}/deployments/discord/refresh": {
+      "post": {
+        "summary": "Refresh Discord Channels",
+        "description": "Refresh the list of available Discord guilds and channels from the Discord API.",
+        "tags": ["Agents - Deployments"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "guilds_count": {
+                      "type": "number"
+                    },
+                    "channels_count": {
+                      "type": "number"
+                    },
+                    "guilds": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "channel_count": {
+                            "type": "number"
+                          }
+                        },
+                        "required": ["id", "name", "channel_count"]
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "guilds_count",
+                    "channels_count",
+                    "guilds"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/agents/{agentId}/deployments/discord/sync": {
+      "post": {
+        "summary": "Sync Discord Sessions",
+        "description": "Sync Discord sessions with the Eden compute backend.",
+        "tags": ["Agents - Deployments"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "sessions_count": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["success", "sessions_count"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/agents/{agentId}/deployments/{platform}": {
       "delete": {
         "summary": "Delete Agent Deployment",
@@ -1887,6 +2359,60 @@
         }
       }
     },
+    "/v2/agents/{agentId}/memory-context": {
+      "get": {
+        "summary": "Get Agent Memory Context",
+        "description": "Retrieve fully formed memory context including user memory and collective memory shards for an agent.",
+        "tags": ["Agents - Memory"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userMemory": {
+                      "type": "string"
+                    },
+                    "collectiveMemory": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "shard_name": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["shard_name", "content"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/agents/{agentId}/memory-user": {
       "get": {
         "summary": "Get Memory User",
@@ -2086,11 +2612,21 @@
         }
       }
     },
-    "/v2/agents/triggers": {
+    "/v2/agents/{agentId}/realtime": {
       "get": {
-        "summary": "Get User Triggers",
-        "description": "Retrieve all triggers across all agents owned by the authenticated user.",
-        "tags": ["Agents - Triggers"],
+        "summary": "Get Agent Realtime Settings",
+        "description": "Retrieve the ElevenLabs realtime voice conversation settings for an agent.",
+        "tags": ["Agents - Realtime"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "apiKey": []
@@ -2104,9 +2640,71 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "triggers": {
-                      "type": "array",
-                      "items": {}
+                    "settings": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string"
+                        },
+                        "elevenlabs_agent_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "nullable": true
+                            }
+                          ]
+                        },
+                        "voice_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "nullable": true
+                            }
+                          ]
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "first_message": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "nullable": true
+                            }
+                          ]
+                        },
+                        "llm_model": {
+                          "type": "string"
+                        },
+                        "temperature": {
+                          "type": "number"
+                        },
+                        "max_tokens": {
+                          "type": "number"
+                        },
+                        "tts_stability": {
+                          "type": "number"
+                        },
+                        "tts_speed": {
+                          "type": "number"
+                        },
+                        "tts_similarity_boost": {
+                          "type": "number"
+                        },
+                        "user_input_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": ["agent"]
                     }
                   }
                 }
@@ -2114,83 +2712,11 @@
             }
           }
         }
-      }
-    },
-    "/v2/agents/{agentId}/triggers": {
-      "get": {
-        "summary": "Get Agent Triggers",
-        "description": "Retrieve all automated triggers configured for a specific agent.",
-        "tags": ["Agents - Triggers"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "post": {
-        "summary": "Create Agent Trigger",
-        "description": "Create a new automated trigger that activates the agent under specific conditions.",
-        "tags": ["Agents - Triggers"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/v2/agents/{agentId}/triggers/{triggerId}": {
-      "get": {
-        "summary": "Get Single Trigger",
-        "description": "Retrieve a specific trigger by its ID.",
-        "tags": ["Agents - Triggers"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": true,
-            "in": "path",
-            "name": "triggerId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
       },
       "patch": {
-        "summary": "Update Agent Trigger",
-        "description": "Modify the configuration or conditions of an existing agent trigger.",
-        "tags": ["Agents - Triggers"],
+        "summary": "Update Agent Realtime Settings",
+        "description": "Update the ElevenLabs realtime voice conversation settings for an agent.",
+        "tags": ["Agents - Realtime"],
         "parameters": [
           {
             "required": true,
@@ -2199,47 +2725,112 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "required": true,
-            "in": "path",
-            "name": "triggerId",
-            "schema": {
-              "type": "string"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "elevenlabs_agent_id": {
+                    "type": "string"
+                  },
+                  "voice_id": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string"
+                  },
+                  "first_message": {
+                    "type": "string"
+                  },
+                  "llm_model": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["gpt-5"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["gpt-5-mini"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["gpt-5-nano"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["gemini-2.5-flash-lite"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["gemini-2.5-flash"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["claude-sonnet-4-5"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["claude-haiku-4-5"]
+                      }
+                    ]
+                  },
+                  "temperature": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  },
+                  "max_tokens": {
+                    "minimum": 1,
+                    "maximum": 16384,
+                    "type": "number"
+                  },
+                  "tts_stability": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  },
+                  "tts_speed": {
+                    "minimum": 0,
+                    "maximum": 1.2,
+                    "type": "number"
+                  },
+                  "tts_similarity_boost": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  },
+                  "user_input_fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
             }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
           }
         ],
         "responses": {
           "200": {
-            "description": "Default Response"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete Agent Trigger",
-        "description": "Remove an automated trigger from an agent, stopping its activation.",
-        "tags": ["Agents - Triggers"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "settings": {}
+                  }
+                }
+              }
             }
-          },
-          {
-            "required": true,
-            "in": "path",
-            "name": "triggerId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
           }
         }
       }
@@ -2438,6 +3029,688 @@
         }
       }
     },
+    "/v2/artifacts": {
+      "get": {
+        "summary": "List Artifacts",
+        "description": "Retrieve a paginated list of artifacts, optionally filtered by user ID, type, agent, or session.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "sessionId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "orderBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "docs": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "pages": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pagingCounter": {
+                      "type": "number"
+                    },
+                    "hasPrevPage": {
+                      "type": "boolean"
+                    },
+                    "hasNextPage": {
+                      "type": "boolean"
+                    },
+                    "prevPage": {
+                      "type": "number"
+                    },
+                    "nextPage": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "docs",
+                    "total",
+                    "limit",
+                    "pages",
+                    "page",
+                    "pagingCounter",
+                    "hasPrevPage",
+                    "hasNextPage"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Artifact",
+        "description": "Create a new artifact with optional creations and agents.",
+        "tags": ["Artifacts"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "parent": {
+                    "type": "string"
+                  },
+                  "agents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "public": {
+                    "type": "boolean"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "session": {
+                    "type": "string"
+                  },
+                  "creations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "creation": {
+                          "type": "string"
+                        },
+                        "caption": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["creation"]
+                    }
+                  }
+                },
+                "required": ["title", "type"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "artifact": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/artifacts/{artifactId}": {
+      "get": {
+        "summary": "Get Artifact Details",
+        "description": "Retrieve detailed information about a specific artifact by its ID.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "artifactId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "artifact": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Artifact",
+        "description": "Update an existing artifact's properties.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "artifactId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "parent": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "agents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "public": {
+                    "type": "boolean"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "session": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "creations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "creation": {
+                          "type": "string"
+                        },
+                        "caption": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["creation"]
+                    }
+                  },
+                  "deleted": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "artifact": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Artifact",
+        "description": "Soft delete an artifact.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "artifactId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/artifacts/{artifactId}/creations": {
+      "post": {
+        "summary": "Add Creation to Artifact",
+        "description": "Add a creation to an artifact with optional caption.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "artifactId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "creationId": {
+                    "type": "string"
+                  },
+                  "caption": {
+                    "type": "string"
+                  }
+                },
+                "required": ["creationId"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "artifact": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/artifacts/{artifactId}/creations/{creationId}": {
+      "delete": {
+        "summary": "Remove Creation from Artifact",
+        "description": "Remove a creation from an artifact.",
+        "tags": ["Artifacts"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "artifactId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": true,
+            "in": "path",
+            "name": "creationId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/collections": {
       "post": {
         "summary": "Create New Collection",
@@ -2499,6 +3772,40 @@
         "summary": "Get User Collections Light",
         "description": "Retrieve a lightweight list of collections owned by the current user with basic information.",
         "tags": ["Collections"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "orderBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "security": [
           {
             "apiKey": []
@@ -2511,12 +3818,64 @@
               "*/*": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "collections": {
-                      "type": "array",
-                      "items": {}
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "docs": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "total": {
+                          "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "pages": {
+                          "type": "number"
+                        },
+                        "page": {
+                          "type": "number"
+                        },
+                        "pagingCounter": {
+                          "type": "number"
+                        },
+                        "hasPrevPage": {
+                          "type": "boolean"
+                        },
+                        "hasNextPage": {
+                          "type": "boolean"
+                        },
+                        "prevPage": {
+                          "type": "number"
+                        },
+                        "nextPage": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "docs",
+                        "total",
+                        "limit",
+                        "pages",
+                        "page",
+                        "pagingCounter",
+                        "hasPrevPage",
+                        "hasNextPage"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "collections": {
+                          "type": "array",
+                          "items": {}
+                        }
+                      },
+                      "required": ["collections"]
                     }
-                  }
+                  ]
                 }
               }
             }
@@ -2659,6 +4018,38 @@
         "tags": ["Collections"],
         "parameters": [
           {
+            "required": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "orderBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
             "required": true,
             "in": "path",
             "name": "collectionId",
@@ -2679,12 +4070,64 @@
               "*/*": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "creations": {
-                      "type": "array",
-                      "items": {}
+                  "allOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "docs": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "total": {
+                          "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "pages": {
+                          "type": "number"
+                        },
+                        "page": {
+                          "type": "number"
+                        },
+                        "pagingCounter": {
+                          "type": "number"
+                        },
+                        "hasPrevPage": {
+                          "type": "boolean"
+                        },
+                        "hasNextPage": {
+                          "type": "boolean"
+                        },
+                        "prevPage": {
+                          "type": "number"
+                        },
+                        "nextPage": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "docs",
+                        "total",
+                        "limit",
+                        "pages",
+                        "page",
+                        "pagingCounter",
+                        "hasPrevPage",
+                        "hasNextPage"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "creations": {
+                          "type": "array",
+                          "items": {}
+                        }
+                      },
+                      "required": ["creations"]
                     }
-                  }
+                  ]
                 }
               }
             }
@@ -2838,8 +4281,18 @@
     "/v2/concepts": {
       "get": {
         "summary": "List User Concepts",
-        "description": "Get all concepts for the current user.",
+        "description": "Get all concepts for the current user, or all concepts for a specific agent if agent query parameter is provided.",
         "tags": ["Concepts V2"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "agent",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "security": [
           {
             "apiKey": []
@@ -3433,9 +4886,10 @@
     },
     "/v2/creations/search": {
       "get": {
+        "operationId": "eden_creations_search",
         "summary": "Search Creations by Embedding",
         "description": "Search for creations using semantic search with CLIP embeddings.",
-        "tags": ["Creations"],
+        "tags": ["Creations", "MCP"],
         "parameters": [
           {
             "required": true,
@@ -3507,6 +4961,7 @@
             "apiKey": []
           }
         ],
+        "x-mcp": true,
         "responses": {
           "200": {
             "description": "Default Response",
@@ -4175,6 +5630,445 @@
         }
       }
     },
+    "/v2/exports": {
+      "post": {
+        "summary": "Create data export",
+        "description": "Create a background data export for the current user.",
+        "tags": ["Exports"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "include_chats": {
+                    "type": "boolean"
+                  },
+                  "include_media_files": {
+                    "type": "boolean"
+                  },
+                  "media_types": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": ["images"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["videos"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["audio"]
+                        }
+                      ]
+                    }
+                  },
+                  "agent_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "created_after": {
+                    "anyOf": [
+                      {
+                        "format": "date-time",
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "created_before": {
+                    "anyOf": [
+                      {
+                        "format": "date-time",
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "export": {}
+                  },
+                  "required": ["export"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List data exports",
+        "description": "List data exports for the current user.",
+        "tags": ["Exports"],
+        "parameters": [
+          {
+            "anyOf": [
+              {
+                "const": "queued",
+                "type": "string"
+              },
+              {
+                "const": "running",
+                "type": "string"
+              },
+              {
+                "const": "completed",
+                "type": "string"
+              },
+              {
+                "const": "failed",
+                "type": "string"
+              },
+              {
+                "const": "expired",
+                "type": "string"
+              },
+              {
+                "const": "cancelled",
+                "type": "string"
+              }
+            ],
+            "required": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exports": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "total_count": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["exports", "total_count"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/exports/estimate": {
+      "post": {
+        "summary": "Estimate data export",
+        "description": "Estimate counts and size for a data export.",
+        "tags": ["Exports"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "include_chats": {
+                    "type": "boolean"
+                  },
+                  "include_media_files": {
+                    "type": "boolean"
+                  },
+                  "media_types": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": ["images"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["videos"]
+                        },
+                        {
+                          "type": "string",
+                          "enum": ["audio"]
+                        }
+                      ]
+                    }
+                  },
+                  "agent_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "created_after": {
+                    "anyOf": [
+                      {
+                        "format": "date-time",
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "created_before": {
+                    "anyOf": [
+                      {
+                        "format": "date-time",
+                        "type": "string"
+                      },
+                      {
+                        "nullable": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "estimate": {},
+                    "limits": {},
+                    "over_limit": {
+                      "type": "boolean"
+                    },
+                    "over_limit_reason": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "nullable": true
+                        }
+                      ]
+                    },
+                    "missing_files": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["estimate", "limits", "over_limit"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/exports/{exportId}": {
+      "get": {
+        "summary": "Get export status",
+        "description": "Get details for a specific export.",
+        "tags": ["Exports"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "exportId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "export": {}
+                  },
+                  "required": ["export"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/exports/{exportId}/cancel": {
+      "post": {
+        "summary": "Cancel export",
+        "description": "Cancel a queued or running export.",
+        "tags": ["Exports"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "exportId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exportId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["exportId", "status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/exports/{exportId}/download": {
+      "post": {
+        "summary": "Get export download URL",
+        "description": "Generate a presigned URL for a completed export.",
+        "tags": ["Exports"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "exportId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "expires_in_seconds": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["url", "expires_in_seconds"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/llm-calls/{id}": {
+      "get": {
+        "summary": "Get LLM Call Data",
+        "description": "Retrieve raw LLM call data by ID",
+        "tags": ["LLM Calls"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/manna/vouchers/redeem": {
       "post": {
         "summary": "Redeem Manna Voucher",
@@ -4543,6 +6437,461 @@
         }
       }
     },
+    "/v2/notifications/register-token": {
+      "post": {
+        "summary": "Register Push Token",
+        "description": "Register a push notification token for the current user",
+        "tags": ["Notifications"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "push_token": {
+                    "type": "string"
+                  },
+                  "platform": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["ios"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["android"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["web"]
+                      }
+                    ]
+                  },
+                  "device_id": {
+                    "type": "string"
+                  }
+                },
+                "required": ["push_token", "platform"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/realtime/tool": {
+      "post": {
+        "summary": "Execute Realtime Tool",
+        "description": "Execute a tool during a realtime voice conversation. Some tools wait for response (blocking), others return immediately (async).",
+        "tags": ["Realtime"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tool_name": {
+                    "description": "Tool name: create, display, or create_async",
+                    "type": "string"
+                  },
+                  "args": {
+                    "description": "Tool arguments",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "session_id": {
+                    "description": "Eden session ID for this conversation",
+                    "type": "string"
+                  }
+                },
+                "required": ["tool_name", "args", "session_id"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["task_id", "status"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/realtime-sessions/start": {
+      "post": {
+        "summary": "Start a billable realtime session",
+        "description": "Starts a new realtime voice session. Requires minimum manna balance. Bills first minute immediately.",
+        "tags": ["Realtime Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agentId": {
+                    "description": "ID of the agent for this realtime session",
+                    "type": "string"
+                  },
+                  "sessionId": {
+                    "description": "Optional existing chat session ID to link to",
+                    "type": "string"
+                  }
+                },
+                "required": ["agentId"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "realtimeSession": {},
+                    "billingConfig": {
+                      "type": "object",
+                      "properties": {
+                        "costPerMinute": {
+                          "type": "number"
+                        },
+                        "billingIntervalSeconds": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["costPerMinute", "billingIntervalSeconds"]
+                    }
+                  },
+                  "required": ["success", "realtimeSession", "billingConfig"]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "currentBalance": {
+                      "type": "number"
+                    },
+                    "minimumRequired": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/realtime-sessions/{realtimeSessionId}": {
+      "get": {
+        "summary": "Get realtime session details",
+        "tags": ["Realtime Sessions"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "realtimeSessionId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "realtimeSession": {}
+                  },
+                  "required": ["realtimeSession"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/realtime-sessions/{realtimeSessionId}/close": {
+      "post": {
+        "summary": "Close a realtime session",
+        "description": "Closes an active realtime session and stops billing.",
+        "tags": ["Realtime Sessions"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "realtimeSessionId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "realtimeSession": {},
+                    "totalMannaBilled": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["success", "realtimeSession", "totalMannaBilled"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/realtime-sessions/{realtimeSessionId}/heartbeat": {
+      "post": {
+        "summary": "Send heartbeat for realtime session",
+        "description": "Updates session activity timestamp. May trigger a billing tick if enough time has passed.",
+        "tags": ["Realtime Sessions"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "realtimeSessionId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "realtimeSession": {},
+                    "billedThisTick": {
+                      "type": "boolean"
+                    },
+                    "totalMinutesBilled": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "realtimeSession",
+                    "billedThisTick",
+                    "totalMinutesBilled"
+                  ]
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "realtimeSession": {}
+                  },
+                  "required": ["message", "realtimeSession"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/sessions": {
       "post": {
         "summary": "Interact with Session",
@@ -4578,8 +6927,8 @@
                       "type": "string"
                     }
                   },
-                  "scenario": {
-                    "maxLength": 1000,
+                  "context": {
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "budget": {
@@ -4606,35 +6955,38 @@
                     "maxLength": 1000,
                     "type": "string"
                   },
-                  "autonomy_settings": {
+                  "session_type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["passive"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["natural"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["automatic"]
+                      }
+                    ]
+                  },
+                  "settings": {
                     "type": "object",
                     "properties": {
-                      "auto_reply": {
-                        "type": "boolean"
+                      "conductor_prompt": {
+                        "maxLength": 2000,
+                        "type": "string"
                       },
-                      "reply_interval": {
+                      "delay_interval": {
                         "minimum": 0,
-                        "maximum": 3600,
+                        "maximum": 86400,
                         "type": "number"
                       },
-                      "actor_selection_method": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "enum": ["random"]
-                          },
-                          {
-                            "type": "string",
-                            "enum": ["random_exclude_last"]
-                          }
-                        ]
+                      "mention_force_reply": {
+                        "type": "boolean"
                       }
-                    },
-                    "required": [
-                      "auto_reply",
-                      "reply_interval",
-                      "actor_selection_method"
-                    ]
+                    }
                   },
                   "extras": {
                     "type": "object",
@@ -4842,6 +7194,281 @@
         }
       }
     },
+    "/v2/sessions/add-message": {
+      "post": {
+        "summary": "Add Passive Message",
+        "description": "Add a message to a session without triggering agent responses. Used for realtime voice conversations where messages are recorded but should not trigger the async prompt flow.",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string"
+                  },
+                  "user_id": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["user"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["assistant"]
+                      }
+                    ]
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": ["session_id", "user_id", "role", "content"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "message_id"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/add-tool-call": {
+      "post": {
+        "summary": "Add Tool Call to Message",
+        "description": "Add or update a tool call on the most recent assistant message in a session. Used for realtime voice conversations where tools are called by the agent.",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string"
+                  },
+                  "user_id": {
+                    "type": "string"
+                  },
+                  "tool_call_id": {
+                    "type": "string"
+                  },
+                  "tool_name": {
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["pending"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["running"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["completed"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["failed"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["cancelled"]
+                      }
+                    ]
+                  },
+                  "result": {},
+                  "error": {
+                    "type": "string"
+                  },
+                  "task_id": {
+                    "type": "string"
+                  }
+                },
+                "required": ["session_id", "user_id", "tool_name"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "tool_call_id": {
+                      "type": "string"
+                    },
+                    "message_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "tool_call_id", "message_id"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/sessions/create": {
       "post": {
         "summary": "Create New Session",
@@ -4860,8 +7487,8 @@
                       "type": "string"
                     }
                   },
-                  "scenario": {
-                    "maxLength": 1000,
+                  "context": {
+                    "maxLength": 5000,
                     "type": "string"
                   },
                   "budget": {
@@ -4888,35 +7515,58 @@
                     "maxLength": 1000,
                     "type": "string"
                   },
-                  "autonomy_settings": {
+                  "session_type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["passive"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["natural"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["automatic"]
+                      }
+                    ]
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["active"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["paused"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["stopped"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["archived"]
+                      }
+                    ]
+                  },
+                  "settings": {
                     "type": "object",
                     "properties": {
-                      "auto_reply": {
-                        "type": "boolean"
+                      "conductor_prompt": {
+                        "maxLength": 2000,
+                        "type": "string"
                       },
-                      "reply_interval": {
+                      "delay_interval": {
                         "minimum": 0,
-                        "maximum": 3600,
+                        "maximum": 86400,
                         "type": "number"
                       },
-                      "actor_selection_method": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "enum": ["random"]
-                          },
-                          {
-                            "type": "string",
-                            "enum": ["random_exclude_last"]
-                          }
-                        ]
+                      "mention_force_reply": {
+                        "type": "boolean"
                       }
-                    },
-                    "required": [
-                      "auto_reply",
-                      "reply_interval",
-                      "actor_selection_method"
-                    ]
+                    }
                   },
                   "extras": {
                     "type": "object",
@@ -4926,7 +7576,8 @@
                       }
                     }
                   }
-                }
+                },
+                "required": ["agent_ids"]
               }
             }
           }
@@ -5011,6 +7662,137 @@
                       "type": "string"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/next-turn": {
+      "post": {
+        "summary": "Trigger Next Turn",
+        "description": "Trigger the next turn immediately in an automatic session, skipping the delay interval.",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string"
+                  }
+                },
+                "required": ["session_id"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "session_id": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
                 }
               }
             }
@@ -5167,6 +7949,12 @@
                         "owner": {},
                         "createdAt": {
                           "type": "string"
+                        },
+                        "child_shares": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
                         }
                       },
                       "required": [
@@ -5375,12 +8163,368 @@
         }
       }
     },
+    "/v2/sessions/status": {
+      "post": {
+        "summary": "Update Session Status",
+        "description": "Update the status of a session (active, paused, stopped, or archived).",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["active"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["paused"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["stopped"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["archived"]
+                      }
+                    ]
+                  }
+                },
+                "required": ["session_id", "status"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/tool-react": {
+      "post": {
+        "summary": "React to Tool Call",
+        "description": "Add a text reaction to a specific tool call within a message.",
+        "tags": ["Sessions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message_id": {
+                    "type": "string"
+                  },
+                  "tool_call_id": {
+                    "type": "string"
+                  },
+                  "reaction": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {}
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {},
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/{sessionId}/triggers": {
+      "get": {
+        "summary": "Get Session Triggers",
+        "description": "Retrieve all triggers for a specific session.",
+        "tags": ["Sessions", "Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "sessionId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "triggers": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["triggers"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/sessions/{session_id}": {
       "get": {
         "summary": "Get Session Details",
-        "description": "Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination.",
+        "description": "Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination. Public sessions can be accessed without authentication if is_public is true. Child sessions can be accessed without authentication if their parent session is public (pass parent_session_id query param).",
         "tags": ["Sessions"],
         "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "parent_session_id",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "required": true,
             "in": "path",
@@ -5420,7 +8564,7 @@
       },
       "patch": {
         "summary": "Update Session",
-        "description": "Update session properties such as title or pinned status.",
+        "description": "Update session properties such as title, pinned status, type, settings, context, and budget.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -5440,11 +8584,105 @@
                 "properties": {
                   "title": {
                     "minLength": 1,
-                    "maxLength": 100,
+                    "maxLength": 1000,
                     "type": "string"
                   },
                   "pinned": {
                     "type": "boolean"
+                  },
+                  "extras": {
+                    "type": "object",
+                    "properties": {
+                      "incognito": {
+                        "type": "boolean"
+                      },
+                      "is_public": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "agent_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "session_type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["passive"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["natural"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["automatic"]
+                      }
+                    ]
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "conductor_prompt": {
+                        "maxLength": 2000,
+                        "type": "string"
+                      },
+                      "delay_interval": {
+                        "minimum": 0,
+                        "maximum": 3600,
+                        "type": "number"
+                      },
+                      "mention_force_reply": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "context": {
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "budget": {
+                    "type": "object",
+                    "properties": {
+                      "manna_budget": {
+                        "minimum": 100,
+                        "maximum": 50000,
+                        "type": "number"
+                      },
+                      "token_budget": {
+                        "minimum": 1000,
+                        "maximum": 1000000,
+                        "type": "number"
+                      },
+                      "turn_budget": {
+                        "minimum": 1,
+                        "maximum": 1000,
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["active"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["paused"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["stopped"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["archived"]
+                      }
+                    ]
                   }
                 }
               }
@@ -5739,7 +8977,7 @@
     "/v2/sessions/{session_id}/messages": {
       "get": {
         "summary": "Get Session Messages (Paginated)",
-        "description": "Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first).",
+        "description": "Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first). Public sessions can be accessed without authentication if is_public is true.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6166,6 +9404,14 @@
                             {
                               "type": "string",
                               "enum": ["owner"]
+                            },
+                            {
+                              "type": "string",
+                              "enum": ["participant"]
+                            },
+                            {
+                              "type": "string",
+                              "enum": ["viewer"]
                             }
                           ]
                         }
@@ -6402,6 +9648,7 @@
                             "type": "string"
                           },
                           "performance": {},
+                          "metadata": {},
                           "result": {},
                           "model": {},
                           "error": {},
@@ -6415,7 +9662,7 @@
                             "type": "string"
                           }
                         },
-                        "required": ["_id", "user", "tool", "args", "status"]
+                        "required": ["_id", "user", "tool", "status"]
                       }
                     },
                     "total": {
@@ -6579,7 +9826,8 @@
                   },
                   "makePublic": {
                     "type": "boolean"
-                  }
+                  },
+                  "metadata": {}
                 }
               }
             }
@@ -6762,6 +10010,7 @@
                           "type": "string"
                         },
                         "performance": {},
+                        "metadata": {},
                         "result": {},
                         "model": {},
                         "error": {},
@@ -6775,7 +10024,7 @@
                           "type": "string"
                         }
                       },
-                      "required": ["_id", "user", "tool", "args", "status"]
+                      "required": ["_id", "user", "tool", "status"]
                     }
                   },
                   "required": ["task"]
@@ -6948,6 +10197,910 @@
           }
         }
       }
+    },
+    "/v2/agents/{agentId}/subscribable-triggers": {
+      "get": {
+        "summary": "Get Agent Subscribable Triggers",
+        "description": "Get all subscribable triggers for a specific agent. Public endpoint.",
+        "tags": ["Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "triggers": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["triggers"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/triggers": {
+      "post": {
+        "summary": "Create Trigger",
+        "description": "Create a new trigger for a session or agent. Either session or agent must be provided.",
+        "tags": ["Triggers"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "session": {
+                    "type": "string"
+                  },
+                  "agent": {
+                    "type": "string"
+                  },
+                  "schedule": {}
+                },
+                "required": ["name", "prompt"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "trigger": {}
+                  },
+                  "required": ["trigger"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get User Triggers",
+        "description": "Retrieve all triggers owned by the authenticated user.",
+        "tags": ["Triggers"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "triggers": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/triggers/{triggerId}": {
+      "patch": {
+        "summary": "Update Trigger",
+        "description": "Update an existing trigger.",
+        "tags": ["Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "triggerId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "schedule": {},
+                  "status": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["active"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["paused"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["finished"]
+                      },
+                      {
+                        "type": "string",
+                        "enum": ["running"]
+                      }
+                    ]
+                  },
+                  "subscribable": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Trigger",
+        "description": "Delete a trigger.",
+        "tags": ["Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "triggerId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/triggers/{triggerId}/subscribe": {
+      "post": {
+        "summary": "Subscribe to Trigger",
+        "description": "Subscribe to a trigger by creating a copy for the current user.",
+        "tags": ["Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "triggerId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "trigger": {}
+                  },
+                  "required": ["trigger"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/triggers/{triggerId}/subscribers": {
+      "get": {
+        "summary": "Get Trigger Subscribers",
+        "description": "Get all users who have subscribed to this trigger. Only the owner can view.",
+        "tags": ["Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "triggerId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subscribers": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "count": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["subscribers", "count"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/user/feedback": {
+      "post": {
+        "summary": "Submit Feedback",
+        "description": "Submit a feedback request that notifies Eden support. Limited to five submissions per day.",
+        "tags": ["User"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "minLength": 5,
+                    "maxLength": 5000,
+                    "type": "string"
+                  },
+                  "subject": {
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "category": {
+                    "maxLength": 120,
+                    "type": "string"
+                  }
+                },
+                "required": ["message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "feedbackId": {
+                      "type": "string"
+                    },
+                    "remainingSubmissionsToday": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "feedbackId",
+                    "remainingSubmissionsToday"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user-preferences/notifications": {
+      "get": {
+        "summary": "Get Notification Preferences",
+        "description": "Get notification preferences for the current user",
+        "tags": ["User Preferences"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notification_preferences": {
+                      "type": "object",
+                      "properties": {
+                        "new_creation": {
+                          "type": "boolean"
+                        },
+                        "new_message": {
+                          "type": "boolean"
+                        },
+                        "session_permissions": {
+                          "type": "boolean"
+                        },
+                        "agent_permissions": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "new_creation",
+                        "new_message",
+                        "session_permissions",
+                        "agent_permissions"
+                      ]
+                    }
+                  },
+                  "required": ["notification_preferences"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Notification Preferences",
+        "description": "Update notification preferences for the current user",
+        "tags": ["User Preferences"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notification_preferences": {
+                    "type": "object",
+                    "properties": {
+                      "new_creation": {
+                        "type": "boolean"
+                      },
+                      "new_message": {
+                        "type": "boolean"
+                      },
+                      "session_permissions": {
+                        "type": "boolean"
+                      },
+                      "agent_permissions": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                "required": ["notification_preferences"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notification_preferences": {
+                      "type": "object",
+                      "properties": {
+                        "new_creation": {
+                          "type": "boolean"
+                        },
+                        "new_message": {
+                          "type": "boolean"
+                        },
+                        "session_permissions": {
+                          "type": "boolean"
+                        },
+                        "agent_permissions": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "new_creation",
+                        "new_message",
+                        "session_permissions",
+                        "agent_permissions"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["notification_preferences", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/verdelis-seeds": {
+      "get": {
+        "summary": "List Verdelis Seeds",
+        "description": "Retrieve a paginated list of verdelis seeds, optionally filtered by agent.",
+        "tags": ["Verdelis Seeds"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "orderBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "docs": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "pages": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pagingCounter": {
+                      "type": "number"
+                    },
+                    "hasPrevPage": {
+                      "type": "boolean"
+                    },
+                    "hasNextPage": {
+                      "type": "boolean"
+                    },
+                    "prevPage": {
+                      "type": "number"
+                    },
+                    "nextPage": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "docs",
+                    "total",
+                    "limit",
+                    "pages",
+                    "page",
+                    "pagingCounter",
+                    "hasPrevPage",
+                    "hasNextPage"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/verdelis-seeds/{seedId}": {
+      "get": {
+        "summary": "Get Verdelis Seed Details",
+        "description": "Retrieve detailed information about a specific verdelis seed by its ID.",
+        "tags": ["Verdelis Seeds"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "seedId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "seed": {}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [
@@ -6991,12 +11144,16 @@
       "description": "Operations related to agents - memory"
     },
     {
-      "name": "Agents - Triggers",
-      "description": "Operations related to agents - triggers"
+      "name": "Agents - Realtime",
+      "description": "Operations related to agents - realtime"
     },
     {
       "name": "API Keys",
       "description": "Operations related to api keys"
+    },
+    {
+      "name": "Artifacts",
+      "description": "Operations related to artifacts"
     },
     {
       "name": "Collections",
@@ -7015,12 +11172,36 @@
       "description": "Operations related to creators"
     },
     {
+      "name": "Exports",
+      "description": "Operations related to exports"
+    },
+    {
+      "name": "LLM Calls",
+      "description": "Operations related to llm calls"
+    },
+    {
       "name": "Manna",
       "description": "Operations related to manna"
     },
     {
+      "name": "MCP",
+      "description": "Operations related to mcp"
+    },
+    {
       "name": "Models",
       "description": "Operations related to models"
+    },
+    {
+      "name": "Notifications",
+      "description": "Operations related to notifications"
+    },
+    {
+      "name": "Realtime",
+      "description": "Operations related to realtime"
+    },
+    {
+      "name": "Realtime Sessions",
+      "description": "Operations related to realtime sessions"
     },
     {
       "name": "Sessions",
@@ -7037,6 +11218,22 @@
     {
       "name": "Tools",
       "description": "Operations related to tools"
+    },
+    {
+      "name": "Triggers",
+      "description": "Operations related to triggers"
+    },
+    {
+      "name": "User",
+      "description": "Operations related to user"
+    },
+    {
+      "name": "User Preferences",
+      "description": "Operations related to user preferences"
+    },
+    {
+      "name": "Verdelis Seeds",
+      "description": "Operations related to verdelis seeds"
     }
   ]
 }

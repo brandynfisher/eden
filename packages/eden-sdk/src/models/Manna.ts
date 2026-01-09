@@ -42,8 +42,11 @@ export type MannaBalanceGetResponse = WebAPICallResult & {
 export type MannaVoucherRedeemResponse = WebAPICallResult & {
   error?: string
   action?: string
-  manna: number
-  transactionId: string
+  success?: boolean
+  manna?: number
+  subscriptionBalance?: number
+  topupAmount?: number
+  transactionId?: string
 }
 
 export type Manna = {

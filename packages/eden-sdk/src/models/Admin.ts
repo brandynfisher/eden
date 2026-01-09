@@ -17,6 +17,8 @@ export interface AdminMannaVouchersCreateArguments extends WebAPICallOptions {
   allowedUserIds?: string[]
   numberOfUses?: number
   code?: string
+  action?: string
+  ttlSeconds?: number
 }
 
 export interface AdminAuthChallengeArguments extends WebAPICallOptions {
