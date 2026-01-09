@@ -145,6 +145,18 @@ import {
   CreationsV2SearchResponse,
   CreationsV2UnlikeArguments,
   CreationsV2UnlikeResponse,
+  ExportsCancelArguments,
+  ExportsCancelResponse,
+  ExportsCreateArguments,
+  ExportsCreateResponse,
+  ExportsDownloadArguments,
+  ExportsDownloadResponse,
+  ExportsEstimateArguments,
+  ExportsEstimateResponse,
+  ExportsGetArguments,
+  ExportsGetResponse,
+  ExportsListArguments,
+  ExportsListResponse,
   FeedCreationsV2CursorArguments,
   FeedCreationsV2CursorResponse,
   GetDiscordChannelsResponse,
@@ -267,6 +279,12 @@ import {
   creationsV2PatchRequestConfig,
   creationsV2SearchRequestConfig,
   creationsV2UnlikeRequestConfig,
+  exportsCancelRequestConfig,
+  exportsCreateRequestConfig,
+  exportsDownloadRequestConfig,
+  exportsEstimateRequestConfig,
+  exportsGetRequestConfig,
+  exportsListRequestConfig,
   feedCursorCreationsV2RequestConfig,
   modelsV2GetRequestConfig,
   modelsV2LikeRequestConfig,
@@ -542,6 +560,33 @@ export abstract class Methods {
       NotificationsArchiveArguments,
       NotificationsArchiveResponse
     >(this, notificationsArchiveRequestConfig),
+  }
+
+  public readonly exports = {
+    create: bindApiCall<ExportsCreateArguments, ExportsCreateResponse>(
+      this,
+      exportsCreateRequestConfig,
+    ),
+    estimate: bindApiCall<ExportsEstimateArguments, ExportsEstimateResponse>(
+      this,
+      exportsEstimateRequestConfig,
+    ),
+    list: bindApiCall<ExportsListArguments, ExportsListResponse>(
+      this,
+      exportsListRequestConfig,
+    ),
+    get: bindApiCall<ExportsGetArguments, ExportsGetResponse>(
+      this,
+      exportsGetRequestConfig,
+    ),
+    download: bindApiCall<ExportsDownloadArguments, ExportsDownloadResponse>(
+      this,
+      exportsDownloadRequestConfig,
+    ),
+    cancel: bindApiCall<ExportsCancelArguments, ExportsCancelResponse>(
+      this,
+      exportsCancelRequestConfig,
+    ),
   }
 
   public readonly agents = {
