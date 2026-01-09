@@ -24,7 +24,11 @@ const formSchema = z.object({
   code: z.string().min(3, { message: 'Code is required' }),
 })
 
-const RedeemVoucherForm = () => {
+type RedeemVoucherFormProps = {
+  onSuccess?: () => void
+}
+
+const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
   const { refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,6 +60,7 @@ const RedeemVoucherForm = () => {
       })
 
       await refetchMe()
+      onSuccess?.()
     } catch (err) {
       console.error(err)
       const errorMessage = axios.isAxiosError(err)

@@ -1,4 +1,3 @@
-import { checkUserFlags } from '../lib/data'
 import { randomId } from '../lib/util'
 import { Manna } from '../models/Manna'
 import {
@@ -8,6 +7,7 @@ import {
 } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
 import { User, UserDocument } from '../models/User'
+import { MannaVoucherRedemption } from '../models/v2/MannaVoucherRedemption'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 import { FeatureFlag, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -63,19 +63,24 @@ interface MannaVoucherCreateRequestBody {
   numberOfUses?: number
   code?: string
   action?: VoucherAction
+  ttlSeconds?: number
 }
 
 const validActions = [
   VoucherAction.AddManna,
   VoucherAction.GrantEden2Access,
   VoucherAction.SubscriptionTrialPro30d,
+  VoucherAction.MarsCollege26,
 ]
+
+const DEFAULT_VOUCHER_TTL_SECONDS = 60 * 60 * 24
+const MARS_COLLEGE_DAILY_MANNA_TARGET = 1000
 
 export const createMannaVoucher = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { allowedUserIds, amount, numberOfUses, code, action } =
+  const { allowedUserIds, amount, numberOfUses, code, action, ttlSeconds } =
     request.body as MannaVoucherCreateRequestBody
 
   if (action) {
@@ -86,32 +91,49 @@ export const createMannaVoucher = async (
     }
   }
 
-  const numVouchers = numberOfUses || 1
+  const maxUses = numberOfUses ?? 1
 
-  if (numVouchers > 1 && !code) {
+  if (maxUses <= 0) {
     return reply.status(400).send({
-      message: 'Code is required if numberOfUses > 1',
+      message: 'numberOfUses must be greater than 0',
     })
   }
 
-  if (numVouchers > 1000) {
+  if (maxUses > 1000) {
     return reply.status(400).send({
-      message: `Maximum numberOfUses is 1000, you requested ${numVouchers}`,
+      message: `Maximum numberOfUses is 1000, you requested ${maxUses}`,
     })
   }
 
-  let newCode
-  for (let i = 0; i < numVouchers; i++) {
-    newCode = code || randomId(16)
-    const mannaVoucher = new MannaVoucher({
-      allowedUserIds: allowedUserIds || null,
-      amount,
-      code: newCode,
-      action,
+  const newCode = code || randomId(16)
+  const expiresInSeconds = ttlSeconds ?? DEFAULT_VOUCHER_TTL_SECONDS
+  if (expiresInSeconds <= 0) {
+    return reply.status(400).send({
+      message: 'ttlSeconds must be greater than 0',
     })
-
-    await mannaVoucher.save()
   }
+
+  const existingVoucher = await MannaVoucher.findOne({
+    code: newCode,
+  }).collation({ locale: 'en', strength: 2 })
+  if (existingVoucher) {
+    return reply.status(400).send({
+      message: `Voucher code ${newCode} already exists`,
+    })
+  }
+
+  const expiresAt = new Date(Date.now() + expiresInSeconds * 1000)
+  const mannaVoucher = new MannaVoucher({
+    allowedUserIds: allowedUserIds || null,
+    amount,
+    code: newCode,
+    action,
+    maxUses,
+    usedCount: 0,
+    expiresAt,
+  })
+
+  await mannaVoucher.save()
 
   return reply.status(200).send({
     code: newCode,
@@ -168,99 +190,90 @@ export const redeemMannaVoucher = async (
     })
   }
 
-  const mannaVouchersAll = await MannaVoucher.findOne({
+  const voucher = await MannaVoucher.findOne({
     code,
-  })
+  }).collation({ locale: 'en', strength: 2 })
 
-  if (!mannaVouchersAll) {
+  if (!voucher) {
     return reply.status(400).send({
       message: `Voucher ${code} not found`,
     })
   }
 
-  const mannaVouchersUsedByUser = await MannaVoucher.find({
-    code: code,
-    redeemedBy: user._id,
-  })
-
-  if (mannaVouchersUsedByUser.length > 0) {
+  if (!voucher.maxUses) {
     return reply.status(400).send({
-      message: `User has already redeemed this voucher`,
+      message: `Voucher ${code} is legacy and no longer supported`,
     })
   }
 
-  const mannaVoucher = await MannaVoucher.findOne({
-    code,
-    used: false,
-  }).collation({
-    locale: 'en',
-    strength: 2,
-  })
-
-  if (!mannaVoucher) {
-    return reply.status(400).send({
-      message: `Manna voucher ${code} already finished`,
-    })
-  }
-
-  if (
-    mannaVoucher.allowedUserIds &&
-    !mannaVoucher.allowedUserIds.includes(user.userId)
-  ) {
-    return reply.status(400).send({
-      message: `User not in allow list of this voucher`,
-    })
-  }
-
-  if (!mannaVoucher.action || mannaVoucher.action === VoucherAction.AddManna) {
-    return handleMannaVoucher(reply, user, mannaVoucher)
-  }
-
-  switch (mannaVoucher.action) {
-    case VoucherAction.GrantEden2Access: {
-      return handleEden2AccessVoucher(reply, user, mannaVoucher)
-    }
-    default:
-      return reply
-        .status(400)
-        .send({ message: `Unhandled voucher action: ${mannaVoucher.action}` })
-  }
+  return redeemMannaVoucherV2(reply, user, voucher)
 }
 
-const handleEden2AccessVoucher = async (
-  reply: FastifyReply,
+type VoucherApplyResult = {
+  action: string
+  success?: boolean
+  manna?: number
+  subscriptionBalance?: number
+  topupAmount?: number
+  transactionId?: string
+}
+
+type VoucherApplyError = {
+  statusCode: number
+  message: string
+}
+
+const createVoucherError = (
+  message: string,
+  statusCode = 400,
+): VoucherApplyError => ({
+  statusCode,
+  message,
+})
+
+const isVoucherApplyError = (error: unknown): error is VoucherApplyError => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'statusCode' in error &&
+    'message' in error
+  )
+}
+
+const isDuplicateKeyError = (error: unknown): boolean => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: number }).code === 11000
+  )
+}
+
+const applyEden2AccessVoucher = async (
   user: UserDocument,
-  voucher: MannaVoucherDocument,
-) => {
-  if (checkUserFlags(user.featureFlags, FeatureFlag.Eden2EarlyAccess)) {
-    return reply
-      .status(400)
-      .send({ message: 'User already has Early Access flag' })
+): Promise<VoucherApplyResult> => {
+  const hasEarlyAccessFlag =
+    user.featureFlags?.includes(FeatureFlag.Eden2EarlyAccess) ?? false
+  if (hasEarlyAccessFlag) {
+    throw createVoucherError('User already has Early Access flag')
   }
 
-  // update user document
   user.featureFlags = [
     ...(user.featureFlags || []),
     FeatureFlag.Eden2EarlyAccess,
   ]
   await user.save()
 
-  // update voucher document
-  voucher.used = true
-  voucher.redeemedBy = user._id
-  await voucher.save()
-
-  return reply.status(200).send({
+  return {
     action: 'Early access granted',
     success: true,
-  })
+  }
 }
 
-const handleMannaVoucher = async (
-  reply: FastifyReply,
+const applyMannaVoucher = async (
   user: UserDocument,
   voucher: MannaVoucherDocument,
-) => {
+): Promise<VoucherApplyResult> => {
   const manna = await Manna.findOne({ user: user._id })
 
   let newBalance
@@ -290,13 +303,173 @@ const handleMannaVoucher = async (
   })
   await transaction.save()
 
-  voucher.used = true
-  voucher.redeemedBy = user._id
-  await voucher.save()
-
-  return reply.status(200).send({
+  return {
     action: 'Manna voucher redeemed',
     manna: newBalance,
     transactionId: transaction._id,
+  }
+}
+
+const applyMarsCollegeVoucher = async (
+  user: UserDocument,
+  voucher: MannaVoucherDocument,
+): Promise<VoucherApplyResult> => {
+  const hasMarsCollegeFlag =
+    user.featureFlags?.includes(FeatureFlag.MarsCollege26) ?? false
+  if (hasMarsCollegeFlag) {
+    throw createVoucherError('User already has Mars College flag')
+  }
+
+  user.featureFlags = [...(user.featureFlags || []), FeatureFlag.MarsCollege26]
+  await user.save()
+
+  const manna = await Manna.findOne({ user: user._id })
+
+  let transactionId: string | undefined
+  let subscriptionBalance = MARS_COLLEGE_DAILY_MANNA_TARGET
+  let topupAmount = MARS_COLLEGE_DAILY_MANNA_TARGET
+  let mannaId
+
+  if (!manna) {
+    const newManna = new Manna({
+      user: user._id,
+      subscriptionBalance: MARS_COLLEGE_DAILY_MANNA_TARGET,
+    })
+    subscriptionBalance = newManna.subscriptionBalance
+    mannaId = newManna._id
+    await newManna.save()
+  } else {
+    const currentBalance = manna.subscriptionBalance ?? 0
+    if (currentBalance >= MARS_COLLEGE_DAILY_MANNA_TARGET) {
+      subscriptionBalance = currentBalance
+      topupAmount = 0
+    } else {
+      topupAmount = MARS_COLLEGE_DAILY_MANNA_TARGET - currentBalance
+      manna.subscriptionBalance = MARS_COLLEGE_DAILY_MANNA_TARGET
+      subscriptionBalance = manna.subscriptionBalance
+      await manna.save()
+    }
+    mannaId = manna._id
+  }
+
+  if (topupAmount > 0) {
+    const transaction = new Transaction({
+      manna: mannaId,
+      amount: topupAmount,
+      type: 'daily_topup_mars_college_26',
+      voucher: voucher._id,
+      code: voucher.code,
+    })
+    await transaction.save()
+    transactionId = transaction._id
+  }
+
+  return {
+    action: 'Mars College access granted',
+    success: true,
+    subscriptionBalance,
+    topupAmount,
+    transactionId,
+  }
+}
+
+const applyVoucherAction = async (
+  user: UserDocument,
+  voucher: MannaVoucherDocument,
+): Promise<VoucherApplyResult> => {
+  if (!voucher.action || voucher.action === VoucherAction.AddManna) {
+    return applyMannaVoucher(user, voucher)
+  }
+
+  switch (voucher.action) {
+    case VoucherAction.GrantEden2Access: {
+      return applyEden2AccessVoucher(user)
+    }
+    case VoucherAction.MarsCollege26: {
+      return applyMarsCollegeVoucher(user, voucher)
+    }
+    default:
+      throw createVoucherError(`Unhandled voucher action: ${voucher.action}`)
+  }
+}
+
+const redeemMannaVoucherV2 = async (
+  reply: FastifyReply,
+  user: UserDocument,
+  voucher: MannaVoucherDocument,
+) => {
+  const now = new Date()
+  const maxUses = voucher.maxUses ?? 0
+
+  if (voucher.expiresAt && voucher.expiresAt <= now) {
+    return reply.status(400).send({
+      message: `Voucher ${voucher.code} expired`,
+    })
+  }
+
+  if (maxUses <= 0) {
+    return reply.status(400).send({
+      message: `Voucher ${voucher.code} is not configured for redemption`,
+    })
+  }
+
+  if (voucher.allowedUserIds && !voucher.allowedUserIds.includes(user.userId)) {
+    return reply.status(400).send({
+      message: `User not in allow list of this voucher`,
+    })
+  }
+
+  const existingRedemption = await MannaVoucherRedemption.findOne({
+    voucher: voucher._id,
+    user: user._id,
   })
+  if (existingRedemption) {
+    return reply.status(400).send({
+      message: `User has already redeemed this voucher`,
+    })
+  }
+
+  const claimQuery: Record<string, unknown> = {
+    _id: voucher._id,
+    maxUses: { $exists: true },
+    usedCount: { $lt: maxUses },
+  }
+  if (voucher.expiresAt) {
+    claimQuery.expiresAt = { $gt: now }
+  }
+
+  const claimedVoucher = await MannaVoucher.findOneAndUpdate(
+    claimQuery,
+    { $inc: { usedCount: 1 } },
+    { new: true },
+  )
+  if (!claimedVoucher) {
+    return reply.status(400).send({
+      message: `Manna voucher ${voucher.code} already finished`,
+    })
+  }
+
+  try {
+    const result = await applyVoucherAction(user, voucher)
+    await MannaVoucherRedemption.create({
+      voucher: voucher._id,
+      user: user._id,
+      code: voucher.code,
+    })
+    return reply.status(200).send(result)
+  } catch (error) {
+    await MannaVoucher.updateOne(
+      { _id: voucher._id },
+      { $inc: { usedCount: -1 } },
+    )
+    if (isVoucherApplyError(error)) {
+      return reply.status(error.statusCode).send({ message: error.message })
+    }
+    if (isDuplicateKeyError(error)) {
+      return reply.status(400).send({
+        message: `User has already redeemed this voucher`,
+      })
+    }
+    throw error
+  }
 }

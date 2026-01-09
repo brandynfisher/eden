@@ -53,6 +53,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
           numberOfUses: Type.Optional(Type.Number()),
           code: Type.Optional(Type.String()),
           action: Type.Optional(Type.String()),
+          ttlSeconds: Type.Optional(Type.Number()),
         }),
       },
       response: {

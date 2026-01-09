@@ -182,7 +182,6 @@ export const listAgents = async (
     }
   }
 
-  // Filter by username if provided
   if (username) {
     // Handle single username or array of usernames
     const usernames = Array.isArray(username) ? username : [username]

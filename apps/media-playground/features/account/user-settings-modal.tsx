@@ -1,6 +1,7 @@
 'use client'
 
 import ApiKeysCard from './api-keys-card'
+import DataExportsTab from './data-exports-tab'
 import DeleteAccountCard from './delete-account-card'
 import ManageAccountCard from './manage-account-card'
 import MannaCard from './manna-card'
@@ -41,6 +42,7 @@ import { SessionShare } from '@edenlabs/eden-sdk'
 import {
   CircleUserIcon,
   CreditCardIcon,
+  DatabaseIcon,
   ExternalLink,
   KeyIcon,
   LinkIcon,
@@ -335,6 +337,12 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
         icon: Share2Icon,
         section: 'General',
       },
+      {
+        key: 'data',
+        label: 'Data',
+        icon: DatabaseIcon,
+        section: 'General',
+      },
     ]
 
     tabs.push({
@@ -530,6 +538,13 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
                       Session Shares
                     </h3>
                     <SharesTab />
+                  </div>
+                )}
+
+                {activeTab === 'data' && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Data Exports</h3>
+                    <DataExportsTab />
                   </div>
                 )}
 

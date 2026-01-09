@@ -26,9 +26,9 @@ const ToggleButton = ({
       title={!disabled ? `Set ${labelString || label}` : undefined}
       onClick={!disabled ? onClick : undefined}
       className={cn([
-        'flex items-center h-7 w-12 text-xs rounded-md justify-center px-2',
+        'flex items-center h-8 min-w-[72px] text-xs rounded-md justify-center px-3',
         disabled
-          ? 'cursor-auto !bg-secondary-foreground/10 h-8 !text-popover-foreground/75 border-opacity-30 border border-popover-foreground'
+          ? 'cursor-auto !bg-secondary-foreground/10 !text-popover-foreground/75 border-opacity-30 border border-popover-foreground'
           : 'bg-transparent text-muted-foreground hover:!bg-muted/50 first:rounded-r-none last:rounded-l-none hover:!text-primary data-[state=on]:!bg-primary data-[state=on]:!text-primary-foreground',
         className,
       ])}
