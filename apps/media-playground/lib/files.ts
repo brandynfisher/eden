@@ -432,6 +432,10 @@ export function convertBytes(
     throw new Error(`Invalid decimals ${decimals}`)
   }
 
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return '0 Bytes'
+  }
+
   const base = useBinaryUnits ? 1024 : 1000
   const units = useBinaryUnits
     ? ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']

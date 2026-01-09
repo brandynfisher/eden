@@ -40,6 +40,7 @@ import { CollectionV2Document } from './v2/CollectionV2'
 import { CollectionV2 } from './v2/CollectionV2'
 import { CreationLikeV2, CreationLikeV2Document } from './v2/CreationLikeV2'
 import { CreationV2, CreationV2Document } from './v2/CreationV2'
+import { DataExportDocument, DataExportV2 } from './v2/DataExportV2'
 import { Message, MessageDocument } from './v2/Message'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import {
@@ -75,6 +76,7 @@ export interface Database {
   Creation: Model<CreationDocument>
   CreationV2: Model<CreationV2Document>
   CreationLikeV2: Model<CreationLikeV2Document>
+  DataExportV2: Model<DataExportDocument>
   Deployment: Model<DeploymentDocument>
   Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
@@ -120,6 +122,7 @@ export const models: Database = {
   Creation,
   CreationV2,
   CreationLikeV2,
+  DataExportV2,
   Concept,
   Deployment,
   ModelV2,

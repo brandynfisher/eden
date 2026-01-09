@@ -2,7 +2,9 @@ import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { CreatorsGetMeResponse, SubscriptionTier } from '@edenlabs/eden-sdk'
 import isNumber from 'lodash/isNumber'
 
-export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
+export const useMe = ({
+  isAuthenticated,
+}: { isAuthenticated?: boolean } = {}) => {
   const {
     creator: currentUser,
     balance,
