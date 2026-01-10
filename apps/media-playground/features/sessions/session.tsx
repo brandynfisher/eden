@@ -63,7 +63,14 @@ import {
   useRouter,
   useSearchParams,
 } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 const PlatformIcon = ({
   platform,
@@ -140,6 +147,8 @@ const Session = ({
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const isNearBottomRef = useRef(true)
+  const previousScrollHeightRef = useRef(0)
   const { user, isSignedIn } = useAuthState()
   const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
     GatedResource.SessionSettings,
@@ -999,7 +1008,7 @@ const Session = ({
   }, [streamingState.streamingAgent, displaySession?.agents])
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [])
 
   // Scroll to a specific message by ID
@@ -1024,52 +1033,6 @@ const Session = ({
   // Track previous message count to detect new messages vs older messages
   const previousMessageCountRef = useRef<number>(0)
 
-  // Scroll to bottom on initial load and new messages (but not when loading older messages)
-  useEffect(() => {
-    const currentMessageCount = displaySession?.messages?.length || 0
-    const previousMessageCount = previousMessageCountRef.current
-
-    if (
-      !hasTriggeredInitialScroll &&
-      displaySession?.messages &&
-      currentMessageCount > 0
-    ) {
-      setHasTriggeredInitialScroll(true)
-      // Delay to ensure DOM has rendered
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
-      }, 100)
-      previousMessageCountRef.current = currentMessageCount
-    } else if (
-      hasTriggeredInitialScroll &&
-      currentMessageCount > previousMessageCount &&
-      !isLoadingOlderMessages
-    ) {
-      // Only scroll if message count increased AND we're not loading older messages
-      // Check if we're near the bottom already (user is viewing recent messages)
-      const container = messagesContainerRef.current
-      if (container) {
-        const hasScrollbar = container.scrollHeight > container.clientHeight
-        const distanceFromBottom =
-          container.scrollHeight - container.scrollTop - container.clientHeight
-        const isNearBottom = hasScrollbar && distanceFromBottom < 200
-
-        if (isNearBottom) {
-          scrollToBottom()
-        }
-      }
-      previousMessageCountRef.current = currentMessageCount
-    } else {
-      // Update count even if we didn't scroll
-      previousMessageCountRef.current = currentMessageCount
-    }
-  }, [
-    displaySession?.messages,
-    scrollToBottom,
-    hasTriggeredInitialScroll,
-    isLoadingOlderMessages,
-  ])
-
   // Handle scroll to detect when user scrolls near top for reverse pagination
   useEffect(() => {
     const container = messagesContainerRef.current
@@ -1080,6 +1043,10 @@ const Session = ({
     const handleScroll = async () => {
       const scrollTop = container.scrollTop
       const clientHeight = container.clientHeight
+      const distanceFromBottom =
+        container.scrollHeight - scrollTop - clientHeight
+
+      isNearBottomRef.current = distanceFromBottom < 200
 
       // Trigger when we're within 2 viewports from the top (aggressive pre-loading)
       const scrollThreshold = clientHeight * 2
@@ -1128,6 +1095,49 @@ const Session = ({
     fetchOlderMessages,
     getPaginationData,
     displaySession,
+  ])
+
+  // Unified scroll handling: initial scroll and new message scroll.
+  useLayoutEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const currentMessageCount = displaySession?.messages?.length || 0
+    const previousMessageCount = previousMessageCountRef.current
+    const nextScrollHeight = container.scrollHeight
+    const countIncreased = currentMessageCount > previousMessageCount
+
+    if (!hasTriggeredInitialScroll && currentMessageCount > 0) {
+      setHasTriggeredInitialScroll(true)
+      // Delay to ensure DOM has rendered
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+      }, 100)
+      previousMessageCountRef.current = currentMessageCount
+      previousScrollHeightRef.current = nextScrollHeight
+      return
+    }
+
+    if (
+      hasTriggeredInitialScroll &&
+      countIncreased &&
+      !isLoadingOlderMessages
+    ) {
+      if (isNearBottomRef.current) {
+        scrollToBottom()
+      }
+      previousMessageCountRef.current = currentMessageCount
+      previousScrollHeightRef.current = nextScrollHeight
+      return
+    }
+
+    previousMessageCountRef.current = currentMessageCount
+    previousScrollHeightRef.current = nextScrollHeight
+  }, [
+    displaySession?.messages,
+    hasTriggeredInitialScroll,
+    isLoadingOlderMessages,
+    scrollToBottom,
   ])
 
   // Separate effect for streaming text to avoid double scroll
