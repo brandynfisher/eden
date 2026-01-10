@@ -29,12 +29,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: eden/package-lock.json
+          cache: 'yarn'
+          cache-dependency-path: eden/yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         working-directory: eden
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
+
+      - name: Build eden-sdk
+        working-directory: eden
+        run: yarn workspace @edenlabs/eden-sdk build
 
       - name: Generate OpenAPI specification
         working-directory: eden/apps/api

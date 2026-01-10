@@ -2,7 +2,7 @@ import { MannaDocument } from './Manna'
 import { MannaVoucherDocument } from './MannaVoucher'
 import { TaskDocument } from './Task'
 import { TransactionType } from '@edenlabs/eden-sdk'
-import { Document, Schema, model } from 'mongoose'
+import mongoose, { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 import Stripe from 'stripe'
 
@@ -69,7 +69,6 @@ transaction.index(
 )
 transaction.plugin(paginate)
 
-export const Transaction = model<TransactionDocument>(
-  'transactions',
-  transaction,
-)
+export const Transaction =
+  (mongoose.models.transactions as mongoose.Model<TransactionDocument>) ||
+  model<TransactionDocument>('transactions', transaction)
