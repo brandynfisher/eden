@@ -268,11 +268,18 @@ export const disconnectDiscord = async (
   await user.save()
 
   if (discordId) {
-    await unlinkUserIdentity({
-      provider: 'discord',
-      provider_user_id: discordId.toString(),
-      actor_eden_user_id: user.eden_user_id ?? user._id,
-    })
+    try {
+      await unlinkUserIdentity({
+        provider: 'discord',
+        provider_user_id: discordId.toString(),
+        actor_eden_user_id: user.eden_user_id ?? user._id,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (!message.includes('does not exist and cannot be unlinked')) {
+        throw error
+      }
+    }
 
     await CreationV2.updateMany(
       {

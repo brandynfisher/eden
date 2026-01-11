@@ -24,6 +24,9 @@ export interface CreationV2Schema extends MediaOutput {
   }
   likeCount?: number
   isLiked?: boolean
+  mediaAttributes?: MediaOutput['mediaAttributes'] & {
+    fileSize?: number
+  }
 }
 
 export interface CreationV2Input extends MediaOutput {
@@ -34,6 +37,9 @@ export interface CreationV2Input extends MediaOutput {
   args: TaskV2Args
   tool: string
   metadata?: string | null
+  mediaAttributes?: MediaOutput['mediaAttributes'] & {
+    fileSize?: number
+  }
 }
 
 export interface CreationV2Document
@@ -113,6 +119,9 @@ export const creationSchema = new Schema<CreationV2Document>(
       },
       blurhash: {
         type: String,
+      },
+      fileSize: {
+        type: Number,
       },
     },
     deleted: {
