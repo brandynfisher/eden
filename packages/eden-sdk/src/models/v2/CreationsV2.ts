@@ -255,6 +255,7 @@ export type CreationV2 = MediaOutput & {
   likeCount?: number
   isLiked?: boolean
   artifactCaption?: string
+  mediaAttributes?: MediaOutput['mediaAttributes'] & { fileSize?: number }
 }
 
 export interface CreationV2Attributes {

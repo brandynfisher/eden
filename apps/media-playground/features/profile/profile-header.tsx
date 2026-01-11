@@ -7,7 +7,7 @@ import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Creator } from '@edenlabs/eden-sdk'
 import { InstagramLogoIcon } from '@radix-ui/react-icons'
-import { ImageIcon, LinkIcon, UserIcon } from 'lucide-react'
+import { ImageIcon, LinkIcon, PencilIcon, UserIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
@@ -53,9 +53,20 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
         {/* Info */}
         <div className="flex flex-col flex-1 min-w-0 justify-center">
           {/* Name */}
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold tracking-tight truncate">
-            {name}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold tracking-tight truncate">
+              {name}
+            </h1>
+            {user?._id === creator?._id && (
+              <button
+                onClick={() => router.push('/settings/account')}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Edit profile"
+              >
+                <PencilIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
+          </div>
 
           {/* Meta Row: all stats inline with dots */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 sm:mt-4 text-xs sm:text-sm text-muted-foreground">

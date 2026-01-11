@@ -2,6 +2,7 @@ import {
   DATA_EXPORTS,
   DEFAULT_EXPORT_FILTERS,
 } from '../../constants/exportConstants'
+import { Agent } from '../../models/Agent'
 import { Notification } from '../../models/Notification'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import {
@@ -40,6 +41,12 @@ type ExportEstimate = {
   creations: number
   files: number
   bytes: number
+}
+
+type ExportMediaFile = {
+  key: string
+  creationId: string
+  fileSize?: number
 }
 
 const VALID_MEDIA_TYPES: DataExportMediaType[] = ['images', 'videos', 'audio']
@@ -209,7 +216,7 @@ const estimateExport = async (
   const includeCreations = mediaTypes.length > 0
   const creations = includeCreations
     ? await CreationV2.find(creationQuery)
-        .select({ _id: 1, filename: 1, url: 1 })
+        .select({ _id: 1, filename: 1, url: 1, 'mediaAttributes.fileSize': 1 })
         .lean()
     : []
 
@@ -223,9 +230,10 @@ const estimateExport = async (
           return {
             key,
             creationId: creation._id?.toString() || '',
+            fileSize: creation.mediaAttributes?.fileSize,
           }
         })
-        .filter(Boolean) as { key: string; creationId: string }[])
+        .filter(Boolean) as ExportMediaFile[])
     : []
 
   const estimate: ExportEstimate = {
@@ -249,7 +257,7 @@ const estimateExport = async (
   }
 
   let totalBytes = 0
-  const missingFiles: string[] = []
+  let missingFiles: string[] = []
   if (includeMediaFiles && files.length) {
     const bucket = server.config.AWS_S3_BUCKET
     if (!bucket) {
@@ -257,26 +265,9 @@ const estimateExport = async (
         message: 'Storage not configured for exports.',
       })
     }
-    const limit = pLimit(DATA_EXPORTS.HEAD_CONCURRENCY)
-    const sizes = await Promise.all(
-      files.map(file =>
-        limit(async () => {
-          try {
-            const head = await server.s3
-              .headObject({
-                Bucket: bucket,
-                Key: file.key,
-              })
-              .promise()
-            return head.ContentLength || 0
-          } catch {
-            missingFiles.push(file.creationId)
-            return 0
-          }
-        }),
-      ),
-    )
-    totalBytes = sizes.reduce((sum, size) => sum + size, 0)
+    const sizeResult = await sumExportFileSizes(server, bucket, files)
+    totalBytes = sizeResult.totalBytes
+    missingFiles = sizeResult.missingFiles
   }
 
   estimate.bytes = includeMediaFiles ? totalBytes : 0
@@ -328,6 +319,479 @@ const extractS3Key = (value?: string | null) => {
     }
   }
   return value.replace(/^\//, '')
+}
+
+const sumExportFileSizes = async <T extends ExportMediaFile>(
+  server: FastifyInstance,
+  bucket: string,
+  files: T[],
+) => {
+  let totalBytes = 0
+  const missingFiles: string[] = []
+  const missingSizeFiles: T[] = []
+
+  for (const file of files) {
+    const size = file.fileSize
+    if (typeof size === 'number' && Number.isFinite(size)) {
+      totalBytes += size
+    } else {
+      missingSizeFiles.push(file)
+    }
+  }
+
+  if (!missingSizeFiles.length) {
+    return { totalBytes, missingFiles }
+  }
+
+  const limit = pLimit(DATA_EXPORTS.HEAD_CONCURRENCY)
+  const sizes = await Promise.all(
+    missingSizeFiles.map(file =>
+      limit(async () => {
+        try {
+          const head = await server.s3
+            .headObject({
+              Bucket: bucket,
+              Key: file.key,
+            })
+            .promise()
+          return head.ContentLength || 0
+        } catch {
+          missingFiles.push(file.creationId)
+          return 0
+        }
+      }),
+    ),
+  )
+
+  totalBytes += sizes.reduce((sum, size) => sum + size, 0)
+  return { totalBytes, missingFiles }
+}
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const safeJsonStringify = (value: unknown) => {
+  try {
+    return JSON.stringify(
+      value,
+      (_key, val) => (typeof val === 'bigint' ? val.toString() : val),
+      2,
+    )
+  } catch {
+    return String(value)
+  }
+}
+
+const formatTimestamp = (value?: Date | string | null) => {
+  if (!value) {
+    return ''
+  }
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  return date.toISOString()
+}
+
+const formatAttachmentName = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return ''
+  }
+  const lastPart = trimmed.split('/').pop()
+  return lastPart || trimmed
+}
+
+const buildToolMessageMap = (messages: any[]) => {
+  const map = new Map<string, any>()
+  for (const message of messages) {
+    if (message?.role !== 'tool') {
+      continue
+    }
+    const key = message.tool_call_id || message.name
+    if (key) {
+      map.set(key, message)
+    }
+  }
+  return map
+}
+
+const hydrateAgentNames = async (
+  agentIds: string[],
+  agentNameMap: Map<string, string>,
+) => {
+  const uniqueIds = Array.from(new Set(agentIds)).filter(id => id)
+  const pendingIds = uniqueIds.filter(
+    id => !agentNameMap.has(id) && ObjectId.isValid(id),
+  )
+  if (!pendingIds.length) {
+    return
+  }
+
+  const agents = await Agent.find({
+    _id: { $in: pendingIds.map(id => new ObjectId(id)) },
+  })
+    .select({ _id: 1, name: 1 })
+    .lean()
+
+  for (const agent of agents) {
+    agentNameMap.set(agent._id.toString(), agent.name || 'Assistant')
+  }
+}
+
+const resolveMessageRoleLabel = (
+  message: any,
+  agentNameMap: Map<string, string>,
+) => {
+  const role = message?.role || 'user'
+  if (role === 'assistant') {
+    const senderId = message?.sender ? String(message.sender) : ''
+    return agentNameMap.get(senderId) || 'Assistant'
+  }
+  if (role === 'user') {
+    return 'User'
+  }
+  return String(role).toUpperCase()
+}
+
+const resolveSenderNameSuffix = (message: any) => {
+  const senderName = message?.sender_name
+  if (!senderName || typeof senderName !== 'string') {
+    return ''
+  }
+  const trimmed = senderName.trim()
+  if (!trimmed) {
+    return ''
+  }
+  return ` - ${trimmed}`
+}
+
+const buildToolCallHtml = (toolCall: any, toolMessage?: any) => {
+  const toolName = toolCall?.tool || toolCall?.name || 'tool'
+  const status = toolCall?.status || 'pending'
+  const args = toolCall?.args
+  let result = toolCall?.result
+  let error = toolCall?.error
+  let statusOverride = toolCall?.status
+
+  if (toolMessage?.content) {
+    try {
+      const parsed = JSON.parse(toolMessage.content)
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.result !== undefined) {
+          result = parsed.result
+        }
+        if (parsed.error) {
+          error = parsed.error
+        }
+        if (parsed.status) {
+          statusOverride = parsed.status
+        }
+      }
+    } catch {
+      // Keep fallback content below.
+      if (!result) {
+        result = toolMessage.content
+      }
+    }
+  }
+
+  const statusClass = `status-${String(statusOverride || status)}`
+  const html: string[] = []
+  html.push('<div class="tool-call">')
+  html.push(`<span class="tool-name">${escapeHtml(String(toolName))}</span>`)
+  html.push(
+    `<span class="tool-status ${escapeHtml(statusClass)}">${escapeHtml(
+      String(statusOverride || status),
+    )}</span>`,
+  )
+  if (args && Object.keys(args).length) {
+    html.push(
+      `<div>Args: <pre>${escapeHtml(safeJsonStringify(args))}</pre></div>`,
+    )
+  }
+  if (error) {
+    html.push(
+      `<div class="tool-error">Error: ${escapeHtml(String(error))}</div>`,
+    )
+  }
+  if (result !== undefined) {
+    const resultString =
+      typeof result === 'string' ? result : safeJsonStringify(result)
+    html.push(
+      `<div class="tool-result"><pre>${escapeHtml(resultString)}</pre></div>`,
+    )
+  }
+  html.push('</div>')
+  return html.join('')
+}
+
+const renderSessionSection = (
+  session: any,
+  messages: any[],
+  options: {
+    exportId: string
+    frontendUrl?: string | null
+    agentNameMap: Map<string, string>
+  },
+) => {
+  const sessionTitle = session?.title || 'Untitled Session'
+  const createdAt = formatTimestamp(session?.createdAt)
+  const updatedAt = formatTimestamp(session?.updatedAt)
+  const sessionId = session?._id?.toString() || ''
+  const frontendUrl = options.frontendUrl
+    ? options.frontendUrl.replace(/\/+$/, '')
+    : null
+  const sessionLink = frontendUrl ? `${frontendUrl}/sessions/${sessionId}` : ''
+  const toolMessageMap = buildToolMessageMap(messages)
+
+  const html: string[] = []
+  html.push('<div class="session">')
+  html.push('<div class="session-header">')
+  if (sessionLink) {
+    html.push(
+      `<div class="session-title"><a href="${escapeHtml(
+        sessionLink,
+      )}" target="_blank" rel="noopener noreferrer">${escapeHtml(
+        String(sessionTitle),
+      )}</a></div>`,
+    )
+  } else {
+    html.push(
+      `<div class="session-title">${escapeHtml(String(sessionTitle))}</div>`,
+    )
+  }
+  html.push(
+    `<div class="session-meta">Session ID: ${escapeHtml(String(sessionId))}${
+      createdAt ? ` | Created: ${escapeHtml(createdAt)}` : ''
+    }${updatedAt ? ` | Updated: ${escapeHtml(updatedAt)}` : ''}</div>`,
+  )
+  html.push(
+    `<div class="session-meta">Export ID: ${escapeHtml(
+      String(options.exportId),
+    )}</div>`,
+  )
+  html.push('</div>')
+
+  const visibleMessages = messages.filter(
+    message => !['eden', 'tool'].includes(message?.role),
+  )
+
+  if (!visibleMessages.length) {
+    html.push('<div class="message">No messages in this session.</div>')
+  }
+
+  for (const message of visibleMessages) {
+    const role = message?.role || 'user'
+    const roleClass = `message-${role}`
+    const content = message?.content || ''
+    const timestamp = formatTimestamp(message?.createdAt)
+    const toolCalls = Array.isArray(message?.tool_calls)
+      ? message.tool_calls
+      : []
+    const roleLabel = resolveMessageRoleLabel(message, options.agentNameMap)
+    const senderSuffix = resolveSenderNameSuffix(message)
+
+    html.push(`<div class="message ${escapeHtml(roleClass)}">`)
+    html.push('<div class="message-header">')
+    html.push(
+      `<span>${escapeHtml(String(roleLabel))}${escapeHtml(
+        senderSuffix,
+      )}</span>`,
+    )
+    if (timestamp) {
+      html.push(`<span class="timestamp">${escapeHtml(timestamp)}</span>`)
+    }
+    html.push('</div>')
+    html.push(`<div class="message-content">${escapeHtml(content)}</div>`)
+
+    if (Array.isArray(message?.attachments) && message.attachments.length) {
+      html.push('<div class="attachments"><strong>Attachments:</strong><br />')
+      for (const attachment of message.attachments) {
+        const name = formatAttachmentName(String(attachment))
+        html.push(
+          `<a class="attachment-link" href="${escapeHtml(
+            String(attachment),
+          )}">${escapeHtml(name || String(attachment))}</a>`,
+        )
+      }
+      html.push('</div>')
+    }
+
+    if (toolCalls.length) {
+      html.push('<div class="tool-calls"><strong>Tool Calls:</strong>')
+      for (const toolCall of toolCalls) {
+        const toolCallId =
+          toolCall?.id || toolCall?.tool_call_id || toolCall?.name
+        const toolMessage = toolCallId
+          ? toolMessageMap.get(toolCallId)
+          : undefined
+        html.push(buildToolCallHtml(toolCall, toolMessage))
+      }
+      html.push('</div>')
+    }
+
+    html.push('</div>')
+  }
+
+  return html.join('')
+}
+
+const buildHtmlShell = (title: string, bodyContent: string) => {
+  const html: string[] = []
+  html.push('<!DOCTYPE html>')
+  html.push('<html lang="en">')
+  html.push('<head>')
+  html.push('<meta charset="UTF-8" />')
+  html.push(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+  )
+  html.push(`<title>${escapeHtml(title)}</title>`)
+  html.push('<style>')
+  html.push(`
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.6; color: #1f2933; max-width: 960px; margin: 0 auto; padding: 24px; background: #f5f7fa; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .session { background: #ffffff; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+    .session-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px; }
+    .session-title { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
+    .session-meta { font-size: 0.9rem; color: #6b7280; margin-top: 4px; }
+    .message { margin-bottom: 16px; padding: 16px; border-radius: 10px; background: #f8fafc; }
+    .message-user { background: #e0f2fe; }
+    .message-assistant { background: #f8fafc; }
+    .message-system { background: #fff7ed; }
+    .message-header { font-weight: 600; margin-bottom: 8px; color: #334155; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .message-content { white-space: pre-wrap; word-wrap: break-word; }
+    .timestamp { color: #94a3b8; font-size: 0.85rem; }
+    .attachments { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+    .attachment-link { display: inline-block; margin-right: 10px; margin-bottom: 6px; color: #2563eb; text-decoration: none; }
+    .attachment-link:hover { text-decoration: underline; }
+    .tool-calls { margin-top: 12px; padding: 12px; background: #f1f5f9; border-radius: 8px; }
+    .tool-call { margin-top: 8px; padding: 10px; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .tool-name { font-weight: 600; color: #0f172a; }
+    .tool-status { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 0.8rem; background: #e2e8f0; color: #334155; }
+    .status-completed { background: #dcfce7; color: #166534; }
+    .status-failed { background: #fee2e2; color: #991b1b; }
+    .status-pending { background: #fef9c3; color: #92400e; }
+    .tool-result pre, .tool-call pre { margin: 8px 0 0 0; padding: 10px; background: #f8fafc; border-radius: 6px; overflow-x: auto; }
+    .tool-error { color: #b91c1c; margin-top: 6px; }
+  `)
+  html.push('</style>')
+  html.push('</head>')
+  html.push('<body>')
+  html.push(bodyContent)
+  html.push('</body>')
+  html.push('</html>')
+  return html.join('')
+}
+
+const buildSessionHtml = (
+  session: any,
+  messages: any[],
+  options: {
+    exportId: string
+    frontendUrl?: string | null
+    agentNameMap: Map<string, string>
+  },
+) => {
+  const body = renderSessionSection(session, messages, options)
+  return buildHtmlShell(`Eden Export - ${session?.title || 'Session'}`, body)
+}
+
+const buildSessionsIndexHtml = (
+  sessions: Array<{ id: string; title: string; createdAt?: Date | string }>,
+  exportId: string,
+  frontendUrl?: string | null,
+) => {
+  const normalizedUrl = frontendUrl ? frontendUrl.replace(/\/+$/, '') : ''
+  const html: string[] = []
+  html.push('<!DOCTYPE html>')
+  html.push('<html lang="en">')
+  html.push('<head>')
+  html.push('<meta charset="UTF-8" />')
+  html.push(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+  )
+  html.push('<title>Eden Export Sessions</title>')
+  html.push('<style>')
+  html.push(`
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.6; color: #1f2933; max-width: 960px; margin: 0 auto; padding: 24px; background: #f5f7fa; }
+    h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    ul { list-style: none; padding: 0; }
+    li { background: #ffffff; border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+    a { color: #2563eb; text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+    .meta { color: #6b7280; font-size: 0.9rem; margin-top: 4px; }
+  `)
+  html.push('</style>')
+  html.push('</head>')
+  html.push('<body>')
+  html.push('<h1>Session Export</h1>')
+  html.push(`<div class="meta">Export ID: ${escapeHtml(exportId)}</div>`)
+  html.push(
+    '<div class="meta"><a href="./all.html">View all sessions</a></div>',
+  )
+  html.push('<ul>')
+  for (const session of sessions) {
+    const createdAt = formatTimestamp(session.createdAt)
+    const appLink = normalizedUrl
+      ? `${normalizedUrl}/sessions/${session.id}`
+      : ''
+    html.push('<li>')
+    html.push(
+      `<a href="./${escapeHtml(session.id)}.html">${escapeHtml(
+        session.title || session.id,
+      )}</a>`,
+    )
+    html.push(
+      `<div class="meta">Session ID: ${escapeHtml(session.id)}${
+        createdAt ? ` | Created: ${escapeHtml(createdAt)}` : ''
+      }</div>`,
+    )
+    if (appLink) {
+      html.push(
+        `<div class="meta"><a href="${escapeHtml(
+          appLink,
+        )}" target="_blank" rel="noopener noreferrer">Open in Eden</a></div>`,
+      )
+    }
+    html.push('</li>')
+  }
+  html.push('</ul>')
+  html.push('</body>')
+  html.push('</html>')
+  return html.join('')
+}
+
+const buildAllSessionsHtml = (
+  sessions: Array<{
+    session: any
+    messages: any[]
+  }>,
+  exportId: string,
+  frontendUrl: string | null,
+  agentNameMap: Map<string, string>,
+) => {
+  const sections: string[] = []
+  sections.push('<h1>All Sessions</h1>')
+  sections.push(
+    `<div class="session-meta">Export ID: ${escapeHtml(exportId)}</div>`,
+  )
+  for (const entry of sessions) {
+    sections.push(
+      renderSessionSection(entry.session, entry.messages, {
+        exportId,
+        frontendUrl,
+        agentNameMap,
+      }),
+    )
+  }
+  return buildHtmlShell('Eden Export - All Sessions', sections.join(''))
 }
 
 const nowUtc = () => new Date()
@@ -502,12 +966,14 @@ const processExport = async (server: FastifyInstance, exportId: string) => {
               key,
               creationId: creation._id?.toString() || '',
               extension,
+              fileSize: creation.mediaAttributes?.fileSize,
             }
           })
           .filter(Boolean) as {
           key: string
           creationId: string
           extension: string
+          fileSize?: number
         }[])
       : []
 
@@ -521,28 +987,11 @@ const processExport = async (server: FastifyInstance, exportId: string) => {
     }
 
     let totalBytes = 0
-    const missingFiles: string[] = []
+    let missingFiles: string[] = []
     if (includeMediaFiles && files.length) {
-      const limit = pLimit(DATA_EXPORTS.HEAD_CONCURRENCY)
-      const sizes = await Promise.all(
-        files.map(file =>
-          limit(async () => {
-            try {
-              const head = await server.s3
-                .headObject({
-                  Bucket: bucket,
-                  Key: file.key,
-                })
-                .promise()
-              return head.ContentLength || 0
-            } catch {
-              missingFiles.push(file.creationId)
-              return 0
-            }
-          }),
-        ),
-      )
-      totalBytes = sizes.reduce((sum, size) => sum + size, 0)
+      const sizeResult = await sumExportFileSizes(server, bucket, files)
+      totalBytes = sizeResult.totalBytes
+      missingFiles = sizeResult.missingFiles
     }
 
     if (includeMediaFiles && totalBytes > DATA_EXPORTS.SIZE_LIMIT_BYTES) {
@@ -636,11 +1085,28 @@ const processExport = async (server: FastifyInstance, exportId: string) => {
     }
 
     if (includeChats) {
+      const frontendUrl = server.config.EDEN2_FRONTEND_URL || null
+      const agentNameMap = new Map<string, string>()
+      const sessionIndex: Array<{
+        id: string
+        title: string
+        createdAt?: Date | string
+      }> = []
+      const allSessionHtmlPayload: Array<{
+        session: any
+        messages: any[]
+      }> = []
+
       for (const session of sessions) {
         const messages = await Message.find({ session: session._id })
           .sort({ createdAt: 1 })
           .lean()
         counts.messages += messages.length
+
+        const agentIds = messages
+          .filter(message => message?.role === 'assistant' && message?.sender)
+          .map(message => String(message.sender))
+        await hydrateAgentNames(agentIds, agentNameMap)
 
         const sessionPayload = {
           session,
@@ -649,6 +1115,47 @@ const processExport = async (server: FastifyInstance, exportId: string) => {
 
         archive.append(JSON.stringify(sessionPayload, null, 2), {
           name: `sessions/${session._id}.json`,
+        })
+
+        const sessionHtml = buildSessionHtml(session, messages, {
+          exportId,
+          frontendUrl,
+          agentNameMap,
+        })
+        archive.append(sessionHtml, {
+          name: `sessions/${session._id}.html`,
+        })
+
+        sessionIndex.push({
+          id: session._id?.toString() || '',
+          title: session.title || 'Untitled Session',
+          createdAt: session.createdAt,
+        })
+
+        allSessionHtmlPayload.push({
+          session,
+          messages,
+        })
+      }
+
+      if (sessionIndex.length) {
+        const indexHtml = buildSessionsIndexHtml(
+          sessionIndex,
+          exportId,
+          frontendUrl,
+        )
+        archive.append(indexHtml, {
+          name: 'sessions/index.html',
+        })
+
+        const allSessionsHtml = buildAllSessionsHtml(
+          allSessionHtmlPayload,
+          exportId,
+          frontendUrl,
+          agentNameMap,
+        )
+        archive.append(allSessionsHtml, {
+          name: 'sessions/all.html',
         })
       }
     }
