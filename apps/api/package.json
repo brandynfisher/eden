@@ -42,6 +42,7 @@
     "@huggingface/hub": "^0.12.3",
     "@immobiliarelabs/fastify-sentry": "^7.1.0",
     "@mailchimp/mailchimp_transactional": "^1.0.59",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "@neynar/nodejs-sdk": "^3.34.0",
     "@sinclair/typebox": "^0.32.34",
     "ajv": "^8.12.0",
@@ -79,7 +80,8 @@
     "svix": "^1.12.0",
     "tar": "^6.2.0",
     "uuid": "^9.0.0",
-    "viem": "^2.38.3"
+    "viem": "^2.38.3",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",

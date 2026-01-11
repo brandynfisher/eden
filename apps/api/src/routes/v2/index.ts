@@ -9,6 +9,7 @@ import creatorRoutesV2 from './creatorRoutesV2'
 import exportRoutesV2 from './exportRoutesV2'
 import feedRoutesV2 from './feedRoutesV2'
 import llmCallRoutes from './llmCallRoutes'
+import mcpRoutesV2 from './mcpRoutesV2'
 import modelRoutesV2 from './modelRoutesV2'
 import notificationRoutes from './notificationRoutes'
 import realtimeToolRoutesV2 from './realtimeToolRoutesV2'
@@ -35,6 +36,7 @@ export const routes = [
   sessionRoutesV2,
   notificationRoutes,
   llmCallRoutes,
+  mcpRoutesV2,
   verdelisSeedRoutesV2,
   realtimeSessionBillingRoutes,
   realtimeToolRoutesV2,

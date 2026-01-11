@@ -13,6 +13,7 @@ import registerEventEmitter from './plugins/eventEmitterPlugin'
 import { registerInternalMessages } from './plugins/internalMessagesPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMailgun from './plugins/mailgunPlugin'
+import registerMcp from './plugins/mcpPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import { registerRedis } from './plugins/redisPlugin'
@@ -103,6 +104,14 @@ const createServer = async (opts: CreateServerOpts) => {
 
   await registerClerk(server)
 
+  const fastifyJwt = await import('@fastify/jwt')
+  await server.register(fastifyJwt.default ?? fastifyJwt, {
+    secret: server.config.MCP_TOKEN_SECRET,
+    sign: {
+      iss: 'eden-mcp',
+    },
+  })
+
   await server.register(import('fastify-raw-body'), {
     field: 'rawBody',
     global: false,
@@ -115,6 +124,7 @@ const createServer = async (opts: CreateServerOpts) => {
   await registerChroma(server, opts.chromaUri)
   await registerRedis(server, { url: opts.redisUri })
   await registerMultipart(server)
+  await registerMcp(server)
   await registerWebSocket(server, opts)
   await registerSSE(server)
   await registerEventEmitter(server)
