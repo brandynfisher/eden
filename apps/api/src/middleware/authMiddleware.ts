@@ -1,24 +1,46 @@
 import { isAllowedAccess } from '../lib/authorization'
 import { checkUserFlags } from '../lib/data'
-import { ApiKey } from '../models/ApiKey'
-import { User } from '../models/User'
+import { ApiKey, ApiKeyDocument } from '../models/ApiKey'
+import { User, UserDocument } from '../models/User'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-const apiKeyVerify = async (
+export interface ApiKeyAuthResult {
+  apiKey: ApiKeyDocument
+  user: UserDocument
+  requestUser: FastifyRequest['user']
+}
+
+const getApiKeyFromRequest = (request: FastifyRequest) => {
+  const apiKeyHeader = request.headers['x-api-key']
+  if (apiKeyHeader) {
+    return Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader
+  }
+
+  const authHeader = request.headers.authorization
+  if (!authHeader) {
+    return undefined
+  }
+
+  const authValue = Array.isArray(authHeader) ? authHeader[0] : authHeader
+  const match = authValue.match(/^Bearer\s+(.+)$/i)
+  if (!match) {
+    return undefined
+  }
+
+  return match[1].trim()
+}
+
+export const verifyApiKey = async (
   server: FastifyInstance,
-  request: FastifyRequest,
+  apiKeyValue?: string,
 ) => {
-  server.log.info(
-    { apiKey: request.headers['x-api-key'] },
-    'API Key access detected:',
-  )
-  if (!request.headers['x-api-key']) {
+  if (!apiKeyValue) {
     throw new Error('Missing API key')
   }
 
   const apiKey = await ApiKey.findOne({
-    apiKey: request.headers['x-api-key'],
+    apiKey: apiKeyValue,
   })
 
   if (!apiKey) {
@@ -26,11 +48,6 @@ const apiKeyVerify = async (
   }
 
   const user = await User.findById(apiKey.user)
-  server.log.info(
-    { apiKey: apiKey.apiKey, username: user?.username },
-    'API Key access detected:',
-  )
-
   if (!user) {
     throw new Error('User not found')
   }
@@ -39,16 +56,35 @@ const apiKeyVerify = async (
     throw new Error('User not allowed')
   }
 
-  request.user = {
-    userId: user._id,
-    character: apiKey.character,
-    subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
-    highestMonthlySubscriptionTier:
-      user.highestMonthlySubscriptionTier || SubscriptionTier.Free,
-    featureFlags: user.featureFlags || [],
-    isAdmin: user.isAdmin || false,
-    apiKeyId: apiKey._id,
-  }
+  return {
+    apiKey,
+    user,
+    requestUser: {
+      userId: user._id,
+      character: apiKey.character,
+      subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
+      highestMonthlySubscriptionTier:
+        user.highestMonthlySubscriptionTier || SubscriptionTier.Free,
+      featureFlags: user.featureFlags || [],
+      isAdmin: user.isAdmin || false,
+      apiKeyId: apiKey._id,
+    },
+  } satisfies ApiKeyAuthResult
+}
+
+const apiKeyVerify = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  apiKeyValue?: string,
+) => {
+  const key = apiKeyValue ?? getApiKeyFromRequest(request)
+  const { apiKey, user, requestUser } = await verifyApiKey(server, key)
+  server.log.info(
+    { apiKey: apiKey.apiKey, username: user?.username },
+    'API Key access detected:',
+  )
+
+  request.user = requestUser
 }
 
 const getCredential = async (
@@ -56,11 +92,22 @@ const getCredential = async (
   request: FastifyRequest,
   // reply: FastifyReply,
 ) => {
-  if (request.headers['x-api-key']) {
-    await apiKeyVerify(server, request)
-  } else {
-    await server.verifyUser(request)
+  const apiKey = getApiKeyFromRequest(request)
+
+  if (apiKey) {
+    try {
+      await apiKeyVerify(server, request, apiKey)
+      return
+    } catch (error) {
+      if (!request.headers['x-api-key']) {
+        await server.verifyUser(request)
+        return
+      }
+      throw error
+    }
   }
+
+  await server.verifyUser(request)
 }
 
 export const isAuth = async (

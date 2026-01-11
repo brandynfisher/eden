@@ -28,6 +28,8 @@ const ConfigSchema = Type.Strict(
     ENV_API: Type.String({ default: 'development' }),
     EDEN_ADMIN_API_KEY: Type.Optional(Type.String()),
     EDEN_ADMIN_API_SECRET: Type.Optional(Type.String()),
+    MCP_TOKEN_SECRET: Type.String({ default: 'dev-mcp-token-secret' }),
+    MCP_TOKEN_TTL_SECONDS: Type.Number({ default: 600 }),
     EDEN_COMPUTE_API_URL: Type.String({
       default: 'http://127.0.0.1:8000',
     }),
@@ -136,6 +138,7 @@ const configPlugin: FastifyPluginAsync = async server => {
         envData.MAILGUN_API_BASE_URL || 'https://api.mailgun.net',
       MAILGUN_INBOUND_WEBHOOK_URL: envData.MAILGUN_INBOUND_WEBHOOK_URL,
       MAILGUN_WEBHOOK_SIGNING_KEY: envData.MAILGUN_WEBHOOK_SIGNING_KEY,
+      MCP_TOKEN_TTL_SECONDS: Number(envData.MCP_TOKEN_TTL_SECONDS),
     } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)
