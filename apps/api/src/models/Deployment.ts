@@ -29,6 +29,7 @@ export interface DeploymentSettingsDiscord {
   oauth_url?: string
   channel_allowlist?: DiscordAllowlistItem[]
   read_access_channels?: DiscordAllowlistItem[]
+  dm_user_allowlist?: DiscordAllowlistItem[]
 }
 
 export interface DeploymentSecretsDiscord {

@@ -117,11 +117,20 @@ export const DeploymentFormFooter = ({
             note: ch.note,
           }))
 
+        // Filter out empty DM user allowlist entries
+        const dmUserAllowlist = (data.dmUserAllowlist || [])
+          .filter((user: { id: string; note?: string }) => user.id?.trim())
+          .map((user: { id: string; note?: string }) => ({
+            id: user.id.trim(),
+            note: user.note,
+          }))
+
         config = {
           discord: {
             channel_allowlist: allowedChannels,
             read_access_channels: readAccessChannels,
-            enable_discord_dm: data.enableDiscordDm ?? false,
+            dm_user_allowlist:
+              dmUserAllowlist.length > 0 ? dmUserAllowlist : undefined,
           },
         }
       } else if (platform === 'discord_v3') {
