@@ -8,7 +8,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -36,7 +35,12 @@ const schema = z.object({
       readOnly: z.boolean().optional(),
     }),
   ),
-  enableDiscordDm: z.boolean().optional(),
+  dmUserAllowlist: z.array(
+    z.object({
+      id: z.string().min(1, 'User ID is required'),
+      note: z.string().optional(),
+    }),
+  ),
   useManualEntry: z.boolean().optional(),
 })
 
@@ -76,12 +80,21 @@ export const DiscordDeploymentForm = ({
     return merged.length > 0 ? merged : [{ id: '', note: '', readOnly: false }]
   }
 
+  const getInitialDmUserAllowlist = () => {
+    const dmUsers =
+      deployment?.config?.discord?.dm_user_allowlist?.map(user => ({
+        id: user.id || '',
+        note: user.note || '',
+      })) || []
+    return dmUsers
+  }
+
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
       channels: getInitialChannels(),
-      enableDiscordDm: deployment?.config?.discord?.enable_discord_dm ?? false,
+      dmUserAllowlist: getInitialDmUserAllowlist(),
       useManualEntry: false,
     },
   })
@@ -92,6 +105,11 @@ export const DiscordDeploymentForm = ({
   const channels = useFieldArray({
     control: form.control,
     name: 'channels',
+  })
+
+  const dmUserAllowlist = useFieldArray({
+    control: form.control,
+    name: 'dmUserAllowlist',
   })
 
   const isDeployed = useMemo(() => {
@@ -307,27 +325,84 @@ export const DiscordDeploymentForm = ({
               </Button>
             )}
 
-            <FormField
-              control={form.control}
-              name="enableDiscordDm"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Enable DMs</FormLabel>
-                    <FormDescription>
-                      Allow users to interact with your agent via direct
-                      messages.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value ?? false}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {/* DM User Allowlist Section */}
+            <div className="space-y-4 mt-4">
+              <div className="flex flex-col gap-2">
+                <h4 className="text-sm font-medium">DM User Allowlist</h4>
+                <FormDescription>
+                  Discord user IDs that can interact with your agent via direct
+                  messages. Leave empty to disable DMs.
+                </FormDescription>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="dmUserAllowlist"
+                render={({ fieldState }) => (
+                  <FormItem>
+                    <div className="space-y-4">
+                      {dmUserAllowlist.fields.map((field, index) => (
+                        <div key={field.id} className="flex gap-2 items-start">
+                          <FormField
+                            control={form.control}
+                            name={`dmUserAllowlist.${index}.id`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input placeholder="User ID" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`dmUserAllowlist.${index}.note`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    placeholder="Note (optional)"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => dmUserAllowlist.remove(index)}
+                            className="flex-shrink-0"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          dmUserAllowlist.append({
+                            id: '',
+                            note: '',
+                          })
+                        }
+                      >
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Add User
+                      </Button>
+                    </div>
+                    {fieldState.error && fieldState.error.message && (
+                      <FormMessage>{fieldState.error.message}</FormMessage>
+                    )}
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* OAuth URL Section */}
             {isDeployed &&
