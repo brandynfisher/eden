@@ -138,7 +138,7 @@ const AgentCard = ({
             )}
             {agent.social_accounts?.farcaster && (
               <Link
-                href={`https://warpcast.com/${agent.social_accounts.farcaster}`}
+                href={`https://farcaster.xyz/${agent.social_accounts.farcaster}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}

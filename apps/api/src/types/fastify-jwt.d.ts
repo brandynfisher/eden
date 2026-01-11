@@ -6,7 +6,14 @@ import { ObjectId } from 'mongodb'
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
-    payload: { userId: string; isAdmin: boolean }
+    payload: {
+      userId?: string
+      isAdmin?: boolean
+      sub?: string
+      scope?: string[]
+      typ?: string
+      apiKeyId?: string
+    }
     user: {
       userId: ObjectId
       character?: CharacterDocument
