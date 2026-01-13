@@ -6,6 +6,7 @@ import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
+import { openOAuthPopup } from '@/lib/oauth-popup'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,7 +38,10 @@ export const TiktokDeploymentForm = ({
   const [isConnecting, setIsConnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
   const queryClient = useQueryClient()
-  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
+  const deploymentsQueryKey = useMemo(
+    () => ['agents', agentId, 'deployments'] as const,
+    [agentId],
+  )
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
@@ -134,11 +138,12 @@ export const TiktokDeploymentForm = ({
       redirectUri,
     )}&state=${agentId}&disable_auto_auth=1`
 
-    const popup = window.open(
-      oauthUrl,
-      'tiktok-oauth',
-      'width=600,height=700,scrollbars=yes',
-    )
+    const popup = openOAuthPopup({
+      name: 'tiktok-oauth',
+      features: 'width=600,height=700,scrollbars=yes',
+      title: 'Connecting to TikTok',
+      message: 'Connecting to TikTok...',
+    })
 
     if (!popup) {
       // Popup blocked – fall back to redirect
@@ -146,6 +151,7 @@ export const TiktokDeploymentForm = ({
       return
     }
 
+    popup.location.href = oauthUrl
     popupRef.current = popup
   }
 

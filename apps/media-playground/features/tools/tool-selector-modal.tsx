@@ -155,6 +155,8 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
   )
 
   const selectedTools = selectedCategoryData?.tools ?? []
+  const isSearching = !!searchQuery.trim()
+  const visibleTools = isSearching ? filteredTools ?? [] : selectedTools
 
   if (!tools) {
     return null
@@ -210,9 +212,9 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
         {/* Category content */}
         <div className="flex-1 min-h-0 px-4 pb-4 pt-3 overflow-hidden bg-background">
           <div className="h-full overflow-y-auto pr-1">
-            {selectedTools.length ? (
+            {visibleTools.length ? (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-                {selectedTools.map(tool => (
+                {visibleTools.map(tool => (
                   <ToolCard
                     key={tool.key}
                     title={tool.name}
@@ -228,7 +230,9 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
               </div>
             ) : (
               <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-                No tools found in this category.
+                {isSearching
+                  ? 'No tools match your search.'
+                  : 'No tools found in this category.'}
               </div>
             )}
           </div>

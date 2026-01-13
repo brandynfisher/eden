@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { useMe } from '@/hooks/use-me'
+import { openOAuthPopup } from '@/lib/oauth-popup'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@clerk/nextjs'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
@@ -228,18 +229,19 @@ export const DiscordV3DeploymentForm = ({
       statePayload,
     )}`
 
-    const popup = window.open(
-      oauthUrl,
-      'discord-v3-oauth',
-      'width=500,height=700',
-    )
+    const popup = openOAuthPopup({
+      name: 'discord-v3-oauth',
+      features: 'width=500,height=700',
+      title: 'Connecting to Discord',
+      message: 'Connecting to Discord...',
+    })
 
     if (!popup) {
-      // Popup blocked – fall back to redirect
       window.location.href = oauthUrl
       return
     }
 
+    popup.location.href = oauthUrl
     popupRef.current = popup
   }
 

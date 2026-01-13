@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
+import { openOAuthPopup } from '@/lib/oauth-popup'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,7 +38,10 @@ export const InstagramDeploymentForm = ({
   const [isDisconnecting, setIsDisconnecting] = useState(false)
   const popupRef = useRef<Window | null>(null)
   const queryClient = useQueryClient()
-  const deploymentsQueryKey = ['agents', agentId, 'deployments'] as const
+  const deploymentsQueryKey = useMemo(
+    () => ['agents', agentId, 'deployments'] as const,
+    [agentId],
+  )
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {},
@@ -138,17 +142,19 @@ export const InstagramDeploymentForm = ({
       redirectUri,
     )}&response_type=code&scope=${encodeURIComponent(scope)}&state=${agentId}`
 
-    const popup = window.open(
-      oauthUrl,
-      'instagram-oauth',
-      'width=600,height=700,scrollbars=yes',
-    )
+    const popup = openOAuthPopup({
+      name: 'instagram-oauth',
+      features: 'width=600,height=700,scrollbars=yes',
+      title: 'Connecting to Instagram',
+      message: 'Connecting to Instagram...',
+    })
 
     if (!popup) {
       window.location.href = oauthUrl
       return
     }
 
+    popup.location.href = oauthUrl
     popupRef.current = popup
   }
 
