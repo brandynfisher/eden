@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
+import { openOAuthPopup } from '@/lib/oauth-popup'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -162,17 +163,19 @@ export const TwitterDeploymentForm = ({
     authUrl.searchParams.append('code_challenge_method', 'plain')
 
     // Open popup for OAuth (fallback to redirect if blocked)
-    const popup = window.open(
-      authUrl.toString(),
-      'twitter-integration-oauth',
-      'width=600,height=700,scrollbars=yes',
-    )
+    const popup = openOAuthPopup({
+      name: 'twitter-integration-oauth',
+      features: 'width=600,height=700,scrollbars=yes',
+      title: 'Connecting to Twitter',
+      message: 'Connecting to Twitter...',
+    })
 
     if (!popup) {
       window.location.href = authUrl.toString()
       return
     }
 
+    popup.location.href = authUrl.toString()
     popupRef.current = popup
   }
 

@@ -4,6 +4,7 @@ import DiscordIcon from '@/components/icons/discord'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
+import { openOAuthPopup } from '@/lib/oauth-popup'
 import axios from 'axios'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -97,17 +98,19 @@ const DiscordAuthButton = () => {
       )}`
 
       try {
-        const popup = window.open(
-          discordAuthUrl,
-          'discord-oauth',
-          'width=500,height=700',
-        )
+        const popup = openOAuthPopup({
+          name: 'discord-oauth',
+          features: 'width=500,height=700',
+          title: 'Connecting to Discord',
+          message: 'Connecting to Discord...',
+        })
 
         if (!popup) {
           window.location.href = discordAuthUrl
           return
         }
 
+        popup.location.href = discordAuthUrl
         popupRef.current = popup
         setIsLoading(true)
       } catch (error) {

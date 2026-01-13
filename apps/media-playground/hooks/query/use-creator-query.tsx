@@ -1,6 +1,7 @@
 import { fetcher } from '@/lib/fetcher'
 import { Agent, Creator, CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 
 // Extended Agent type with optional profile fields
 type AgentWithProfile = Agent & {
@@ -27,7 +28,7 @@ export const useCreatorQuery = ({
   initialData,
   enabled = true,
 }: Props) => {
-  const queryKey = ['creators', key]
+  const queryKey = useMemo(() => ['creators', key] as const, [key])
 
   const {
     data,
@@ -83,9 +84,13 @@ export const useCreatorQuery = ({
   })
 
   const queryClient = useQueryClient()
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey }),
+    [queryClient, queryKey],
+  )
 
   return {
-    invalidate: () => queryClient.invalidateQueries({ queryKey }),
+    invalidate,
     queryKey,
     creator: data?.creator as Creator | undefined,
     balance: data?.balance || undefined,

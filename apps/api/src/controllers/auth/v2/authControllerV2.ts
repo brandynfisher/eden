@@ -6,7 +6,10 @@ import { Transaction } from '../../../models/Transaction'
 import { User } from '../../../models/User'
 import { UserIdentity } from '../../../models/UserIdentity'
 import { CreationV2 } from '../../../models/v2/CreationV2'
-import { linkUserIdentity } from '../../../services/userIdentityService'
+import {
+  linkUserIdentity,
+  unlinkUserIdentity,
+} from '../../../services/userIdentityService'
 import { getAuth } from '@clerk/fastify'
 import { ViemLocalEip712Signer } from '@farcaster/hub-nodejs'
 import { NeynarAPIClient } from '@neynar/nodejs-sdk'
@@ -310,15 +313,27 @@ export const twitterOAuth = async (
       })
     }
 
-    // Check if this Twitter handle is already connected to another account
-    const existingUser = await User.findOne({ twitterId })
-    if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+    const existingIdentity = await UserIdentity.findOne({
+      provider: 'twitter',
+      provider_user_id: twitterId.toString(),
+      status: 'linked',
+    })
+
+    const canonicalUserId = (user.eden_user_id ?? user._id).toString()
+
+    if (
+      existingIdentity &&
+      existingIdentity.eden_user_id?.toString() !== canonicalUserId
+    ) {
       return reply.status(400).send({
         message: 'This Twitter account is already connected to another user',
       })
     }
 
     // Save Twitter handle to user
+    if (!user.eden_user_id) {
+      user.eden_user_id = user._id
+    }
     user.twitterHandle = twitterHandle
     user.twitterId = twitterId
 
@@ -339,6 +354,16 @@ export const twitterOAuth = async (
     }
 
     await user.save()
+
+    await linkUserIdentity({
+      provider: 'twitter',
+      provider_user_id: twitterId.toString(),
+      target_user_id: user._id,
+      actor_eden_user_id: user.eden_user_id,
+      metadata: {
+        username: twitterHandle,
+      },
+    })
 
     return reply.redirect(
       `${server.config.EDEN2_FRONTEND_URL}/settings/connections`,
@@ -367,9 +392,27 @@ export const disconnectTwitter = async (
       })
     }
 
+    const twitterId = user.twitterId
+
     // Remove Twitter handle from user
     user.twitterHandle = undefined
+    user.twitterId = undefined
     await user.save()
+
+    if (twitterId) {
+      try {
+        await unlinkUserIdentity({
+          provider: 'twitter',
+          provider_user_id: twitterId.toString(),
+          actor_eden_user_id: user.eden_user_id ?? user._id,
+        })
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (!message.includes('does not exist and cannot be unlinked')) {
+          throw error
+        }
+      }
+    }
 
     return reply.status(200).send({
       message: 'Twitter account disconnected successfully',
@@ -433,9 +476,7 @@ export const tiktokOAuth = async (
       if (window.opener) {
         try {
           window.opener.postMessage(postData, '*');
-        } catch (e) {
-          console.error('postMessage failed', e);
-        }
+        } catch (e) {}
         setTimeout(() => window.close(), 1200);
       } else if (data.redirectUrl) {
         window.location.href = data.redirectUrl;

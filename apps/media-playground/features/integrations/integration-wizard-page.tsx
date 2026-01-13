@@ -76,6 +76,21 @@ const WIZARD_EXCLUDED_PLATFORMS = new Set([
   'discord',
 ])
 
+const WIZARD_STEPS = [
+  {
+    title: 'Select Agent',
+    description: 'Choose which agent to connect.',
+  },
+  {
+    title: 'Choose Platform',
+    description: 'Pick the destination integration.',
+  },
+  {
+    title: 'Configure',
+    description: 'Set up credentials and options.',
+  },
+] as const
+
 const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
   discord: DiscordDeploymentForm,
   discord_v3: DiscordV3DeploymentForm,
@@ -421,43 +436,52 @@ const IntegrationWizardPage = () => {
         </div>
 
         <Card>
-          <CardContent className="space-y-6 p-4 sm:p-6">
+          <CardContent className="space-y-4 p-4 sm:space-y-6 sm:p-6">
             {!isManageMode && (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-                {[
-                  {
-                    title: 'Select Agent',
-                    description: 'Choose which agent to connect.',
-                  },
-                  {
-                    title: 'Choose Platform',
-                    description: 'Pick the destination integration.',
-                  },
-                  {
-                    title: 'Configure',
-                    description: 'Set up credentials and options.',
-                  },
-                ].map((step, index) => (
-                  <div
-                    key={step.title}
-                    className={cn(
-                      'rounded-lg border p-2 text-xs sm:p-3 sm:text-sm',
-                      wizardStep === index
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border/60 text-muted-foreground',
-                    )}
-                  >
-                    <div className="text-[10px] uppercase tracking-wide">
-                      Step {index + 1}
-                    </div>
-                    <div className="font-medium text-foreground">
-                      {step.title}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground sm:text-xs">
-                      {step.description}
-                    </div>
+              <div className="space-y-3">
+                <div className="space-y-2 sm:hidden">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      Step {wizardStep + 1} of {WIZARD_STEPS.length}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {WIZARD_STEPS[wizardStep]?.title}
+                    </span>
                   </div>
-                ))}
+                  <div className="h-1.5 w-full rounded-full bg-muted/40">
+                    <div
+                      className="h-1.5 rounded-full bg-primary transition-all"
+                      style={{
+                        width: `${
+                          ((wizardStep + 1) / WIZARD_STEPS.length) * 100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="hidden grid-cols-3 gap-3 sm:grid">
+                  {WIZARD_STEPS.map((step, index) => (
+                    <div
+                      key={step.title}
+                      className={cn(
+                        'rounded-lg border p-3 text-sm',
+                        wizardStep === index
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border/60 text-muted-foreground',
+                      )}
+                    >
+                      <div className="text-[10px] uppercase tracking-wide">
+                        Step {index + 1}
+                      </div>
+                      <div className="font-medium text-foreground">
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {step.description}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
