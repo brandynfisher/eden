@@ -1024,6 +1024,7 @@ export const listSessions = async (
       page,
       sort: {
         ...sort,
+        pinned: -1, // Pinned sessions always appear first
         updatedAt: -1,
         createdAt: -1,
       },

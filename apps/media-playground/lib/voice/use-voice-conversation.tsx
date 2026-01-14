@@ -28,6 +28,7 @@ const BUILT_IN_TOOLS: Record<
   display: { waitForResponse: true, timeoutSeconds: 30 },
   create_async: { waitForResponse: false },
   eden_search: { waitForResponse: true, timeoutSeconds: 30 },
+  lights: { waitForResponse: true, timeoutSeconds: 30 },
 }
 
 /**
