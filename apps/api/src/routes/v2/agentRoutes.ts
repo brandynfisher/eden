@@ -33,6 +33,16 @@ import {
   updateUserMemoryEnabled,
 } from '../../controllers/agentController'
 import {
+  deleteMemory2Fact,
+  deleteMemory2Reflection,
+  getMemory2Agent,
+  getMemory2User,
+  saveMemory2Agent,
+  saveMemory2User,
+  updateMemory2Fact,
+  updateMemory2Reflection,
+} from '../../controllers/agentMemory2Controller'
+import {
   getAgentRealtimeSettings,
   updateAgentRealtimeSettings,
 } from '../../controllers/agentRealtimeController'
@@ -1175,6 +1185,172 @@ const agentRoutes: FastifyPluginAsync = async server => {
         removeMemoryFromAgent(server, request, reply),
     },
   )
+
+  // ============================================================
+  // Memory2 Routes (new memory system)
+  // ============================================================
+
+  // Get user-scoped memory2 data
+  server.get('/v2/agents/:agentId/memory2', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Get User Memory (v2)',
+      description:
+        'Retrieve user-scoped consolidated memory and unabsorbed reflections for the new memory system.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: Type.Object({
+          consolidated_content: Type.String(),
+          last_consolidated_at: Type.Union([Type.String(), Type.Null()]),
+          unabsorbed_reflections: Type.Array(
+            Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              formed_at: Type.Optional(Type.String()),
+            }),
+          ),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getMemory2User(server, request, reply),
+  })
+
+  // Save user-scoped memory2 consolidated content
+  server.post('/v2/agents/:agentId/memory2', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Save User Memory (v2)',
+      description:
+        'Save user-scoped consolidated memory content for the new memory system.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        content: Type.String(),
+      }),
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => saveMemory2User(server, request, reply),
+  })
+
+  // Get agent-scoped memory2 data (collective memory)
+  server.get('/v2/agents/:agentId/memory2-agent', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Get Collective Memory (v2)',
+      description:
+        'Retrieve agent-scoped consolidated memory, unabsorbed reflections, and facts for the new memory system.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: Type.Object({
+          consolidated_content: Type.String(),
+          last_consolidated_at: Type.Union([Type.String(), Type.Null()]),
+          unabsorbed_reflections: Type.Array(
+            Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              formed_at: Type.Optional(Type.String()),
+            }),
+          ),
+          facts: Type.Array(
+            Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              formed_at: Type.Optional(Type.String()),
+              access_count: Type.Number(),
+            }),
+          ),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getMemory2Agent(server, request, reply),
+  })
+
+  // Save agent-scoped memory2 consolidated content
+  server.post('/v2/agents/:agentId/memory2-agent', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Save Collective Memory (v2)',
+      description:
+        'Save agent-scoped consolidated memory content for the new memory system.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        content: Type.String(),
+      }),
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => saveMemory2Agent(server, request, reply),
+  })
+
+  // Update memory2 reflection
+  server.patch('/v2/memory2-reflections/:reflectionId', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Update Reflection (v2)',
+      description: 'Update the content of a memory2 reflection.',
+      security: [{ apiKey: [] }],
+      params: { reflectionId: Type.String() },
+      body: Type.Object({
+        content: Type.String(),
+      }),
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      updateMemory2Reflection(server, request, reply),
+  })
+
+  // Delete memory2 reflection
+  server.delete('/v2/memory2-reflections/:reflectionId', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Delete Reflection (v2)',
+      description: 'Delete a memory2 reflection.',
+      security: [{ apiKey: [] }],
+      params: { reflectionId: Type.String() },
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      deleteMemory2Reflection(server, request, reply),
+  })
+
+  // Update memory2 fact
+  server.patch('/v2/memory2-facts/:factId', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Update Fact (v2)',
+      description: 'Update the content of a memory2 fact.',
+      security: [{ apiKey: [] }],
+      params: { factId: Type.String() },
+      body: Type.Object({
+        content: Type.String(),
+      }),
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateMemory2Fact(server, request, reply),
+  })
+
+  // Delete memory2 fact
+  server.delete('/v2/memory2-facts/:factId', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Delete Fact (v2)',
+      description: 'Delete a memory2 fact.',
+      security: [{ apiKey: [] }],
+      params: { factId: Type.String() },
+      response: { 200: Type.Object({ success: Type.Boolean() }) },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteMemory2Fact(server, request, reply),
+  })
 
   // Dashboard route
   server.get('/v2/agents/:agentId/dashboard', {
