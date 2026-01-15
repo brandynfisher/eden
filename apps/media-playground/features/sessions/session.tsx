@@ -2,6 +2,7 @@
 
 import { AgentAvatarsMenu } from './components/agent-avatars-menu'
 import { AgentWorkspaces } from './components/agent-workspaces'
+import { ArtifactSidebar } from './components/artifact-sidebar'
 import { AutomaticSessionControls } from './components/automatic-session-controls'
 import { ChildSessionSidebar } from './components/child-session-sidebar'
 import { ErrorDisplay } from './components/error-display'
@@ -36,6 +37,7 @@ import { SystemMessage } from '@/features/sessions/components/system-message'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
+import { useArtifactsV3ListQuery } from '@/hooks/query/use-artifacts-v3-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
@@ -56,7 +58,13 @@ import {
 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { BrainIcon, EditIcon, MenuIcon, Settings } from 'lucide-react'
+import {
+  BrainIcon,
+  EditIcon,
+  FileTextIcon,
+  MenuIcon,
+  Settings,
+} from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -163,6 +171,10 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [artifactSidebarId, setArtifactSidebarId] = useState<string | null>(
+    null,
+  )
+  const [isArtifactSidebarOpen, setIsArtifactSidebarOpen] = useState(false)
   const [showModeratorMessages, setShowModeratorMessages] = useState(false)
   const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
@@ -258,6 +270,12 @@ const Session = ({
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
+  })
+
+  const artifactsEnabled = !!sessionId && sessionId !== 'new'
+  const { artifacts: sessionArtifacts } = useArtifactsV3ListQuery({
+    sessionId: artifactsEnabled ? (sessionId as string) : undefined,
+    enabled: artifactsEnabled,
   })
 
   // Show confetti when an automatic session with an outcome is loaded
@@ -1372,6 +1390,9 @@ const Session = ({
     [filteredMessages],
   )
 
+  const artifactCount = sessionArtifacts.length
+  const artifactCountLabel = artifactCount > 9 ? '9+' : `${artifactCount}`
+
   // Handler to open child session sidebar
   const handleChildSessionClick = useCallback((childId: string) => {
     setChildSessionId(childId)
@@ -1384,6 +1405,31 @@ const Session = ({
     // Delay clearing the ID to allow for smooth animation
     setTimeout(() => setChildSessionId(null), 300)
   }, [])
+
+  const handleArtifactOpen = useCallback((artifactId: string) => {
+    setArtifactSidebarId(artifactId)
+    setIsArtifactSidebarOpen(true)
+  }, [])
+
+  const handleToggleArtifactSidebar = useCallback(() => {
+    setIsArtifactSidebarOpen(prev => !prev)
+  }, [])
+
+  const handleCloseArtifactSidebar = useCallback(() => {
+    setIsArtifactSidebarOpen(false)
+  }, [])
+
+  useEffect(() => {
+    if (!isArtifactSidebarOpen) return
+    if (artifactSidebarId) return
+    if (sessionArtifacts.length === 0) return
+    setArtifactSidebarId(sessionArtifacts[0]._id)
+  }, [artifactSidebarId, isArtifactSidebarOpen, sessionArtifacts])
+
+  useEffect(() => {
+    setIsArtifactSidebarOpen(false)
+    setArtifactSidebarId(null)
+  }, [sessionId])
 
   // Enrich message sender with data from session.agents if sender is incomplete
   const enrichMessageSender = useCallback(
@@ -1767,6 +1813,25 @@ const Session = ({
                 </button>
               )}
 
+              <button
+                onClick={handleToggleArtifactSidebar}
+                className={cn(
+                  'h-9 w-9 flex items-center justify-center rounded-md transition-colors relative',
+                  isArtifactSidebarOpen
+                    ? 'bg-muted/60 text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                )}
+                title="Artifacts"
+                aria-label="Artifacts"
+              >
+                <FileTextIcon className="h-4 w-4" />
+                {artifactCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] leading-[18px] text-primary-foreground text-center">
+                    {artifactCountLabel}
+                  </span>
+                )}
+              </button>
+
               {/* Share button - icon only */}
               {canManageSession && (
                 <SessionShareButton
@@ -1878,6 +1943,25 @@ const Session = ({
                 )}
               </button>
             )}
+
+            <button
+              onClick={handleToggleArtifactSidebar}
+              className={cn(
+                'h-8 px-3 text-sm font-medium rounded-md transition-colors flex items-center gap-2',
+                isArtifactSidebarOpen
+                  ? 'bg-muted/60 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+              )}
+              title="Artifacts"
+            >
+              <FileTextIcon className="h-3.5 w-3.5" />
+              Artifacts
+              {artifactCount > 0 && (
+                <span className="ml-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] leading-[18px] text-primary-foreground text-center">
+                  {artifactCountLabel}
+                </span>
+              )}
+            </button>
 
             {/* Session Settings button - show for sessions routes (not chat) */}
             {!ischatRoute && canOpenSessionSettings && (
@@ -2215,6 +2299,7 @@ const Session = ({
                                           onSessionClick={
                                             handleChildSessionClick
                                           }
+                                          onArtifactOpen={handleArtifactOpen}
                                         />
                                       )}
                                     </div>
@@ -2234,6 +2319,7 @@ const Session = ({
                                         isStreamingTokens={false}
                                         isChatRoute={ischatRoute}
                                         onSessionClick={handleChildSessionClick}
+                                        onArtifactOpen={handleArtifactOpen}
                                       />
                                     </div>
                                   ))}
@@ -2276,6 +2362,7 @@ const Session = ({
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
+                              onArtifactOpen={handleArtifactOpen}
                             />
                           </div>
                         )
@@ -2324,6 +2411,7 @@ const Session = ({
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
+                              onArtifactOpen={handleArtifactOpen}
                             />
                           </div>
                         )}
@@ -2359,6 +2447,7 @@ const Session = ({
                           isStreamingTokens={true}
                           isChatRoute={ischatRoute}
                           onSessionClick={handleChildSessionClick}
+                          onArtifactOpen={handleArtifactOpen}
                         />
                       </div>
                     )
@@ -2393,6 +2482,7 @@ const Session = ({
                           }
                           isChatRoute={ischatRoute}
                           onSessionClick={handleChildSessionClick}
+                          onArtifactOpen={handleArtifactOpen}
                         />
                       </div>
                     )
@@ -2555,6 +2645,7 @@ const Session = ({
                                         isStreamingTokens={false}
                                         isChatRoute={ischatRoute}
                                         onSessionClick={handleChildSessionClick}
+                                        onArtifactOpen={handleArtifactOpen}
                                       />
                                     )}
                                   </div>
@@ -2574,6 +2665,7 @@ const Session = ({
                                       showAvatar={index === 0}
                                       isChatRoute={ischatRoute}
                                       onSessionClick={handleChildSessionClick}
+                                      onArtifactOpen={handleArtifactOpen}
                                     />
                                   </div>
                                 ))}
@@ -2616,6 +2708,7 @@ const Session = ({
                             isStreamingTokens={true}
                             isChatRoute={ischatRoute}
                             onSessionClick={handleChildSessionClick}
+                            onArtifactOpen={handleArtifactOpen}
                           />
                         </div>
                       )
@@ -2671,6 +2764,14 @@ const Session = ({
             onClose={handleCloseChildSidebar}
           />
         )}
+
+        <ArtifactSidebar
+          artifactId={artifactSidebarId}
+          artifacts={sessionArtifacts}
+          isOpen={isArtifactSidebarOpen}
+          onClose={handleCloseArtifactSidebar}
+          onSelectArtifact={setArtifactSidebarId}
+        />
       </div>
 
       {!isReadOnlySession && (
