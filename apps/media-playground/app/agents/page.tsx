@@ -37,7 +37,6 @@ const AgentsPage = () => {
   const [searchInputValue, setSearchInputValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [scope, setScope] = useState<AgentScope>('public')
-  const [didSetDefaultScope, setDidSetDefaultScope] = useState(false)
   const [hasMounted, setHasMounted] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
@@ -88,17 +87,8 @@ const AgentsPage = () => {
   useEffect(() => {
     if (!isSignedIn && scope !== 'public') {
       setScope('public')
-      setDidSetDefaultScope(false)
     }
   }, [isSignedIn, scope])
-
-  // Default to Mine once authenticated (but allow switching after)
-  useEffect(() => {
-    if (isSignedIn && !didSetDefaultScope) {
-      setScope('mine')
-      setDidSetDefaultScope(true)
-    }
-  }, [didSetDefaultScope, isSignedIn])
 
   // Clear agentId after modal closes to prevent re-render issues during exit animation
   useEffect(() => {
@@ -627,12 +617,8 @@ const AgentsPage = () => {
                       onValueChange={value => setScope(value as AgentScope)}
                     >
                       <TabsList className="flex flex-wrap gap-2 bg-muted/50 p-1">
-                        <TabsTrigger
-                          value="mine"
-                          disabled={!isSignedIn}
-                          className="text-sm"
-                        >
-                          Mine
+                        <TabsTrigger value="public" className="text-sm">
+                          Public
                         </TabsTrigger>
                         <TabsTrigger
                           value="shared"
@@ -641,8 +627,12 @@ const AgentsPage = () => {
                         >
                           Shared
                         </TabsTrigger>
-                        <TabsTrigger value="public" className="text-sm">
-                          Public
+                        <TabsTrigger
+                          value="mine"
+                          disabled={!isSignedIn}
+                          className="text-sm"
+                        >
+                          Mine
                         </TabsTrigger>
                       </TabsList>
                     </Tabs>

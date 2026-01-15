@@ -1,6 +1,7 @@
 'use client'
 
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
+import DiscordIcon from '@/components/icons/discord'
 import { FarcasterIcon } from '@/components/icons/farcaster'
 import TwitterIcon from '@/components/icons/twitter'
 import { useAppShell } from '@/components/layout/app-shell'
@@ -15,6 +16,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import {
@@ -690,49 +697,70 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
         const triggerUserId = typeof t.user === 'string' ? t.user : t.user?._id
         return triggerUserId !== user?._id
       }).length > 0 && (
-        <div className="px-4 sm:px-6 md:px-10 py-3 flex flex-wrap items-center gap-3">
-          {subscribableTriggers.map(trigger => {
-            // Don't show Subscribe buttons for triggers the user owns
-            const triggerUserId =
-              typeof trigger.user === 'string'
-                ? trigger.user
-                : trigger.user?._id
-            if (triggerUserId === user?._id) {
-              return null
-            }
+        <TooltipProvider>
+          <div className="px-4 sm:px-6 md:px-10 py-3 flex flex-wrap items-center gap-3">
+            {subscribableTriggers.map(trigger => {
+              // Don't show Subscribe buttons for triggers the user owns
+              const triggerUserId =
+                typeof trigger.user === 'string'
+                  ? trigger.user
+                  : trigger.user?._id
+              if (triggerUserId === user?._id) {
+                return null
+              }
 
-            const isSubscribed = isAlreadySubscribed(trigger._id)
-            const isSubscribing = subscribingTo === trigger._id
-            const isUnsubscribing = unsubscribingFrom === trigger._id
-            const isLoading = isSubscribing || isUnsubscribing
+              const isSubscribed = isAlreadySubscribed(trigger._id)
+              const isSubscribing = subscribingTo === trigger._id
+              const isUnsubscribing = unsubscribingFrom === trigger._id
+              const isLoading = isSubscribing || isUnsubscribing
 
-            return (
-              <Button
-                key={trigger._id}
-                variant={isSubscribed ? 'ghost' : undefined}
-                size="lg"
-                className="gap-2 px-6"
-                onClick={() =>
-                  isSubscribed
-                    ? handleUnsubscribe(trigger._id)
-                    : handleSubscribe(trigger._id)
-                }
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : isSubscribed ? (
-                  <CheckIcon className="h-4 w-4 text-green-500" />
-                ) : (
-                  <BellPlusIcon className="h-4 w-4" />
-                )}
-                {isSubscribed
-                  ? `Unsubscribe: ${trigger.name}`
-                  : `Subscribe: ${trigger.name}`}
-              </Button>
-            )
-          })}
-        </div>
+              // Check if Discord DM trigger requires Discord linking
+              const requiresDiscord = trigger.session_target === 'discord_dm'
+              const hasDiscord = !!user?.discordId
+              const canSubscribe =
+                isSubscribed || !requiresDiscord || hasDiscord
+
+              return (
+                <Tooltip key={trigger._id}>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant={isSubscribed ? 'ghost' : undefined}
+                        size="lg"
+                        className="gap-2 px-6"
+                        onClick={() =>
+                          canSubscribe &&
+                          (isSubscribed
+                            ? handleUnsubscribe(trigger._id)
+                            : handleSubscribe(trigger._id))
+                        }
+                        disabled={isLoading || !canSubscribe}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : isSubscribed ? (
+                          <CheckIcon className="h-4 w-4 text-green-500" />
+                        ) : requiresDiscord ? (
+                          <DiscordIcon size={16} />
+                        ) : (
+                          <BellPlusIcon className="h-4 w-4" />
+                        )}
+                        {isSubscribed
+                          ? `Unsubscribe: ${trigger.name}`
+                          : `Subscribe: ${trigger.name}`}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {!canSubscribe && (
+                    <TooltipContent>
+                      <p>Link your Discord account in settings to subscribe</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              )
+            })}
+          </div>
+        </TooltipProvider>
       )}
 
       {/* Divider */}

@@ -19,6 +19,8 @@ export type TriggerRun = {
   ran_at: Date
 }
 
+export type SessionTarget = 'new' | 'discord_dm' | 'existing'
+
 export type TriggerSessionAgent = {
   _id: string
   username: string
@@ -44,6 +46,7 @@ export type Trigger = {
   user: Creator
   session?: string | TriggerSession | null // Optional - null when "Create new session" is selected
   agent?: string | TriggerAgent | null // Agent reference - required when session is null
+  session_target?: SessionTarget // Determines how session is resolved: 'new' creates app session, 'discord_dm' uses Discord DM, 'existing' uses session field
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string

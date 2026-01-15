@@ -11,6 +11,7 @@ import {
   SessionPermissionLevel,
 } from '../models/SessionPermission'
 import { Trigger } from '../models/Trigger'
+import { User } from '../models/User'
 import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
@@ -735,13 +736,34 @@ export const getAllUserDeployments = async (
   const currentUserId = request.user.userId
 
   try {
-    // Get all user's agents
-    const agents = await Agent.find({
+    // Get all agents owned by user
+    const ownedAgents = await Agent.find({
       owner: currentUserId,
       deleted: false,
     }).select('_id name username userImage')
 
-    const agentIds = agents.map(agent => agent._id)
+    // Get all agents where user has Owner permission
+    const ownerPermissions = await AgentPermission.find({
+      user: currentUserId,
+      level: AgentPermissionLevel.Owner,
+    }).select('agent')
+
+    const permissionAgentIds = ownerPermissions.map(p => p.agent)
+
+    // Get those agents (excluding ones already owned, to avoid duplicates)
+    const ownedAgentIds = ownedAgents.map(a => a._id.toString())
+    const permittedAgents = await Agent.find({
+      _id: { $in: permissionAgentIds },
+      deleted: false,
+    }).select('_id name username userImage')
+
+    // Combine owned and permitted agents, avoiding duplicates
+    const allAgents = [
+      ...ownedAgents,
+      ...permittedAgents.filter(a => !ownedAgentIds.includes(a._id.toString())),
+    ]
+
+    const agentIds = allAgents.map(agent => agent._id)
 
     if (agentIds.length === 0) {
       return reply.status(200).send({
@@ -1177,13 +1199,15 @@ export const createTrigger = async (
     JSON.stringify(request.body, null, 2),
   )
 
-  const { name, prompt, session, agent, schedule } = request.body as {
-    name: string
-    prompt: string
-    session?: string
-    agent?: string // Agent username
-    schedule?: any // Optional - tasks without schedules run manually only
-  }
+  const { name, prompt, session, agent, schedule, session_target } =
+    request.body as {
+      name: string
+      prompt: string
+      session?: string
+      agent?: string // Agent username
+      schedule?: any // Optional - tasks without schedules run manually only
+      session_target?: 'new' | 'discord_dm' | 'existing'
+    }
   const currentUserId = request.user.userId
 
   console.log('[createTrigger] Parsed values:', {
@@ -1192,6 +1216,7 @@ export const createTrigger = async (
     session,
     agent,
     schedule,
+    session_target,
     currentUserId,
   })
 
@@ -1235,6 +1260,17 @@ export const createTrigger = async (
     }
   }
 
+  // Validate discord_dm session_target requires linked Discord account
+  if (session_target === 'discord_dm') {
+    const user = await User.findById(currentUserId)
+    if (!user?.discordId) {
+      return reply.status(400).send({
+        error:
+          'Discord account must be linked to use Discord DM session target. Link your Discord in settings.',
+      })
+    }
+  }
+
   // Calculate next scheduled run (only if schedule is provided)
   let next_scheduled_run: Date | null = null
   if (schedule) {
@@ -1263,6 +1299,7 @@ export const createTrigger = async (
     user: currentUserId,
     ...(session && { session }),
     ...(agentId && { agent: agentId }),
+    ...(session_target && { session_target }),
     name,
     prompt,
     ...(schedule && { schedule }),
@@ -1663,7 +1700,10 @@ export const syncDiscordSessions = async (
       },
     )
 
-    return reply.status(200).send(response.data)
+    return reply.status(200).send({
+      success: response.data.success ?? true,
+      sessions_count: response.data.sessions_count ?? response.data.count ?? 0,
+    })
   } catch (error: any) {
     server.log.error({ err: error }, 'Error syncing Discord sessions')
     return reply.status(error.response?.status || 500).send({
@@ -1778,6 +1818,20 @@ export const subscribeToTrigger = async (
       .send({ error: 'You have already subscribed to this trigger' })
   }
 
+  // Validate discord_dm subscription requires linked Discord account
+  if (parentTrigger.session_target === 'discord_dm') {
+    const subscriber = await User.findById(currentUserId)
+    if (!subscriber?.discordId) {
+      console.log(
+        '[subscribeToTrigger] ERROR: Discord DM trigger requires Discord link',
+      )
+      return reply.status(400).send({
+        error:
+          'Link your Discord account in settings to subscribe to this trigger',
+      })
+    }
+  }
+
   // Calculate next scheduled run for the new trigger
   let next_scheduled_run: Date | null = null
   if (parentTrigger.schedule) {
@@ -1789,6 +1843,7 @@ export const subscribeToTrigger = async (
     user: currentUserId,
     session: null, // Will create new session on first run
     agent: parentTrigger.agent,
+    session_target: parentTrigger.session_target, // Preserve original session target intent
     parent_trigger: parentTrigger._id,
     name: parentTrigger.name,
     prompt: parentTrigger.prompt,
