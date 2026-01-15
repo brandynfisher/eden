@@ -157,6 +157,10 @@ const Session = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isNearBottomRef = useRef(true)
   const previousScrollHeightRef = useRef(0)
+  const paginationAnchorRef = useRef<{ id: string; offset: number } | null>(
+    null,
+  )
+  const clearAnchorTimeoutRef = useRef<number | null>(null)
   const { user, isSignedIn } = useAuthState()
   const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
     GatedResource.SessionSettings,
@@ -1048,6 +1052,61 @@ const Session = ({
     }
   }, [])
 
+  const capturePaginationAnchor = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const containerRect = container.getBoundingClientRect()
+    const messageElements = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-message-id]'),
+    )
+
+    const firstVisible = messageElements.find(el => {
+      const rect = el.getBoundingClientRect()
+      return rect.bottom >= containerRect.top + 1
+    })
+
+    if (firstVisible?.dataset.messageId) {
+      const offset =
+        firstVisible.getBoundingClientRect().top - containerRect.top
+      paginationAnchorRef.current = {
+        id: firstVisible.dataset.messageId,
+        offset,
+      }
+    } else {
+      paginationAnchorRef.current = null
+    }
+  }, [])
+
+  const restorePaginationAnchor = useCallback(() => {
+    const container = messagesContainerRef.current
+    const anchor = paginationAnchorRef.current
+    if (!container || !anchor) return
+
+    const anchorEl = container.querySelector<HTMLElement>(
+      `[data-message-id="${anchor.id}"]`,
+    )
+    if (!anchorEl) return
+
+    const containerTop = container.getBoundingClientRect().top
+    const anchorTop = anchorEl.getBoundingClientRect().top
+    const delta = anchorTop - containerTop - anchor.offset
+
+    if (Math.abs(delta) > 1) {
+      container.scrollTop += delta
+    }
+  }, [])
+
+  const scheduleClearPaginationAnchor = useCallback(() => {
+    if (clearAnchorTimeoutRef.current !== null) {
+      window.clearTimeout(clearAnchorTimeoutRef.current)
+    }
+
+    clearAnchorTimeoutRef.current = window.setTimeout(() => {
+      paginationAnchorRef.current = null
+    }, 400)
+  }, [])
+
   // Track previous message count to detect new messages vs older messages
   const previousMessageCountRef = useRef<number>(0)
 
@@ -1074,6 +1133,7 @@ const Session = ({
 
         if (paginationData?.hasMore) {
           setIsLoadingOlderMessages(true)
+          capturePaginationAnchor()
 
           // Store current scroll position
           const previousScrollHeight = container.scrollHeight
@@ -1081,15 +1141,17 @@ const Session = ({
           try {
             const result = await fetchOlderMessages()
 
-            if (result.messages.length > 0) {
-              // Wait for DOM to update
-              setTimeout(() => {
+            // Wait for DOM to update
+            setTimeout(() => {
+              if (result.messages.length > 0) {
                 // Restore scroll position
                 const newScrollHeight = container.scrollHeight
                 const scrollDiff = newScrollHeight - previousScrollHeight
                 container.scrollTop = previousScrollTop + scrollDiff
-              }, 0)
-            }
+                restorePaginationAnchor()
+              }
+              scheduleClearPaginationAnchor()
+            }, 0)
           } catch (error) {
             console.error(
               '[Message Pagination] Failed to load older messages:',
@@ -1113,7 +1175,28 @@ const Session = ({
     fetchOlderMessages,
     getPaginationData,
     displaySession,
+    capturePaginationAnchor,
+    restorePaginationAnchor,
+    scheduleClearPaginationAnchor,
   ])
+
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleMediaLoad = () => {
+      if (!paginationAnchorRef.current) return
+      requestAnimationFrame(() => {
+        restorePaginationAnchor()
+        scheduleClearPaginationAnchor()
+      })
+    }
+
+    container.addEventListener('load', handleMediaLoad, true)
+    return () => {
+      container.removeEventListener('load', handleMediaLoad, true)
+    }
+  }, [restorePaginationAnchor, scheduleClearPaginationAnchor])
 
   // Unified scroll handling: initial scroll and new message scroll.
   useLayoutEffect(() => {
@@ -2129,6 +2212,7 @@ const Session = ({
                 <button
                   onClick={async () => {
                     setIsLoadingOlderMessages(true)
+                    capturePaginationAnchor()
 
                     const container = messagesContainerRef.current
                     if (!container) return
@@ -2140,23 +2224,18 @@ const Session = ({
                     try {
                       const result = await fetchOlderMessages()
 
-                      if (result.messages.length > 0) {
-                        // Wait for DOM to update with new messages
-                        setTimeout(() => {
+                      // Wait for DOM to update with new messages
+                      setTimeout(() => {
+                        if (result.messages.length > 0) {
                           const newScrollHeight = container.scrollHeight
                           const scrollDiff =
                             newScrollHeight - previousScrollHeight
 
-                          // Position at roughly 20% from top (in the trigger zone for next load)
-                          const newScrollableHeight =
-                            newScrollHeight - container.clientHeight
-                          const targetScrollTop = Math.min(
-                            previousScrollTop + scrollDiff,
-                            newScrollableHeight * 0.2,
-                          )
-                          container.scrollTop = targetScrollTop
-                        }, 150)
-                      }
+                          container.scrollTop = previousScrollTop + scrollDiff
+                          restorePaginationAnchor()
+                        }
+                        scheduleClearPaginationAnchor()
+                      }, 150)
 
                       // Keep loading state true for a bit longer to let React update
                       setTimeout(() => setIsLoadingOlderMessages(false), 200)

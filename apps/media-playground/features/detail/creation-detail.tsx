@@ -2,6 +2,7 @@
 
 import ErrorBoundary from '@/components/error-boundary'
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
+import { useAppShell } from '@/components/layout/app-shell'
 import LoadingIndicator from '@/components/loading-indicator'
 import CreationMediaPreview from '@/components/media/creation-media-preview'
 import { Button } from '@/components/ui/button'
@@ -11,7 +12,7 @@ import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDownIcon, MenuIcon } from 'lucide-react'
 import React, { RefObject, Suspense, useRef } from 'react'
 
 type Props = {
@@ -23,6 +24,7 @@ type Props = {
 
 const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
   const feedSectionRef = useRef<HTMLDivElement>(null)
+  const { openMobileSidebar } = useAppShell()
 
   const { creation: creationClientData, queryKey } = useCreationQuery({
     key: id,
@@ -65,6 +67,18 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
 
   return (
     <div className="w-full">
+      {!isModal && (
+        <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
+          <button
+            onClick={openMobileSidebar}
+            className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+            aria-label="Open sidebar"
+          >
+            <MenuIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+          <h1 className="text-lg font-semibold">Creation</h1>
+        </div>
+      )}
       <div
         className={cn([
           `w-full flex flex-col gap-4 lg:flex-row lg:gap-4 lg:flex-1 lg:ml-0`,

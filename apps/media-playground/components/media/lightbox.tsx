@@ -252,6 +252,7 @@ export const LightboxGallery = ({
 
 type LightboxTriggerProps = {
   className?: string
+  style?: React.CSSProperties
   startIndex?: number
   slide?: LightboxGallerySlide
   videoProps?: LightboxVideoTriggerProps
@@ -261,7 +262,7 @@ type LightboxTriggerProps = {
 export const LightboxTrigger = React.forwardRef<
   HTMLDivElement,
   LightboxTriggerProps
->(({ className, slide, startIndex, videoProps, imageProps }, ref) => {
+>(({ className, style, slide, startIndex, videoProps, imageProps }, ref) => {
   const { setOpen, setStartIndex, addSlide } = useLightbox()
 
   React.useEffect(() => {
@@ -318,6 +319,7 @@ export const LightboxTrigger = React.forwardRef<
       onDragStart={e => {
         e.dataTransfer.setData('text/plain', slide.url || '')
       }}
+      style={style}
       className={cn(
         'rounded-md overflow-hidden cursor-zoom-in',
         // Only use w-full h-full when we have known dimensions

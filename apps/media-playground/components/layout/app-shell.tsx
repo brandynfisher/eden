@@ -66,7 +66,10 @@ const DISABLE_PREFIXES = [
 const CHAT_VARIANT_PREFIXES = ['/chat', '/agents', '/tasks', '/integrations']
 export const SIDEBAR_COLLAPSE_STORAGE_KEY = 'eden:sidebar-collapsed'
 
-const shouldDisableShell = (pathname?: string | null) => {
+const shouldDisableShell = (
+  pathname?: string | null,
+  isNativeWebview = false,
+) => {
   if (!pathname) {
     return false
   }
@@ -75,6 +78,9 @@ const shouldDisableShell = (pathname?: string | null) => {
   }
   if (pathname.includes('/sessions/share')) {
     return true
+  }
+  if (isNativeWebview && pathname.startsWith('/creations')) {
+    return false
   }
   // /chat routes now use the app shell
   return DISABLE_PREFIXES.some(prefix => pathname.startsWith(prefix))
@@ -105,8 +111,11 @@ const defaultMobileHeader: MobileSidebarHeaderRenderer = ({ close }) => {
   )
 }
 
-const getDefaultConfig = (pathname?: string | null): AppShellConfig => ({
-  showShell: !shouldDisableShell(pathname),
+const getDefaultConfig = (
+  pathname?: string | null,
+  isNativeWebview = false,
+): AppShellConfig => ({
+  showShell: !shouldDisableShell(pathname, isNativeWebview),
   sidebarVariant: isChatVariantRoute(pathname) ? 'chat' : 'sessions',
 })
 
@@ -126,7 +135,11 @@ const shallowEqualConfig = (
 
 const AppShell = ({ children }: PropsWithChildren) => {
   const pathname = usePathname()
-  const defaultConfig = useMemo(() => getDefaultConfig(pathname), [pathname])
+  const isNativeWebview = useNativeWebview()
+  const defaultConfig = useMemo(
+    () => getDefaultConfig(pathname, isNativeWebview),
+    [pathname, isNativeWebview],
+  )
   const [overrides, setOverrides] = useState<Partial<AppShellConfig>>({})
   const config = useMemo(
     () => ({
@@ -145,7 +158,6 @@ const AppShell = ({ children }: PropsWithChildren) => {
   // to avoid hydration mismatch
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const isNativeWebview = useNativeWebview()
 
   // Read sidebar collapsed state from localStorage after mount
   useEffect(() => {

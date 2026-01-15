@@ -58,7 +58,6 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
     featureFlags: [
       {
         type: String,
-        enum: Object.values(FeatureFlag),
       },
     ],
     creations: [
