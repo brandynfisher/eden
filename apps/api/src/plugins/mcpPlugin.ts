@@ -1,6 +1,18 @@
 import { searchCreationsCore } from '../controllers/v2/creationControllerV2'
+import {
+  createArtifactV3Core,
+  deleteArtifactV3Core,
+  getArtifactPermissionsV3Core,
+  getArtifactV3Core,
+  listArtifactHistoryV3Core,
+  listArtifactsV3Core,
+  patchArtifactItemsV3Core,
+  updateArtifactPermissionsV3Core,
+  updateArtifactV3Core,
+} from '../controllers/v3/artifactControllerV3'
 import { verifyMcpToken } from '../lib/mcpTokens'
 import { verifyApiKey } from '../middleware/authMiddleware'
+import { ArtifactPermissionLevelV3 } from '../models/v3/ArtifactPermissionV3'
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
@@ -21,6 +33,65 @@ type SearchArgs = {
   tool?: string
   page?: number
   limit?: number
+}
+
+type ArtifactListArgs = {
+  ownerId?: string
+  type?: string
+  sessionId?: string
+  page?: number
+  limit?: number
+  orderBy?: string
+  direction?: number
+}
+
+type ArtifactGetArgs = {
+  artifactId: string
+}
+
+type ArtifactCreateArgs = {
+  title: string
+  type: string
+  public?: boolean
+  session?: string
+  content?: string
+  items?: Record<string, unknown>
+}
+
+type ArtifactUpdateArgs = {
+  artifactId: string
+  title?: string
+  type?: string
+  public?: boolean
+  session?: string | null
+}
+
+type ArtifactPatchItemsArgs = {
+  artifactId: string
+  set?: Record<string, unknown>
+  unset?: string[]
+  reason?: string
+}
+
+type ArtifactPermissionsArgs = {
+  artifactId: string
+}
+
+type ArtifactUpdatePermissionsArgs = {
+  artifactId: string
+  permissions: Array<{
+    subjectId: string
+    level: ArtifactPermissionLevelV3
+    key?: string
+  }>
+}
+
+type ArtifactHistoryArgs = {
+  artifactId: string
+  page?: number
+  limit?: number
+  orderBy?: string
+  direction?: number
 }
 
 const buildAuthInfo = (
@@ -47,6 +118,20 @@ const getSessionId = (request: FastifyRequest) => {
     return undefined
   }
   return Array.isArray(header) ? header[0] : header
+}
+
+const parseMaybeJson = <T>(value: unknown): T | undefined => {
+  if (!value) {
+    return undefined
+  }
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T
+    } catch (_error) {
+      return undefined
+    }
+  }
+  return value as T
 }
 
 const getAuthToken = (request: FastifyRequest) => {
@@ -133,6 +218,308 @@ const createMcpServer = (server: FastifyInstance) => {
           ? extra.authInfo.extra.userId
           : undefined
       const result = await searchCreationsCore(server, {
+        ...args,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactListSchema = {
+    ownerId: z.string().optional(),
+    type: z.string().optional(),
+    sessionId: z.string().optional(),
+    page: z.number().int().positive().optional(),
+    limit: z.number().int().positive().optional(),
+    orderBy: z.string().optional(),
+    direction: z.number().int().optional(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_list',
+    'List Eden artifacts (V3).',
+    artifactListSchema,
+    async (args: ArtifactListArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await listArtifactsV3Core({
+        ...args,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactGetSchema = {
+    artifactId: z.string(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_get',
+    'Get an Eden artifact (V3).',
+    artifactGetSchema,
+    async (args: ArtifactGetArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await getArtifactV3Core({
+        artifactId: args.artifactId,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactCreateSchema = {
+    title: z.string(),
+    type: z.string(),
+    public: z.boolean().optional(),
+    session: z.string().optional(),
+    content: z.string().optional(),
+    items: z.record(z.any()).optional(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_create',
+    'Create an Eden artifact (V3).',
+    artifactCreateSchema,
+    async (args: ArtifactCreateArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await createArtifactV3Core({
+        ...args,
+        items:
+          parseMaybeJson<Record<string, unknown>>(args.items) ?? args.items,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactUpdateSchema = {
+    artifactId: z.string(),
+    title: z.string().optional(),
+    type: z.string().optional(),
+    public: z.boolean().optional(),
+    session: z.union([z.string(), z.null()]).optional(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_update',
+    'Update an Eden artifact (V3).',
+    artifactUpdateSchema,
+    async (args: ArtifactUpdateArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await updateArtifactV3Core({
+        ...args,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactDeleteSchema = {
+    artifactId: z.string(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_delete',
+    'Delete an Eden artifact (V3).',
+    artifactDeleteSchema,
+    async (args: ArtifactGetArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await deleteArtifactV3Core({
+        artifactId: args.artifactId,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactPatchSchema = {
+    artifactId: z.string(),
+    set: z.record(z.any()).optional(),
+    unset: z.array(z.string()).optional(),
+    reason: z.string().optional(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_patch_items',
+    'Patch items for an Eden artifact (V3).',
+    artifactPatchSchema,
+    async (args: ArtifactPatchItemsArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await patchArtifactItemsV3Core({
+        ...args,
+        set: parseMaybeJson<Record<string, unknown>>(args.set) ?? args.set,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactPermissionsSchema = {
+    artifactId: z.string(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_get_permissions',
+    'Get permissions for an Eden artifact (V3).',
+    artifactPermissionsSchema,
+    async (args: ArtifactPermissionsArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await getArtifactPermissionsV3Core({
+        artifactId: args.artifactId,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactUpdatePermissionsSchema = {
+    artifactId: z.string(),
+    permissions: z.array(
+      z.object({
+        subjectId: z.string(),
+        level: z.nativeEnum(ArtifactPermissionLevelV3),
+        key: z.string().optional(),
+      }),
+    ),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_update_permissions',
+    'Update permissions for an Eden artifact (V3).',
+    artifactUpdatePermissionsSchema,
+    async (args: ArtifactUpdatePermissionsArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const parsedPermissions =
+        parseMaybeJson<ArtifactUpdatePermissionsArgs['permissions']>(
+          args.permissions,
+        ) ?? args.permissions
+      const normalizedPermissions = parsedPermissions.map(permission => ({
+        ...permission,
+        level: permission.level as ArtifactPermissionLevelV3,
+      }))
+      const result = await updateArtifactPermissionsV3Core({
+        ...args,
+        permissions: normalizedPermissions,
+        authUserId,
+      })
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result),
+          },
+        ],
+      }
+    },
+  )
+
+  const artifactHistorySchema = {
+    artifactId: z.string(),
+    page: z.number().int().positive().optional(),
+    limit: z.number().int().positive().optional(),
+    orderBy: z.string().optional(),
+    direction: z.number().int().optional(),
+  } as Record<string, z.ZodTypeAny>
+
+  tool(
+    'eden_artifacts_v3_history',
+    'List edit history for an Eden artifact (V3).',
+    artifactHistorySchema,
+    async (args: ArtifactHistoryArgs, extra: ToolExtra) => {
+      const authUserId =
+        typeof extra?.authInfo?.extra?.userId === 'string'
+          ? extra.authInfo.extra.userId
+          : undefined
+      const result = await listArtifactHistoryV3Core({
         ...args,
         authUserId,
       })
