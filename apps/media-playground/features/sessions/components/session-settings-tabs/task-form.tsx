@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
 import { cn } from '@/lib/utils'
-import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
+import { CronSchedule, SessionTarget, Trigger } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { addMinutes, format } from 'date-fns'
@@ -187,6 +187,7 @@ type TaskFormProps = {
   onSave: () => void
   hideHeader?: boolean
   disabled?: boolean
+  sessionTarget?: SessionTarget // Determines how session is resolved at runtime
 }
 
 export const TaskForm: FC<TaskFormProps> = ({
@@ -197,6 +198,7 @@ export const TaskForm: FC<TaskFormProps> = ({
   onSave,
   hideHeader = false,
   disabled = false,
+  sessionTarget,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] =
@@ -414,6 +416,7 @@ export const TaskForm: FC<TaskFormProps> = ({
           prompt: values.prompt,
           ...(sessionId && { session: sessionId }), // Only include session if provided
           ...(agentId && { agent: agentId }), // Include agent if provided
+          ...(sessionTarget && { session_target: sessionTarget }), // Include session target
           ...(schedule && { schedule }),
         }
 

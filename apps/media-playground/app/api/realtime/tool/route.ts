@@ -34,25 +34,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Fastify API which handles Eve communication
-    const response = await fetch(
-      `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/realtime/tool`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          tool_name,
-          args,
-          session_id,
-        }),
+    const fastifyUrl = `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/realtime/tool`
+
+    const response = await fetch(fastifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
-    )
+      body: JSON.stringify({
+        tool_name,
+        args,
+        session_id,
+      }),
+    })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[Realtime Tool] API error:', errorText)
       return NextResponse.json(
         { message: `API error: ${errorText}` },
         { status: response.status },
@@ -62,7 +60,6 @@ export async function POST(request: NextRequest) {
     const result = await response.json()
     return NextResponse.json(result)
   } catch (error) {
-    console.error('[Realtime Tool] Error:', error)
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 },

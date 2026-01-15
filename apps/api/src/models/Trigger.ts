@@ -19,10 +19,13 @@ export interface TriggerRun {
   ran_at: Date
 }
 
+export type SessionTarget = 'new' | 'discord_dm' | 'existing'
+
 export interface TriggerSchema {
   user: ObjectId
   session?: ObjectId | null // Optional - null when "Create new session" is selected
   agent?: ObjectId | null // Agent reference - required when session is null
+  session_target?: SessionTarget // Determines how session is resolved: 'new' creates app session, 'discord_dm' uses Discord DM, 'existing' uses session field
   schedule?: CronSchedule // Optional - tasks without schedules run manually only
   name: string
   prompt: string
@@ -55,6 +58,11 @@ const TriggerSchema = new Schema<TriggerDocument>(
       type: Schema.Types.ObjectId,
       ref: 'agent',
       required: false, // Required when session is null
+    },
+    session_target: {
+      type: String,
+      enum: ['new', 'discord_dm', 'existing'],
+      required: false,
     },
     schedule: {
       type: Object,

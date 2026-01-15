@@ -1,5 +1,6 @@
 'use client'
 
+import DiscordIcon from '@/components/icons/discord'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Select,
@@ -8,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { TaskForm } from '@/features/sessions/components/session-settings-tabs/task-form'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
@@ -18,6 +25,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   Agent,
+  SessionTarget,
   SessionV2,
   Trigger,
   TriggerSessionAgent,
@@ -47,6 +55,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
 
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [selectedSession, setSelectedSession] = useState<SessionV2 | null>(null)
+  const [sessionTarget, setSessionTarget] = useState<SessionTarget>('new')
   const [showAgentModal, setShowAgentModal] = useState(false)
 
   // Get the default agent (first from lastAgents) for global mode
@@ -68,6 +77,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
   useEffect(() => {
     if (mode === 'global') {
       setSelectedSession(null)
+      setSessionTarget('new')
     }
   }, [selectedAgent, mode])
 
@@ -76,6 +86,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
     if (!editingTask) {
       setSelectedAgent(null)
       setSelectedSession(null)
+      setSessionTarget('new')
     }
   }, [editingTask])
 
@@ -115,6 +126,8 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
             agentUsername={agentId!}
             selectedSession={selectedSession}
             onSessionChange={setSelectedSession}
+            sessionTarget={sessionTarget}
+            onSessionTargetChange={setSessionTarget}
           />
         </div>
 
@@ -127,6 +140,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
           onSave={onSave}
           hideHeader={true}
           disabled={false}
+          sessionTarget={sessionTarget}
         />
       </div>
     )
@@ -219,6 +233,8 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
               agentUsername={currentAgentUsername}
               selectedSession={selectedSession}
               onSessionChange={setSelectedSession}
+              sessionTarget={sessionTarget}
+              onSessionTargetChange={setSessionTarget}
             />
           </div>
         )}
@@ -233,6 +249,7 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
             onSave={onSave}
             hideHeader={true}
             disabled={false}
+            sessionTarget={sessionTarget}
           />
         )}
 
@@ -254,18 +271,24 @@ type SessionSelectorInlineProps = {
   agentUsername: string
   selectedSession: SessionV2 | null
   onSessionChange: (session: SessionV2 | null) => void
+  sessionTarget: SessionTarget
+  onSessionTargetChange: (target: SessionTarget) => void
 }
 
 const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
   agentUsername,
   selectedSession,
   onSessionChange,
+  sessionTarget,
+  onSessionTargetChange,
 }) => {
   const { user } = useAuthState()
   const { sessions, isLoading, isError } = useAgentSessionListQuery({
     agentId: agentUsername,
     enabled: !!agentUsername,
   })
+
+  const hasDiscord = !!user?.discordId
 
   // Filter sessions to only show those where user has owner/editor permissions
   const editableSessions = sessions?.filter(session => {
@@ -288,18 +311,34 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
   // Reset selection when agent changes
   useEffect(() => {
     onSessionChange(null)
+    onSessionTargetChange('new')
   }, [agentUsername]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSessionChange = (sessionId: string) => {
-    if (sessionId === '__create_new__') {
-      // Special value for "Create new session"
+  const handleSessionChange = (value: string) => {
+    if (value === '__create_new__') {
       onSessionChange(null)
+      onSessionTargetChange('new')
+    } else if (value === '__discord_dm__') {
+      onSessionChange(null)
+      onSessionTargetChange('discord_dm')
     } else {
-      const session = editableSessions?.find(s => s?._id === sessionId)
+      const session = editableSessions?.find(s => s?._id === value)
       if (session) {
         onSessionChange(session)
+        onSessionTargetChange('existing')
       }
     }
+  }
+
+  // Determine current value for the Select
+  const getCurrentValue = () => {
+    if (sessionTarget === 'discord_dm') {
+      return '__discord_dm__'
+    }
+    if (selectedSession?._id) {
+      return selectedSession._id
+    }
+    return '__create_new__'
   }
 
   if (isLoading) {
@@ -319,52 +358,66 @@ const SessionSelectorInline: FC<SessionSelectorInlineProps> = ({
     )
   }
 
-  if (!editableSessions || editableSessions.length === 0) {
-    return (
-      <div className="p-2 text-sm text-muted-foreground">
-        No sessions found with this agent where you have edit permissions. Start
-        a chat to create a session.
-      </div>
-    )
-  }
-
   return (
-    <Select
-      onValueChange={handleSessionChange}
-      value={selectedSession?._id || '__create_new__'}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Select a session" />
-      </SelectTrigger>
-      <SelectContent className="max-h-60">
-        {/* Create new session option */}
-        <SelectItem value="__create_new__">Create new session</SelectItem>
+    <TooltipProvider>
+      <Select onValueChange={handleSessionChange} value={getCurrentValue()}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select a session" />
+        </SelectTrigger>
+        <SelectContent className="max-h-60">
+          {/* Create new session option */}
+          <SelectItem value="__create_new__">Create new session</SelectItem>
 
-        {/* Existing sessions */}
-        {editableSessions.map(session => {
-          const sessionAgents = (
-            typeof session?.agents !== 'undefined' ? session.agents : []
-          ) as TriggerSessionAgent[]
-
-          return (
-            <SelectItem key={session?._id} value={session?._id ?? ''}>
+          {/* Discord DM option */}
+          {hasDiscord ? (
+            <SelectItem value="__discord_dm__">
               <div className="flex items-center gap-2">
-                {sessionAgents.length > 0 && (
-                  <AgentAvatars
-                    agents={sessionAgents.map(a => ({
-                      _id: a._id,
-                      username: a.username,
-                      name: a.name || a.username,
-                      userImage: a.userImage,
-                    }))}
-                  />
-                )}
-                <span>{session?.title || 'Untitled Session'}</span>
+                <DiscordIcon size={16} />
+                <span>DM me on Discord</span>
               </div>
             </SelectItem>
-          )
-        })}
-      </SelectContent>
-    </Select>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative flex w-full cursor-not-allowed select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none opacity-50">
+                  <div className="flex items-center gap-2">
+                    <DiscordIcon size={16} />
+                    <span>DM me on Discord</span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Link your Discord account in settings</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Existing sessions */}
+          {editableSessions?.map(session => {
+            const sessionAgents = (
+              typeof session?.agents !== 'undefined' ? session.agents : []
+            ) as TriggerSessionAgent[]
+
+            return (
+              <SelectItem key={session?._id} value={session?._id ?? ''}>
+                <div className="flex items-center gap-2">
+                  {sessionAgents.length > 0 && (
+                    <AgentAvatars
+                      agents={sessionAgents.map(a => ({
+                        _id: a._id,
+                        username: a.username,
+                        name: a.name || a.username,
+                        userImage: a.userImage,
+                      }))}
+                    />
+                  )}
+                  <span>{session?.title || 'Untitled Session'}</span>
+                </div>
+              </SelectItem>
+            )
+          })}
+        </SelectContent>
+      </Select>
+    </TooltipProvider>
   )
 }

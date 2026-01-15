@@ -414,6 +414,13 @@ const agentRoutes: FastifyPluginAsync = async server => {
         session: Type.Optional(Type.String()), // Optional - can be null when creating with agent
         agent: Type.Optional(Type.String()), // Optional - agent username when session is null
         schedule: Type.Optional(Type.Any()), // Optional - tasks without schedules run manually only
+        session_target: Type.Optional(
+          Type.Union([
+            Type.Literal('new'),
+            Type.Literal('discord_dm'),
+            Type.Literal('existing'),
+          ]),
+        ), // Optional - how to resolve session at runtime
       }),
       response: {
         200: Type.Object({
