@@ -1,6 +1,7 @@
 'use client'
 
 import ErrorBoundary from '@/components/error-boundary'
+import { ArtifactEmbed } from '@/features/sessions/tools/artifact-embed'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
 import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
 import { FarcasterCastEmbed } from '@/features/sessions/tools/farcaster-cast-embed'
@@ -23,6 +24,8 @@ export type TaskResultToolProps = {
   onCancel?: () => void
   /** If provided, clicking a child session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
+  /** If provided, clicking an artifact card will open the artifact */
+  onArtifactOpen?: (artifactId: string) => void
 }
 
 // Social tools mapping
@@ -132,6 +135,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   messageId,
   onCancel,
   onSessionClick,
+  onArtifactOpen,
 }) => {
   const { tool, result: toolResults } = toolCall
 
@@ -168,6 +172,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     ]
   const jsonToolConfig =
     SOCIAL_TOOLS.JSON_TOOLS[tool as keyof typeof SOCIAL_TOOLS.JSON_TOOLS]
+  const isArtifactTool = Boolean(tool?.startsWith('eden_artifacts_v3_'))
 
   const isFarcasterCast = tool === 'farcaster_cast'
   const isSocialPost = !!postToolConfig
@@ -303,6 +308,15 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               results={toolResults || []}
               platform={contentToolConfig?.platform || 'discord'}
               contentType={contentToolConfig?.contentType || 'search'}
+            />
+          </div>
+        ) : isArtifactTool && toolCall.status === 'completed' ? (
+          <div className="mb-2 relative group">
+            <ArtifactEmbed
+              results={toolResults || []}
+              toolName={tool || 'artifact'}
+              args={toolCall.args}
+              onOpenArtifact={onArtifactOpen}
             />
           </div>
         ) : isJsonTool && toolCall.status === 'completed' ? (

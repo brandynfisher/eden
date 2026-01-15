@@ -47,6 +47,8 @@ type OtherMessageProps = {
   isStreamingTokens?: boolean
   /** If provided, clicking a child session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
+  /** If provided, clicking an artifact card will open the artifact */
+  onArtifactOpen?: (artifactId: string) => void
 }
 
 export const OtherMessage = ({
@@ -55,6 +57,7 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreamingTokens = false,
   onSessionClick,
+  onArtifactOpen,
 }: OtherMessageProps) => {
   const [stickySender, setStickySender] = useState(message.sender)
   const lastMessageIdRef = useRef(message._id)
@@ -291,6 +294,7 @@ export const OtherMessage = ({
                 key={toolCall.id}
                 toolCall={optimisticToolCall}
                 onSessionClick={onSessionClick}
+                onArtifactOpen={onArtifactOpen}
                 onCancel={async () => {
                   // Optimistically mark as cancelled
                   setOptimisticallyCancelled(prev =>

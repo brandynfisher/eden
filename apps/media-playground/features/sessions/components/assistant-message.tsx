@@ -21,6 +21,8 @@ type AssistantMessageProps = {
   isChatRoute?: boolean
   /** If provided, clicking a child session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
+  /** If provided, clicking an artifact card will open the artifact */
+  onArtifactOpen?: (artifactId: string) => void
 }
 
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -54,6 +56,7 @@ export const AssistantMessage = ({
   showAvatar = true,
   isChatRoute = false,
   onSessionClick,
+  onArtifactOpen,
 }: AssistantMessageProps) => {
   // Track optimistically cancelled tool calls
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
@@ -235,6 +238,7 @@ export const AssistantMessage = ({
                     toolCall={optimisticToolCall}
                     messageId={message._id}
                     onSessionClick={onSessionClick}
+                    onArtifactOpen={onArtifactOpen}
                     onCancel={async () => {
                       setOptimisticallyCancelled(prev =>
                         new Set(prev).add(toolCall.id),
@@ -426,6 +430,7 @@ export const AssistantMessage = ({
                       toolCall={optimisticToolCall}
                       messageId={message._id}
                       onSessionClick={onSessionClick}
+                      onArtifactOpen={onArtifactOpen}
                       onCancel={async () => {
                         setOptimisticallyCancelled(prev =>
                           new Set(prev).add(toolCall.id),
@@ -614,6 +619,7 @@ export const AssistantMessage = ({
                 toolCall={optimisticToolCall}
                 messageId={message._id}
                 onSessionClick={onSessionClick}
+                onArtifactOpen={onArtifactOpen}
                 onCancel={async () => {
                   setOptimisticallyCancelled(prev =>
                     new Set(prev).add(toolCall.id),

@@ -26,6 +26,7 @@ import { TaskHandlers, registerTaskHandlers } from './plugins/tasks'
 import registerWebSocket from './plugins/webSocketPlugin'
 import { routes } from './routes'
 import { routes as routesV2 } from './routes/v2'
+import { routes as routesV3 } from './routes/v3'
 import fastify, { FastifyRequest } from 'fastify'
 
 export interface CreateServerOpts {
@@ -230,6 +231,11 @@ const createServer = async (opts: CreateServerOpts) => {
 
   // eden2 specific - routes
   routesV2.map(async route => {
+    await server.register(route)
+  })
+
+  // eden3 specific - routes
+  routesV3.map(async route => {
     await server.register(route)
   })
 
