@@ -1,10 +1,13 @@
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import createStyles from '@/styles/google-auth-button.styles'
 import { useSSO } from '@clerk/clerk-expo'
-import { useState } from 'react'
+import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Image,
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -28,6 +31,36 @@ export default function GoogleAuthButton({
   const styles = createStyles(theme)
   const [isLoading, setIsLoading] = useState(false)
   const { startSSOFlow } = useSSO()
+  const redirectUrl = useMemo(
+    () => Linking.createURL('oauth/callback'),
+    [],
+  )
+  const webCallbackUrl = useMemo(() => {
+    const base = process.env.EXPO_PUBLIC_WEB_URL
+    if (!base) return undefined
+    return `${base.replace(/\/$/, '')}/oauth/callback`
+  }, [])
+  const [browserPackage, setBrowserPackage] = useState<string | undefined>()
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return
+
+    WebBrowser.getCustomTabsSupportingBrowsersAsync()
+      .then(result => {
+        const chromePackage = 'com.android.chrome'
+        const available = result.browserPackages || []
+        const preferred =
+          result.preferredBrowserPackage || result.defaultBrowserPackage
+        if (available.includes(chromePackage)) {
+          setBrowserPackage(chromePackage)
+          return
+        }
+        if (preferred) {
+          setBrowserPackage(preferred)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleGoogleAuth = async () => {
     if (disabled || isLoading) return
@@ -39,8 +72,14 @@ export default function GoogleAuthButton({
       const result = await startSSOFlow({
         // Deep link scheme: edenmobile://oauth/callback
         // This must match what's configured in Clerk Dashboard → Google OAuth → Redirect URLs
-        redirectUrl: 'edenmobile://oauth/callback',
+        redirectUrl:
+          Platform.OS === 'android' && webCallbackUrl
+            ? webCallbackUrl
+            : redirectUrl,
         strategy: 'oauth_google',
+        authSessionOptions: browserPackage
+          ? { browserPackage, createTask: false }
+          : undefined,
       })
 
       if (result.createdSessionId && result.setActive) {

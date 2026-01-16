@@ -328,6 +328,35 @@ import {
   verdelisSeedsV2GetRequestConfig,
   verdelisSeedsV2ListRequestConfig,
 } from './models/v2'
+import {
+  ArtifactsV3CreateArguments,
+  ArtifactsV3CreateResponse,
+  ArtifactsV3DeleteArguments,
+  ArtifactsV3DeleteResponse,
+  ArtifactsV3GetArguments,
+  ArtifactsV3GetPermissionsArguments,
+  ArtifactsV3GetPermissionsResponse,
+  ArtifactsV3GetResponse,
+  ArtifactsV3HistoryArguments,
+  ArtifactsV3HistoryResponse,
+  ArtifactsV3ListArguments,
+  ArtifactsV3ListResponse,
+  ArtifactsV3PatchItemsArguments,
+  ArtifactsV3PatchItemsResponse,
+  ArtifactsV3UpdateArguments,
+  ArtifactsV3UpdatePermissionsArguments,
+  ArtifactsV3UpdatePermissionsResponse,
+  ArtifactsV3UpdateResponse,
+  artifactsV3CreateRequestConfig,
+  artifactsV3DeleteRequestConfig,
+  artifactsV3GetPermissionsRequestConfig,
+  artifactsV3GetRequestConfig,
+  artifactsV3HistoryRequestConfig,
+  artifactsV3ListRequestConfig,
+  artifactsV3PatchItemsRequestConfig,
+  artifactsV3UpdatePermissionsRequestConfig,
+  artifactsV3UpdateRequestConfig,
+} from './models/v3'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
 
@@ -472,6 +501,47 @@ export abstract class Methods {
         ArtifactsV2RemoveCreationResponse
       >(this, artifactsV2RemoveCreationRequestConfig),
     },
+  }
+
+  public readonly artifactsV3 = {
+    list: bindApiCall<ArtifactsV3ListArguments, ArtifactsV3ListResponse>(
+      this,
+      artifactsV3ListRequestConfig,
+    ),
+    get: bindApiCall<ArtifactsV3GetArguments, ArtifactsV3GetResponse>(
+      this,
+      artifactsV3GetRequestConfig,
+    ),
+    create: bindApiCall<ArtifactsV3CreateArguments, ArtifactsV3CreateResponse>(
+      this,
+      artifactsV3CreateRequestConfig,
+    ),
+    update: bindApiCall<ArtifactsV3UpdateArguments, ArtifactsV3UpdateResponse>(
+      this,
+      artifactsV3UpdateRequestConfig,
+    ),
+    patchItems: bindApiCall<
+      ArtifactsV3PatchItemsArguments,
+      ArtifactsV3PatchItemsResponse
+    >(this, artifactsV3PatchItemsRequestConfig),
+    delete: bindApiCall<ArtifactsV3DeleteArguments, ArtifactsV3DeleteResponse>(
+      this,
+      artifactsV3DeleteRequestConfig,
+    ),
+    permissions: {
+      get: bindApiCall<
+        ArtifactsV3GetPermissionsArguments,
+        ArtifactsV3GetPermissionsResponse
+      >(this, artifactsV3GetPermissionsRequestConfig),
+      update: bindApiCall<
+        ArtifactsV3UpdatePermissionsArguments,
+        ArtifactsV3UpdatePermissionsResponse
+      >(this, artifactsV3UpdatePermissionsRequestConfig),
+    },
+    history: bindApiCall<
+      ArtifactsV3HistoryArguments,
+      ArtifactsV3HistoryResponse
+    >(this, artifactsV3HistoryRequestConfig),
   }
 
   public readonly verdelisSeeds = {

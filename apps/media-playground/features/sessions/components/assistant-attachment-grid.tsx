@@ -24,6 +24,9 @@ const SingleImageWrapper = ({
   mediaType: 'image' | 'video'
 }) => {
   const [isPortrait, setIsPortrait] = useState(false)
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null)
+  const fallbackAspectRatio = mediaType === 'video' ? 16 / 9 : 4 / 3
+  const resolvedAspectRatio = aspectRatio ?? fallbackAspectRatio
 
   return (
     <div
@@ -36,6 +39,8 @@ const SingleImageWrapper = ({
     >
       <LightboxTrigger
         startIndex={0}
+        className="w-full h-full"
+        style={{ aspectRatio: resolvedAspectRatio.toString() }}
         slide={{
           type: mediaType,
           url: getCloudfrontOriginalUrl(url),
@@ -46,13 +51,17 @@ const SingleImageWrapper = ({
             'rounded-lg',
             isPortrait
               ? 'max-h-full max-w-full h-auto w-auto object-contain' // Portrait: fit within container bounds
-              : 'w-full h-auto', // Landscape: width-driven sizing
+              : 'w-full h-full object-contain', // Landscape: width-driven sizing
           ),
           unoptimized: true,
           loading: 'lazy',
           onLoad: (e: React.SyntheticEvent<HTMLImageElement>) => {
             const img = e.currentTarget
-            setIsPortrait(img.naturalHeight > img.naturalWidth * 1.2)
+            if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+              const ratio = img.naturalWidth / img.naturalHeight
+              setAspectRatio(ratio)
+              setIsPortrait(img.naturalHeight > img.naturalWidth * 1.2)
+            }
           },
         }}
         videoProps={{
@@ -60,8 +69,16 @@ const SingleImageWrapper = ({
             'rounded-lg',
             isPortrait
               ? 'max-h-full max-w-full h-auto w-auto object-contain'
-              : 'w-full h-auto',
+              : 'w-full h-full object-contain',
           ),
+          onLoadedMetadata: (e: React.SyntheticEvent<HTMLVideoElement>) => {
+            const video = e.currentTarget
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              const ratio = video.videoWidth / video.videoHeight
+              setAspectRatio(ratio)
+              setIsPortrait(video.videoHeight > video.videoWidth * 1.2)
+            }
+          },
         }}
       />
     </div>

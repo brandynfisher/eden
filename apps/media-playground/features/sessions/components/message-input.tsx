@@ -178,7 +178,7 @@ export const MessageInput = ({
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
   const [showCharacterLimitModal, setShowCharacterLimitModal] = useState(false)
-  const textareaRef = useRef<AutosizeTextAreaRef>(null)
+  const textareaRef = useRef<AutosizeTextAreaRef | null>(null)
   const mentionInputRef = useRef<MentionInputRef>(null)
 
   // Character limit based on subscription tier
@@ -492,6 +492,7 @@ export const MessageInput = ({
     // Clear form and attachments immediately
     form.reset()
     setAttachments([])
+    resetComposerState()
     // Keep thinking mode state - don't reset after sending
 
     try {
@@ -523,6 +524,15 @@ export const MessageInput = ({
 
       // Restore form content
       form.setValue('content', data.content)
+      requestAnimationFrame(() => {
+        const textarea = textareaRef.current?.textArea
+        const shouldBeMultiline =
+          expanded || (!!data.content && (textarea?.scrollHeight ?? 0) > 40)
+        if (shouldBeMultiline !== isMultiline) {
+          setIsMultiline(shouldBeMultiline)
+        }
+        textareaRef.current?.resize?.()
+      })
 
       // Show error toast
       toast.error('Failed to send message', {
@@ -629,11 +639,8 @@ export const MessageInput = ({
     }
   }
 
-  useEffect(() => {
-    const textarea = textareaRef.current?.textArea
-    if (!textarea) return
-
-    const handlePaste = async (e: ClipboardEvent) => {
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
       if (!e.clipboardData) return
       const items = Array.from(e.clipboardData.items)
 
@@ -646,13 +653,19 @@ export const MessageInput = ({
         e.preventDefault()
         await handleFilesDropped(files)
       }
-    }
+    },
+    [handleFilesDropped],
+  )
 
-    textarea.addEventListener('paste', handlePaste)
-    return () => {
-      textarea.removeEventListener('paste', handlePaste)
-    }
-  }, [handleFilesDropped])
+  const resetComposerState = useCallback(() => {
+    setIsMultiline(expanded)
+    setShowMention(false)
+    setMentionTrigger('')
+    setMentionPosition(0)
+    requestAnimationFrame(() => {
+      textareaRef.current?.resize?.()
+    })
+  }, [expanded])
 
   // Check if this is a read-only view (user doesn't own session and has no permissions)
   const permissionForUser = session?.permissions?.find(
@@ -852,6 +865,7 @@ export const MessageInput = ({
                                     form.handleSubmit(onSubmit)()
                                   }
                                 }}
+                                onPaste={handlePaste}
                                 onChange={e => {
                                   field.onChange(e)
                                   handleTextChange(e)
@@ -1094,6 +1108,7 @@ export const MessageInput = ({
                                     form.handleSubmit(onSubmit)()
                                   }
                                 }}
+                                onPaste={handlePaste}
                                 onChange={e => {
                                   field.onChange(e)
                                   handleTextChange(e)

@@ -6,17 +6,24 @@ import createStyles from '@/styles/webview.styles'
 import { isIos } from '@/utils/responsive'
 import { useAuth, useClerk } from '@clerk/clerk-expo'
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker'
 import * as Network from 'expo-network'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   AppState,
+  BackHandler,
   Dimensions,
   NativeModules,
   PanResponder,
+  Platform,
   Pressable,
   Text,
   TouchableOpacity,
@@ -89,6 +96,8 @@ export default function Webview() {
   const [showSignInModal, setShowSignInModal] = useState(false)
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
   const [webviewKey, setWebviewKey] = useState(0)
+  const [canGoBack, setCanGoBack] = useState(false)
+  const [hasWebModalOpen, setHasWebModalOpen] = useState(false)
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
@@ -100,11 +109,8 @@ export default function Webview() {
     const EDGE_ZONE_WIDTH = screenWidth * 0.15 // 15% of screen width from left
 
     return PanResponder.create({
-      onStartShouldSetPanResponder: evt => {
-        const { pageX } = evt.nativeEvent
-        // Start gesture if near left edge (to open) or anywhere when swiping left (potentially to close)
-        return pageX < EDGE_ZONE_WIDTH
-      },
+      // Avoid capturing taps near the left edge so WebView buttons remain clickable.
+      onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         const { pageX } = evt.nativeEvent
         const screenWidth = Dimensions.get('window').width
@@ -245,6 +251,11 @@ export default function Webview() {
     try {
       const msg = JSON.parse(event.nativeEvent.data)
 
+      if (msg?.type === 'NATIVE_MODAL_STATE') {
+        setHasWebModalOpen(!!msg.open)
+        return
+      }
+
       if (msg?.type === 'CHECK_NATIVE_PERMISSIONS') {
         const [cameraStatus, mediaStatus] = await Promise.all([
           ImagePicker.getCameraPermissionsAsync(),
@@ -269,6 +280,36 @@ export default function Webview() {
       console.error('Failed to handle WebView message', err)
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') return
+      if (typeof BackHandler?.addEventListener !== 'function') return
+
+      const onBackPress = () => {
+        if (hasWebModalOpen) {
+          webRef.current?.postMessage(
+            JSON.stringify({ type: 'NATIVE_BACK' }),
+          )
+          return true
+        }
+
+        if (canGoBack) {
+          webRef.current?.goBack()
+          return true
+        }
+
+        return false
+      }
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      )
+
+      return () => subscription?.remove?.()
+    }, [canGoBack, hasWebModalOpen]),
+  )
 
   const openWebviewWithSession = async () => {
     if (!isSignedIn) {
@@ -369,6 +410,7 @@ export default function Webview() {
               onMessage={handleMessage}
               onNavigationStateChange={state => {
                 setCurrentUrl(state.url)
+                setCanGoBack(state.canGoBack)
               }}
               onContentProcessDidTerminate={reloadWebview}
               onRenderProcessGone={reloadWebview}

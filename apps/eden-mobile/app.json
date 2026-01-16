@@ -25,6 +25,19 @@
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "package": "art.eden.eden",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            {
+              "scheme": "edenmobile",
+              "host": "oauth",
+              "pathPrefix": "/callback"
+            }
+          ]
+        }
+      ],
       "permissions": [
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.CAMERA",

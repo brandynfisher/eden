@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response.data)
   } catch (error) {
-    console.error('[GET /api/triggers] Error:', error)
     const errorMessage = handleAxiosServerError(error)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   const requestJson = await request.json()
 
-  const { name, prompt, session, agent, schedule } = requestJson
+  const { name, prompt, session, agent, schedule, session_target } = requestJson
 
   // Either session or agent must be provided
   if (!session && !agent) {
@@ -61,15 +60,18 @@ export async function POST(request: NextRequest) {
     const edenApiUrl =
       process.env.NEXT_PUBLIC_EDEN_API_URL || 'https://api.eden.art'
 
+    const payloadToApi = {
+      name,
+      prompt,
+      ...(session && { session }),
+      ...(agent && { agent }),
+      ...(session_target && { session_target }),
+      ...(schedule && { schedule }),
+    }
+
     const response = await axios.post(
       `${edenApiUrl}/v2/triggers`,
-      {
-        name,
-        prompt,
-        ...(session && { session }),
-        ...(agent && { agent }),
-        ...(schedule && { schedule }),
-      },
+      payloadToApi,
       {
         headers: {
           Authorization: `Bearer ${authToken}`,

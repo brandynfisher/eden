@@ -2,6 +2,7 @@
 
 import { AgentAvatarsMenu } from './components/agent-avatars-menu'
 import { AgentWorkspaces } from './components/agent-workspaces'
+import { ArtifactSidebar } from './components/artifact-sidebar'
 import { AutomaticSessionControls } from './components/automatic-session-controls'
 import { ChildSessionSidebar } from './components/child-session-sidebar'
 import { ErrorDisplay } from './components/error-display'
@@ -36,6 +37,7 @@ import { SystemMessage } from '@/features/sessions/components/system-message'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
+import { useArtifactsV3ListQuery } from '@/hooks/query/use-artifacts-v3-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
@@ -56,7 +58,13 @@ import {
 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { BrainIcon, EditIcon, MenuIcon, Settings } from 'lucide-react'
+import {
+  BrainIcon,
+  EditIcon,
+  FileTextIcon,
+  MenuIcon,
+  Settings,
+} from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -149,6 +157,10 @@ const Session = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isNearBottomRef = useRef(true)
   const previousScrollHeightRef = useRef(0)
+  const paginationAnchorRef = useRef<{ id: string; offset: number } | null>(
+    null,
+  )
+  const clearAnchorTimeoutRef = useRef<number | null>(null)
   const { user, isSignedIn } = useAuthState()
   const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
     GatedResource.SessionSettings,
@@ -163,6 +175,10 @@ const Session = ({
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [childSessionId, setChildSessionId] = useState<string | null>(null)
   const [isChildSidebarOpen, setIsChildSidebarOpen] = useState(false)
+  const [artifactSidebarId, setArtifactSidebarId] = useState<string | null>(
+    null,
+  )
+  const [isArtifactSidebarOpen, setIsArtifactSidebarOpen] = useState(false)
   const [showModeratorMessages, setShowModeratorMessages] = useState(false)
   const [isUserTranscribing, setIsUserTranscribing] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
@@ -258,6 +274,12 @@ const Session = ({
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
+  })
+
+  const artifactsEnabled = !!sessionId && sessionId !== 'new'
+  const { artifacts: sessionArtifacts } = useArtifactsV3ListQuery({
+    sessionId: artifactsEnabled ? (sessionId as string) : undefined,
+    enabled: artifactsEnabled,
   })
 
   // Show confetti when an automatic session with an outcome is loaded
@@ -1030,6 +1052,61 @@ const Session = ({
     }
   }, [])
 
+  const capturePaginationAnchor = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const containerRect = container.getBoundingClientRect()
+    const messageElements = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-message-id]'),
+    )
+
+    const firstVisible = messageElements.find(el => {
+      const rect = el.getBoundingClientRect()
+      return rect.bottom >= containerRect.top + 1
+    })
+
+    if (firstVisible?.dataset.messageId) {
+      const offset =
+        firstVisible.getBoundingClientRect().top - containerRect.top
+      paginationAnchorRef.current = {
+        id: firstVisible.dataset.messageId,
+        offset,
+      }
+    } else {
+      paginationAnchorRef.current = null
+    }
+  }, [])
+
+  const restorePaginationAnchor = useCallback(() => {
+    const container = messagesContainerRef.current
+    const anchor = paginationAnchorRef.current
+    if (!container || !anchor) return
+
+    const anchorEl = container.querySelector<HTMLElement>(
+      `[data-message-id="${anchor.id}"]`,
+    )
+    if (!anchorEl) return
+
+    const containerTop = container.getBoundingClientRect().top
+    const anchorTop = anchorEl.getBoundingClientRect().top
+    const delta = anchorTop - containerTop - anchor.offset
+
+    if (Math.abs(delta) > 1) {
+      container.scrollTop += delta
+    }
+  }, [])
+
+  const scheduleClearPaginationAnchor = useCallback(() => {
+    if (clearAnchorTimeoutRef.current !== null) {
+      window.clearTimeout(clearAnchorTimeoutRef.current)
+    }
+
+    clearAnchorTimeoutRef.current = window.setTimeout(() => {
+      paginationAnchorRef.current = null
+    }, 400)
+  }, [])
+
   // Track previous message count to detect new messages vs older messages
   const previousMessageCountRef = useRef<number>(0)
 
@@ -1056,6 +1133,7 @@ const Session = ({
 
         if (paginationData?.hasMore) {
           setIsLoadingOlderMessages(true)
+          capturePaginationAnchor()
 
           // Store current scroll position
           const previousScrollHeight = container.scrollHeight
@@ -1063,15 +1141,17 @@ const Session = ({
           try {
             const result = await fetchOlderMessages()
 
-            if (result.messages.length > 0) {
-              // Wait for DOM to update
-              setTimeout(() => {
+            // Wait for DOM to update
+            setTimeout(() => {
+              if (result.messages.length > 0) {
                 // Restore scroll position
                 const newScrollHeight = container.scrollHeight
                 const scrollDiff = newScrollHeight - previousScrollHeight
                 container.scrollTop = previousScrollTop + scrollDiff
-              }, 0)
-            }
+                restorePaginationAnchor()
+              }
+              scheduleClearPaginationAnchor()
+            }, 0)
           } catch (error) {
             console.error(
               '[Message Pagination] Failed to load older messages:',
@@ -1095,7 +1175,28 @@ const Session = ({
     fetchOlderMessages,
     getPaginationData,
     displaySession,
+    capturePaginationAnchor,
+    restorePaginationAnchor,
+    scheduleClearPaginationAnchor,
   ])
+
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleMediaLoad = () => {
+      if (!paginationAnchorRef.current) return
+      requestAnimationFrame(() => {
+        restorePaginationAnchor()
+        scheduleClearPaginationAnchor()
+      })
+    }
+
+    container.addEventListener('load', handleMediaLoad, true)
+    return () => {
+      container.removeEventListener('load', handleMediaLoad, true)
+    }
+  }, [restorePaginationAnchor, scheduleClearPaginationAnchor])
 
   // Unified scroll handling: initial scroll and new message scroll.
   useLayoutEffect(() => {
@@ -1372,6 +1473,9 @@ const Session = ({
     [filteredMessages],
   )
 
+  const artifactCount = sessionArtifacts.length
+  const artifactCountLabel = artifactCount > 9 ? '9+' : `${artifactCount}`
+
   // Handler to open child session sidebar
   const handleChildSessionClick = useCallback((childId: string) => {
     setChildSessionId(childId)
@@ -1384,6 +1488,31 @@ const Session = ({
     // Delay clearing the ID to allow for smooth animation
     setTimeout(() => setChildSessionId(null), 300)
   }, [])
+
+  const handleArtifactOpen = useCallback((artifactId: string) => {
+    setArtifactSidebarId(artifactId)
+    setIsArtifactSidebarOpen(true)
+  }, [])
+
+  const handleToggleArtifactSidebar = useCallback(() => {
+    setIsArtifactSidebarOpen(prev => !prev)
+  }, [])
+
+  const handleCloseArtifactSidebar = useCallback(() => {
+    setIsArtifactSidebarOpen(false)
+  }, [])
+
+  useEffect(() => {
+    if (!isArtifactSidebarOpen) return
+    if (artifactSidebarId) return
+    if (sessionArtifacts.length === 0) return
+    setArtifactSidebarId(sessionArtifacts[0]._id)
+  }, [artifactSidebarId, isArtifactSidebarOpen, sessionArtifacts])
+
+  useEffect(() => {
+    setIsArtifactSidebarOpen(false)
+    setArtifactSidebarId(null)
+  }, [sessionId])
 
   // Enrich message sender with data from session.agents if sender is incomplete
   const enrichMessageSender = useCallback(
@@ -1767,6 +1896,25 @@ const Session = ({
                 </button>
               )}
 
+              <button
+                onClick={handleToggleArtifactSidebar}
+                className={cn(
+                  'h-9 w-9 flex items-center justify-center rounded-md transition-colors relative',
+                  isArtifactSidebarOpen
+                    ? 'bg-muted/60 text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                )}
+                title="Artifacts"
+                aria-label="Artifacts"
+              >
+                <FileTextIcon className="h-4 w-4" />
+                {artifactCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] leading-[18px] text-primary-foreground text-center">
+                    {artifactCountLabel}
+                  </span>
+                )}
+              </button>
+
               {/* Share button - icon only */}
               {canManageSession && (
                 <SessionShareButton
@@ -1878,6 +2026,25 @@ const Session = ({
                 )}
               </button>
             )}
+
+            <button
+              onClick={handleToggleArtifactSidebar}
+              className={cn(
+                'h-8 px-3 text-sm font-medium rounded-md transition-colors flex items-center gap-2',
+                isArtifactSidebarOpen
+                  ? 'bg-muted/60 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+              )}
+              title="Artifacts"
+            >
+              <FileTextIcon className="h-3.5 w-3.5" />
+              Artifacts
+              {artifactCount > 0 && (
+                <span className="ml-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] leading-[18px] text-primary-foreground text-center">
+                  {artifactCountLabel}
+                </span>
+              )}
+            </button>
 
             {/* Session Settings button - show for sessions routes (not chat) */}
             {!ischatRoute && canOpenSessionSettings && (
@@ -2045,6 +2212,7 @@ const Session = ({
                 <button
                   onClick={async () => {
                     setIsLoadingOlderMessages(true)
+                    capturePaginationAnchor()
 
                     const container = messagesContainerRef.current
                     if (!container) return
@@ -2056,23 +2224,18 @@ const Session = ({
                     try {
                       const result = await fetchOlderMessages()
 
-                      if (result.messages.length > 0) {
-                        // Wait for DOM to update with new messages
-                        setTimeout(() => {
+                      // Wait for DOM to update with new messages
+                      setTimeout(() => {
+                        if (result.messages.length > 0) {
                           const newScrollHeight = container.scrollHeight
                           const scrollDiff =
                             newScrollHeight - previousScrollHeight
 
-                          // Position at roughly 20% from top (in the trigger zone for next load)
-                          const newScrollableHeight =
-                            newScrollHeight - container.clientHeight
-                          const targetScrollTop = Math.min(
-                            previousScrollTop + scrollDiff,
-                            newScrollableHeight * 0.2,
-                          )
-                          container.scrollTop = targetScrollTop
-                        }, 150)
-                      }
+                          container.scrollTop = previousScrollTop + scrollDiff
+                          restorePaginationAnchor()
+                        }
+                        scheduleClearPaginationAnchor()
+                      }, 150)
 
                       // Keep loading state true for a bit longer to let React update
                       setTimeout(() => setIsLoadingOlderMessages(false), 200)
@@ -2215,6 +2378,7 @@ const Session = ({
                                           onSessionClick={
                                             handleChildSessionClick
                                           }
+                                          onArtifactOpen={handleArtifactOpen}
                                         />
                                       )}
                                     </div>
@@ -2234,6 +2398,7 @@ const Session = ({
                                         isStreamingTokens={false}
                                         isChatRoute={ischatRoute}
                                         onSessionClick={handleChildSessionClick}
+                                        onArtifactOpen={handleArtifactOpen}
                                       />
                                     </div>
                                   ))}
@@ -2276,6 +2441,7 @@ const Session = ({
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
+                              onArtifactOpen={handleArtifactOpen}
                             />
                           </div>
                         )
@@ -2324,6 +2490,7 @@ const Session = ({
                               isStreamingTokens={true}
                               isChatRoute={ischatRoute}
                               onSessionClick={handleChildSessionClick}
+                              onArtifactOpen={handleArtifactOpen}
                             />
                           </div>
                         )}
@@ -2359,6 +2526,7 @@ const Session = ({
                           isStreamingTokens={true}
                           isChatRoute={ischatRoute}
                           onSessionClick={handleChildSessionClick}
+                          onArtifactOpen={handleArtifactOpen}
                         />
                       </div>
                     )
@@ -2393,6 +2561,7 @@ const Session = ({
                           }
                           isChatRoute={ischatRoute}
                           onSessionClick={handleChildSessionClick}
+                          onArtifactOpen={handleArtifactOpen}
                         />
                       </div>
                     )
@@ -2555,6 +2724,7 @@ const Session = ({
                                         isStreamingTokens={false}
                                         isChatRoute={ischatRoute}
                                         onSessionClick={handleChildSessionClick}
+                                        onArtifactOpen={handleArtifactOpen}
                                       />
                                     )}
                                   </div>
@@ -2574,6 +2744,7 @@ const Session = ({
                                       showAvatar={index === 0}
                                       isChatRoute={ischatRoute}
                                       onSessionClick={handleChildSessionClick}
+                                      onArtifactOpen={handleArtifactOpen}
                                     />
                                   </div>
                                 ))}
@@ -2616,6 +2787,7 @@ const Session = ({
                             isStreamingTokens={true}
                             isChatRoute={ischatRoute}
                             onSessionClick={handleChildSessionClick}
+                            onArtifactOpen={handleArtifactOpen}
                           />
                         </div>
                       )
@@ -2671,6 +2843,14 @@ const Session = ({
             onClose={handleCloseChildSidebar}
           />
         )}
+
+        <ArtifactSidebar
+          artifactId={artifactSidebarId}
+          artifacts={sessionArtifacts}
+          isOpen={isArtifactSidebarOpen}
+          onClose={handleCloseArtifactSidebar}
+          onSelectArtifact={setArtifactSidebarId}
+        />
       </div>
 
       {!isReadOnlySession && (

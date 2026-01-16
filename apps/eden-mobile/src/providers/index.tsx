@@ -1,5 +1,6 @@
 import { ClerkProviderWrapper } from './clerk-provider'
 import { NotificationProvider } from './notification-provider'
+import SsoCallbackHandler from '@/components/auth/sso-callback-handler'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import {
   DarkTheme,
@@ -16,7 +17,10 @@ export default function Providers({ children }: PropsWithChildren) {
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <ClerkProviderWrapper>
-          <NotificationProvider>{children}</NotificationProvider>
+          <NotificationProvider>
+            <SsoCallbackHandler />
+            {children}
+          </NotificationProvider>
         </ClerkProviderWrapper>
       </ThemeProvider>
     </SafeAreaProvider>
