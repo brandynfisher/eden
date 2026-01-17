@@ -17,10 +17,23 @@ import {
   useState,
 } from 'react'
 
+type ArtifactControls = {
+  count: number
+  label: string
+  isOpen?: boolean
+  onToggle?: () => void
+}
+
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname()
   const { openMobileSidebar, setConfig, resetConfig } = useAppShell()
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
+  const [artifactControls, setArtifactControlsState] =
+    useState<ArtifactControls>({
+      count: 0,
+      label: '0',
+      isOpen: false,
+    })
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const isShareRoute = pathname?.includes('/sessions/share/')
@@ -67,13 +80,35 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
     openMobileSidebar()
   }
 
+  const setArtifactControls = useCallback((controls: ArtifactControls) => {
+    setArtifactControlsState(prev => {
+      if (
+        prev.count === controls.count &&
+        prev.label === controls.label &&
+        prev.isOpen === controls.isOpen &&
+        prev.onToggle === controls.onToggle
+      ) {
+        return prev
+      }
+      return controls
+    })
+  }, [])
+
   const contextValue = useMemo(
     () => ({
       forceHideSidebar,
       setForceHideSidebar,
       openSidebar: canShowSidebar ? openMobileSidebar : undefined,
+      artifactControls,
+      setArtifactControls,
     }),
-    [canShowSidebar, forceHideSidebar, openMobileSidebar],
+    [
+      artifactControls,
+      canShowSidebar,
+      forceHideSidebar,
+      openMobileSidebar,
+      setArtifactControls,
+    ],
   )
 
   if (isShareRoute) {

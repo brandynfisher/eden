@@ -1502,6 +1502,37 @@ const Session = ({
     setIsArtifactSidebarOpen(false)
   }, [])
 
+  const setArtifactControls = sessionsLayoutContext?.setArtifactControls
+
+  useEffect(() => {
+    if (!setArtifactControls) {
+      return
+    }
+
+    if (!sessionId || sessionId === 'new') {
+      setArtifactControls({
+        count: 0,
+        label: '0',
+        isOpen: false,
+      })
+      return
+    }
+
+    setArtifactControls({
+      count: artifactCount,
+      label: artifactCountLabel,
+      isOpen: isArtifactSidebarOpen,
+      onToggle: handleToggleArtifactSidebar,
+    })
+  }, [
+    artifactCount,
+    artifactCountLabel,
+    handleToggleArtifactSidebar,
+    isArtifactSidebarOpen,
+    sessionId,
+    setArtifactControls,
+  ])
+
   useEffect(() => {
     if (!isArtifactSidebarOpen) return
     if (artifactSidebarId) return
@@ -2039,11 +2070,6 @@ const Session = ({
             >
               <FileTextIcon className="h-3.5 w-3.5" />
               Artifacts
-              {artifactCount > 0 && (
-                <span className="ml-1 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] leading-[18px] text-primary-foreground text-center">
-                  {artifactCountLabel}
-                </span>
-              )}
             </button>
 
             {/* Session Settings button - show for sessions routes (not chat) */}

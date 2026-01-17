@@ -11,12 +11,14 @@ import {
 } from '@/features/sessions/components/session-settings-modal'
 import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { SessionStatusToggle } from '@/features/sessions/components/session-status-toggle'
+import { useSessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useSharedSessionQuery } from '@/hooks/query/use-shared-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent, SessionPermissionLevel, SessionType } from '@edenlabs/eden-sdk'
 import {
   EditIcon,
+  FileTextIcon,
   HomeIcon,
   MenuIcon,
   MessageSquarePlusIcon,
@@ -25,6 +27,10 @@ import {
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -89,6 +95,8 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   const pathname = usePathname()
   const { user } = useAuthState()
   const { toast } = useToast()
+  const sessionsLayoutContext = useSessionsLayoutContext()
+  const artifactControls = sessionsLayoutContext?.artifactControls
   const sessionId = params?.id as string
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
@@ -276,6 +284,8 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
   // Check if we're on the main sessions list page
   const isSessionsListPage = pathname === '/sessions'
+  const showArtifactsButton =
+    !isShareRoute && !isSessionsListPage && !!artifactControls?.onToggle
 
   return (
     <>
@@ -339,6 +349,21 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
                 <HomeIcon className="w-5 h-5" />
               </Link>
             </>
+          )}
+
+          {showArtifactsButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => artifactControls?.onToggle?.()}
+              className={`h-9 w-9 ${
+                artifactControls?.isOpen ? 'bg-muted/60 text-foreground' : ''
+              }`}
+              title="Artifacts"
+              aria-label="Artifacts"
+            >
+              <FileTextIcon className="w-4 h-4" />
+            </Button>
           )}
 
           {/* Status Toggle - only show for automatic sessions when user can manage */}

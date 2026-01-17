@@ -1,13 +1,12 @@
 import ActionBar from './action-bar'
 import { AssistantAttachmentGrid } from './assistant-attachment-grid'
 import { AssistantContentRenderer } from './assistant-content-renderer'
-import ToolResultActionBar from './tool-result-action-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { ThoughtBlock } from '@/features/sessions/components/thought-block'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { getCloudfrontUrl } from '@/lib/media'
-import { hasCreationResults, hasDisplayableResults } from '@/lib/tool-results'
+import { hasDisplayableResults } from '@/lib/tool-results'
 import { Message } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -293,15 +292,7 @@ export const AssistantMessage = ({
                     : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
                 }`}
               >
-                {message.tool_calls?.some(
-                  toolCall =>
-                    toolCall.status === 'completed' &&
-                    hasCreationResults(toolCall.result),
-                ) ? (
-                  <ToolResultActionBar message={message} />
-                ) : (
-                  <ActionBar sessionId={sessionId} message={message} />
-                )}
+                <ActionBar sessionId={sessionId} message={message} />
               </div>
             )}
           </div>
@@ -485,15 +476,7 @@ export const AssistantMessage = ({
                       : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
                   }`}
                 >
-                  {message.tool_calls?.some(
-                    toolCall =>
-                      toolCall.status === 'completed' &&
-                      hasCreationResults(toolCall.result),
-                  ) ? (
-                    <ToolResultActionBar message={message} />
-                  ) : (
-                    <ActionBar sessionId={sessionId} message={message} />
-                  )}
+                  <ActionBar sessionId={sessionId} message={message} />
                 </div>
               )}
             </div>
@@ -674,15 +657,7 @@ export const AssistantMessage = ({
                 : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
             }`}
           >
-            {message.tool_calls?.some(
-              toolCall =>
-                toolCall.status === 'completed' &&
-                hasCreationResults(toolCall.result),
-            ) ? (
-              <ToolResultActionBar message={message} />
-            ) : (
-              <ActionBar sessionId={sessionId} message={message} />
-            )}
+            <ActionBar sessionId={sessionId} message={message} />
           </div>
         )}
       </div>

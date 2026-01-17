@@ -37,7 +37,7 @@ interface ToolResultActionBarProps {
 }
 
 // Individual action button for tool results
-const ToolActionButton = ({ creationId }: { creationId: string }) => {
+export const ToolActionButton = ({ creationId }: { creationId: string }) => {
   const { isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
   const { creation, isLoading } = useCreationQuery({
@@ -185,6 +185,8 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
 
 const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
   // const { TimeAgo } = useTimeAgo()
+  const dispatch = useAppDispatch()
+  const { isSignedIn } = useAuthState()
 
   // Session post tools that have their own badge in SessionPostEmbed
   const SESSION_POST_TOOLS = [
@@ -237,12 +239,40 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
     ),
   )
 
-  // Use the first creation ID for the action buttons
-  const primaryCreationId = creationIds[0]
+  const uniqueCreationIds = Array.from(
+    new Set(creationIds.filter((id): id is string => Boolean(id))),
+  )
+
+  const handleAddToCollection = (creationId: string) => {
+    dispatch(
+      updateAddToCollectionModal({
+        isOpen: true,
+        creationIds: [creationId],
+      }),
+    )
+  }
 
   return (
     <div className="aui-assistant-action-bar-root flex flex-wrap items-center gap-2 w-full z-10">
-      {primaryCreationId && <ToolActionButton creationId={primaryCreationId} />}
+      {uniqueCreationIds[0] && (
+        <ToolActionButton creationId={uniqueCreationIds[0]} />
+      )}
+
+      {uniqueCreationIds.length > 1 && (
+        <div className="flex items-center gap-1">
+          {uniqueCreationIds.slice(1).map((creationId, index) => (
+            <button
+              key={creationId}
+              className="aui-button aui-button-ghost aui-button-icon"
+              onClick={() => handleAddToCollection(creationId)}
+              title={`Add creation ${index + 2} to collection`}
+              disabled={!isSignedIn}
+            >
+              <BookmarkPlusIcon className="w-4 h-4" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="ml-auto flex flex-wrap items-center gap-2 max-w-full min-w-0 justify-end">
         {completedToolCallsWithCreations.map((toolCall, index) => (

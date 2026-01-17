@@ -901,6 +901,7 @@ export async function listArtifactHistoryV3Core({
       page,
       limit,
       sort: { [sortField]: sortDirection },
+      customLabels: { totalDocs: 'total', totalPages: 'pages' },
     },
   )
 
@@ -930,8 +931,19 @@ export async function listArtifactHistoryV3Core({
     })
     .filter(Boolean)
 
+  const total =
+    (paginated as any).total ??
+    (paginated as any).totalDocs ??
+    filteredDocs.length
+  const pages =
+    (paginated as any).pages ??
+    (paginated as any).totalPages ??
+    Math.ceil(total / (paginated.limit || limit || 1))
+
   return {
     ...paginated,
+    total,
+    pages,
     docs: filteredDocs,
   }
 }

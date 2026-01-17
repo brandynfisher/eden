@@ -1049,9 +1049,9 @@ export const EdenMessage = ({
 
   return (
     <div className="flex flex-col items-center py-2 group">
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground">
-        <Icon className="w-3 h-3" />
-        <span>{text}</span>
+      <div className="inline-flex max-w-full min-w-0 items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground">
+        <Icon className="w-3 h-3 shrink-0" />
+        <span className="truncate">{text}</span>
       </div>
       <div className="flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <div
