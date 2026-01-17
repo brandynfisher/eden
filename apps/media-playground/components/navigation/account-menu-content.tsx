@@ -44,6 +44,7 @@ type AccountMenuContentProps = {
   isPreviewUser?: boolean
   onLogout: () => void | Promise<void>
   onOpenSettings?: (tab?: string) => void
+  onNavigate?: () => void
   setDropdownOpen: (open: boolean) => void
   triggerRef?: RefObject<HTMLButtonElement | null>
   side?: DropdownMenuContentProps['side']
@@ -65,6 +66,7 @@ const AccountMenuContent = ({
   isPreviewUser = false,
   onLogout,
   onOpenSettings,
+  onNavigate,
   setDropdownOpen,
   triggerRef,
   side,
@@ -97,6 +99,11 @@ const AccountMenuContent = ({
     setDropdownOpen(false)
   }
 
+  const handleNavigate = () => {
+    setDropdownOpen(false)
+    onNavigate?.()
+  }
+
   return (
     <DropdownMenuContent
       side={side}
@@ -111,7 +118,11 @@ const AccountMenuContent = ({
         }
       }}
     >
-      <DropdownMenuItem className="cursor-pointer group" asChild>
+      <DropdownMenuItem
+        className="cursor-pointer group"
+        asChild
+        onSelect={handleNavigate}
+      >
         <Link
           href={`/creators/${user?.username}`}
           className="group flex gap-2 items-center cursor-pointer "
@@ -157,25 +168,41 @@ const AccountMenuContent = ({
       </DropdownMenuItem>
 
       <DropdownMenuSeparator />
-      <DropdownMenuItem className="cursor-pointer" asChild>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        asChild
+        onSelect={handleNavigate}
+      >
         <Link href={`/creators/${user?.username}`}>
           <ImageIcon className="mr-2 h-4 w-4" />
           <span>Creations</span>
         </Link>
       </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        asChild
+        onSelect={handleNavigate}
+      >
         <Link href={`/creators/${user?.username}?tab=models`}>
           <ComponentIcon className="mr-2 h-4 w-4" />
           <span>Models</span>
         </Link>
       </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        asChild
+        onSelect={handleNavigate}
+      >
         <Link href={`/creators/${user?.username}?tab=collections`}>
           <BookmarkIcon className="mr-2 h-4 w-4" />
           <span>Collections</span>
         </Link>
       </DropdownMenuItem>
-      <DropdownMenuItem className="cursor-pointer" asChild>
+      <DropdownMenuItem
+        className="cursor-pointer"
+        asChild
+        onSelect={handleNavigate}
+      >
         <Link href={`/creators/${user?.username}?tab=agents`}>
           <BotIcon className="mr-2 h-4 w-4" />
           <span>Agents</span>
@@ -185,7 +212,11 @@ const AccountMenuContent = ({
       <DropdownMenuSeparator />
       {isPreviewUser && (
         <>
-          <DropdownMenuItem className="cursor-pointer" asChild>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            asChild
+            onSelect={handleNavigate}
+          >
             <Link href="/sessions">
               <MessageSquareIcon className="mr-2 h-4 w-4" />
               <span>Sessions</span>

@@ -1,39 +1,9 @@
 'use client'
 
-import LockedFeatureBanner from '@/components/gated/locked-feature-banner'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import {
-  getIntegrationCategory,
-  getIntegrationIcon,
-  getIntegrationLabel,
-} from '@/features/integrations/integration-definitions'
-import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
-import {
-  GatedResource,
-  PREVIEW_ONLY_DEPLOYMENT_PLATFORMS,
-  useGatedResource,
-} from '@/hooks/use-gated-resource'
+import AgentIntegrationsView from '@/features/sessions/views/agent-integrations-view'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import {
-  AlertCircle,
-  BookTextIcon,
-  ExternalLink,
-  Loader2,
-  Pencil,
-} from 'lucide-react'
-import Link from 'next/link'
 import {
   forwardRef,
   useCallback,
@@ -205,218 +175,18 @@ export interface IntegrationsTabHandle {
 export const IntegrationsTab = forwardRef<
   IntegrationsTabHandle,
   IntegrationsTabProps
->(({ agent, deployments, isLoading, isError }, ref) => {
-  // Expose imperative handle for parent (no longer has settings to save)
+>(({ agent }, ref) => {
   useImperativeHandle(
     ref,
     () => ({
-      save: async () => {
-        // No settings to save - payer settings moved to Manage tab
-      },
-      get hasUnsavedChanges() {
-        return false
-      },
-      get isSaving() {
-        return false
-      },
+      save: async () => {},
+      hasUnsavedChanges: false,
+      isSaving: false,
     }),
     [],
   )
 
-  const deploymentsGate = useGatedResource(GatedResource.Deployments, {
-    lockedBehavior: 'modal',
-  })
-  const isPreviewUser = deploymentsGate.isPreviewUser
-  const showIntegration = useCallback(
-    (platform: Deployment['platform']) =>
-      isPreviewUser || !PREVIEW_ONLY_DEPLOYMENT_PLATFORMS.has(platform),
-    [isPreviewUser],
-  )
-
-  // Always subscribe to the deployments query; seed it with any passed-in data
-  const deploymentsQuery = useAgentDeploymentsQuery({
-    key: agent._id,
-    initialData: deployments ? { deployments } : undefined,
-    enabled: deploymentsGate.isAllowed,
-  })
-  const effectiveDeployments = deploymentsQuery.deployments
-  const visibleDeployments = useMemo(
-    () =>
-      effectiveDeployments?.filter(deployment =>
-        showIntegration(deployment.platform),
-      ),
-    [effectiveDeployments, showIntegration],
-  )
-  const loadingState = deploymentsQuery.isLoading || isLoading
-  const errorState = deploymentsQuery.isError || isError
-
-  const getDeploymentStatus = (deployment: Deployment) => {
-    return deployment.valid === true
-      ? 'active'
-      : deployment.valid === false
-      ? 'inactive'
-      : 'unknown'
-  }
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'default'
-      case 'inactive':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
-
-  const integrations = visibleDeployments ?? []
-
-  if (!deploymentsGate.isAllowed) {
-    return (
-      <LockedFeatureBanner
-        gate={deploymentsGate}
-        title="Integrations are a Pro feature"
-        description="Connect your agents to Discord, Telegram, Farcaster, and more with a Pro plan."
-      />
-    )
-  }
-
-  if (loadingState) {
-    return (
-      <div className="flex items-center justify-center mt-10">
-        <Loader2 className="size-4 animate-spin" />
-      </div>
-    )
-  }
-
-  if (errorState) {
-    return (
-      <div className="flex items-center justify-center gap-2 mt-10">
-        <AlertCircle className="size-4 text-destructive" />
-        <p className="text-destructive">
-          We were unable to fetch your deployments. Please try again later.
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-lg font-medium text-foreground">Integrations</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage integrations for this agent in the Integrations hub.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild>
-            <Link href={`/integrations/wizard?agent=${agent._id}`}>
-              New Integration
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/integrations?agent=${agent._id}`}>
-              Open Integrations
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 hover:border-purple-500/70 text-purple-300"
-          >
-            <Link
-              href="https://docs.eden.art/integrations"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2"
-            >
-              <BookTextIcon className="size-4" />
-              Integration Guide
-              <ExternalLink className="size-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-base font-medium">
-            Connected Integrations
-          </CardTitle>
-          <Badge variant="outline">{integrations.length} total</Badge>
-        </CardHeader>
-        <CardContent className="p-0">
-          {integrations.length === 0 ? (
-            <div className="flex flex-col gap-2 p-6 text-sm text-muted-foreground">
-              <p>No integrations connected yet.</p>
-              <p>
-                Create a new integration to connect this agent to a platform.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Platform</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {integrations.map(deployment => {
-                    const Icon = getIntegrationIcon(deployment.platform)
-                    return (
-                      <TableRow key={deployment._id}>
-                        <TableCell className="py-3">
-                          <div className="flex items-start gap-3">
-                            <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-muted/40">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="flex flex-col leading-tight">
-                              <span className="font-medium">
-                                {getIntegrationLabel(deployment.platform)}
-                              </span>
-                              <span className="text-xs text-muted-foreground capitalize">
-                                {getIntegrationCategory(deployment.platform)}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={getStatusVariant(
-                              getDeploymentStatus(deployment),
-                            )}
-                            className="capitalize"
-                          >
-                            {getDeploymentStatus(deployment)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link
-                              href={`/integrations/wizard?agent=${agent._id}&platform=${deployment.platform}`}
-                              aria-label="Edit integration"
-                              title="Edit integration"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <AgentIntegrationsView agent={agent} variant="panel" />
 })
 
 IntegrationsTab.displayName = 'IntegrationsTab'

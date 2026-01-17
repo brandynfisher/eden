@@ -1,24 +1,39 @@
 import {
-  CalendarDays,
-  Globe,
-  Image,
-  Mail,
-  MessageCircle,
-  Settings,
-  ShoppingBag,
-  Twitter,
-  Video,
-  Zap,
-} from 'lucide-react'
+  DiscordBrandIcon,
+  FarcasterBrandIcon,
+  GmailBrandIcon,
+  GoogleBrandIcon,
+  InstagramBrandIcon,
+  ShopifyBrandIcon,
+  TelegramBrandIcon,
+  TikTokBrandIcon,
+  TwitterBrandIcon,
+} from '@/components/icons/brand-icons'
+import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
+import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
+import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
+import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
+import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
+import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
+import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
+import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
+import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
+import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
+import { Deployment } from '@edenlabs/eden-sdk'
+import { Mail, Settings, Video, Zap } from 'lucide-react'
+import { ComponentType } from 'react'
 
 export type IntegrationCategory = 'social' | 'utilities' | 'other'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type IconComponent = ComponentType<any>
 
 export type IntegrationDefinition = {
   platform: string
   label: string
   description: string
   category: IntegrationCategory
-  icon: typeof Zap
+  icon: IconComponent
   allowCreate?: boolean
 }
 
@@ -34,14 +49,14 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     label: 'Discord',
     description: 'OAuth-based Discord setup with channel permissions.',
     category: 'social',
-    icon: MessageCircle,
+    icon: DiscordBrandIcon,
   },
   {
     platform: 'discord',
     label: 'Discord (Bot token)',
     description: 'Legacy bot-token setup with manual channel selection.',
     category: 'social',
-    icon: MessageCircle,
+    icon: DiscordBrandIcon,
     allowCreate: false,
   },
   {
@@ -49,49 +64,49 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     label: 'Telegram',
     description: 'Bring your agent into Telegram chats and channels.',
     category: 'social',
-    icon: MessageCircle,
+    icon: TelegramBrandIcon,
   },
   {
     platform: 'twitter',
     label: 'Twitter / X',
     description: 'Connect Twitter to enable posts and replies.',
     category: 'social',
-    icon: Twitter,
+    icon: TwitterBrandIcon,
   },
   {
     platform: 'farcaster',
     label: 'Farcaster',
     description: 'Deploy your agent to the Farcaster network.',
     category: 'social',
-    icon: Globe,
+    icon: FarcasterBrandIcon,
   },
   {
     platform: 'instagram',
     label: 'Instagram',
     description: 'Publish posts and reels from your agent.',
     category: 'utilities',
-    icon: Image,
+    icon: InstagramBrandIcon,
   },
   {
     platform: 'tiktok',
     label: 'TikTok',
     description: 'Connect a TikTok account for publishing.',
     category: 'utilities',
-    icon: Video,
+    icon: TikTokBrandIcon,
   },
   {
     platform: 'google_calendar',
     label: 'Google Calendar',
     description: 'Schedule and manage calendar events.',
     category: 'utilities',
-    icon: CalendarDays,
+    icon: GoogleBrandIcon,
   },
   {
     platform: 'shopify',
     label: 'Shopify',
     description: 'Connect your store for commerce workflows.',
     category: 'utilities',
-    icon: ShoppingBag,
+    icon: ShopifyBrandIcon,
   },
   {
     platform: 'printify',
@@ -119,7 +134,7 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     label: 'Gmail',
     description: 'Tune reply behavior for existing Gmail deployments.',
     category: 'utilities',
-    icon: Mail,
+    icon: GmailBrandIcon,
     allowCreate: false,
   },
 ]
@@ -142,3 +157,35 @@ export const getIntegrationCategory = (platform: string) =>
 
 export const getIntegrationIcon = (platform: string) =>
   getIntegrationDefinition(platform)?.icon ?? Zap
+
+// Platforms excluded from the wizard (managed elsewhere or not yet supported)
+export const WIZARD_EXCLUDED_PLATFORMS = new Set([
+  'shopify',
+  'printify',
+  'captions',
+  'discord',
+])
+
+// Form props type for deployment forms
+export type IntegrationFormProps = {
+  agentId: string
+  deployment?: Deployment
+  variant?: 'collapsible' | 'inline'
+}
+
+// Map of platform to form component
+export const INTEGRATION_FORMS: Record<
+  string,
+  ComponentType<IntegrationFormProps>
+> = {
+  discord: DiscordDeploymentForm,
+  discord_v3: DiscordV3DeploymentForm,
+  telegram: TelegramDeploymentForm,
+  twitter: TwitterDeploymentForm,
+  farcaster: FarcasterDeploymentForm,
+  instagram: InstagramDeploymentForm,
+  tiktok: TiktokDeploymentForm,
+  google_calendar: GoogleCalendarDeploymentForm,
+  email: EmailDeploymentForm,
+  gmail: GmailDeploymentForm,
+}

@@ -54,6 +54,7 @@ import {
   PinOffIcon,
   Share2,
   TrashIcon,
+  UserIcon,
 } from 'lucide-react'
 import {
   useParams,
@@ -817,8 +818,10 @@ const MainLeft = ({
 // User Profile component for sidebar bottom
 const SidebarUserProfile = ({
   variant = 'default',
+  onNavigate,
 }: {
   variant?: 'default' | 'collapsed'
+  onNavigate?: () => void
 }) => {
   const { isSignedIn, isLoaded } = useAuth()
   const { signOut, openSignIn } = useClerk()
@@ -931,6 +934,7 @@ const SidebarUserProfile = ({
       isPreviewUser={isPreviewUser}
       onLogout={logout}
       onOpenSettings={openSettings}
+      onNavigate={onNavigate}
       setDropdownOpen={setDropdownOpen}
       triggerRef={dropdownTriggerRef}
       side={variant === 'collapsed' ? 'right' : 'top'}
@@ -1045,6 +1049,8 @@ export const SessionsSidebarContent = ({
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
   const sessionsScrollContainerRef = React.useRef<HTMLDivElement | null>(null)
+  const profileHref = user?.username ? `/creators/${user.username}` : null
+  const isProfileActive = profileHref ? pathname === profileHref : false
 
   // Get user preferences for last agent
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
@@ -1074,8 +1080,8 @@ export const SessionsSidebarContent = ({
     router.replace(url.pathname + url.search, { scroll: false })
   }
 
-  const collapsedNavItems = React.useMemo(
-    () => [
+  const collapsedNavItems = React.useMemo(() => {
+    const items = [
       {
         title: 'Agents',
         onClick: () => router.push('/agents'),
@@ -1166,30 +1172,40 @@ export const SessionsSidebarContent = ({
           </svg>
         ),
       },
-      {
-        title: 'Studio',
-        onClick: () => router.push('/studio'),
-        isActive: pathname?.startsWith('/studio'),
-        isExternal: true,
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-          </svg>
-        ),
-      },
-    ],
-    [pathname, router],
-  )
+    ]
+
+    items.push({
+      title: 'Studio',
+      onClick: () => router.push('/studio'),
+      isActive: pathname?.startsWith('/studio'),
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      ),
+    })
+
+    if (profileHref) {
+      items.push({
+        title: 'Profile',
+        onClick: () => router.push(profileHref),
+        isActive: pathname === profileHref,
+        icon: <UserIcon className="h-4 w-4" />,
+      })
+    }
+
+    return items
+  }, [pathname, profileHref, router])
 
   // Show collapsed sidebar with icons only
   // Show skeleton loading state until mounted to avoid hydration mismatch
@@ -1299,7 +1315,7 @@ export const SessionsSidebarContent = ({
         <div className="flex-1" />
 
         <div className="w-full px-1">
-          <SidebarUserProfile variant="collapsed" />
+          <SidebarUserProfile variant="collapsed" onNavigate={onItemClick} />
         </div>
       </div>
     )
@@ -1614,6 +1630,25 @@ export const SessionsSidebarContent = ({
               <path d="M7 7h10v10" />
             </svg>
           </Button>
+
+          {profileHref ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push(profileHref)
+              }}
+              className={cn(
+                'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                isProfileActive
+                  ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                  : 'bg-transparent hover:bg-muted/50 text-foreground',
+              )}
+            >
+              <UserIcon className="size-5" />
+              <span>Profile</span>
+            </Button>
+          ) : null}
         </div>
       )}
 
@@ -1833,6 +1868,24 @@ export const SessionsSidebarContent = ({
             <path d="M7 7h10v10" />
           </svg>
         </Button>
+
+        {profileHref ? (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              router.push(profileHref)
+            }}
+            className={cn(
+              'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+              isProfileActive
+                ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                : 'bg-transparent hover:bg-muted/50 text-foreground',
+            )}
+          >
+            <UserIcon className="size-5" />
+            <span>Profile</span>
+          </Button>
+        ) : null}
       </div>
 
       {/* Content area based on mode */}
@@ -2073,6 +2126,25 @@ export const SessionsSidebarContent = ({
                   <path d="M7 7h10v10" />
                 </svg>
               </Button>
+
+              {profileHref ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    onItemClick?.()
+                    router.push(profileHref)
+                  }}
+                  className={cn(
+                    'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                    isProfileActive
+                      ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                      : 'bg-transparent hover:bg-muted/50 text-foreground',
+                  )}
+                >
+                  <UserIcon className="size-5" />
+                  <span>Profile</span>
+                </Button>
+              ) : null}
             </div>
           )}
 
@@ -2088,7 +2160,7 @@ export const SessionsSidebarContent = ({
       </div>
 
       {/* User Profile Section - Always outside scroll container to stay sticky at bottom */}
-      <SidebarUserProfile />
+      <SidebarUserProfile onNavigate={onItemClick} />
 
       {/* Memories Modal for non-editor users */}
       {agent && (

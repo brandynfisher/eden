@@ -64,6 +64,8 @@ type ArtifactUpdateArgs = {
   type?: string
   public?: boolean
   session?: string | null
+  content?: string
+  items?: Record<string, unknown>
 }
 
 type ArtifactPatchItemsArgs = {
@@ -132,6 +134,22 @@ const parseMaybeJson = <T>(value: unknown): T | undefined => {
     }
   }
   return value as T
+}
+
+const flattenItems = (
+  items: Record<string, unknown>,
+  prefix = '',
+  out: Record<string, unknown> = {},
+) => {
+  for (const [key, value] of Object.entries(items)) {
+    const path = prefix ? `${prefix}.${key}` : key
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      flattenItems(value as Record<string, unknown>, path, out)
+    } else {
+      out[path] = value as unknown
+    }
+  }
+  return out
 }
 
 const getAuthToken = (request: FastifyRequest) => {
@@ -339,6 +357,8 @@ const createMcpServer = (server: FastifyInstance) => {
     type: z.string().optional(),
     public: z.boolean().optional(),
     session: z.union([z.string(), z.null()]).optional(),
+    content: z.string().optional(),
+    items: z.record(z.any()).optional(),
   } as Record<string, z.ZodTypeAny>
 
   tool(
@@ -350,16 +370,41 @@ const createMcpServer = (server: FastifyInstance) => {
         typeof extra?.authInfo?.extra?.userId === 'string'
           ? extra.authInfo.extra.userId
           : undefined
-      const result = await updateArtifactV3Core({
-        ...args,
-        authUserId,
-      })
+      const { content, items, ...updateArgs } = args
+      const hasMetadataUpdates =
+        updateArgs.title !== undefined ||
+        updateArgs.type !== undefined ||
+        updateArgs.public !== undefined ||
+        updateArgs.session !== undefined
+
+      let result: any | undefined
+      if (hasMetadataUpdates) {
+        result = await updateArtifactV3Core({
+          ...updateArgs,
+          authUserId,
+        })
+      }
+
+      if (content !== undefined || items !== undefined) {
+        const parsedItems =
+          parseMaybeJson<Record<string, unknown>>(items) ?? items
+        const flattenedItems = parsedItems ? flattenItems(parsedItems) : {}
+        const set = {
+          ...(content !== undefined ? { content } : {}),
+          ...flattenedItems,
+        }
+        result = await patchArtifactItemsV3Core({
+          artifactId: args.artifactId,
+          set,
+          authUserId,
+        })
+      }
 
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result),
+            text: JSON.stringify(result ?? {}),
           },
         ],
       }

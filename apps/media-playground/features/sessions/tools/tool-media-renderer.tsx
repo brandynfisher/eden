@@ -2,6 +2,7 @@
 
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { ToolActionButton } from '@/features/sessions/components/tool-result-action-bar'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -103,58 +104,69 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
         <div className={cn('mb-2', layout)}>
           {visualOutputs.map((item, index) => {
             const aspectRatio = getAspectRatio(item.output)
+            const creationId =
+              typeof item.output.creation === 'string'
+                ? item.output.creation
+                : item.output.creation?._id
             return (
               <div
                 key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
-                className="group relative overflow-hidden rounded-lg w-full"
-                style={{ aspectRatio: aspectRatio.toString() }}
-                draggable
-                onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
-                  const url = getCloudfrontOriginalUrl(item.output.filename)
-                  e.dataTransfer.setData('text/plain', '')
-                  e.dataTransfer.setData(
-                    'application/json',
-                    JSON.stringify({
-                      fileUrl: url,
-                      type:
-                        item.output.mediaAttributes?.mimeType || 'image/jpeg',
-                      name: url,
-                    }),
-                  )
-                  e.dataTransfer.effectAllowed = 'copy'
-                }}
+                className="flex flex-col gap-2"
               >
-                <LightboxTrigger
-                  className="absolute inset-0"
-                  slide={{
-                    type: 'video',
-                    url:
-                      getCloudfrontOriginalUrl(item.output.filename) ||
-                      item.output.url ||
-                      '',
-                    thumbnail:
-                      getCloudfrontOriginalUrl(item.output.filename) ||
-                      item.output.url ||
-                      '',
-                    width: item.output.mediaAttributes?.width,
-                    height: item.output.mediaAttributes?.height,
-                    duration:
-                      item.output.mediaAttributes?.duration || undefined,
-                    description:
-                      args && args.prompt ? String(args.prompt) : undefined,
-                    title:
-                      args && args.prompt ? String(args.prompt) : undefined,
+                <div
+                  className="group relative overflow-hidden rounded-lg w-full"
+                  style={{ aspectRatio: aspectRatio.toString() }}
+                  draggable
+                  onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
+                    const url = getCloudfrontOriginalUrl(item.output.filename)
+                    e.dataTransfer.setData('text/plain', '')
+                    e.dataTransfer.setData(
+                      'application/json',
+                      JSON.stringify({
+                        fileUrl: url,
+                        type:
+                          item.output.mediaAttributes?.mimeType || 'image/jpeg',
+                        name: url,
+                      }),
+                    )
+                    e.dataTransfer.effectAllowed = 'copy'
                   }}
-                  startIndex={index}
-                  imageProps={{
-                    loading: 'lazy',
-                    blurhash: item.output.mediaAttributes?.blurhash,
-                    className: 'object-contain',
-                  }}
-                  videoProps={{
-                    className: 'object-contain',
-                  }}
-                />
+                >
+                  <LightboxTrigger
+                    className="absolute inset-0"
+                    slide={{
+                      type: 'video',
+                      url:
+                        getCloudfrontOriginalUrl(item.output.filename) ||
+                        item.output.url ||
+                        '',
+                      thumbnail:
+                        getCloudfrontOriginalUrl(item.output.filename) ||
+                        item.output.url ||
+                        '',
+                      width: item.output.mediaAttributes?.width,
+                      height: item.output.mediaAttributes?.height,
+                      duration:
+                        item.output.mediaAttributes?.duration || undefined,
+                      description:
+                        args && args.prompt ? String(args.prompt) : undefined,
+                      title:
+                        args && args.prompt ? String(args.prompt) : undefined,
+                    }}
+                    startIndex={index}
+                    imageProps={{
+                      loading: 'lazy',
+                      blurhash: item.output.mediaAttributes?.blurhash,
+                      className: 'object-contain',
+                    }}
+                    videoProps={{
+                      className: 'object-contain',
+                    }}
+                  />
+                </div>
+                {creationId ? (
+                  <ToolActionButton creationId={creationId} />
+                ) : null}
               </div>
             )
           })}
@@ -164,18 +176,28 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
       {/* Audio outputs */}
       {audioOutputs.length > 0 && (
         <div className="flex flex-col gap-2 mb-2">
-          {audioOutputs.map(item => (
-            <audio
-              key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
-              controls
-              className="w-full max-w-2xl"
-            >
-              <source
-                src={getCloudfrontOriginalUrl(item.output.filename)}
-                type={item.output.mediaAttributes?.mimeType}
-              />
-            </audio>
-          ))}
+          {audioOutputs.map(item => {
+            const creationId =
+              typeof item.output.creation === 'string'
+                ? item.output.creation
+                : item.output.creation?._id
+            return (
+              <div
+                key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
+                className="flex flex-col gap-2"
+              >
+                <audio controls className="w-full max-w-2xl">
+                  <source
+                    src={getCloudfrontOriginalUrl(item.output.filename)}
+                    type={item.output.mediaAttributes?.mimeType}
+                  />
+                </audio>
+                {creationId ? (
+                  <ToolActionButton creationId={creationId} />
+                ) : null}
+              </div>
+            )
+          })}
         </div>
       )}
 

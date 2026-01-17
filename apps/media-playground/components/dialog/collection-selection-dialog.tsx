@@ -50,6 +50,7 @@ const CollectionSelectionDialog = () => {
   const addToCollectionModal = useAddToCollectionModal()
   const isCreateCollectionModalOpen = useCreateCollectionModalOpen()
   const [isAddingToCollection, setIsAddingToCollection] = React.useState(false)
+  const toggleInFlight = React.useRef(false)
 
   const { collections, refetch } = useCollectionsLight({
     enabled: isCreateCollectionModalOpen || addToCollectionModal.isOpen,
@@ -162,6 +163,17 @@ const CollectionSelectionDialog = () => {
     setIsAddingToCollection(false)
   }
 
+  const handleToggle = async (collectionId: string, checked: CheckedState) => {
+    if (isAddingToCollection) return
+    if (toggleInFlight.current) return
+    toggleInFlight.current = true
+    try {
+      await onCheckboxChange(collectionId, checked)
+    } finally {
+      toggleInFlight.current = false
+    }
+  }
+
   if (!collections) {
     return null
   }
@@ -186,12 +198,20 @@ const CollectionSelectionDialog = () => {
                     key={collection._id}
                     className="flex items-center justify-between gap-x-2 my-4"
                   >
-                    <div className="flex items-center gap-x-2 overflow-hidden">
+                    <div
+                      className="flex items-center gap-x-2 overflow-hidden cursor-pointer"
+                      onClick={() =>
+                        handleToggle(
+                          collection._id,
+                          !collectionHasAllCreations[collection._id],
+                        )
+                      }
+                    >
                       <Checkbox
                         id={collection._id}
-                        onCheckedChange={checked => {
-                          onCheckboxChange(collection._id, checked)
-                        }}
+                        onCheckedChange={checked =>
+                          handleToggle(collection._id, checked)
+                        }
                         checked={collectionHasAllCreations[collection._id]}
                         disabled={isAddingToCollection}
                       />

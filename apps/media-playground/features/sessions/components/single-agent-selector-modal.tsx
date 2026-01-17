@@ -27,15 +27,29 @@ import Link from 'next/link'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
+type TabType = 'user' | 'public'
+
 const SingleAgentSelectorModal: FC<{
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (agent: Agent) => void
   allowedAgentIds?: string[]
   emptyStateText?: string
-}> = ({ open, onOpenChange, onSelect, allowedAgentIds, emptyStateText }) => {
+  /** Which tabs to show. Defaults to both ['user', 'public']. If only one tab, the toggle is hidden. */
+  allowedTabs?: TabType[]
+  /** Description text shown below the title. Defaults to "Choose an agent to chat with" */
+  description?: string
+}> = ({
+  open,
+  onOpenChange,
+  onSelect,
+  allowedAgentIds,
+  emptyStateText,
+  allowedTabs = ['user', 'public'],
+  description = 'Choose an agent to chat with',
+}) => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
+  const [currentTab, setCurrentTab] = useState<TabType>(allowedTabs[0])
   const [isNavigating, setIsNavigating] = useState(false)
   const { user } = useAuthState()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -53,13 +67,16 @@ const SingleAgentSelectorModal: FC<{
   const shouldFilterByAllowedAgents =
     normalizedAllowedAgentIds !== null && normalizedAllowedAgentIds.length > 0
 
-  // Reset state when modal closes
+  // Reset state when modal opens/closes
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      // Reset to first allowed tab when opening
+      setCurrentTab(allowedTabs[0])
+    } else {
       setIsNavigating(false)
       setSearchQuery('')
     }
-  }, [open])
+  }, [open, allowedTabs])
 
   // When searching, search across ALL agents (user's own + others' public) - truly universal
   // When not searching:
@@ -136,29 +153,35 @@ const SingleAgentSelectorModal: FC<{
       <DialogContent className="w-[90vw] max-w-[90vw] h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="space-y-1 pb-2">
           <DialogTitle>Select Agent</DialogTitle>
-          <DialogDescription>Choose an agent to chat with</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <ToggleGroup
-                type="single"
-                value={currentTab}
-                className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
-              >
-                <ToggleButton
-                  className="w-full sm:w-32 h-8"
-                  value={'user'}
-                  label={'My Agents'}
-                  onClick={() => setCurrentTab('user')}
-                />
-                <ToggleButton
-                  className="w-full sm:w-32 h-8"
-                  value={'public'}
-                  label={'All Agents'}
-                  onClick={() => setCurrentTab('public')}
-                />
-              </ToggleGroup>
+              {allowedTabs.length > 1 && (
+                <ToggleGroup
+                  type="single"
+                  value={currentTab}
+                  className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
+                >
+                  {allowedTabs.includes('user') && (
+                    <ToggleButton
+                      className="w-full sm:w-32 h-8"
+                      value={'user'}
+                      label={'My Agents'}
+                      onClick={() => setCurrentTab('user')}
+                    />
+                  )}
+                  {allowedTabs.includes('public') && (
+                    <ToggleButton
+                      className="w-full sm:w-32 h-8"
+                      value={'public'}
+                      label={'All Agents'}
+                      onClick={() => setCurrentTab('public')}
+                    />
+                  )}
+                </ToggleGroup>
+              )}
               <FeedSearchForm handleSearch={setSearchQuery} />
             </div>
             <Button asChild size="sm" className="gap-2 shrink-0">
