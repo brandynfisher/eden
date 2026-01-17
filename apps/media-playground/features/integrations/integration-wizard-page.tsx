@@ -67,6 +67,9 @@ const IntegrationWizardPage = () => {
   const [wizardStep, setWizardStep] = useState(0)
   const [selectedAgentId, setSelectedAgentId] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('')
+  const [discordSetupChoice, setDiscordSetupChoice] = useState<
+    'oauth' | 'token' | null
+  >(null)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [isWizardAgentModalOpen, setIsWizardAgentModalOpen] = useState(false)
   const router = useRouter()
@@ -212,6 +215,12 @@ const IntegrationWizardPage = () => {
     [uniqueAgents],
   )
 
+  useEffect(() => {
+    if (selectedPlatform !== 'discord_v3') {
+      setDiscordSetupChoice(null)
+    }
+  }, [selectedPlatform])
+
   const updateWizardQuery = useCallback(
     (nextAgentId: string, nextPlatform: string) => {
       const params = new URLSearchParams(searchParams?.toString())
@@ -283,11 +292,13 @@ const IntegrationWizardPage = () => {
     setWizardStep(prev => {
       if (prev === 2) {
         setSelectedPlatform('')
+        setDiscordSetupChoice(null)
       }
       if (prev === 1) {
         setSelectedAgentId('')
         setSelectedAgent(null)
         setSelectedPlatform('')
+        setDiscordSetupChoice(null)
       }
       return Math.max(prev - 1, 0)
     })
@@ -301,6 +312,11 @@ const IntegrationWizardPage = () => {
   const headerDescription = isManageMode
     ? 'Review settings and manage the deployment.'
     : 'Connect an agent to a platform in three quick steps.'
+
+  const shouldPromptDiscordSetup =
+    !isManageMode &&
+    selectedPlatform === 'discord_v3' &&
+    discordSetupChoice === null
 
   const renderContent = () => {
     if (!deploymentsGate.isAllowed) {
@@ -493,7 +509,9 @@ const IntegrationWizardPage = () => {
                                 platform.platform,
                               )
                             const isSelected =
-                              selectedPlatform === platform.platform
+                              selectedPlatform === platform.platform ||
+                              (platform.platform === 'discord_v3' &&
+                                selectedPlatform === 'discord')
 
                             return (
                               <button
@@ -502,6 +520,7 @@ const IntegrationWizardPage = () => {
                                 disabled={isAlreadyDeployed}
                                 onClick={() => {
                                   if (isAlreadyDeployed) return
+                                  setDiscordSetupChoice(null)
                                   setSelectedPlatform(platform.platform)
                                   setWizardStep(2)
                                 }}
@@ -590,9 +609,41 @@ const IntegrationWizardPage = () => {
                   </div>
                 </div>
 
-                {selectedPlatform && (
+                {selectedPlatform && !shouldPromptDiscordSetup && (
                   <div className="text-sm text-muted-foreground">
                     {getIntegrationDescription(selectedPlatform)}
+                  </div>
+                )}
+
+                {shouldPromptDiscordSetup && (
+                  <div className="rounded-lg border border-border/60 bg-muted/20 p-4 space-y-3">
+                    <div className="text-sm font-medium">
+                      Choose your Discord setup
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      OAuth is the recommended setup. Token-based setup is
+                      advanced and uses manual channel IDs.
+                    </p>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setDiscordSetupChoice('oauth')
+                        }}
+                      >
+                        Set up Discord
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setDiscordSetupChoice('token')
+                          setSelectedPlatform('discord')
+                        }}
+                      >
+                        Set up with token (advanced)
+                      </Button>
+                    </div>
                   </div>
                 )}
 
@@ -608,7 +659,10 @@ const IntegrationWizardPage = () => {
                   </div>
                 )}
 
-                {selectedAgentId && selectedPlatform && FormComponent ? (
+                {selectedAgentId &&
+                selectedPlatform &&
+                FormComponent &&
+                !shouldPromptDiscordSetup ? (
                   <FormComponent
                     key={`${selectedAgentId}-${selectedPlatform}`}
                     agentId={selectedAgentId}
@@ -617,7 +671,9 @@ const IntegrationWizardPage = () => {
                   />
                 ) : (
                   selectedAgentId &&
-                  selectedPlatform && (
+                  selectedPlatform &&
+                  !FormComponent &&
+                  !shouldPromptDiscordSetup && (
                     <div className="rounded-lg border border-border/60 p-4 text-sm text-muted-foreground">
                       This integration is not yet supported in the wizard.
                     </div>
@@ -648,7 +704,7 @@ const IntegrationWizardPage = () => {
                     >
                       Continue
                     </Button>
-                  ) : (
+                  ) : shouldPromptDiscordSetup ? null : (
                     <Button onClick={handleBackToIntegrations}>Done</Button>
                   )}
                 </>

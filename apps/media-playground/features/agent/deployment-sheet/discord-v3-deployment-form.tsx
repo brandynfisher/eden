@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -32,7 +33,6 @@ import { useAuth } from '@clerk/nextjs'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ExternalLink, Loader2 } from 'lucide-react'
-import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -75,6 +75,19 @@ interface DiscordRole {
   managed?: boolean
 }
 
+type DiscordV3ChannelConfig = {
+  channel_id: string
+  channel_name?: string
+  access?: 'read_only' | 'read_write'
+}
+
+type DiscordV3DeploymentConfig = {
+  discord?: {
+    guild_id?: string
+    channel_configs?: DiscordV3ChannelConfig[]
+  }
+}
+
 interface DiscordV3DeploymentFormProps {
   agentId: Agent['_id']
   deployment?: Deployment
@@ -111,6 +124,7 @@ export const DiscordV3DeploymentForm = ({
   const [isLoadingChannels, setIsLoadingChannels] = useState(false)
   const [activeTab, setActiveTab] = useState<'deploy' | 'account'>('deploy')
   const [accessGuildId, setAccessGuildId] = useState('')
+  const [channelSearch, setChannelSearch] = useState('')
   const [guildRoles, setGuildRoles] = useState<DiscordRole[]>([])
   const [allowedRoleIds, setAllowedRoleIds] = useState<string[]>([])
   const [initialAllowedRoleIds, setInitialAllowedRoleIds] = useState<string[]>(
@@ -119,11 +133,31 @@ export const DiscordV3DeploymentForm = ({
   const [isLoadingAccessRoles, setIsLoadingAccessRoles] = useState(false)
   const [isSavingAccessRoles, setIsSavingAccessRoles] = useState(false)
 
-  const form = useForm<DiscordV3FormDto>({
+  const deploymentConfig = useMemo(
+    () =>
+      (deployment?.config as DiscordV3DeploymentConfig | undefined) ??
+      undefined,
+    [deployment?.config],
+  )
+  const initialGuildId = useMemo(
+    () => deploymentConfig?.discord?.guild_id ?? '',
+    [deploymentConfig?.discord?.guild_id],
+  )
+  const initialChannels: DiscordV3FormDto['channels'] = useMemo(
+    () =>
+      deploymentConfig?.discord?.channel_configs?.map(channel => ({
+        channelId: channel.channel_id,
+        channelName: channel.channel_name || channel.channel_id,
+        access: channel.access === 'read_only' ? 'read_only' : 'read_write',
+      })) ?? [],
+    [deploymentConfig?.discord?.channel_configs],
+  )
+
+  const form = useForm<DiscordV3FormDto, undefined, DiscordV3FormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
-      guildId: '',
-      channels: [],
+      guildId: initialGuildId,
+      channels: initialChannels,
     },
   })
 
@@ -146,6 +180,7 @@ export const DiscordV3DeploymentForm = ({
   }, [allowedRoleIds, initialAllowedRoleIds])
 
   const wasDeployed = useRef(isDeployed)
+  const hasInitializedDeployment = useRef(false)
   useEffect(() => {
     if (isInline) return
     if (wasDeployed.current && !isDeployed) {
@@ -153,6 +188,17 @@ export const DiscordV3DeploymentForm = ({
     }
     wasDeployed.current = isDeployed
   }, [isDeployed, isInline])
+
+  useEffect(() => {
+    if (!deployment || hasInitializedDeployment.current) {
+      return
+    }
+    form.reset({
+      guildId: initialGuildId,
+      channels: initialChannels,
+    })
+    hasInitializedDeployment.current = true
+  }, [deployment, form, initialChannels, initialGuildId])
 
   const cleanupPopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -442,6 +488,10 @@ export const DiscordV3DeploymentForm = ({
   }, [selectedGuildId, loadChannels])
 
   useEffect(() => {
+    setChannelSearch('')
+  }, [selectedGuildId])
+
+  useEffect(() => {
     if (!accessGuildId && adminServers.length > 0) {
       setAccessGuildId(adminServers[0].id)
     }
@@ -504,7 +554,79 @@ export const DiscordV3DeploymentForm = ({
   }
 
   const selectedChannels = form.watch('channels')
+  const selectedChannelIds = useMemo(
+    () => new Set(selectedChannels.map(channel => channel.channelId)),
+    [selectedChannels],
+  )
+  const normalizedSearch = channelSearch.trim().toLowerCase()
+  const matchSearch = useCallback(
+    (channel: DiscordChannel) => {
+      if (!normalizedSearch) return true
+      return (
+        channel.name.toLowerCase().includes(normalizedSearch) ||
+        channel.id.includes(normalizedSearch)
+      )
+    },
+    [normalizedSearch],
+  )
+  const selectedChannelsForGuild = useMemo(
+    () =>
+      availableChannels.filter(channel => selectedChannelIds.has(channel.id)),
+    [availableChannels, selectedChannelIds],
+  )
+  const unselectedChannelsForGuild = useMemo(
+    () =>
+      availableChannels.filter(channel => !selectedChannelIds.has(channel.id)),
+    [availableChannels, selectedChannelIds],
+  )
+  const filteredSelectedChannels = useMemo(
+    () => selectedChannelsForGuild.filter(matchSearch),
+    [matchSearch, selectedChannelsForGuild],
+  )
+  const filteredUnselectedChannels = useMemo(
+    () => unselectedChannelsForGuild.filter(matchSearch),
+    [matchSearch, unselectedChannelsForGuild],
+  )
   const open = isInline ? true : isOpen
+
+  const renderChannelRow = (channel: DiscordChannel) => {
+    const isSelected = selectedChannelIds.has(channel.id)
+    const channelData = selectedChannels.find(ch => ch.channelId === channel.id)
+
+    return (
+      <div
+        key={channel.id}
+        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
+      >
+        <div className="flex items-center gap-3 flex-1">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => toggleChannel(channel)}
+          />
+          <span className="text-sm">#{channel.name}</span>
+        </div>
+
+        {isSelected && (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={channelData?.access === 'read_write'}
+              onCheckedChange={checked =>
+                updateChannelAccess(
+                  channel.id,
+                  checked ? 'read_write' : 'read_only',
+                )
+              }
+            />
+            <span className="text-xs text-muted-foreground w-20">
+              {channelData?.access === 'read_write'
+                ? 'Read/Write'
+                : 'Read-only'}
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <Collapsible
@@ -635,7 +757,7 @@ export const DiscordV3DeploymentForm = ({
                                 <FormLabel>Server</FormLabel>
                                 <Select
                                   onValueChange={field.onChange}
-                                  defaultValue={field.value}
+                                  value={field.value}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -692,59 +814,53 @@ export const DiscordV3DeploymentForm = ({
                                   No text channels found in this server
                                 </div>
                               ) : (
-                                <div className="space-y-2 border rounded-lg p-3">
-                                  {availableChannels.map(channel => {
-                                    const isSelected = selectedChannels.some(
-                                      ch => ch.channelId === channel.id,
-                                    )
-                                    const channelData = selectedChannels.find(
-                                      ch => ch.channelId === channel.id,
-                                    )
+                                <div className="space-y-3">
+                                  <Input
+                                    value={channelSearch}
+                                    onChange={event =>
+                                      setChannelSearch(event.target.value)
+                                    }
+                                    placeholder="Search channels"
+                                  />
 
-                                    return (
-                                      <div
-                                        key={channel.id}
-                                        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
-                                      >
-                                        <div className="flex items-center gap-3 flex-1">
-                                          <Checkbox
-                                            checked={isSelected}
-                                            onCheckedChange={() =>
-                                              toggleChannel(channel)
-                                            }
-                                          />
-                                          <span className="text-sm">
-                                            #{channel.name}
-                                          </span>
-                                        </div>
-
-                                        {isSelected && (
-                                          <div className="flex items-center gap-2">
-                                            <Switch
-                                              checked={
-                                                channelData?.access ===
-                                                'read_write'
-                                              }
-                                              onCheckedChange={checked =>
-                                                updateChannelAccess(
-                                                  channel.id,
-                                                  checked
-                                                    ? 'read_write'
-                                                    : 'read_only',
-                                                )
-                                              }
-                                            />
-                                            <span className="text-xs text-muted-foreground w-20">
-                                              {channelData?.access ===
-                                              'read_write'
-                                                ? 'Read/Write'
-                                                : 'Read-only'}
-                                            </span>
+                                  {selectedChannelsForGuild.length > 0 && (
+                                    <div className="space-y-2">
+                                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                                        Deployed channels
+                                      </div>
+                                      <div className="space-y-2 border rounded-lg p-3">
+                                        {filteredSelectedChannels.length ===
+                                        0 ? (
+                                          <div className="text-xs text-muted-foreground">
+                                            No deployed channels match this
+                                            search.
                                           </div>
+                                        ) : (
+                                          filteredSelectedChannels.map(
+                                            renderChannelRow,
+                                          )
                                         )}
                                       </div>
-                                    )
-                                  })}
+                                    </div>
+                                  )}
+
+                                  <div className="space-y-2">
+                                    <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                                      All channels
+                                    </div>
+                                    <div className="space-y-2 border rounded-lg p-3">
+                                      {filteredUnselectedChannels.length ===
+                                      0 ? (
+                                        <div className="text-xs text-muted-foreground">
+                                          No channels match this search.
+                                        </div>
+                                      ) : (
+                                        filteredUnselectedChannels.map(
+                                          renderChannelRow,
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               )}
 
@@ -1008,22 +1124,6 @@ export const DiscordV3DeploymentForm = ({
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Add Eden Bot to Another Server
                       </a>
-                    </Button>
-                  </div>
-
-                  <div className="rounded-lg border border-border/60 p-4 space-y-2 bg-muted/20">
-                    <div className="text-sm font-medium">Advanced setup</div>
-                    <p className="text-xs text-muted-foreground">
-                      Use a discord bot token and manual channel IDs. Only
-                      recommended for advanced users who are sure that they want
-                      this option.
-                    </p>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link
-                        href={`/integrations/wizard?agent=${agentId}&platform=discord`}
-                      >
-                        Advanced setup (with token)
-                      </Link>
                     </Button>
                   </div>
                 </TabsContent>

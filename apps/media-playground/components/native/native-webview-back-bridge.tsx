@@ -12,30 +12,34 @@ const OPEN_OVERLAY_SELECTOR = [
   '[data-state="open"][data-radix-tooltip-content]',
 ].join(',')
 
-const getHasOpenOverlay = () => {
-  if (typeof document === 'undefined') return false
-  return !!document.querySelector(OPEN_OVERLAY_SELECTOR)
+const getOpenOverlayCount = () => {
+  if (typeof document === 'undefined') return 0
+  return document.querySelectorAll(OPEN_OVERLAY_SELECTOR).length
 }
 
-const notifyNativeModalState = (open: boolean) => {
+const notifyNativeModalState = (openCount: number) => {
   if (typeof window === 'undefined') return
   window.ReactNativeWebView?.postMessage(
-    JSON.stringify({ type: 'NATIVE_MODAL_STATE', open }),
+    JSON.stringify({
+      type: 'NATIVE_MODAL_STATE',
+      open: openCount > 0,
+      openCount,
+    }),
   )
 }
 
 export default function NativeWebviewBackBridge() {
   const isNativeWebview = useNativeWebview()
-  const lastOpenRef = useRef<boolean | null>(null)
+  const lastCountRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!isNativeWebview || typeof window === 'undefined') return
 
     const updateState = () => {
-      const open = getHasOpenOverlay()
-      if (lastOpenRef.current !== open) {
-        lastOpenRef.current = open
-        notifyNativeModalState(open)
+      const openCount = getOpenOverlayCount()
+      if (lastCountRef.current !== openCount) {
+        lastCountRef.current = openCount
+        notifyNativeModalState(openCount)
       }
     }
 
@@ -68,7 +72,8 @@ export default function NativeWebviewBackBridge() {
 
       if (payload?.type !== 'NATIVE_BACK') return
 
-      if (getHasOpenOverlay()) {
+      const prevCount = getOpenOverlayCount()
+      if (prevCount > 0) {
         const escEvent = new KeyboardEvent('keydown', {
           key: 'Escape',
           code: 'Escape',
@@ -77,8 +82,27 @@ export default function NativeWebviewBackBridge() {
           bubbles: true,
         })
         document.dispatchEvent(escEvent)
-        setTimeout(updateState, 0)
+        setTimeout(() => {
+          const nextCount = getOpenOverlayCount()
+          notifyNativeModalState(nextCount)
+          window.ReactNativeWebView?.postMessage(
+            JSON.stringify({
+              type: 'NATIVE_BACK_RESULT',
+              handled: prevCount > 0,
+              openCount: nextCount,
+            }),
+          )
+        }, 50)
+        return
       }
+
+      window.ReactNativeWebView?.postMessage(
+        JSON.stringify({
+          type: 'NATIVE_BACK_RESULT',
+          handled: false,
+          openCount: prevCount,
+        }),
+      )
     }
 
     window.addEventListener('message', handleNativeMessage)
