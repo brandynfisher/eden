@@ -186,10 +186,7 @@ const createServer = async (opts: CreateServerOpts) => {
   const swaggerSha = 'tG+x05Hp2iKWfyCNzcCBlraUuB6rEMjtIj/zcnbu/fk='
   const styleSha = 'RL3ie0nH+Lzz2YNqQN83mnU0J1ot4QL7b99vMdIX99w='
 
-  await server.register(import('fastify-healthcheck'), {
-    // healthcheckUrl: '/healthcheck',
-    // healthcheckUrlAlwaysFail: true
-  })
+  await server.register(import('fastify-healthcheck'), {})
 
   await server.register(import('@fastify/swagger-ui'), {
     routePrefix: '/documentation',
