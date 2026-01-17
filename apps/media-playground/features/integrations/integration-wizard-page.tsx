@@ -7,20 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import UserAvatar from '@/components/user/user-avatar'
-import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
-import { DiscordV3DeploymentForm } from '@/features/agent/deployment-sheet/discord-v3-deployment-form'
-import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
-import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
-import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
-import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
-import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
-import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
-import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
-import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import {
   INTEGRATION_CATEGORIES,
   INTEGRATION_DEFINITIONS,
+  INTEGRATION_FORMS,
   IntegrationCategory,
+  WIZARD_EXCLUDED_PLATFORMS,
   getIntegrationCategory,
   getIntegrationDescription,
   getIntegrationIcon,
@@ -45,14 +37,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  type ComponentType,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type DeploymentWithAgent = Deployment & {
   agent?: {
@@ -62,19 +47,6 @@ type DeploymentWithAgent = Deployment & {
     userImage?: string
   }
 }
-
-type IntegrationFormProps = {
-  agentId: string
-  deployment?: Deployment
-  variant?: 'collapsible' | 'inline'
-}
-
-const WIZARD_EXCLUDED_PLATFORMS = new Set([
-  'shopify',
-  'printify',
-  'captions',
-  'discord',
-])
 
 const WIZARD_STEPS = [
   {
@@ -90,19 +62,6 @@ const WIZARD_STEPS = [
     description: 'Set up credentials and options.',
   },
 ] as const
-
-const INTEGRATION_FORMS: Record<string, ComponentType<IntegrationFormProps>> = {
-  discord: DiscordDeploymentForm,
-  discord_v3: DiscordV3DeploymentForm,
-  telegram: TelegramDeploymentForm,
-  twitter: TwitterDeploymentForm,
-  farcaster: FarcasterDeploymentForm,
-  instagram: InstagramDeploymentForm,
-  tiktok: TiktokDeploymentForm,
-  google_calendar: GoogleCalendarDeploymentForm,
-  email: EmailDeploymentForm,
-  gmail: GmailDeploymentForm,
-}
 
 const IntegrationWizardPage = () => {
   const [wizardStep, setWizardStep] = useState(0)
@@ -334,14 +293,6 @@ const IntegrationWizardPage = () => {
     })
   }
 
-  const resetWizard = () => {
-    setWizardStep(0)
-    setSelectedAgentId('')
-    setSelectedAgent(null)
-    setSelectedPlatform('')
-    updateWizardQuery('', '')
-  }
-
   const handleBackToIntegrations = () => {
     router.push('/integrations')
   }
@@ -415,24 +366,17 @@ const IntegrationWizardPage = () => {
               <p className="text-muted-foreground">{headerDescription}</p>
             </div>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {!isManageMode && (
-              <Button variant="outline" onClick={resetWizard}>
-                Start over
-              </Button>
-            )}
-            <Button variant="outline" asChild>
-              <Link
-                href="https://docs.eden.art/integrations"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2"
-              >
-                Integration Guide
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+          <Button variant="outline" asChild>
+            <Link
+              href="https://docs.eden.art/integrations"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2"
+            >
+              Integration Guide
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
 
         <Card>
@@ -738,6 +682,8 @@ const IntegrationWizardPage = () => {
       <SingleAgentSelectorModal
         open={isWizardAgentModalOpen}
         onOpenChange={setIsWizardAgentModalOpen}
+        allowedTabs={['user']}
+        description="Select an agent to add an integration to"
         onSelect={agent => {
           setSelectedAgent(agent)
           setSelectedAgentId(agent._id)

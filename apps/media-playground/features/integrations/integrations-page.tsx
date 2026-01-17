@@ -38,9 +38,7 @@ import { useAppDispatch } from '@/stores/store'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
-  Activity,
   AlertCircle,
-  ExternalLink,
   Filter,
   Loader2,
   MenuIcon,
@@ -65,7 +63,7 @@ type DeploymentWithAgent = Deployment & {
 
 const IntegrationsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('active')
   const [platformFilter, setPlatformFilter] = useState<string>('')
   const [agentFilter, setAgentFilter] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<string>('')
@@ -386,386 +384,405 @@ const IntegrationsPage = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Integrations</h2>
-            <p className="text-muted-foreground">
-              Manage all your agent integrations across platforms and services
-            </p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild className="gap-2">
-              <Link href="/integrations/wizard">
-                <Plus className="h-4 w-4" />
-                New Integration
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link
-                href="https://docs.eden.art/integrations"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2"
-              >
-                Integration Guide
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold">Integrations</h2>
+          <p className="text-muted-foreground">
+            Manage all your agent integrations across platforms and services
+          </p>
         </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setFiltersOpen(prev => !prev)}
-            >
-              {filtersOpen ? 'Hide' : 'Show'}
-            </Button>
-          </CardHeader>
-          <CardContent
-            className={cn(
-              'pt-0 md:pt-6',
-              filtersOpen ? 'block' : 'hidden md:block',
-            )}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-              <div className="sm:col-span-2 lg:col-span-1">
-                <Label htmlFor="search" className="text-xs">
-                  Search
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs">Category</Label>
-                <Select
-                  value={categoryFilter}
-                  onValueChange={setCategoryFilter}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All categories</SelectItem>
-                    {Object.entries(INTEGRATION_CATEGORIES).map(
-                      ([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Status</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="unknown">Unknown</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Platform</Label>
-                <Select
-                  value={platformFilter}
-                  onValueChange={setPlatformFilter}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All platforms" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All platforms</SelectItem>
-                    {uniquePlatforms.map(platform => {
-                      const Icon = getIntegrationIcon(platform)
-                      return (
-                        <SelectItem key={platform} value={platform}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            <span>{getIntegrationLabel(platform)}</span>
-                          </div>
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-xs">Agent</Label>
-                <button
-                  type="button"
-                  onClick={() => setIsAgentFilterModalOpen(true)}
-                  className={cn(
-                    'w-full flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
-                    selectedFilterAgent
-                      ? 'bg-muted/30 hover:bg-muted/50'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {selectedFilterAgent ? (
-                    <>
-                      <UserAvatar
-                        image={selectedFilterAgent.userImage}
-                        name={selectedFilterAgent.name}
-                        className="h-6 w-6"
-                      />
-                      <span className="flex-1 truncate">
-                        {selectedFilterAgent.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Change
-                      </span>
-                    </>
-                  ) : (
-                    <span>All agents</span>
-                  )}
-                </button>
-                {selectedFilterAgent && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 px-2 text-xs text-muted-foreground"
-                    onClick={() => {
-                      setAgentFilter('')
-                      setSelectedAgentFilter(null)
-                    }}
-                  >
-                    Clear
-                  </Button>
+        {/* Header with Status Toggle, Search, and Create Button */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Status Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+              <button
+                onClick={() => setStatusFilter('active')}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                  statusFilter === 'active'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
-              </div>
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setStatusFilter('inactive')}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                  statusFilter === 'inactive'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Inactive
+              </button>
             </div>
-          </CardContent>
-        </Card>
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-9 w-full sm:w-[200px]"
+              />
+            </div>
+          </div>
+          <Button asChild className="gap-2">
+            <Link href="/integrations/wizard">
+              <Plus className="h-4 w-4" />
+              Create Integration
+            </Link>
+          </Button>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              All Integrations ({filteredDeployments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {filteredDeployments.length === 0 ? (
-              <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">
-                No integrations found.
-              </div>
-            ) : (
-              <>
-                <div className="md:hidden p-4 space-y-3">
-                  {paginatedDeployments.map(deployment => {
-                    const Icon = getIntegrationIcon(deployment.platform)
-                    const isDeleting = deletingDeploymentId === deployment._id
-                    return (
-                      <div
-                        key={deployment._id}
-                        className="rounded-xl border border-border/50 bg-background/60 p-4 shadow-sm space-y-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/40">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                {getIntegrationLabel(deployment.platform)}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {
-                                  INTEGRATION_CATEGORIES[
-                                    getIntegrationCategory(deployment.platform)
-                                  ]
-                                }
-                              </div>
-                            </div>
-                          </div>
-                          <Badge
-                            variant={getStatusVariant(
-                              getDeploymentStatus(deployment),
-                            )}
-                            className="capitalize"
-                          >
-                            {getDeploymentStatus(deployment)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <UserAvatar
-                            image={deployment.agent?.userImage}
-                            name={deployment.agent?.name}
-                            className="h-6 w-6"
-                          />
-                          <span className="truncate">
-                            {deployment.agent?.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() =>
-                              router.push(
-                                `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
-                              )
-                            }
-                            aria-label="Edit integration"
-                            title="Edit integration"
-                            disabled={isDeleting}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDeleteDeployment(deployment)}
-                            aria-label="Delete integration"
-                            title="Delete integration"
-                            disabled={isDeleting}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            {isDeleting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })}
+        {/* Hidden filters section - kept for future use */}
+        {false && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filters
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => setFiltersOpen(prev => !prev)}
+              >
+                {filtersOpen ? 'Hide' : 'Show'}
+              </Button>
+            </CardHeader>
+            <CardContent
+              className={cn(
+                'pt-0 md:pt-6',
+                filtersOpen ? 'block' : 'hidden md:block',
+              )}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                <div className="sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="search" className="text-xs">
+                    Search
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
-
-                <div className="hidden md:block overflow-x-auto">
-                  <Table className="min-w-[640px]">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="min-w-[180px]">Agent</TableHead>
-                        <TableHead className="min-w-[220px]">
-                          Platform
-                        </TableHead>
-                        <TableHead className="min-w-[120px]">Status</TableHead>
-                        <TableHead className="min-w-[120px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedDeployments.map(deployment => {
-                        const Icon = getIntegrationIcon(deployment.platform)
-                        const isDeleting =
-                          deletingDeploymentId === deployment._id
+                <div>
+                  <Label className="text-xs">Category</Label>
+                  <Select
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      {Object.entries(INTEGRATION_CATEGORIES).map(
+                        ([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="unknown">Unknown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Platform</Label>
+                  <Select
+                    value={platformFilter}
+                    onValueChange={setPlatformFilter}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All platforms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All platforms</SelectItem>
+                      {uniquePlatforms.map(platform => {
+                        const Icon = getIntegrationIcon(platform)
                         return (
-                          <TableRow key={deployment._id}>
-                            <TableCell className="p-4">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <UserAvatar
-                                  image={deployment.agent?.userImage}
-                                  name={deployment.agent?.name}
-                                  className="h-6 w-6 flex-shrink-0"
-                                />
-                                <Link
-                                  href={`/agents/${deployment.agent?.username}`}
-                                  className="text-sm hover:underline truncate"
-                                >
-                                  {deployment.agent?.name}
-                                </Link>
-                              </div>
-                            </TableCell>
-                            <TableCell className="p-4 align-top">
-                              <div className="flex items-start gap-3">
-                                <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-muted/40">
-                                  <Icon className="h-4 w-4" />
-                                </div>
-                                <div className="flex flex-col leading-tight">
-                                  <span className="font-medium">
-                                    {getIntegrationLabel(deployment.platform)}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {
-                                      INTEGRATION_CATEGORIES[
-                                        getIntegrationCategory(
-                                          deployment.platform,
-                                        )
-                                      ]
-                                    }
-                                  </span>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="p-4">
-                              <Badge
-                                variant={getStatusVariant(
-                                  getDeploymentStatus(deployment),
-                                )}
-                                className="capitalize whitespace-nowrap"
-                              >
-                                {getDeploymentStatus(deployment)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="p-4">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() =>
-                                    router.push(
-                                      `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
-                                    )
-                                  }
-                                  title="Edit integration"
-                                  aria-label="Edit integration"
-                                  disabled={isDeleting}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() =>
-                                    handleDeleteDeployment(deployment)
-                                  }
-                                  className="text-destructive hover:text-destructive"
-                                  title="Delete integration"
-                                  aria-label="Delete integration"
-                                  disabled={isDeleting}
-                                >
-                                  {isDeleting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
+                          <SelectItem key={platform} value={platform}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4" />
+                              <span>{getIntegrationLabel(platform)}</span>
+                            </div>
+                          </SelectItem>
                         )
                       })}
-                    </TableBody>
-                  </Table>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                <div>
+                  <Label className="text-xs">Agent</Label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAgentFilterModalOpen(true)}
+                    className={cn(
+                      'w-full flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
+                      selectedFilterAgent
+                        ? 'bg-muted/30 hover:bg-muted/50'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {selectedFilterAgent ? (
+                      <>
+                        <UserAvatar
+                          image={selectedFilterAgent.userImage}
+                          name={selectedFilterAgent.name}
+                          className="h-6 w-6"
+                        />
+                        <span className="flex-1 truncate">
+                          {selectedFilterAgent.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Change
+                        </span>
+                      </>
+                    ) : (
+                      <span>All agents</span>
+                    )}
+                  </button>
+                  {selectedFilterAgent && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-1 px-2 text-xs text-muted-foreground"
+                      onClick={() => {
+                        setAgentFilter('')
+                        setSelectedAgentFilter(null)
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Integrations List */}
+        <div>
+          {filteredDeployments.length === 0 ? (
+            <div className="h-24 flex items-center justify-center text-sm text-muted-foreground">
+              No integrations found.
+            </div>
+          ) : (
+            <>
+              <div className="md:hidden p-4 space-y-3">
+                {paginatedDeployments.map(deployment => {
+                  const Icon = getIntegrationIcon(deployment.platform)
+                  const isDeleting = deletingDeploymentId === deployment._id
+                  return (
+                    <div
+                      key={deployment._id}
+                      className="rounded-xl border border-border/50 bg-background/60 p-4 shadow-sm space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/40">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="font-medium">
+                              {getIntegrationLabel(deployment.platform)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {
+                                INTEGRATION_CATEGORIES[
+                                  getIntegrationCategory(deployment.platform)
+                                ]
+                              }
+                            </div>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={getStatusVariant(
+                            getDeploymentStatus(deployment),
+                          )}
+                          className="capitalize"
+                        >
+                          {getDeploymentStatus(deployment)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <UserAvatar
+                          image={deployment.agent?.userImage}
+                          name={deployment.agent?.name}
+                          className="h-6 w-6"
+                        />
+                        <span className="truncate">
+                          {deployment.agent?.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() =>
+                            router.push(
+                              `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
+                            )
+                          }
+                          aria-label="Edit integration"
+                          title="Edit integration"
+                          disabled={isDeleting}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteDeployment(deployment)}
+                          aria-label="Delete integration"
+                          title="Delete integration"
+                          disabled={isDeleting}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          {isDeleting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <Table className="min-w-[640px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Agent</TableHead>
+                      <TableHead className="min-w-[220px]">Platform</TableHead>
+                      <TableHead className="min-w-[120px]">Status</TableHead>
+                      <TableHead className="min-w-[120px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedDeployments.map(deployment => {
+                      const Icon = getIntegrationIcon(deployment.platform)
+                      const isDeleting = deletingDeploymentId === deployment._id
+                      return (
+                        <TableRow key={deployment._id}>
+                          <TableCell className="p-4">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <UserAvatar
+                                image={deployment.agent?.userImage}
+                                name={deployment.agent?.name}
+                                className="h-6 w-6 flex-shrink-0"
+                              />
+                              <Link
+                                href={`/agents/${deployment.agent?.username}`}
+                                className="text-sm hover:underline truncate"
+                              >
+                                {deployment.agent?.name}
+                              </Link>
+                            </div>
+                          </TableCell>
+                          <TableCell className="p-4 align-top">
+                            <div className="flex items-start gap-3">
+                              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-md bg-muted/40">
+                                <Icon className="h-4 w-4" />
+                              </div>
+                              <div className="flex flex-col leading-tight">
+                                <span className="font-medium">
+                                  {getIntegrationLabel(deployment.platform)}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {
+                                    INTEGRATION_CATEGORIES[
+                                      getIntegrationCategory(
+                                        deployment.platform,
+                                      )
+                                    ]
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="p-4">
+                            <Badge
+                              variant={getStatusVariant(
+                                getDeploymentStatus(deployment),
+                              )}
+                              className="capitalize whitespace-nowrap"
+                            >
+                              {getDeploymentStatus(deployment)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  router.push(
+                                    `/integrations/wizard?agent=${deployment.agent?._id}&platform=${deployment.platform}`,
+                                  )
+                                }
+                                title="Edit integration"
+                                aria-label="Edit integration"
+                                disabled={isDeleting}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  handleDeleteDeployment(deployment)
+                                }
+                                className="text-destructive hover:text-destructive"
+                                title="Delete integration"
+                                aria-label="Delete integration"
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     )
   }

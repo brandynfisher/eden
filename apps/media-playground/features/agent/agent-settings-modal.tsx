@@ -53,18 +53,41 @@ import {
   ImageIcon,
   KeyIcon,
   Loader2,
+  type LucideProps,
   MicIcon,
   ScrollTextIcon,
-  SettingsIcon,
   Trash2Icon,
   UserIcon,
   WrenchIcon,
 } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+
+// Custom plug icon matching the sidebar - using forwardRef to match Lucide icon type
+const PlugIcon = forwardRef<SVGSVGElement, LucideProps>(
+  ({ className, ...props }, ref) => (
+    <svg
+      ref={ref}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M12 22v-5" />
+      <path d="M9 8V2" />
+      <path d="M15 8V2" />
+      <path d="M18 8v4a6 6 0 0 1-12 0V8Z" />
+    </svg>
+  ),
+)
+PlugIcon.displayName = 'PlugIcon'
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
@@ -379,7 +402,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       tabs.push({
         key: 'integrations',
         label: 'Integrations',
-        icon: SettingsIcon,
+        icon: PlugIcon,
       })
       if (user?.featureFlags?.includes(FeatureFlag.Preview)) {
         tabs.push({
