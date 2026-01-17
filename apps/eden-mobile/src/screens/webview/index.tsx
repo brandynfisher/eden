@@ -97,11 +97,14 @@ export default function Webview() {
   const [isConnected, setIsConnected] = useState<boolean | undefined>()
   const [webviewKey, setWebviewKey] = useState(0)
   const [canGoBack, setCanGoBack] = useState(false)
-  const [hasWebModalOpen, setHasWebModalOpen] = useState(false)
+  const [openOverlayCount, setOpenOverlayCount] = useState(0)
 
   const webRef = useRef<WebView>(null)
   const hasOpenedSession = useRef(false)
   const lastResetToken = useRef<number | undefined>(undefined)
+  const pendingBackRef = useRef(false)
+  const backTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const canGoBackRef = useRef(false)
 
   // PanResponder for swipe gestures to open/close sidebar
   const panResponder = useMemo(() => {
@@ -252,7 +255,33 @@ export default function Webview() {
       const msg = JSON.parse(event.nativeEvent.data)
 
       if (msg?.type === 'NATIVE_MODAL_STATE') {
-        setHasWebModalOpen(!!msg.open)
+        if (typeof msg.openCount === 'number') {
+          setOpenOverlayCount(msg.openCount)
+        } else if (typeof msg.open === 'boolean') {
+          setOpenOverlayCount(msg.open ? 1 : 0)
+        }
+        return
+      }
+
+      if (msg?.type === 'NATIVE_BACK_RESULT') {
+        if (typeof msg.openCount === 'number') {
+          setOpenOverlayCount(msg.openCount)
+        }
+        if (pendingBackRef.current) {
+          pendingBackRef.current = false
+          if (backTimeoutRef.current) {
+            clearTimeout(backTimeoutRef.current)
+            backTimeoutRef.current = null
+          }
+        }
+
+        if (msg.handled === false) {
+          if (canGoBackRef.current) {
+            webRef.current?.goBack()
+          } else {
+            BackHandler.exitApp()
+          }
+        }
         return
       }
 
@@ -287,14 +316,22 @@ export default function Webview() {
       if (typeof BackHandler?.addEventListener !== 'function') return
 
       const onBackPress = () => {
-        if (hasWebModalOpen) {
-          webRef.current?.postMessage(
-            JSON.stringify({ type: 'NATIVE_BACK' }),
-          )
+        if (pendingBackRef.current) {
           return true
         }
 
-        if (canGoBack) {
+        if (openOverlayCount > 0) {
+          pendingBackRef.current = true
+          webRef.current?.postMessage(
+            JSON.stringify({ type: 'NATIVE_BACK' }),
+          )
+          backTimeoutRef.current = setTimeout(() => {
+            pendingBackRef.current = false
+          }, 600)
+          return true
+        }
+
+        if (canGoBackRef.current) {
           webRef.current?.goBack()
           return true
         }
@@ -308,7 +345,7 @@ export default function Webview() {
       )
 
       return () => subscription?.remove?.()
-    }, [canGoBack, hasWebModalOpen]),
+    }, [openOverlayCount]),
   )
 
   const openWebviewWithSession = async () => {
@@ -411,6 +448,7 @@ export default function Webview() {
               onNavigationStateChange={state => {
                 setCurrentUrl(state.url)
                 setCanGoBack(state.canGoBack)
+                canGoBackRef.current = state.canGoBack
               }}
               onContentProcessDidTerminate={reloadWebview}
               onRenderProcessGone={reloadWebview}
