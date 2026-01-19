@@ -35,6 +35,8 @@ interface LLMCallData {
     system?: string
     messages?: Array<{
       role: string
+      // OpenAI tool message support
+      tool_call_id?: string
       content:
         | string
         | Array<{
@@ -89,6 +91,15 @@ interface LLMCallData {
           name?: string
           input?: Record<string, unknown>
         }>
+    // OpenAI-style tool_calls at response level
+    tool_calls?: Array<{
+      id?: string
+      type?: string
+      function?: {
+        name: string
+        arguments: string
+      }
+    }>
     stop?: string
     tokens_spent?: number
     prompt_tokens?: number
@@ -106,6 +117,32 @@ interface LLMCallData {
   completedAt?: string
   duration_ms?: number
   response?: unknown
+  // Processed tool calls from the related Message document
+  message_tool_calls?: Array<{
+    id?: string
+    tool?: string
+    name?: string
+    args?: Record<string, unknown>
+    input?: Record<string, unknown>
+    task?: string | { $oid: string }
+    cost?: number
+    status?: string
+    result?: Array<{
+      output?: Array<{
+        message_id?: string
+        recipients?: string[]
+        type?: string
+        status?: string
+        [key: string]: unknown
+      }>
+      [key: string]: unknown
+    }>
+    error?: string | null
+    child_session?: string | null
+    reactions?: unknown
+  }>
+  message_content?: string
+  finish_reason?: string
   [key: string]: unknown
 }
 
@@ -558,7 +595,13 @@ const ResponseTab = ({ data }: { data: LLMCallData }) => {
     : []
 
   const textBlocks = contentBlocks.filter(b => b.type === 'text' && b.text)
+  // Anthropic-style tool calls in content array
   const toolUseBlocks = contentBlocks.filter(b => b.type === 'tool_use')
+  // OpenAI-style tool_calls at response level
+  const openAIToolCalls = response.tool_calls || []
+
+  // Processed tool calls from the Message document (with results)
+  const messageToolCalls = data.message_tool_calls || []
 
   return (
     <div className="space-y-4 overflow-auto max-h-[50vh]">
@@ -577,8 +620,91 @@ const ResponseTab = ({ data }: { data: LLMCallData }) => {
         </div>
       )}
 
-      {/* Tool calls in response */}
-      {toolUseBlocks.length > 0 && (
+      {/* Processed tool calls from Message (with full details and results) */}
+      {messageToolCalls.length > 0 && (
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <WrenchIcon className="w-3 h-3" />
+            Tool Calls ({messageToolCalls.length})
+          </div>
+          <div className="space-y-3">
+            {messageToolCalls.map((toolCall, idx) => {
+              const toolName = toolCall.tool || toolCall.name || 'Unknown'
+              const args = toolCall.args || toolCall.input || {}
+              const hasError = !!toolCall.error
+              const statusColor =
+                toolCall.status === 'completed'
+                  ? 'text-green-500'
+                  : toolCall.status === 'failed' || hasError
+                  ? 'text-red-500'
+                  : 'text-yellow-500'
+
+              return (
+                <div
+                  key={idx}
+                  className={cn(
+                    'rounded border p-3',
+                    hasError ? 'bg-red-500/10' : 'bg-purple-500/10',
+                  )}
+                >
+                  {/* Header with tool name and status */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <WrenchIcon
+                        className={cn(
+                          'w-4 h-4',
+                          hasError ? 'text-red-500' : 'text-purple-500',
+                        )}
+                      />
+                      <span className="font-mono font-medium">{toolName}</span>
+                    </div>
+                    {toolCall.status && (
+                      <span className={cn('text-xs font-medium', statusColor)}>
+                        {toolCall.status}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Arguments */}
+                  {Object.keys(args).length > 0 && (
+                    <details className="text-xs mb-2" open>
+                      <summary className="cursor-pointer text-muted-foreground hover:text-foreground font-medium">
+                        Arguments
+                      </summary>
+                      <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
+                        {JSON.stringify(args, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+
+                  {/* Result */}
+                  {toolCall.result && toolCall.result.length > 0 && (
+                    <details className="text-xs" open>
+                      <summary className="cursor-pointer text-muted-foreground hover:text-foreground font-medium">
+                        Result
+                      </summary>
+                      <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
+                        {JSON.stringify(toolCall.result, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+
+                  {/* Error */}
+                  {toolCall.error && (
+                    <div className="mt-2 p-2 bg-red-500/20 rounded text-xs text-red-400">
+                      <span className="font-medium">Error:</span>{' '}
+                      {toolCall.error}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Raw tool_use blocks from LLM response (Anthropic format) - only show if no message tool calls */}
+      {toolUseBlocks.length > 0 && messageToolCalls.length === 0 && (
         <div className="rounded-lg border p-3">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
             <WrenchIcon className="w-3 h-3" />
@@ -592,20 +718,82 @@ const ResponseTab = ({ data }: { data: LLMCallData }) => {
                   <span className="text-xs font-medium text-purple-500">
                     Tool Call
                   </span>
-                  <span className="font-mono text-xs">{block.name}</span>
+                  {block.name && (
+                    <span className="font-mono text-xs">{block.name}</span>
+                  )}
                 </div>
-                {block.input && Object.keys(block.input).length > 0 && (
-                  <details className="text-xs">
+                {/* Show input if available, otherwise show full block */}
+                {block.input && Object.keys(block.input).length > 0 ? (
+                  <details className="text-xs" open>
                     <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                       Input
                     </summary>
-                    <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto text-xs">
+                    <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
                       {JSON.stringify(block.input, null, 2)}
+                    </pre>
+                  </details>
+                ) : (
+                  <details className="text-xs" open>
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      Details
+                    </summary>
+                    <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
+                      {JSON.stringify(block, null, 2)}
                     </pre>
                   </details>
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tool calls in response (OpenAI format) - only show if no message tool calls */}
+      {openAIToolCalls.length > 0 && messageToolCalls.length === 0 && (
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <WrenchIcon className="w-3 h-3" />
+            Tool Calls ({openAIToolCalls.length})
+          </div>
+          <div className="space-y-2">
+            {openAIToolCalls.map((toolCall, idx) => {
+              // Parse arguments JSON string
+              let parsedArgs: Record<string, unknown> | string = {}
+              try {
+                if (toolCall.function?.arguments) {
+                  parsedArgs = JSON.parse(toolCall.function.arguments)
+                }
+              } catch {
+                // Keep raw string if parsing fails
+                parsedArgs = toolCall.function?.arguments || ''
+              }
+
+              return (
+                <div key={idx} className="rounded border bg-purple-500/10 p-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <WrenchIcon className="w-3 h-3 text-purple-500" />
+                    <span className="text-xs font-medium text-purple-500">
+                      Tool Call
+                    </span>
+                    {toolCall.function?.name && (
+                      <span className="font-mono text-xs">
+                        {toolCall.function.name}
+                      </span>
+                    )}
+                  </div>
+                  <details className="text-xs" open>
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      Input
+                    </summary>
+                    <pre className="mt-1 p-2 bg-muted/50 rounded overflow-auto max-h-48 text-xs">
+                      {typeof parsedArgs === 'string'
+                        ? parsedArgs
+                        : JSON.stringify(parsedArgs, null, 2)}
+                    </pre>
+                  </details>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -804,13 +992,13 @@ export const LLMCallModal = ({
                     <MessageSquareIcon className="w-3 h-3" />
                     Messages
                   </TabsTrigger>
-                  <TabsTrigger value="response" className="gap-1.5">
-                    <ReplyIcon className="w-3 h-3" />
-                    Response
-                  </TabsTrigger>
                   <TabsTrigger value="tools" className="gap-1.5">
                     <WrenchIcon className="w-3 h-3" />
                     Tools
+                  </TabsTrigger>
+                  <TabsTrigger value="response" className="gap-1.5">
+                    <ReplyIcon className="w-3 h-3" />
+                    Response
                   </TabsTrigger>
                   <TabsTrigger value="raw" className="gap-1.5">
                     <CodeIcon className="w-3 h-3" />
@@ -850,12 +1038,12 @@ export const LLMCallModal = ({
                 <MessagesTab data={data} />
               </TabsContent>
 
-              <TabsContent value="response" className="flex-1 overflow-auto">
-                <ResponseTab data={data} />
-              </TabsContent>
-
               <TabsContent value="tools" className="flex-1 overflow-auto">
                 <ToolsTab data={data} />
+              </TabsContent>
+
+              <TabsContent value="response" className="flex-1 overflow-auto">
+                <ResponseTab data={data} />
               </TabsContent>
 
               <TabsContent value="raw" className="flex-1 overflow-auto">

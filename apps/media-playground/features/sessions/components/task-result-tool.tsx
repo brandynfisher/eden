@@ -3,9 +3,11 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { ArtifactEmbed } from '@/features/sessions/tools/artifact-embed'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
+import { ConductVoteEmbed } from '@/features/sessions/tools/conduct-vote-embed'
 import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
 import { FarcasterCastEmbed } from '@/features/sessions/tools/farcaster-cast-embed'
 import { JsonResultEmbed } from '@/features/sessions/tools/json-result-embed'
+import { PromptAgentEmbed } from '@/features/sessions/tools/prompt-agent-embed'
 import { SeedEmbed } from '@/features/sessions/tools/seed-embed'
 import { SessionPostEmbed } from '@/features/sessions/tools/session-post-embed'
 import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
@@ -127,6 +129,17 @@ const SOCIAL_TOOLS = {
     eden_search: {},
     vote: {},
     get_vote: {},
+    lights: {},
+  },
+
+  // Prompt agent tools - display agent avatar and response
+  PROMPT_AGENT_TOOLS: {
+    prompt_agent: {},
+  },
+
+  // Conduct vote tools - display vote results with avatars
+  CONDUCT_VOTE_TOOLS: {
+    conduct_vote: {},
   },
 } as const
 
@@ -172,6 +185,14 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     ]
   const jsonToolConfig =
     SOCIAL_TOOLS.JSON_TOOLS[tool as keyof typeof SOCIAL_TOOLS.JSON_TOOLS]
+  const promptAgentToolConfig =
+    SOCIAL_TOOLS.PROMPT_AGENT_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.PROMPT_AGENT_TOOLS
+    ]
+  const conductVoteToolConfig =
+    SOCIAL_TOOLS.CONDUCT_VOTE_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.CONDUCT_VOTE_TOOLS
+    ]
   const isArtifactTool = Boolean(tool?.startsWith('eden_artifacts_v3_'))
 
   const isFarcasterCast = tool === 'farcaster_cast'
@@ -185,6 +206,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   const isCollectionTool = !!collectionToolConfig
   const isWebSearchTool = !!webSearchToolConfig
   const isJsonTool = !!jsonToolConfig
+  const isPromptAgentTool = !!promptAgentToolConfig
+  const isConductVoteTool = !!conductVoteToolConfig
 
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
@@ -324,6 +347,24 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           <div className="mb-2 relative group">
             <JsonResultEmbed results={toolResults || []} toolName={tool!} />
           </div>
+        ) : isPromptAgentTool && toolCall.status === 'completed' ? (
+          // Handle prompt_agent tool - display agent avatar and response
+          <div className="mb-2 relative group">
+            <PromptAgentEmbed
+              results={toolResults || []}
+              toolName={tool}
+              toolArgs={toolCall.args}
+            />
+          </div>
+        ) : isConductVoteTool && toolCall.status === 'completed' ? (
+          // Handle conduct_vote tool - display vote results with avatars
+          <div className="mb-2 relative group">
+            <ConductVoteEmbed
+              results={toolResults || []}
+              toolName={tool}
+              toolArgs={toolCall.args}
+            />
+          </div>
         ) : toolCall.child_session ? (
           // If tool has a child_session but isn't a SESSION_POST_TOOLS, show session (which includes media)
           <SessionPostEmbed
@@ -344,6 +385,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
         !(isWebSearchTool && toolCall.status === 'completed') &&
         !(isVerdelisSeedTool && toolCall.status === 'completed') &&
         !(isJsonTool && toolCall.status === 'completed') &&
+        !(isPromptAgentTool && toolCall.status === 'completed') &&
+        !(isConductVoteTool && toolCall.status === 'completed') &&
         !isVerdelisPlantSeedTool &&
         !isSessionPost &&
         !toolCall.child_session && (
