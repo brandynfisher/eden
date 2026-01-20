@@ -104,6 +104,8 @@ export type Agent = Omit<
       owners?: Creator[]
     }
   }
+  user_memory_enabled?: boolean
+  agent_memory_enabled?: boolean
 }
 
 export type AgentClientType =

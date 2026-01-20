@@ -22,6 +22,8 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
@@ -77,6 +79,10 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   const [reflections, setReflections] = useState<Reflection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMemoryEnabled, setIsMemoryEnabled] = useState(
+    agent.user_memory_enabled ?? false,
+  )
+  const [isTogglingMemory, setIsTogglingMemory] = useState(false)
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -115,6 +121,22 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
   }, [reflections])
+
+  const handleToggleMemory = async (enabled: boolean) => {
+    setIsTogglingMemory(true)
+    try {
+      await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
+        user_memory_enabled: enabled,
+      })
+      setIsMemoryEnabled(enabled)
+      toast.success(enabled ? 'User memory enabled' : 'User memory disabled')
+    } catch (error) {
+      console.error('Error toggling user memory:', error)
+      toast.error('Failed to update memory setting')
+    } finally {
+      setIsTogglingMemory(false)
+    }
+  }
 
   // Load data on mount
   useEffect(() => {
@@ -241,41 +263,70 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
 
   return (
     <div className="space-y-8">
-      {/* Consolidated Memory Section */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-              Personal Memory
-            </p>
-            <p className="text-sm text-muted-foreground/90">
-              Context {agent.name} keeps about you
+      {/* Memory Toggle */}
+      {hasEditAccess && (
+        <div className="flex items-center justify-between px-1">
+          <div className="space-y-0.5">
+            <Label htmlFor="user-memory-toggle" className="text-sm font-medium">
+              User Memory
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Allow {agent.name} to remember personalized context about you
             </p>
           </div>
-          {hasEditAccess && (
-            <Button
-              onClick={handleEditClick}
-              size="sm"
-              variant="secondary"
-              className="h-8 px-3 rounded-full shadow-sm"
-            >
-              <Edit className="w-4 h-4 mr-1.5" />
-              Edit
-            </Button>
-          )}
+          <Switch
+            id="user-memory-toggle"
+            checked={isMemoryEnabled}
+            onCheckedChange={handleToggleMemory}
+            disabled={isTogglingMemory}
+          />
         </div>
-        <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
-          {consolidatedContent || (
-            <span className="block text-sm text-muted-foreground italic">
-              No user memories stored yet. Just interact with {agent.name} and
-              the agent will automatically build memory about you here.
-            </span>
-          )}
-        </div>
-      </div>
+      )}
 
-      {/* Recent Reflections Section */}
-      {sortedReflections.length > 0 && (
+      {/* Disabled state message */}
+      {!isMemoryEnabled && (
+        <div className="rounded-xl border border-border bg-muted/30 p-8 text-center">
+          <p className="text-muted-foreground">User memory disabled</p>
+        </div>
+      )}
+
+      {/* Consolidated Memory Section - only show when enabled */}
+      {isMemoryEnabled && (
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                Personal Memory
+              </p>
+              <p className="text-sm text-muted-foreground/90">
+                Context {agent.name} keeps about you
+              </p>
+            </div>
+            {hasEditAccess && (
+              <Button
+                onClick={handleEditClick}
+                size="sm"
+                variant="secondary"
+                className="h-8 px-3 rounded-full shadow-sm"
+              >
+                <Edit className="w-4 h-4 mr-1.5" />
+                Edit
+              </Button>
+            )}
+          </div>
+          <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
+            {consolidatedContent || (
+              <span className="block text-sm text-muted-foreground italic">
+                No user memories stored yet. Just interact with {agent.name} and
+                the agent will automatically build memory about you here.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Reflections Section - only show when enabled */}
+      {isMemoryEnabled && sortedReflections.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-6 space-y-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 bg-border rounded-full"></div>

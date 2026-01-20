@@ -26,6 +26,7 @@ import {
   retrieveMemorySession as _retrieveMemorySession,
   retrieveMemoryUser as _retrieveMemoryUser,
   saveAgentMemory as _saveAgentMemory,
+  updateAgentMemoryEnabled as _updateAgentMemoryEnabled,
   updateMemoryAgent as _updateMemoryAgent,
   updateMemorySession as _updateMemorySession,
   updateMemoryUser as _updateMemoryUser,
@@ -126,6 +127,7 @@ export {
   _removeUnabsorbedMemory as removeUnabsorbedMemory,
   _createMemoryAgent as createMemoryAgent,
   _updateUserMemoryEnabled as updateUserMemoryEnabled,
+  _updateAgentMemoryEnabled as updateAgentMemoryEnabled,
 }
 
 // Helper function to check if user has owner-level permissions
