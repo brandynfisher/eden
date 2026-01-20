@@ -26,6 +26,7 @@ import {
   unlikeAgent,
   updateAgent,
   updateAgentDeployment,
+  updateAgentMemoryEnabled,
   updateAgentPermissions,
   updateMemoryAgent,
   updateMemorySession,
@@ -1023,6 +1024,29 @@ const agentRoutes: FastifyPluginAsync = async server => {
       }>,
       reply,
     ) => updateUserMemoryEnabled(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/agent-memory-enabled', {
+    schema: {
+      tags: ['Agents'],
+      summary: 'Toggle Agent Memory Setting',
+      description:
+        'Enable or disable the collective memory feature for an agent.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        agent_memory_enabled: Type.Boolean(),
+      }),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (
+      request: FastifyRequest<{
+        Params: { agentId: string }
+        Body: { agent_memory_enabled: boolean }
+      }>,
+      reply,
+    ) => updateAgentMemoryEnabled(server, request, reply),
   })
 
   server.get('/v2/memory-sessions/:memoryId', {
