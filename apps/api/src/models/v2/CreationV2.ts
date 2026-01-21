@@ -176,6 +176,16 @@ creationSchema.index({
   _id: -1,
 })
 creationSchema.index({
+  agent: 1,
+  user: 1,
+  deleted: 1,
+})
+creationSchema.index({
+  agent: 1,
+  public: 1,
+  deleted: 1,
+})
+creationSchema.index({
   public: 1,
   deleted: 1,
   likeCount: -1,

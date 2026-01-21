@@ -875,7 +875,32 @@ export const getAgentCreations = async (
     }
 
     // Get total count of matching creations (for pagination UI)
-    const totalDocs = await CreationV2.countDocuments(match)
+    // Avoid $or in count by splitting into index-friendly counts.
+    let totalDocs = 0
+    if (!authUserId) {
+      totalDocs = await CreationV2.countDocuments({
+        ...match,
+        public: true,
+      })
+    } else {
+      const baseCountMatch = { ...match }
+      const [userCount, publicCount, userPublicCount] = await Promise.all([
+        CreationV2.countDocuments({
+          ...baseCountMatch,
+          user: authUserId,
+        }),
+        CreationV2.countDocuments({
+          ...baseCountMatch,
+          public: true,
+        }),
+        CreationV2.countDocuments({
+          ...baseCountMatch,
+          user: authUserId,
+          public: true,
+        }),
+      ])
+      totalDocs = userCount + publicCount - userPublicCount
+    }
 
     const docs = await CreationV2.find(match)
       .select('-embedding')
