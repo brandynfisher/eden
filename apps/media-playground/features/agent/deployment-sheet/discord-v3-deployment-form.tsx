@@ -108,6 +108,10 @@ export const DiscordV3DeploymentForm = ({
   const [isRefreshingServers, setIsRefreshingServers] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
   const [hasCompletedOAuth, setHasCompletedOAuth] = useState(false)
+  const [hasLoadedServers, setHasLoadedServers] = useState(false)
+  const [loadedChannelsForGuild, setLoadedChannelsForGuild] = useState<
+    string | null
+  >(null)
   const popupRef = useRef<Window | null>(null)
   const { userId, isSignedIn } = useAuth()
   const {
@@ -132,6 +136,9 @@ export const DiscordV3DeploymentForm = ({
   )
   const [isLoadingAccessRoles, setIsLoadingAccessRoles] = useState(false)
   const [isSavingAccessRoles, setIsSavingAccessRoles] = useState(false)
+  const channelSelectionsByGuildRef = useRef<
+    Record<string, DiscordV3FormDto['channels']>
+  >({})
 
   const deploymentConfig = useMemo(
     () =>
@@ -156,8 +163,8 @@ export const DiscordV3DeploymentForm = ({
   const form = useForm<DiscordV3FormDto, undefined, DiscordV3FormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
-      guildId: initialGuildId,
-      channels: initialChannels,
+      guildId: '',
+      channels: [],
     },
   })
 
@@ -194,11 +201,16 @@ export const DiscordV3DeploymentForm = ({
       return
     }
     form.reset({
-      guildId: initialGuildId,
-      channels: initialChannels,
+      guildId: '',
+      channels: [],
     })
     hasInitializedDeployment.current = true
   }, [deployment, form, initialChannels, initialGuildId])
+
+  useEffect(() => {
+    if (!initialGuildId) return
+    channelSelectionsByGuildRef.current[initialGuildId] = initialChannels
+  }, [initialChannels, initialGuildId])
 
   const cleanupPopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -225,6 +237,7 @@ export const DiscordV3DeploymentForm = ({
         const guilds = event.data.guilds || []
         setHasCompletedOAuth(true)
         setAvailableServers(guilds)
+        setHasLoadedServers(true)
 
         await invalidateMe()
 
@@ -294,6 +307,8 @@ export const DiscordV3DeploymentForm = ({
   const loadChannels = useCallback(async (guildId: string) => {
     try {
       setIsLoadingChannels(true)
+      setLoadedChannelsForGuild(null)
+      setAvailableChannels([])
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/deployments/discord/guilds/${guildId}/channels`,
       )
@@ -309,6 +324,7 @@ export const DiscordV3DeploymentForm = ({
       setAvailableChannels([])
     } finally {
       setIsLoadingChannels(false)
+      setLoadedChannelsForGuild(guildId)
     }
   }, [])
 
@@ -331,11 +347,6 @@ export const DiscordV3DeploymentForm = ({
         setAvailableServers(guilds)
         setHasCompletedOAuth(true)
 
-        const currentGuildId = form.getValues('guildId')
-        if (currentGuildId) {
-          await loadChannels(currentGuildId)
-        }
-
         if (showToast) {
           toast.success('Discord refreshed', {
             description: `Found ${guilds.length} server${
@@ -350,9 +361,10 @@ export const DiscordV3DeploymentForm = ({
         }
       } finally {
         setIsRefreshingServers(false)
+        setHasLoadedServers(true)
       }
     },
-    [form, loadChannels],
+    [],
   )
 
   const loadAccessRoles = useCallback(async (guildId: string) => {
@@ -445,7 +457,10 @@ export const DiscordV3DeploymentForm = ({
       const newChannels = currentChannels.filter(
         (_, idx) => idx !== existingIndex,
       )
-      form.setValue('channels', newChannels)
+      form.setValue('channels', newChannels, {
+        shouldDirty: true,
+        shouldValidate: true,
+      })
     } else {
       // Add channel
       const newChannels = [
@@ -456,7 +471,10 @@ export const DiscordV3DeploymentForm = ({
           access: 'read_write' as const,
         },
       ]
-      form.setValue('channels', newChannels)
+      form.setValue('channels', newChannels, {
+        shouldDirty: true,
+        shouldValidate: true,
+      })
     }
   }
 
@@ -468,7 +486,10 @@ export const DiscordV3DeploymentForm = ({
     const newChannels = currentChannels.map(ch =>
       ch.channelId === channelId ? { ...ch, access } : ch,
     )
-    form.setValue('channels', newChannels)
+    form.setValue('channels', newChannels, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
   }
 
   useEffect(() => {
@@ -479,13 +500,6 @@ export const DiscordV3DeploymentForm = ({
       refreshAvailableServers({ showToast: false })
     }
   }, [hasCompletedOAuth, isDeployed, refreshAvailableServers, user?.discordId])
-
-  // Load channels when guild is selected
-  useEffect(() => {
-    if (selectedGuildId) {
-      loadChannels(selectedGuildId)
-    }
-  }, [selectedGuildId, loadChannels])
 
   useEffect(() => {
     setChannelSearch('')
@@ -536,8 +550,10 @@ export const DiscordV3DeploymentForm = ({
 
       await invalidateMe()
       setHasCompletedOAuth(false)
+      setHasLoadedServers(false)
       setAvailableServers([])
       setAvailableChannels([])
+      setLoadedChannelsForGuild(null)
       setAccessGuildId('')
       setGuildRoles([])
       setAllowedRoleIds([])
@@ -587,6 +603,51 @@ export const DiscordV3DeploymentForm = ({
     () => unselectedChannelsForGuild.filter(matchSearch),
     [matchSearch, unselectedChannelsForGuild],
   )
+  const selectedServerName = useMemo(() => {
+    if (!selectedGuildId) return null
+    return (
+      availableServers.find(server => server.id === selectedGuildId)?.name ||
+      null
+    )
+  }, [availableServers, selectedGuildId])
+  const areChannelsEqual = useCallback(
+    (
+      left: DiscordV3FormDto['channels'],
+      right: DiscordV3FormDto['channels'],
+    ) => {
+      if (left.length !== right.length) return false
+      const rightMap = new Map(
+        right.map(channel => [channel.channelId, channel.access]),
+      )
+      return left.every(
+        channel => rightMap.get(channel.channelId) === channel.access,
+      )
+    },
+    [],
+  )
+  const getSelectedCountForServer = useCallback(
+    (serverId: string) => {
+      if (selectedGuildId === serverId) {
+        return selectedChannels.length
+      }
+      const cached = channelSelectionsByGuildRef.current[serverId]
+      if (cached) {
+        return cached.length
+      }
+      if (initialGuildId === serverId) {
+        return initialChannels.length
+      }
+      return 0
+    },
+    [
+      initialChannels.length,
+      initialGuildId,
+      selectedChannels.length,
+      selectedGuildId,
+    ],
+  )
+  const shouldBlockForOAuth =
+    isAccountLoading || (isDiscordLinked && !hasLoadedServers)
   const open = isInline ? true : isOpen
 
   const renderChannelRow = (channel: DiscordChannel) => {
@@ -654,8 +715,13 @@ export const DiscordV3DeploymentForm = ({
         ])}
       >
         <div className="flex flex-col w-full space-y-4 p-4">
-          {/* OAuth First - Show connect button if haven't completed OAuth */}
-          {!isDiscordLinked ? (
+          {shouldBlockForOAuth ? (
+            <div className="flex min-h-[200px] items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading Discord connection...
+            </div>
+          ) : !isDiscordLinked ? (
+            /* OAuth First - Show connect button if haven't completed OAuth */
             <>
               <Button
                 onClick={handleConnectDiscord}
@@ -756,7 +822,37 @@ export const DiscordV3DeploymentForm = ({
                               <FormItem>
                                 <FormLabel>Server</FormLabel>
                                 <Select
-                                  onValueChange={field.onChange}
+                                  onValueChange={value => {
+                                    const currentGuild =
+                                      form.getValues('guildId')
+                                    if (currentGuild) {
+                                      channelSelectionsByGuildRef.current[
+                                        currentGuild
+                                      ] = form.getValues('channels')
+                                    }
+
+                                    const savedChannels =
+                                      channelSelectionsByGuildRef.current[
+                                        value
+                                      ] ?? []
+                                    const isSameAsInitial =
+                                      value === initialGuildId &&
+                                      areChannelsEqual(
+                                        savedChannels,
+                                        initialChannels,
+                                      )
+                                    const shouldDirty = !isSameAsInitial
+
+                                    form.setValue('guildId', value, {
+                                      shouldDirty,
+                                      shouldValidate: true,
+                                    })
+                                    form.setValue('channels', savedChannels, {
+                                      shouldDirty,
+                                      shouldValidate: true,
+                                    })
+                                    loadChannels(value)
+                                  }}
                                   value={field.value}
                                 >
                                   <FormControl>
@@ -770,17 +866,34 @@ export const DiscordV3DeploymentForm = ({
                                         key={server.id}
                                         value={server.id}
                                       >
-                                        {server.name}
-                                        {server.owner && (
-                                          <span className="ml-2 text-xs text-muted-foreground">
-                                            (Owner)
+                                        <div className="flex items-center justify-between gap-2">
+                                          <span>
+                                            {server.name}
+                                            {server.owner && (
+                                              <span className="ml-2 text-xs text-muted-foreground">
+                                                (Owner)
+                                              </span>
+                                            )}
+                                            {server.access === 'role' && (
+                                              <span className="ml-2 text-xs text-muted-foreground">
+                                                (Role access)
+                                              </span>
+                                            )}
                                           </span>
-                                        )}
-                                        {server.access === 'role' && (
-                                          <span className="ml-2 text-xs text-muted-foreground">
-                                            (Role access)
-                                          </span>
-                                        )}
+                                          {getSelectedCountForServer(
+                                            server.id,
+                                          ) > 0 && (
+                                            <Badge
+                                              variant="secondary"
+                                              className="text-[10px]"
+                                            >
+                                              {getSelectedCountForServer(
+                                                server.id,
+                                              )}{' '}
+                                              channels selected
+                                            </Badge>
+                                          )}
+                                        </div>
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -809,6 +922,10 @@ export const DiscordV3DeploymentForm = ({
                                 <div className="flex items-center justify-center p-8">
                                   <Loader2 className="h-6 w-6 animate-spin" />
                                 </div>
+                              ) : loadedChannelsForGuild !== selectedGuildId ? (
+                                <div className="flex items-center justify-center p-8">
+                                  <Loader2 className="h-6 w-6 animate-spin" />
+                                </div>
                               ) : availableChannels.length === 0 ? (
                                 <div className="p-4 text-sm text-muted-foreground text-center border border-dashed rounded-lg">
                                   No text channels found in this server
@@ -823,51 +940,59 @@ export const DiscordV3DeploymentForm = ({
                                     placeholder="Search channels"
                                   />
 
-                                  {selectedChannelsForGuild.length > 0 && (
+                                  <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                                    {selectedChannelsForGuild.length > 0 && (
+                                      <div className="space-y-2">
+                                        <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                                          Deployed channels
+                                        </div>
+                                        <div className="space-y-2 border rounded-lg p-3">
+                                          {filteredSelectedChannels.length ===
+                                          0 ? (
+                                            <div className="text-xs text-muted-foreground">
+                                              No deployed channels match this
+                                              search.
+                                            </div>
+                                          ) : (
+                                            filteredSelectedChannels.map(
+                                              renderChannelRow,
+                                            )
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
                                     <div className="space-y-2">
                                       <div className="text-[11px] font-semibold uppercase text-muted-foreground">
-                                        Deployed channels
+                                        All channels
                                       </div>
                                       <div className="space-y-2 border rounded-lg p-3">
-                                        {filteredSelectedChannels.length ===
+                                        {filteredUnselectedChannels.length ===
                                         0 ? (
                                           <div className="text-xs text-muted-foreground">
-                                            No deployed channels match this
-                                            search.
+                                            No channels match this search.
                                           </div>
                                         ) : (
-                                          filteredSelectedChannels.map(
+                                          filteredUnselectedChannels.map(
                                             renderChannelRow,
                                           )
                                         )}
                                       </div>
                                     </div>
-                                  )}
-
-                                  <div className="space-y-2">
-                                    <div className="text-[11px] font-semibold uppercase text-muted-foreground">
-                                      All channels
-                                    </div>
-                                    <div className="space-y-2 border rounded-lg p-3">
-                                      {filteredUnselectedChannels.length ===
-                                      0 ? (
-                                        <div className="text-xs text-muted-foreground">
-                                          No channels match this search.
-                                        </div>
-                                      ) : (
-                                        filteredUnselectedChannels.map(
-                                          renderChannelRow,
-                                        )
-                                      )}
-                                    </div>
                                   </div>
                                 </div>
                               )}
 
-                              {selectedChannels.length > 0 && (
+                              {selectedChannelsForGuild.length > 0 && (
                                 <div className="text-xs text-muted-foreground">
-                                  Selected {selectedChannels.length} channel
-                                  {selectedChannels.length !== 1 ? 's' : ''}
+                                  Selected {selectedChannelsForGuild.length}{' '}
+                                  channel
+                                  {selectedChannelsForGuild.length !== 1
+                                    ? 's'
+                                    : ''}{' '}
+                                  {selectedServerName
+                                    ? `in ${selectedServerName}`
+                                    : 'in this server'}
                                 </div>
                               )}
                             </div>
