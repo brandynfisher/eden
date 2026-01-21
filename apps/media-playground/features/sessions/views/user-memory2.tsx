@@ -359,7 +359,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-2">
       {/* Memory Toggle */}
       {hasEditAccess && (
         <div className="flex items-center justify-between px-1">
@@ -393,34 +393,41 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
 
       {/* Consolidated Memory Section - only show when enabled */}
       {isMemoryEnabled && (
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                Personal Memory
-              </p>
-              <p className="text-sm text-muted-foreground/90">
-                Context {agent.name} keeps about you
-              </p>
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-1 h-6 bg-purple-400/50 dark:bg-purple-600/50 rounded-full"></div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h3 className="text-md font-medium text-foreground cursor-help">
+                  Personal Memory
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-md">
+                <p>
+                  This is your personal memory with this agent, built from your
+                  conversations over time.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex-1 h-px bg-border"></div>
+          </div>
+          <div className="group relative rounded-lg border border-border bg-purple-50/15 dark:bg-purple-950/10 shadow-sm">
+            <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
+              {consolidatedContent || (
+                <span className="text-muted-foreground italic">
+                  No user memories stored yet. Just interact with {agent.name}{' '}
+                  and the agent will automatically build memory about you here.
+                </span>
+              )}
             </div>
             {hasEditAccess && (
               <Button
                 onClick={handleEditClick}
                 size="sm"
-                variant="secondary"
-                className="h-8 px-3 rounded-full shadow-sm"
+                className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
-                <Edit className="w-4 h-4 mr-1.5" />
-                Edit
+                <Edit className="w-4 h-4" />
               </Button>
-            )}
-          </div>
-          <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
-            {consolidatedContent || (
-              <span className="block text-sm text-muted-foreground italic">
-                No user memories stored yet. Just interact with {agent.name} and
-                the agent will automatically build memory about you here.
-              </span>
             )}
           </div>
         </div>
@@ -428,9 +435,9 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
 
       {/* Recent Reflections Section - only show when enabled */}
       {isMemoryEnabled && sortedReflections.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+        <div className="space-y-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-border rounded-full"></div>
+            <div className="w-1 h-6 bg-yellow-400/50 dark:bg-yellow-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -445,7 +452,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
-            <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+            <span className="text-xs bg-yellow-100/30 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full border border-yellow-200/30 dark:border-yellow-800/30">
               Will be integrated soon
             </span>
           </div>
@@ -454,7 +461,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               <Tooltip key={reflection._id}>
                 <TooltipTrigger asChild>
                   <div className="relative group cursor-default">
-                    <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+                    <div className="rounded-lg border border-border bg-yellow-50/20 dark:bg-yellow-950/10 hover:bg-yellow-100/25 dark:hover:bg-yellow-900/15 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">
                           {reflection.content}
@@ -498,7 +505,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
       {isMemoryEnabled && sortedFacts.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-purple-400/60 dark:bg-purple-600/60 rounded-full"></div>
+            <div className="w-1 h-6 bg-green-400/50 dark:bg-green-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -514,7 +521,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
-            <span className="text-xs bg-purple-100/40 dark:bg-purple-900/25 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full border border-purple-200/40 dark:border-purple-800/40">
+            <span className="text-xs bg-green-100/30 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-200/30 dark:border-green-800/30">
               {sortedFacts.length} facts
             </span>
           </div>
@@ -523,7 +530,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               <Tooltip key={fact._id}>
                 <TooltipTrigger asChild>
                   <div className="relative group cursor-default">
-                    <div className="rounded-lg border border-border bg-purple-50/20 dark:bg-purple-950/15 hover:bg-purple-100/30 dark:hover:bg-purple-900/20 transition-colors">
+                    <div className="rounded-lg border border-border bg-green-50/15 dark:bg-green-950/10 hover:bg-green-100/20 dark:hover:bg-green-900/15 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">{fact.content}</div>
                       </div>
