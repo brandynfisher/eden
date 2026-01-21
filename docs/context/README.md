@@ -20,6 +20,10 @@ These documents provide deep-dive context that is too detailed for the main CLAU
 
 - **[automatic-sessions.md](./automatic-sessions.md)** - Automatic (multi-agent) session system: conductor orchestration, session types (passive/natural/automatic), status management, conductor messages, and UI components
 
+### Data Systems
+
+- **[artifacts-system.md](./artifacts-system.md)** - Artifacts system (V2 and V3): schemas, API endpoints, permissions, edit history, items store, frontend components, and Eden Compute URL (EVE) overview
+
 ## When to Use These Docs
 
 Claude should reference these documents when:

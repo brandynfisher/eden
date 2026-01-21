@@ -8,8 +8,6 @@ const PERMISSION_WEIGHT: Record<PermissionLevel, number> = {
   [ArtifactPermissionLevelV3.Owner]: 3,
 }
 
-const WILDCARD_SINGLE = '*'
-const WILDCARD_MULTI = '**'
 const RESERVED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
 export const getPermissionWeight = (level?: PermissionLevel | null) => {
@@ -34,179 +32,64 @@ export const maxPermissionLevel = (
   return best
 }
 
-const splitPath = (path: string) =>
-  path
-    .split('.')
-    .map(segment => segment.trim())
-    .filter(Boolean)
-
-const matchSegments = (
-  patternSegments: string[],
-  pathSegments: string[],
-  patternIndex = 0,
-  pathIndex = 0,
-): boolean => {
-  if (patternIndex >= patternSegments.length) {
-    return pathIndex >= pathSegments.length
-  }
-
-  const token = patternSegments[patternIndex]
-
-  if (token === WILDCARD_MULTI) {
-    if (patternIndex === patternSegments.length - 1) {
-      return true
-    }
-    for (let i = pathIndex; i <= pathSegments.length; i += 1) {
-      if (matchSegments(patternSegments, pathSegments, patternIndex + 1, i)) {
-        return true
-      }
-    }
+/**
+ * Validates a JSON Pointer path (RFC 6901) for use with JSON Patch operations.
+ * Paths must start with "/" and contain valid segments.
+ */
+export const validateJsonPointer = (path: string): boolean => {
+  if (!path || !path.startsWith('/')) {
     return false
   }
-
-  if (pathIndex >= pathSegments.length) {
-    return false
-  }
-
-  if (token === WILDCARD_SINGLE || token === pathSegments[pathIndex]) {
-    return matchSegments(
-      patternSegments,
-      pathSegments,
-      patternIndex + 1,
-      pathIndex + 1,
-    )
-  }
-
-  return false
-}
-
-export const matchKeyPattern = (pattern: string, keyPath: string) => {
-  const patternSegments = splitPath(pattern)
-  const pathSegments = splitPath(keyPath)
-  if (!patternSegments.length || !pathSegments.length) {
-    return false
-  }
-  return matchSegments(patternSegments, pathSegments)
-}
-
-const patternSpecificity = (pattern: string) => {
-  const segments = splitPath(pattern)
-  let literalCount = 0
-  let wildcardCount = 0
-  for (const segment of segments) {
-    if (segment === WILDCARD_MULTI || segment === WILDCARD_SINGLE) {
-      wildcardCount += 1
-    } else {
-      literalCount += 1
-    }
-  }
-  return {
-    literalCount,
-    wildcardCount,
-    length: segments.length,
-  }
-}
-
-export const selectMostSpecificPattern = (
-  patterns: string[],
-): string | null => {
-  if (!patterns.length) {
-    return null
-  }
-  return patterns.sort((a, b) => {
-    const aScore = patternSpecificity(a)
-    const bScore = patternSpecificity(b)
-
-    if (aScore.literalCount !== bScore.literalCount) {
-      return bScore.literalCount - aScore.literalCount
-    }
-    if (aScore.wildcardCount !== bScore.wildcardCount) {
-      return aScore.wildcardCount - bScore.wildcardCount
-    }
-    return bScore.length - aScore.length
-  })[0]
-}
-
-export const validateKeyPath = (path: string) => {
-  if (!path) {
-    return false
-  }
-  const segments = splitPath(path)
-  if (!segments.length) {
+  const segments = path.slice(1).split('/')
+  if (segments.length === 0) {
     return false
   }
   return segments.every(segment => {
-    if (!segment) {
-      return false
-    }
     if (RESERVED_KEYS.has(segment)) {
       return false
     }
-    if (segment.includes('$')) {
-      return false
-    }
-    return segment !== WILDCARD_MULTI && segment !== WILDCARD_SINGLE
-  })
-}
-
-export const validateKeyPattern = (pattern: string) => {
-  if (!pattern) {
-    return false
-  }
-  const segments = splitPath(pattern)
-  if (!segments.length) {
-    return false
-  }
-  return segments.every(segment => {
-    if (!segment) {
-      return false
-    }
-    if (RESERVED_KEYS.has(segment)) {
-      return false
-    }
-    if (segment.includes('$')) {
-      return false
-    }
-    if (segment === WILDCARD_SINGLE || segment === WILDCARD_MULTI) {
+    // Allow numeric indices for arrays
+    if (/^\d+$/.test(segment)) {
       return true
+    }
+    // Allow "-" for appending to arrays
+    if (segment === '-') {
+      return true
+    }
+    // Disallow empty segments (except for root)
+    if (!segment && segments.length > 1) {
+      return false
     }
     return true
   })
 }
 
-export const filterItemsByPermissions = (
-  items: unknown,
-  canReadPath: (path: string) => boolean,
-  prefix = '',
-): Record<string, unknown> | string | undefined => {
-  if (typeof items === 'string') {
-    if (!prefix) {
-      return undefined
-    }
-    return canReadPath(prefix) ? items : undefined
+/**
+ * Converts a JSON Pointer path to a dot-notation path for backward compatibility.
+ * Example: "/characters/0/name" -> "characters.0.name"
+ */
+export const jsonPointerToDotPath = (pointer: string): string => {
+  if (!pointer.startsWith('/')) {
+    return pointer
   }
-
-  if (!items || typeof items !== 'object' || Array.isArray(items)) {
-    return undefined
-  }
-
-  const result: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(items)) {
-    const path = prefix ? `${prefix}.${key}` : key
-    const filtered = filterItemsByPermissions(value, canReadPath, path)
-    if (filtered === undefined) {
-      continue
-    }
-    result[key] = filtered
-  }
-
-  if (!Object.keys(result).length) {
-    return undefined
-  }
-
-  return result
+  return pointer.slice(1).split('/').join('.')
 }
 
+/**
+ * Converts a dot-notation path to a JSON Pointer path.
+ * Example: "characters.0.name" -> "/characters/0/name"
+ */
+export const dotPathToJsonPointer = (dotPath: string): string => {
+  if (dotPath.startsWith('/')) {
+    return dotPath
+  }
+  return '/' + dotPath.split('.').join('/')
+}
+
+/**
+ * Sanitizes items input, allowing proper JSON types (arrays, nested objects,
+ * numbers, booleans, null) instead of string-coercing.
+ */
 export const sanitizeItemsInput = (
   items: unknown,
   pathPrefix = 'items',
@@ -217,33 +100,40 @@ export const sanitizeItemsInput = (
     return { sanitized: {}, errors }
   }
 
+  const sanitizeValue = (value: unknown, path: string): unknown => {
+    if (value === null || value === undefined) {
+      return null
+    }
+    if (typeof value === 'string') {
+      return value
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return value
+    }
+    if (Array.isArray(value)) {
+      return value.map((item, index) =>
+        sanitizeValue(item, `${path}[${index}]`),
+      )
+    }
+    if (typeof value === 'object') {
+      return sanitizeObject(value as Record<string, unknown>, path)
+    }
+    errors.push(`Invalid value at "${path}"`)
+    return null
+  }
+
   const sanitizeObject = (
     obj: Record<string, unknown>,
     path: string,
   ): Record<string, unknown> => {
     const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(obj)) {
-      if (
-        !key ||
-        key.includes('.') ||
-        key.includes('$') ||
-        RESERVED_KEYS.has(key)
-      ) {
+      if (!key || key.includes('$') || RESERVED_KEYS.has(key)) {
         errors.push(`Invalid key "${path}.${key}"`)
         continue
       }
       const nextPath = `${path}.${key}`
-      if (typeof value === 'string') {
-        result[key] = value
-      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-        result[key] = sanitizeObject(value as Record<string, unknown>, nextPath)
-      } else if (value === null || value === undefined) {
-        result[key] = ''
-      } else if (typeof value === 'number' || typeof value === 'boolean') {
-        result[key] = String(value)
-      } else {
-        errors.push(`Invalid value at "${nextPath}"`)
-      }
+      result[key] = sanitizeValue(value, nextPath)
     }
     return result
   }

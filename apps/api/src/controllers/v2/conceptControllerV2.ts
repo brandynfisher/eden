@@ -110,9 +110,9 @@ export const createConcept = async (
   const { name, agent, usage_instructions, images } =
     request.body as ConceptCreateArguments
 
-  if (!name || !images || images.length === 0 || images.length > 25) {
+  if (!name || !images || images.length === 0 || images.length > 100) {
     return reply.status(422).send({
-      message: 'Name and images (1-25) are required',
+      message: 'Name and images (1-100) are required',
     })
   }
 
@@ -187,9 +187,9 @@ export const updateConcept = async (
   const { name, agent, usage_instructions, images } =
     request.body as ConceptUpdateArguments
 
-  if (images && (images.length === 0 || images.length > 25)) {
+  if (images && (images.length === 0 || images.length > 100)) {
     return reply.status(422).send({
-      message: 'Images array must contain between 1 and 25 items',
+      message: 'Images array must contain between 1 and 100 items',
     })
   }
 
