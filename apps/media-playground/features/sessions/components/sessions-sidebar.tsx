@@ -1824,6 +1824,36 @@ export const SessionsSidebarContent = ({
           <span>Explore</span>
         </Button>
 
+        {/* Collections button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/collections')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+            pathname === '/collections' || pathname?.startsWith('/collections/')
+              ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+              : 'bg-transparent hover:bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-5"
+          >
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+          </svg>
+          <span>Collections</span>
+        </Button>
+
         {/* Studio button */}
         <Button
           variant="ghost"
@@ -2079,6 +2109,38 @@ export const SessionsSidebarContent = ({
                   <path d="m21 21-4.3-4.3" />
                 </svg>
                 <span>Explore</span>
+              </Button>
+
+              {/* Collections button */}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  router.push('/collections')
+                }}
+                className={cn(
+                  'flex w-full justify-start gap-3 rounded-md font-medium transition-colors h-11 text-[15px] px-2 py-2',
+                  pathname === '/collections' ||
+                    pathname?.startsWith('/collections/')
+                    ? 'bg-muted/40 hover:bg-muted/50 text-foreground'
+                    : 'bg-transparent hover:bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-5"
+                >
+                  <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                </svg>
+                <span>Collections</span>
               </Button>
 
               {/* Studio button */}

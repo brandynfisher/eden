@@ -9,9 +9,9 @@ import { ToolHoverMenu } from '@/features/sessions/components/tool-hover-menu'
 import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { TaskV2Args, TaskV2Result, TaskV2Status } from '@edenlabs/eden-sdk'
-import { XIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, LockIcon, XIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 
 export type SessionPostEmbedProps = {
   results: TaskV2Result[]
@@ -24,6 +24,9 @@ export type SessionPostEmbedProps = {
   /** If provided, clicking the session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
 }
+
+// Max characters for content preview before truncating
+const CONTENT_PREVIEW_MAX_LENGTH = 500
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   results,
@@ -38,6 +41,9 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   // Get the current session ID to fetch current session's agents
   const params = useParams()
   const currentSessionId = params?.id as string | undefined
+
+  // State for expanding long content in private chat view
+  const [isContentExpanded, setIsContentExpanded] = useState(false)
 
   // Extract session ID from results or use the provided childSessionId
   // The result structure should have a session field with the session ID
@@ -183,6 +189,36 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   const hasMediaOutputs = mediaResults.length > 0
 
+  // Extract private chat info from results (when type is "private" with recipients)
+  const privateChatInfo = React.useMemo(() => {
+    if (!results || !Array.isArray(results) || results.length === 0) {
+      return null
+    }
+
+    for (const result of results) {
+      if (result && Array.isArray(result.output)) {
+        for (const output of result.output) {
+          if (
+            output &&
+            typeof output === 'object' &&
+            'type' in output &&
+            output.type === 'private' &&
+            'recipients' in output &&
+            Array.isArray(output.recipients)
+          ) {
+            return {
+              recipients: output.recipients as string[],
+              status: (output as { status?: string }).status,
+              messageId: (output as { message_id?: string }).message_id,
+            }
+          }
+        }
+      }
+    }
+
+    return null
+  }, [results])
+
   // Extract error from results if it exists in the output
   const resultError = React.useMemo(() => {
     if (!results || !Array.isArray(results) || results.length === 0) {
@@ -236,6 +272,92 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     )
   }
 
+  // If no session ID but we have private chat info, show the private message card
+  if (!sessionId && privateChatInfo) {
+    // Extract content from tool args for preview
+    const privateContentRaw =
+      toolArgs && typeof toolArgs === 'object' && 'content' in toolArgs
+        ? String(toolArgs.content)
+        : undefined
+
+    const needsTruncation =
+      privateContentRaw && privateContentRaw.length > CONTENT_PREVIEW_MAX_LENGTH
+    const displayContent =
+      privateContentRaw && needsTruncation && !isContentExpanded
+        ? privateContentRaw.slice(0, CONTENT_PREVIEW_MAX_LENGTH) + '...'
+        : privateContentRaw
+
+    return (
+      <div className="space-y-2">
+        {/* Private message card */}
+        <div className="rounded-lg border border-border/50 bg-card p-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <LockIcon className="w-4 h-4" />
+            <span>Private message to:</span>
+            <span className="font-medium text-foreground">
+              {privateChatInfo.recipients.join(', ')}
+            </span>
+          </div>
+
+          {/* Content preview */}
+          {displayContent && (
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                {displayContent}
+              </p>
+              {needsTruncation && (
+                <button
+                  type="button"
+                  onClick={() => setIsContentExpanded(!isContentExpanded)}
+                  className="mt-2 text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+                >
+                  {isContentExpanded ? (
+                    <>
+                      <ChevronUpIcon className="w-3 h-3" />
+                      Show less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDownIcon className="w-3 h-3" />
+                      Show more
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Display media outputs if they exist */}
+        {hasMediaOutputs && (
+          <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+        )}
+
+        {/* Display error if present */}
+        {displayError && (
+          <div className="mt-2">
+            <AlertDestructive title="Tool Call failed">
+              <AlertDescription>
+                <TextClampMore text={displayError} lines={3} />
+              </AlertDescription>
+            </AlertDestructive>
+          </div>
+        )}
+
+        {/* Tool hover menu */}
+        {toolName && toolArgs && (
+          <div className="flex justify-end mt-2">
+            <ToolHoverMenu
+              toolName={toolName}
+              args={toolArgs}
+              result={results}
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // If no session ID and no media outputs, check if we should display error
   if (!sessionId) {
     // If we have an error, display it
@@ -269,6 +391,12 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   const isRunning =
     toolStatus === TaskV2Status.Running || toolStatus === TaskV2Status.Pending
 
+  // Extract content from tool args for preview
+  const contentPreview =
+    toolArgs && typeof toolArgs === 'object' && 'content' in toolArgs
+      ? String(toolArgs.content)
+      : undefined
+
   return (
     <div className="space-y-2">
       {/* Wrapper for inline session card with overlays */}
@@ -279,6 +407,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           hideAgentIds={currentAgentIds}
           linkPath={chatLinkPath}
           onClick={onSessionClick}
+          showTimestamp={false}
+          contentPreview={contentPreview}
         />
 
         {/* Running indicator and cancel button - top right corner */}

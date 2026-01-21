@@ -46,7 +46,29 @@ const llmCallRoutes: FastifyPluginAsync = async server => {
           return reply.status(404).send({ error: 'LLM call not found' })
         }
 
-        return reply.status(200).send(llmCall)
+        // Also fetch the related message that references this LLM call
+        // to get the processed tool_calls with results
+        const messagesCollection = db.collection('messages')
+        let relatedMessage = null
+        try {
+          relatedMessage = await messagesCollection.findOne({
+            llm_call: new ObjectId(id),
+          })
+        } catch {
+          // Try string ID if ObjectId fails
+          relatedMessage = await messagesCollection.findOne({ llm_call: id })
+        }
+
+        // Include the message's tool_calls in the response
+        const response = {
+          ...llmCall,
+          // Add processed tool_calls from the message if available
+          message_tool_calls: relatedMessage?.tool_calls || null,
+          message_content: relatedMessage?.content || null,
+          finish_reason: relatedMessage?.finish_reason || null,
+        }
+
+        return reply.status(200).send(response)
       } catch (error) {
         server.log.error({
           message: 'Failed to get LLM call',

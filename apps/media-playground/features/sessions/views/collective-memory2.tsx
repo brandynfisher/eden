@@ -22,6 +22,8 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
@@ -97,6 +99,10 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
   const [facts, setFacts] = useState<Fact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMemoryEnabled, setIsMemoryEnabled] = useState(
+    agent.agent_memory_enabled ?? false,
+  )
+  const [isTogglingMemory, setIsTogglingMemory] = useState(false)
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -158,6 +164,24 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
   }, [facts])
+
+  const handleToggleMemory = async (enabled: boolean) => {
+    setIsTogglingMemory(true)
+    try {
+      await axios.patch(`/api/agents/${agent._id}/agent-memory-enabled`, {
+        agent_memory_enabled: enabled,
+      })
+      setIsMemoryEnabled(enabled)
+      toast.success(
+        enabled ? 'Collective memory enabled' : 'Collective memory disabled',
+      )
+    } catch (error) {
+      console.error('Error toggling collective memory:', error)
+      toast.error('Failed to update memory setting')
+    } finally {
+      setIsTogglingMemory(false)
+    }
+  }
 
   // Load data on mount
   useEffect(() => {
@@ -340,49 +364,81 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
 
   return (
     <div className="space-y-8 px-2">
-      {/* Memory Content Section */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-1 h-6 bg-blue-400/60 dark:bg-blue-600/60 rounded-full"></div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <h3 className="text-md font-medium text-foreground cursor-help">
-                Memory
-              </h3>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-md">
-              <p>
-                This is the main blob of collective memory for this agent,
-                evolving over time through collective interaction with all
-                users.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-          <div className="flex-1 h-px bg-border"></div>
+      {/* Memory Toggle */}
+      {hasEditAccess && (
+        <div className="flex items-center justify-between px-1">
+          <div className="space-y-0.5">
+            <Label
+              htmlFor="agent-memory-toggle"
+              className="text-sm font-medium"
+            >
+              Collective Memory
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Allow {agent.name} to build shared memory across all conversations
+            </p>
+          </div>
+          <Switch
+            id="agent-memory-toggle"
+            checked={isMemoryEnabled}
+            onCheckedChange={handleToggleMemory}
+            disabled={isTogglingMemory}
+          />
         </div>
-        <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
-          <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
-            {consolidatedContent || (
-              <span className="text-muted-foreground italic">
-                No collective memory content yet. This will be populated
-                automatically as users interact with {agent.name}.
-              </span>
+      )}
+
+      {/* Disabled state message */}
+      {!isMemoryEnabled && (
+        <div className="rounded-xl border border-border bg-muted/30 p-8 text-center">
+          <p className="text-muted-foreground">Collective memory disabled</p>
+        </div>
+      )}
+
+      {/* Memory Content Section - only show when enabled */}
+      {isMemoryEnabled && (
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-1 h-6 bg-blue-400/60 dark:bg-blue-600/60 rounded-full"></div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h3 className="text-md font-medium text-foreground cursor-help">
+                  Memory
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-md">
+                <p>
+                  This is the main blob of collective memory for this agent,
+                  evolving over time through collective interaction with all
+                  users.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex-1 h-px bg-border"></div>
+          </div>
+          <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
+            <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
+              {consolidatedContent || (
+                <span className="text-muted-foreground italic">
+                  No collective memory content yet. This will be populated
+                  automatically as users interact with {agent.name}.
+                </span>
+              )}
+            </div>
+            {hasEditAccess && (
+              <Button
+                onClick={handleContentEdit}
+                size="sm"
+                className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
             )}
           </div>
-          {hasEditAccess && (
-            <Button
-              onClick={handleContentEdit}
-              size="sm"
-              className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-          )}
         </div>
-      </div>
+      )}
 
-      {/* Recent Reflections (suggestions) Section */}
-      {sortedReflections.length > 0 && (
+      {/* Recent Reflections (suggestions) Section - only show when enabled */}
+      {isMemoryEnabled && sortedReflections.length > 0 && (
         <div className="space-y-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 bg-yellow-400/60 dark:bg-yellow-600/60 rounded-full"></div>
@@ -449,8 +505,8 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
         </div>
       )}
 
-      {/* Facts Section */}
-      {sortedFacts.length > 0 && (
+      {/* Facts Section - only show when enabled */}
+      {isMemoryEnabled && sortedFacts.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 bg-green-400/60 dark:bg-green-600/60 rounded-full"></div>

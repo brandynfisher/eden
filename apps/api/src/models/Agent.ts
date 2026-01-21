@@ -45,6 +45,7 @@ export interface AgentSchema extends BaseUserSchema {
     }
   }
   user_memory_enabled?: boolean
+  agent_memory_enabled?: boolean
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -182,6 +183,10 @@ const AgentSchema = new Schema<AgentDocument>(
       default: 'off',
     },
     user_memory_enabled: {
+      type: Boolean,
+      default: false,
+    },
+    agent_memory_enabled: {
       type: Boolean,
       default: false,
     },

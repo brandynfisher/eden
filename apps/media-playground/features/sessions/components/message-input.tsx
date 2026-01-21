@@ -644,14 +644,38 @@ export const MessageInput = ({
       if (!e.clipboardData) return
       const items = Array.from(e.clipboardData.items)
 
-      const files = items
-        .filter(item => item.kind === 'file')
-        .map(item => item.getAsFile())
-        .filter((f): f is File => f !== null)
+      // Check for image data in clipboard (screenshots, copied images)
+      const imageFiles: File[] = []
 
-      if (files.length > 0) {
+      for (const item of items) {
+        // Handle file items (images copied as files)
+        if (item.kind === 'file') {
+          const file = item.getAsFile()
+          if (file) {
+            imageFiles.push(file)
+          }
+        }
+        // Handle image data from clipboard (screenshots, copy image from browser)
+        // Some systems provide images as 'image/*' type even with kind !== 'file'
+        else if (item.kind === 'string' && item.type.startsWith('image/')) {
+          // This case is rare but can happen with some clipboard managers
+          const file = item.getAsFile()
+          if (file) {
+            imageFiles.push(file)
+          }
+        }
+      }
+
+      // Also check clipboardData.files directly as a fallback
+      // Some browsers populate this instead of/in addition to items
+      if (imageFiles.length === 0 && e.clipboardData.files.length > 0) {
+        const files = Array.from(e.clipboardData.files)
+        imageFiles.push(...files)
+      }
+
+      if (imageFiles.length > 0) {
         e.preventDefault()
-        await handleFilesDropped(files)
+        await handleFilesDropped(imageFiles)
       }
     },
     [handleFilesDropped],
