@@ -102,9 +102,6 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
         <div className="flex items-center gap-2">
           <div>
             <span className="font-bold">{toolName}</span>
-            {toolStatus === TaskV2Status.Cancelled && (
-              <span className="ml-2 text-orange-500 text-sm">(Cancelled)</span>
-            )}
           </div>
           {/* {toolStatus === null || toolStatus === TaskV2Status.Pending ? (
             <HourglassIcon className="text-gray-500 h-4 w-4 animate-pulse" />
@@ -122,9 +119,6 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
           ) : null}
           {toolStatus === TaskV2Status.Completed ? (
             <CircleCheckIcon className="text-green-500 h-5 w-5" />
-          ) : null}
-          {toolStatus === 'cancelled' ? (
-            <XIcon className="text-orange-500 h-5 w-5" />
           ) : null}
         </div>
         <div className="flex-grow" />
@@ -145,6 +139,15 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               Cancel
             </Button>
           )}
+        {(toolStatus === TaskV2Status.Cancelled ||
+          (toolStatus as string) === 'cancelled') && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-100/60 dark:bg-red-900/30 border border-red-300/50 dark:border-red-700/40 mr-2">
+            <XIcon className="h-3 w-3 text-red-600 dark:text-red-400" />
+            <span className="text-xs font-medium text-red-600 dark:text-red-400">
+              Cancelled
+            </span>
+          </div>
+        )}
         {hasContentToShow && (
           <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
             {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
