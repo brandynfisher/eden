@@ -74,11 +74,32 @@ export const getMemory2User = async (
       formed_at: r.formed_at?.toISOString() || r.createdAt?.toISOString(),
     }))
 
+    // Get facts for this user
+    const factsCollection =
+      server.mongoose.connection.db.collection('memory2_facts')
+    const facts = await factsCollection
+      .find({
+        agent_id: agentObjectId,
+        user_id: userObjectId,
+      })
+      .sort({ formed_at: -1 })
+      .limit(100)
+      .toArray()
+
+    const formattedFacts = facts.map(f => ({
+      _id: f._id.toString(),
+      content: f.content || '',
+      formed_at: f.formed_at?.toISOString() || f.createdAt?.toISOString(),
+      scope: f.scope || [],
+      access_count: f.access_count || 0,
+    }))
+
     return reply.status(200).send({
       consolidated_content: consolidated?.consolidated_content || '',
       last_consolidated_at:
         consolidated?.last_consolidated_at?.toISOString() || null,
       unabsorbed_reflections: formattedReflections,
+      facts: formattedFacts,
     })
   } catch (error) {
     server.log.error({ err: error }, 'Error fetching memory2 user data:')
