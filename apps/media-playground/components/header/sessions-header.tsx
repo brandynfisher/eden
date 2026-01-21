@@ -88,6 +88,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 const PlatformIcon = ({
   platform,
 }: {
@@ -363,7 +365,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   return (
     <>
       {/* Mobile: Single navbar */}
-      <header className="md:hidden sticky z-50 top-0 flex h-12 items-center gap-2 border-b bg-background px-2">
+      <header className="sessions-header md:hidden sticky z-50 top-0 flex h-12 items-center gap-2 border-b bg-background px-2">
         {/* Hamburger menu - show on mobile always, but not on share routes */}
         {!isShareRoute && (
           <button
@@ -494,7 +496,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
 
       {/* Desktop: Single navbar */}
       {showDesktopHeader && (
-        <header className="hidden md:flex h-12 items-center gap-4 border-b bg-background px-4 flex-shrink-0">
+        <header className="sessions-header hidden md:flex h-12 items-center gap-4 border-b bg-background px-4 flex-shrink-0">
           {/* Left section */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {isShareRoute ? (
