@@ -1234,6 +1234,15 @@ const agentRoutes: FastifyPluginAsync = async server => {
               formed_at: Type.Optional(Type.String()),
             }),
           ),
+          facts: Type.Array(
+            Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              formed_at: Type.Optional(Type.String()),
+              scope: Type.Array(Type.String()),
+              access_count: Type.Number(),
+            }),
+          ),
         }),
       },
     },

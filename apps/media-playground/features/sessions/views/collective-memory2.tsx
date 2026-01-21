@@ -398,11 +398,11 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
       {isMemoryEnabled && (
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-1 h-6 bg-blue-400/60 dark:bg-blue-600/60 rounded-full"></div>
+            <div className="w-1 h-6 bg-purple-400/50 dark:bg-purple-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h3 className="text-md font-medium text-foreground cursor-help">
-                  Memory
+                  Collective Memory
                 </h3>
               </TooltipTrigger>
               <TooltipContent className="max-w-md">
@@ -415,7 +415,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
           </div>
-          <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
+          <div className="group relative rounded-lg border border-border bg-purple-50/15 dark:bg-purple-950/10 shadow-sm">
             <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
               {consolidatedContent || (
                 <span className="text-muted-foreground italic">
@@ -441,7 +441,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
       {isMemoryEnabled && sortedReflections.length > 0 && (
         <div className="space-y-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-yellow-400/60 dark:bg-yellow-600/60 rounded-full"></div>
+            <div className="w-1 h-6 bg-yellow-400/50 dark:bg-yellow-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -456,7 +456,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
-            <span className="text-xs bg-yellow-100/40 dark:bg-yellow-900/25 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full border border-yellow-200/40 dark:border-yellow-800/40">
+            <span className="text-xs bg-yellow-100/30 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full border border-yellow-200/30 dark:border-yellow-800/30">
               Will be integrated soon
             </span>
           </div>
@@ -465,7 +465,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
               <Tooltip key={reflection._id}>
                 <TooltipTrigger asChild>
                   <div className="relative group cursor-default">
-                    <div className="rounded-lg border border-border bg-yellow-50/25 dark:bg-yellow-950/15 hover:bg-yellow-100/35 dark:hover:bg-yellow-900/25 transition-colors">
+                    <div className="rounded-lg border border-border bg-yellow-50/20 dark:bg-yellow-950/10 hover:bg-yellow-100/25 dark:hover:bg-yellow-900/15 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">
                           {reflection.content}
@@ -509,7 +509,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
       {isMemoryEnabled && sortedFacts.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-green-400/60 dark:bg-green-600/60 rounded-full"></div>
+            <div className="w-1 h-6 bg-green-400/50 dark:bg-green-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -525,7 +525,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
-            <span className="text-xs bg-green-100/40 dark:bg-green-900/25 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-200/40 dark:border-green-800/40">
+            <span className="text-xs bg-green-100/30 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-200/30 dark:border-green-800/30">
               {sortedFacts.length} facts
             </span>
           </div>
@@ -534,7 +534,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
               <Tooltip key={fact._id}>
                 <TooltipTrigger asChild>
                   <div className="relative group cursor-default">
-                    <div className="rounded-lg border border-border bg-green-50/20 dark:bg-green-950/15 hover:bg-green-100/30 dark:hover:bg-green-900/20 transition-colors">
+                    <div className="rounded-lg border border-border bg-green-50/15 dark:bg-green-950/10 hover:bg-green-100/20 dark:hover:bg-green-900/15 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">{fact.content}</div>
                       </div>

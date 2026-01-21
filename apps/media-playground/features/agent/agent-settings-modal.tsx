@@ -507,7 +507,11 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   if (isAgentLoading || isPermissionsLoading || !agent) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0">
+        <DialogContent
+          className="max-w-6xl h-[90vh] p-0"
+          aria-describedby={undefined}
+        >
+          <DialogTitle className="sr-only">Loading Agent Settings</DialogTitle>
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
@@ -543,7 +547,10 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden">
+        <DialogContent
+          className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden"
+          aria-describedby={undefined}
+        >
           <DialogTitle className="sr-only">Agent Settings</DialogTitle>
           <div className="flex flex-col md:flex-row h-full overflow-hidden">
             {/* Desktop Sidebar - Hidden on mobile */}

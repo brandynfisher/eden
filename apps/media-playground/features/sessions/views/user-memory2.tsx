@@ -60,13 +60,29 @@ const reflectionSchema = z.object({
     .optional(),
 })
 
+const factSchema = z.object({
+  content: z
+    .string()
+    .max(MEMORY2_LIMITS.FACT_MAX_CHARS, MEMORY2_ERROR_MESSAGES.FACT_MAX_CHARS)
+    .optional(),
+})
+
 type MemoryFormDto = z.infer<typeof memorySchema>
 type ReflectionFormDto = z.infer<typeof reflectionSchema>
+type FactFormDto = z.infer<typeof factSchema>
 
 interface Reflection {
   _id: string
   content: string
   formed_at: string
+}
+
+interface Fact {
+  _id: string
+  content: string
+  formed_at: string
+  scope: string[]
+  access_count: number
 }
 
 interface UserMemory2Props {
@@ -77,6 +93,7 @@ interface UserMemory2Props {
 const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   const [consolidatedContent, setConsolidatedContent] = useState('')
   const [reflections, setReflections] = useState<Reflection[]>([])
+  const [facts, setFacts] = useState<Fact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMemoryEnabled, setIsMemoryEnabled] = useState(
@@ -91,6 +108,8 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   const [editingReflection, setEditingReflection] = useState<Reflection | null>(
     null,
   )
+  const [isFactEditModalOpen, setIsFactEditModalOpen] = useState(false)
+  const [editingFact, setEditingFact] = useState<Fact | null>(null)
   const [isContentConfirmationOpen, setIsContentConfirmationOpen] =
     useState(false)
   const [pendingContentData, setPendingContentData] =
@@ -99,6 +118,10 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
     useState(false)
   const [pendingReflectionData, setPendingReflectionData] =
     useState<ReflectionFormDto | null>(null)
+  const [isFactConfirmationOpen, setIsFactConfirmationOpen] = useState(false)
+  const [pendingFactData, setPendingFactData] = useState<FactFormDto | null>(
+    null,
+  )
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -114,6 +137,13 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
     },
   })
 
+  const factForm = useForm<FactFormDto>({
+    resolver: zodResolver(factSchema),
+    defaultValues: {
+      content: '',
+    },
+  })
+
   // Sort reflections by date (newest first)
   const sortedReflections = useMemo(() => {
     return [...reflections].sort(
@@ -121,6 +151,14 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
   }, [reflections])
+
+  // Sort facts by date (newest first)
+  const sortedFacts = useMemo(() => {
+    return [...facts].sort(
+      (a, b) =>
+        new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
+    )
+  }, [facts])
 
   const handleToggleMemory = async (enabled: boolean) => {
     setIsTogglingMemory(true)
@@ -147,10 +185,12 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         const response = await axios.get(`/api/agents/${agent._id}/memory2`)
         setConsolidatedContent(response.data.consolidated_content || '')
         setReflections(response.data.unabsorbed_reflections || [])
+        setFacts(response.data.facts || [])
       } catch (error) {
         console.error('Error loading memory2 data:', error)
         setConsolidatedContent('')
         setReflections([])
+        setFacts([])
       } finally {
         setIsLoading(false)
       }
@@ -253,6 +293,63 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
     }
   }
 
+  // Fact handlers
+  const handleFactEdit = (fact: Fact) => {
+    setEditingFact(fact)
+    factForm.setValue('content', fact.content)
+    setIsFactEditModalOpen(true)
+  }
+
+  const handleFactUpdate = async (data: FactFormDto) => {
+    setPendingFactData(data)
+    setIsFactConfirmationOpen(true)
+  }
+
+  const handleConfirmedFactUpdate = async () => {
+    if (!editingFact || !pendingFactData) return
+
+    try {
+      setIsSubmitting(true)
+      await axios.patch(`/api/memory2-facts/${editingFact._id}`, {
+        content: pendingFactData.content || '',
+      })
+
+      setFacts(prev =>
+        prev.map(f =>
+          f._id === editingFact._id
+            ? { ...f, content: pendingFactData.content || '' }
+            : f,
+        ),
+      )
+
+      toast.success('Fact updated successfully')
+      setIsFactEditModalOpen(false)
+      setIsFactConfirmationOpen(false)
+      setEditingFact(null)
+      setPendingFactData(null)
+    } catch (error) {
+      console.error('Error updating fact:', error)
+      toast.error('Failed to update fact. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleFactDelete = async (factId: string) => {
+    const factToDelete = facts.find(f => f._id === factId)
+    if (!factToDelete) return
+
+    setFacts(prev => prev.filter(f => f._id !== factId))
+
+    try {
+      await axios.delete(`/api/memory2-facts/${factId}`)
+    } catch (error) {
+      setFacts(prev => [...prev, factToDelete])
+      console.error('Error deleting fact:', error)
+      toast.error('Failed to remove fact. Please try again.')
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -262,7 +359,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-2">
       {/* Memory Toggle */}
       {hasEditAccess && (
         <div className="flex items-center justify-between px-1">
@@ -286,40 +383,51 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
       {/* Disabled state message */}
       {!isMemoryEnabled && (
         <div className="rounded-xl border border-border bg-muted/30 p-8 text-center">
-          <p className="text-muted-foreground">User memory disabled</p>
+          <p className="text-muted-foreground">
+            {hasEditAccess
+              ? 'User memory disabled'
+              : 'User memory disabled, only agent editors can turn this on'}
+          </p>
         </div>
       )}
 
       {/* Consolidated Memory Section - only show when enabled */}
       {isMemoryEnabled && (
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-4 border-b border-border/40 bg-card/60">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">
-                Personal Memory
-              </p>
-              <p className="text-sm text-muted-foreground/90">
-                Context {agent.name} keeps about you
-              </p>
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-1 h-6 bg-purple-400/50 dark:bg-purple-600/50 rounded-full"></div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h3 className="text-md font-medium text-foreground cursor-help">
+                  Personal Memory
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-md">
+                <p>
+                  This is your personal memory with this agent, built from your
+                  conversations over time.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex-1 h-px bg-border"></div>
+          </div>
+          <div className="group relative rounded-lg border border-border bg-purple-50/15 dark:bg-purple-950/10 shadow-sm">
+            <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
+              {consolidatedContent || (
+                <span className="text-muted-foreground italic">
+                  No user memories stored yet. Just interact with {agent.name}{' '}
+                  and the agent will automatically build memory about you here.
+                </span>
+              )}
             </div>
             {hasEditAccess && (
               <Button
                 onClick={handleEditClick}
                 size="sm"
-                variant="secondary"
-                className="h-8 px-3 rounded-full shadow-sm"
+                className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
-                <Edit className="w-4 h-4 mr-1.5" />
-                Edit
+                <Edit className="w-4 h-4" />
               </Button>
-            )}
-          </div>
-          <div className="px-5 py-5 text-base leading-relaxed whitespace-pre-wrap min-h-[170px] max-h-[312px] overflow-y-auto text-foreground bg-card">
-            {consolidatedContent || (
-              <span className="block text-sm text-muted-foreground italic">
-                No user memories stored yet. Just interact with {agent.name} and
-                the agent will automatically build memory about you here.
-              </span>
             )}
           </div>
         </div>
@@ -327,9 +435,9 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
 
       {/* Recent Reflections Section - only show when enabled */}
       {isMemoryEnabled && sortedReflections.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+        <div className="space-y-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-border rounded-full"></div>
+            <div className="w-1 h-6 bg-yellow-400/50 dark:bg-yellow-600/50 rounded-full"></div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -344,7 +452,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               </TooltipContent>
             </Tooltip>
             <div className="flex-1 h-px bg-border"></div>
-            <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+            <span className="text-xs bg-yellow-100/30 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full border border-yellow-200/30 dark:border-yellow-800/30">
               Will be integrated soon
             </span>
           </div>
@@ -353,7 +461,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
               <Tooltip key={reflection._id}>
                 <TooltipTrigger asChild>
                   <div className="relative group cursor-default">
-                    <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+                    <div className="rounded-lg border border-border bg-yellow-50/20 dark:bg-yellow-950/10 hover:bg-yellow-100/25 dark:hover:bg-yellow-900/15 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">
                           {reflection.content}
@@ -386,6 +494,78 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{formatRelativeAge(reflection.formed_at)}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Facts Section - only show when enabled */}
+      {isMemoryEnabled && sortedFacts.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-1 h-6 bg-green-400/50 dark:bg-green-600/50 rounded-full"></div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h2 className="text-lg font-semibold text-foreground cursor-help">
+                  Facts
+                </h2>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-md">
+                <p>
+                  These are atomic facts {agent.name} has learned about you from
+                  your interactions. They are used for RAG retrieval to provide
+                  personalized context during conversations.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-xs bg-green-100/30 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-200/30 dark:border-green-800/30">
+              {sortedFacts.length} facts
+            </span>
+          </div>
+          <div className="grid gap-2">
+            {sortedFacts.map(fact => (
+              <Tooltip key={fact._id}>
+                <TooltipTrigger asChild>
+                  <div className="relative group cursor-default">
+                    <div className="rounded-lg border border-border bg-green-50/15 dark:bg-green-950/10 hover:bg-green-100/20 dark:hover:bg-green-900/15 transition-colors">
+                      <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
+                        <div className="text-foreground">{fact.content}</div>
+                      </div>
+                      {hasEditAccess && (
+                        <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          {fact.access_count > 0 && (
+                            <span className="text-xs text-muted-foreground font-medium">
+                              accessed {fact.access_count}x
+                            </span>
+                          )}
+                          <div className="flex gap-1">
+                            <Button
+                              onClick={() => handleFactEdit(fact)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              onClick={() => handleFactDelete(fact._id)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{formatRelativeAge(fact.formed_at)}</p>
                 </TooltipContent>
               </Tooltip>
             ))}
@@ -540,6 +720,79 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         onConfirm={handleConfirmedReflectionUpdate}
         title="Modify Reflection"
         description="Are you sure you want to modify this reflection? Saving this will cause the original content to be lost!"
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Fact Edit Modal */}
+      <Dialog open={isFactEditModalOpen} onOpenChange={setIsFactEditModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Fact</DialogTitle>
+            <DialogDescription>Edit this fact content</DialogDescription>
+          </DialogHeader>
+          <Form {...factForm}>
+            <form
+              onSubmit={factForm.handleSubmit(handleFactUpdate)}
+              className="space-y-4"
+            >
+              <FormField
+                control={factForm.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter fact content..."
+                        className="min-h-[200px] resize-y"
+                        {...field}
+                      />
+                    </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY2_LIMITS.FACT_MAX_CHARS}
+                      </span>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsFactEditModalOpen(false)
+                    setEditingFact(null)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="min-w-[100px]"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Save'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Fact Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isFactConfirmationOpen}
+        onOpenChange={setIsFactConfirmationOpen}
+        onConfirm={handleConfirmedFactUpdate}
+        title="Modify Fact"
+        description="Are you sure you want to modify this fact? Saving this will cause the original content to be lost!"
         isSubmitting={isSubmitting}
       />
     </div>
