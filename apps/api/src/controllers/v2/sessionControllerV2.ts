@@ -2100,8 +2100,12 @@ export const cancelSession = async (
     )
 
     return reply.status(200).send({
-      status: modalResponse.data.status || 'cancel_signal_sent',
+      status: modalResponse.data.status || 'cancelled',
+      message: modalResponse.data.message || 'Task cancelled by user',
       session_id,
+      cancelled_tasks: modalResponse.data.cancelled_tasks || [],
+      cancelled_child_sessions:
+        modalResponse.data.cancelled_child_sessions || [],
     })
   } catch (e) {
     const error = e as { response?: { data?: string } }

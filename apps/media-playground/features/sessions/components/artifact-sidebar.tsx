@@ -390,7 +390,7 @@ export const ArtifactSidebar = ({
                       No edits recorded yet.
                     </div>
                   )}
-                  {history.map(entry => (
+                  {history.map((entry: ArtifactEditV3) => (
                     <div
                       key={entry._id}
                       className="rounded-md border border-border bg-background/70"

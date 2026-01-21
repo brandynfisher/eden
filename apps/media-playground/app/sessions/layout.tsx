@@ -138,7 +138,9 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
         onChatClick={handleChatClick}
         isSidebarCollapsed={!canShowSidebar}
       />
-      {children}
+      <div className="sessions-content flex flex-col min-h-0 h-full">
+        {children}
+      </div>
     </SessionsLayoutContext.Provider>
   )
 }

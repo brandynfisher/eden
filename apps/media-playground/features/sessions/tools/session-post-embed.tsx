@@ -219,6 +219,38 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     return null
   }, [results])
 
+  // Check if task was cancelled
+  const isCancelled = React.useMemo(() => {
+    if (toolStatus === 'cancelled') {
+      return true
+    }
+    if (!results || !Array.isArray(results) || results.length === 0) {
+      return false
+    }
+
+    // Check if any result has status: 'cancelled'
+    for (const result of results) {
+      if (result && typeof result === 'object') {
+        if ('status' in result && result.status === 'cancelled') {
+          return true
+        }
+        // Check in output as well
+        if (
+          result.output &&
+          typeof result.output === 'object' &&
+          !Array.isArray(result.output)
+        ) {
+          const output = result.output as Record<string, unknown>
+          if ('status' in output && output.status === 'cancelled') {
+            return true
+          }
+        }
+      }
+    }
+
+    return false
+  }, [results, toolStatus])
+
   // Extract error from results if it exists in the output
   const resultError = React.useMemo(() => {
     if (!results || !Array.isArray(results) || results.length === 0) {
@@ -258,8 +290,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     return (
       <>
         <ToolMediaRenderer results={mediaResults} args={toolArgs} />
-        {/* Display error if present */}
-        {displayError && (
+        {/* Display error if present (and not cancelled) */}
+        {displayError && !isCancelled && (
           <div className="mt-2">
             <AlertDestructive title="Tool Call failed">
               <AlertDescription>
@@ -333,8 +365,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           <ToolMediaRenderer results={mediaResults} args={toolArgs} />
         )}
 
-        {/* Display error if present */}
-        {displayError && (
+        {/* Display error if present (and not cancelled) */}
+        {displayError && !isCancelled && (
           <div className="mt-2">
             <AlertDestructive title="Tool Call failed">
               <AlertDescription>
@@ -360,8 +392,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   // If no session ID and no media outputs, check if we should display error
   if (!sessionId) {
-    // If we have an error, display it
-    if (displayError) {
+    // If we have an error (and not cancelled), display it
+    if (displayError && !isCancelled) {
       return (
         <div className="mt-2">
           <AlertDestructive title="Tool Call failed">
@@ -411,12 +443,12 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           contentPreview={contentPreview}
         />
 
-        {/* Running indicator and cancel button - top right corner */}
+        {/* Running indicator, cancel button, or cancelled indicator - top right corner */}
         <div className="absolute top-2 right-2 flex items-center gap-2">
-          {isRunning && (
+          {isRunning && !isCancelled && (
             <span className="text-blue-500 h-4 w-4 loading loading-ring pointer-events-none" />
           )}
-          {isRunning && onCancel && (
+          {isRunning && !isCancelled && onCancel && (
             <Button
               variant="ghost"
               size="sm"
@@ -431,6 +463,14 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
               Cancel
             </Button>
           )}
+          {isCancelled && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-100/60 dark:bg-red-900/30 border border-red-300/50 dark:border-red-700/40">
+              <XIcon className="h-3 w-3 text-red-600 dark:text-red-400" />
+              <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                Cancelled
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -439,8 +479,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
         <ToolMediaRenderer results={mediaResults} args={toolArgs} />
       )}
 
-      {/* Display error if present */}
-      {displayError && (
+      {/* Display error if present (and not cancelled) */}
+      {displayError && !isCancelled && (
         <div className="mt-2">
           <AlertDestructive title="Tool Call failed">
             <AlertDescription>
