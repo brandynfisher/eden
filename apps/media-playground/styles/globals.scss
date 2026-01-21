@@ -27,6 +27,24 @@
   }
 }
 
+/* iOS WebKit sticky fallback for sessions header */
+@supports (-webkit-touch-callout: none) {
+  @media (hover: none) and (pointer: coarse) {
+    .sessions-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(3rem + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .sessions-content {
+      padding-top: calc(3rem + env(safe-area-inset-top));
+    }
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
