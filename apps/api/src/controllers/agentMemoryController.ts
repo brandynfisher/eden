@@ -1,18 +1,73 @@
 import { MEMORY_LIMITS } from '../lib/constants'
-import { Agent } from '../models/Agent'
+import { Agent, AgentDocument } from '../models/Agent'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-const validateAgentAccess = async (agentId: string) => {
+const validateAgentAccess = async (agentId: string, populateOwner = false) => {
   const query = createIdOrSlugQuery(agentId)
-  const agent = await Agent.findOne(query)
+  const agent = populateOwner
+    ? await Agent.findOne(query).populate('owner', 'subscriptionTier')
+    : await Agent.findOne(query)
 
   if (!agent || agent.deleted) {
     return { agent: null, error: 'Agent not found' }
   }
 
   return { agent, error: null }
+}
+
+/**
+ * Get the default value for agent_memory_enabled based on owner's subscription tier.
+ * Free users (tier 0) default to false, paid users (tier > 0) default to true.
+ */
+export const getAgentMemoryEnabledDefault = (
+  ownerSubscriptionTier: number | undefined,
+): boolean => {
+  const tier = ownerSubscriptionTier ?? SubscriptionTier.Free
+  return tier > SubscriptionTier.Free
+}
+
+/**
+ * Ensure memory fields have proper defaults and persist them to DB if they were undefined.
+ * - user_memory_enabled: defaults to true
+ * - agent_memory_enabled: defaults to true for paid users (subscription tier > 0), false for free users
+ *
+ * IMPORTANT: The agent must have owner populated with subscriptionTier for this to work correctly.
+ */
+export const ensureMemoryDefaults = async (
+  agent: AgentDocument,
+): Promise<{ user_memory_enabled: boolean; agent_memory_enabled: boolean }> => {
+  const updates: Record<string, boolean> = {}
+
+  // Default for user_memory_enabled is true
+  let userMemoryEnabled = agent.user_memory_enabled
+  if (userMemoryEnabled === undefined || userMemoryEnabled === null) {
+    userMemoryEnabled = true
+    updates.user_memory_enabled = true
+  }
+
+  // Default for agent_memory_enabled depends on owner subscription tier
+  let agentMemoryEnabled = agent.agent_memory_enabled
+  if (agentMemoryEnabled === undefined || agentMemoryEnabled === null) {
+    const ownerTier = (agent.owner as any)?.subscriptionTier
+    agentMemoryEnabled = getAgentMemoryEnabledDefault(ownerTier)
+    updates.agent_memory_enabled = agentMemoryEnabled
+  }
+
+  // Persist defaults to DB if any fields were undefined
+  if (Object.keys(updates).length > 0) {
+    await Agent.updateOne(
+      { _id: agent._id },
+      { $set: { ...updates, updatedAt: new Date() } },
+    )
+  }
+
+  return {
+    user_memory_enabled: userMemoryEnabled,
+    agent_memory_enabled: agentMemoryEnabled,
+  }
 }
 
 const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
@@ -903,10 +958,14 @@ export const getAgentMemoryContext = async (
   }
 
   try {
-    const { agent, error } = await validateAgentAccess(agentId)
-    if (error) {
+    // Populate owner to check subscription tier for agent_memory_enabled default
+    const { agent, error } = await validateAgentAccess(agentId, true)
+    if (error || !agent) {
       return reply.status(404).send({ error })
     }
+
+    // Ensure memory defaults are set and persisted
+    const { user_memory_enabled } = await ensureMemoryDefaults(agent)
 
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
     let userMemoryContent = ''
@@ -914,7 +973,7 @@ export const getAgentMemoryContext = async (
       []
 
     // Query user memory only if user_memory_enabled is true
-    if (agent?.user_memory_enabled) {
+    if (user_memory_enabled) {
       const memoryUserCollection =
         server.mongoose.connection.db.collection('memory_user')
       const userMemory = await memoryUserCollection.findOne({

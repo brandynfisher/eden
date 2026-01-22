@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -94,6 +95,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
   agent,
   hasEditAccess,
 }) => {
+  const queryClient = useQueryClient()
   const [consolidatedContent, setConsolidatedContent] = useState('')
   const [reflections, setReflections] = useState<Reflection[]>([])
   const [facts, setFacts] = useState<Fact[]>([])
@@ -172,6 +174,17 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
         agent_memory_enabled: enabled,
       })
       setIsMemoryEnabled(enabled)
+      // Optimistically update the agent cache so parent components see the change immediately
+      queryClient.setQueryData(
+        ['agents', agent._id],
+        (oldData: { agent: Agent } | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            agent: { ...oldData.agent, agent_memory_enabled: enabled },
+          }
+        },
+      )
       toast.success(
         enabled ? 'Collective memory enabled' : 'Collective memory disabled',
       )

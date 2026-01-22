@@ -31,6 +31,7 @@ import {
   updateMemorySession as _updateMemorySession,
   updateMemoryUser as _updateMemoryUser,
   updateUserMemoryEnabled as _updateUserMemoryEnabled,
+  ensureMemoryDefaults,
 } from './agentMemoryController'
 // Import functions from specialized controllers for re-export
 import {
@@ -225,21 +226,28 @@ export const listAgents = async (
     query.public = { $ne: false }
   }
 
-  // Query with pagination
+  // Query with pagination - include subscriptionTier in owner populate for memory defaults
   const agents = await agentRepository.query(query, {
     limit,
     page,
     sort,
-    populate: 'owner',
+    populate: {
+      path: 'owner',
+      select: '_id userId username userImage subscriptionTier',
+    },
   })
 
-  // Add public names and format the response
+  // Add public names, ensure memory defaults, and format the response
   const agentsWithPublicName = await Promise.all(
     agents.docs.map(async doc => {
       const publicName = `${doc.owner?.username}:${doc.name}`
+      // Ensure memory defaults are set and persisted
+      const memoryDefaults = await ensureMemoryDefaults(doc)
       return {
         ...doc.toObject(),
         publicName,
+        user_memory_enabled: memoryDefaults.user_memory_enabled,
+        agent_memory_enabled: memoryDefaults.agent_memory_enabled,
       }
     }),
   )
@@ -285,7 +293,7 @@ export const getAgent = async (
   await Promise.all([
     agentRepository.model.populate(agent, {
       path: 'owner',
-      select: '_id userId username userImage',
+      select: '_id userId username userImage subscriptionTier',
     }),
     hasOwnerAccess && agent.deployments && agent.deployments.length > 0
       ? agentRepository.model.populate(agent, {
@@ -296,6 +304,11 @@ export const getAgent = async (
       : Promise.resolve(),
     // No longer needed - permissions are in separate collection
   ])
+
+  // Ensure memory defaults are set and persisted (owner must be populated with subscriptionTier)
+  const memoryDefaults = await ensureMemoryDefaults(agent)
+  agent.user_memory_enabled = memoryDefaults.user_memory_enabled
+  agent.agent_memory_enabled = memoryDefaults.agent_memory_enabled
 
   if (agent.userImage) {
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)
@@ -537,7 +550,9 @@ export const updateAgent = async (
     })
   }
 
+  // Preserve memory settings during general agent updates
   updateData.user_memory_enabled = agentToCheck.user_memory_enabled
+  updateData.agent_memory_enabled = agentToCheck.agent_memory_enabled
 
   try {
     result = await Agent.updateOne(
@@ -1104,7 +1119,7 @@ export const getSharedAgents = async (
   const currentUserId = request.user.userId
 
   try {
-    // Find all permissions for this user
+    // Find all permissions for this user - include subscriptionTier for memory defaults
     const permissions = await AgentPermission.find({
       user: currentUserId,
     }).populate({
@@ -1112,18 +1127,29 @@ export const getSharedAgents = async (
       match: { deleted: false },
       populate: {
         path: 'owner',
-        select: '_id userId username userImage',
+        select: '_id userId username userImage subscriptionTier',
       },
     })
 
-    // Filter out null agents (deleted ones)
-    const sharedAgents = permissions
-      .filter(p => p.agent)
-      .map(p => ({
-        agent: p.agent,
-        permissionLevel: p.level,
-        grantedAt: p.grantedAt,
-      }))
+    // Filter out null agents (deleted ones) and ensure memory defaults
+    const sharedAgents = await Promise.all(
+      permissions
+        .filter(p => p.agent)
+        .map(async p => {
+          const agent = p.agent as AgentDocument
+          // Ensure memory defaults are set and persisted
+          const memoryDefaults = await ensureMemoryDefaults(agent)
+          return {
+            agent: {
+              ...agent.toObject(),
+              user_memory_enabled: memoryDefaults.user_memory_enabled,
+              agent_memory_enabled: memoryDefaults.agent_memory_enabled,
+            },
+            permissionLevel: p.level,
+            grantedAt: p.grantedAt,
+          }
+        }),
+    )
 
     // Process agent images
     sharedAgents.forEach(item => {

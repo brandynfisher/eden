@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -91,13 +92,14 @@ interface UserMemory2Props {
 }
 
 const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
+  const queryClient = useQueryClient()
   const [consolidatedContent, setConsolidatedContent] = useState('')
   const [reflections, setReflections] = useState<Reflection[]>([])
   const [facts, setFacts] = useState<Fact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMemoryEnabled, setIsMemoryEnabled] = useState(
-    agent.user_memory_enabled ?? false,
+    agent.user_memory_enabled ?? true,
   )
   const [isTogglingMemory, setIsTogglingMemory] = useState(false)
 
@@ -167,6 +169,17 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         user_memory_enabled: enabled,
       })
       setIsMemoryEnabled(enabled)
+      // Optimistically update the agent cache so parent components see the change immediately
+      queryClient.setQueryData(
+        ['agents', agent._id],
+        (oldData: { agent: Agent } | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            agent: { ...oldData.agent, user_memory_enabled: enabled },
+          }
+        },
+      )
       toast.success(enabled ? 'User memory enabled' : 'User memory disabled')
     } catch (error) {
       console.error('Error toggling user memory:', error)
