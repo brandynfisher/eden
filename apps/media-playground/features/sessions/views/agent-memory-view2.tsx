@@ -13,7 +13,10 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent } from '@edenlabs/eden-sdk'
+import { useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 import { FC, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 interface AgentMemoryView2Props {
   agent: Agent
@@ -24,6 +27,7 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
   agent,
   variant = 'standalone',
 }) => {
+  const queryClient = useQueryClient()
   const { user: authUser } = useAuthState()
   const { hasEditAccess } = useAgentPermissions(agent, authUser?._id)
   const userMemoryGate = useGatedResource(GatedResource.UserMemory, {
@@ -36,6 +40,89 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
     },
   )
   const [memoryTab, setMemoryTab] = useState<'user' | 'collective'>('user')
+
+  // Lift toggle states to parent so they persist across tab switches
+  // Initialize from agent prop (source of truth from React Query cache)
+  const [userMemoryEnabled, setUserMemoryEnabled] = useState(
+    agent.user_memory_enabled ?? true,
+  )
+  const [agentMemoryEnabled, setAgentMemoryEnabled] = useState(
+    agent.agent_memory_enabled ?? false,
+  )
+  const [isTogglingUserMemory, setIsTogglingUserMemory] = useState(false)
+  const [isTogglingAgentMemory, setIsTogglingAgentMemory] = useState(false)
+
+  // Handler for toggling user memory - manages state at parent level
+  const handleToggleUserMemory = async (enabled: boolean) => {
+    // Optimistic update - update local state immediately
+    setUserMemoryEnabled(enabled)
+    setIsTogglingUserMemory(true)
+
+    try {
+      await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
+        user_memory_enabled: enabled,
+      })
+
+      // Update the React Query cache so other components see the change
+      const agentIdStr = String(agent._id)
+      queryClient.setQueryData(
+        ['agents', agentIdStr],
+        (oldData: { agent: Agent } | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            agent: { ...oldData.agent, user_memory_enabled: enabled },
+          }
+        },
+      )
+
+      toast.success(enabled ? 'User memory enabled' : 'User memory disabled')
+    } catch (error) {
+      // Revert on error
+      setUserMemoryEnabled(!enabled)
+      console.error('Error toggling user memory:', error)
+      toast.error('Failed to update memory setting')
+    } finally {
+      setIsTogglingUserMemory(false)
+    }
+  }
+
+  // Handler for toggling agent/collective memory - manages state at parent level
+  const handleToggleAgentMemory = async (enabled: boolean) => {
+    // Optimistic update - update local state immediately
+    setAgentMemoryEnabled(enabled)
+    setIsTogglingAgentMemory(true)
+
+    try {
+      await axios.patch(`/api/agents/${agent._id}/agent-memory-enabled`, {
+        agent_memory_enabled: enabled,
+      })
+
+      // Update the React Query cache so other components see the change
+      const agentIdStr = String(agent._id)
+      queryClient.setQueryData(
+        ['agents', agentIdStr],
+        (oldData: { agent: Agent } | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            agent: { ...oldData.agent, agent_memory_enabled: enabled },
+          }
+        },
+      )
+
+      toast.success(
+        enabled ? 'Collective memory enabled' : 'Collective memory disabled',
+      )
+    } catch (error) {
+      // Revert on error
+      setAgentMemoryEnabled(!enabled)
+      console.error('Error toggling collective memory:', error)
+      toast.error('Failed to update memory setting')
+    } finally {
+      setIsTogglingAgentMemory(false)
+    }
+  }
 
   const collectiveMemoryAccess = useMemo(() => {
     if (!hasEditAccess) {
@@ -145,7 +232,13 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
           {/* Tab Content */}
           {memoryTab === 'user' ? (
             userMemoryGate.isAllowed ? (
-              <UserMemory2 agent={agent} hasEditAccess={hasEditAccess} />
+              <UserMemory2
+                agent={agent}
+                hasEditAccess={hasEditAccess}
+                isMemoryEnabled={userMemoryEnabled}
+                isTogglingMemory={isTogglingUserMemory}
+                onToggleMemory={handleToggleUserMemory}
+              />
             ) : (
               <LockedFeatureBanner
                 gate={userMemoryGate}
@@ -159,6 +252,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
                 <CollectiveMemory2
                   agent={agent}
                   hasEditAccess={collectiveMemoryAccess.hasAccess}
+                  isMemoryEnabled={agentMemoryEnabled}
+                  isTogglingMemory={isTogglingAgentMemory}
+                  onToggleMemory={handleToggleAgentMemory}
                 />
               ) : (
                 <LockedFeatureBanner
@@ -172,6 +268,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
             <CollectiveMemory2
               agent={agent}
               hasEditAccess={collectiveMemoryAccess.hasAccess}
+              isMemoryEnabled={agentMemoryEnabled}
+              isTogglingMemory={isTogglingAgentMemory}
+              onToggleMemory={handleToggleAgentMemory}
             />
           ) : (
             <LockedFeatureBanner

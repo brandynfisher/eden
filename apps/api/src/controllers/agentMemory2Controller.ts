@@ -1,4 +1,8 @@
 import { Agent } from '../models/Agent'
+import {
+  AgentPermission,
+  AgentPermissionLevel,
+} from '../models/AgentPermission'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -17,6 +21,26 @@ const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
   return mongoose.Types.ObjectId.isValid(agentId)
     ? new mongoose.Types.ObjectId(agentId)
     : new mongoose.Types.ObjectId(agentDoc._id)
+}
+
+// Helper function to check if user has edit access to an agent (owner or editor)
+const hasAgentEditAccess = async (
+  agent: any,
+  userId: string,
+): Promise<boolean> => {
+  // Check if user is the original owner
+  if (agent.owner.toString() === userId) {
+    return true
+  }
+
+  // Check if user has editor or owner permission via AgentPermission
+  const permission = await AgentPermission.findOne({
+    agent: agent._id,
+    user: userId,
+    level: { $in: [AgentPermissionLevel.Owner, AgentPermissionLevel.Editor] },
+  })
+
+  return !!permission
 }
 
 /**
@@ -274,8 +298,8 @@ export const saveMemory2Agent = async (
       return reply.status(404).send({ error: error || 'Agent not found' })
     }
 
-    // Check if user has edit access to this agent
-    if (agent.owner.toString() !== userId?.toString()) {
+    // Check if user has edit access to this agent (owner or editor)
+    if (!(await hasAgentEditAccess(agent, userId?.toString()))) {
       return reply
         .status(403)
         .send({ error: 'Not authorized to edit this agent memory' })
@@ -356,7 +380,7 @@ export const updateMemory2Reflection = async (
       }
     } else if (reflection.scope === 'agent') {
       const agent = await Agent.findById(reflection.agent_id)
-      if (!agent || agent.owner.toString() !== userId?.toString()) {
+      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
         return reply
           .status(403)
           .send({ error: 'Not authorized to edit this reflection' })
@@ -411,7 +435,7 @@ export const deleteMemory2Reflection = async (
     }
 
     // For user-scoped reflections, verify user owns it
-    // For agent-scoped reflections, verify user owns the agent
+    // For agent-scoped reflections, verify user owns or can edit the agent
     if (reflection.scope === 'user') {
       if (reflection.user_id?.toString() !== userId?.toString()) {
         return reply
@@ -420,7 +444,7 @@ export const deleteMemory2Reflection = async (
       }
     } else if (reflection.scope === 'agent') {
       const agent = await Agent.findById(reflection.agent_id)
-      if (!agent || agent.owner.toString() !== userId?.toString()) {
+      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
         return reply
           .status(403)
           .send({ error: 'Not authorized to delete this reflection' })
@@ -470,7 +494,7 @@ export const updateMemory2Fact = async (
 
     // Check if user has access to this fact
     // User-scoped facts: user must own it
-    // Agent-scoped facts: user must own the agent
+    // Agent-scoped facts: user must own or be able to edit the agent
     if (fact.user_id) {
       if (fact.user_id.toString() !== userId?.toString()) {
         return reply
@@ -479,7 +503,7 @@ export const updateMemory2Fact = async (
       }
     } else {
       const agent = await Agent.findById(fact.agent_id)
-      if (!agent || agent.owner.toString() !== userId?.toString()) {
+      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
         return reply
           .status(403)
           .send({ error: 'Not authorized to edit this fact' })
@@ -544,6 +568,8 @@ export const deleteMemory2Fact = async (
     }
 
     // Check if user has access to delete this fact
+    // User-scoped facts: user must own it
+    // Agent-scoped facts: user must own or be able to edit the agent
     if (fact.user_id) {
       if (fact.user_id.toString() !== userId?.toString()) {
         return reply
@@ -552,7 +578,7 @@ export const deleteMemory2Fact = async (
       }
     } else {
       const agent = await Agent.findById(fact.agent_id)
-      if (!agent || agent.owner.toString() !== userId?.toString()) {
+      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
         return reply
           .status(403)
           .send({ error: 'Not authorized to delete this fact' })

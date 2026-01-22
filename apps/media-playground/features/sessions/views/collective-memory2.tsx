@@ -88,21 +88,24 @@ interface Fact {
 interface CollectiveMemory2Props {
   agent: Agent
   hasEditAccess: boolean
+  // Toggle state is managed by parent to persist across tab switches
+  isMemoryEnabled: boolean
+  isTogglingMemory: boolean
+  onToggleMemory: (enabled: boolean) => void
 }
 
 const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
   agent,
   hasEditAccess,
+  isMemoryEnabled,
+  isTogglingMemory,
+  onToggleMemory,
 }) => {
   const [consolidatedContent, setConsolidatedContent] = useState('')
   const [reflections, setReflections] = useState<Reflection[]>([])
   const [facts, setFacts] = useState<Fact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isMemoryEnabled, setIsMemoryEnabled] = useState(
-    agent.agent_memory_enabled ?? false,
-  )
-  const [isTogglingMemory, setIsTogglingMemory] = useState(false)
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -164,24 +167,6 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
   }, [facts])
-
-  const handleToggleMemory = async (enabled: boolean) => {
-    setIsTogglingMemory(true)
-    try {
-      await axios.patch(`/api/agents/${agent._id}/agent-memory-enabled`, {
-        agent_memory_enabled: enabled,
-      })
-      setIsMemoryEnabled(enabled)
-      toast.success(
-        enabled ? 'Collective memory enabled' : 'Collective memory disabled',
-      )
-    } catch (error) {
-      console.error('Error toggling collective memory:', error)
-      toast.error('Failed to update memory setting')
-    } finally {
-      setIsTogglingMemory(false)
-    }
-  }
 
   // Load data on mount
   useEffect(() => {
@@ -381,7 +366,7 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
           <Switch
             id="agent-memory-toggle"
             checked={isMemoryEnabled}
-            onCheckedChange={handleToggleMemory}
+            onCheckedChange={onToggleMemory}
             disabled={isTogglingMemory}
           />
         </div>

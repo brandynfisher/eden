@@ -184,11 +184,12 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     user_memory_enabled: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     agent_memory_enabled: {
       type: Boolean,
-      default: false,
+      // Default depends on owner subscription tier - handled at runtime
+      // Free users (tier 0) default to false, paid users (tier > 0) default to true
     },
     llm_settings: {
       model_profile: {

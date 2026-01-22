@@ -34,6 +34,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -69,6 +70,7 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
   agent,
   variant = 'standalone',
 }) => {
+  const queryClient = useQueryClient()
   const { user: authUser } = useAuthState()
   const { hasEditAccess } = useAgentPermissions(agent, authUser?._id)
   const userMemoryGate = useGatedResource(GatedResource.UserMemory, {
@@ -151,11 +153,11 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
         return
       }
 
-      // 1. Set toggle state from agent prop
+      // 1. Set toggle state from agent prop (default is true for user memory)
       const isUserMemoryEnabled =
         agent.user_memory_enabled !== undefined
           ? agent.user_memory_enabled
-          : false
+          : true
       setUserMemoryEnabled(isUserMemoryEnabled)
 
       // 2. If enabled, fetch memory data; if disabled, clear display
@@ -336,6 +338,18 @@ const AgentMemoryView: FC<AgentMemoryViewProps> = ({
         setUnabsorbedDirectives([])
         setIsLoadingMemory(false)
       }
+
+      // Optimistically update the agent cache so parent components see the change immediately
+      queryClient.setQueryData(
+        ['agents', agent._id],
+        (oldData: { agent: Agent } | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            agent: { ...oldData.agent, user_memory_enabled: newValue },
+          }
+        },
+      )
 
       toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
     } catch (error) {
