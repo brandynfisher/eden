@@ -259,8 +259,8 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
               ) : (
                 <LockedFeatureBanner
                   gate={collectiveMemoryGate}
-                  title="Collective memory is a Pro feature"
-                  description="Upgrade to Pro or use a preview-eligible account to unlock collective memory."
+                  title="Collective memory is for subscribers"
+                  description="Upgrade to Basic or above to unlock collective memory—a shared memory that learns from all conversations, perfect for community managers and team assistants."
                 />
               )}
             </div>
@@ -275,8 +275,8 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
           ) : (
             <LockedFeatureBanner
               gate={collectiveMemoryGate}
-              title="Collective memory is a Pro feature"
-              description="Upgrade to Pro or use a preview-eligible account to unlock collective memory."
+              title="Collective memory is for subscribers"
+              description="Upgrade to Basic or above to unlock collective memory—a shared memory that learns from all conversations, perfect for community managers and team assistants."
             />
           )}
         </div>

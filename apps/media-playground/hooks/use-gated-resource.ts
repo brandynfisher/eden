@@ -75,13 +75,13 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
   [GatedResource.UserMemory]: {
     type: 'subscription',
     featureName: 'User memory',
-    minimumSubscriptionTier: SubscriptionTier.Basic,
+    minimumSubscriptionTier: SubscriptionTier.Free,
     lockedBehavior: 'modal',
   },
   [GatedResource.CollectiveMemory]: {
     type: 'subscription',
     featureName: 'Collective memory',
-    minimumSubscriptionTier: SubscriptionTier.Pro,
+    minimumSubscriptionTier: SubscriptionTier.Basic,
     allowPreviewFlag: FeatureFlag.Preview,
     lockedBehavior: 'modal',
   },
