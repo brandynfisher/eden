@@ -103,6 +103,12 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
   )
   const [isTogglingMemory, setIsTogglingMemory] = useState(false)
 
+  // Sync local state with agent prop to handle cache updates from other sources
+  // This ensures the toggle reflects the correct state after tab switches or external updates
+  useEffect(() => {
+    setIsMemoryEnabled(agent.user_memory_enabled ?? true)
+  }, [agent.user_memory_enabled])
+
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isReflectionEditModalOpen, setIsReflectionEditModalOpen] =
