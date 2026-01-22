@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/tooltip'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -89,25 +88,24 @@ interface Fact {
 interface UserMemory2Props {
   agent: Agent
   hasEditAccess: boolean
+  // Toggle state is managed by parent to persist across tab switches
+  isMemoryEnabled: boolean
+  isTogglingMemory: boolean
+  onToggleMemory: (enabled: boolean) => void
 }
 
-const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
-  const queryClient = useQueryClient()
+const UserMemory2: FC<UserMemory2Props> = ({
+  agent,
+  hasEditAccess,
+  isMemoryEnabled,
+  isTogglingMemory,
+  onToggleMemory,
+}) => {
   const [consolidatedContent, setConsolidatedContent] = useState('')
   const [reflections, setReflections] = useState<Reflection[]>([])
   const [facts, setFacts] = useState<Fact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isMemoryEnabled, setIsMemoryEnabled] = useState(
-    agent.user_memory_enabled ?? true,
-  )
-  const [isTogglingMemory, setIsTogglingMemory] = useState(false)
-
-  // Sync local state with agent prop to handle cache updates from other sources
-  // This ensures the toggle reflects the correct state after tab switches or external updates
-  useEffect(() => {
-    setIsMemoryEnabled(agent.user_memory_enabled ?? true)
-  }, [agent.user_memory_enabled])
 
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -167,33 +165,6 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
   }, [facts])
-
-  const handleToggleMemory = async (enabled: boolean) => {
-    setIsTogglingMemory(true)
-    try {
-      await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
-        user_memory_enabled: enabled,
-      })
-      setIsMemoryEnabled(enabled)
-      // Optimistically update the agent cache so parent components see the change immediately
-      queryClient.setQueryData(
-        ['agents', agent._id],
-        (oldData: { agent: Agent } | undefined) => {
-          if (!oldData) return oldData
-          return {
-            ...oldData,
-            agent: { ...oldData.agent, user_memory_enabled: enabled },
-          }
-        },
-      )
-      toast.success(enabled ? 'User memory enabled' : 'User memory disabled')
-    } catch (error) {
-      console.error('Error toggling user memory:', error)
-      toast.error('Failed to update memory setting')
-    } finally {
-      setIsTogglingMemory(false)
-    }
-  }
 
   // Load data on mount
   useEffect(() => {
@@ -393,7 +364,7 @@ const UserMemory2: FC<UserMemory2Props> = ({ agent, hasEditAccess }) => {
           <Switch
             id="user-memory-toggle"
             checked={isMemoryEnabled}
-            onCheckedChange={handleToggleMemory}
+            onCheckedChange={onToggleMemory}
             disabled={isTogglingMemory}
           />
         </div>

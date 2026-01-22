@@ -866,10 +866,19 @@ export const updateUserMemoryEnabled = async (
   const { agentId } = request.params
   const { user_memory_enabled } = request.body
 
+  server.log.info(
+    { agentId, user_memory_enabled },
+    '[Memory Toggle] Received request to update user_memory_enabled',
+  )
+
   try {
     // Validate agent access
     const { error } = await validateAgentAccess(agentId)
     if (error) {
+      server.log.warn(
+        { agentId, error },
+        '[Memory Toggle] Agent access validation failed',
+      )
       return reply.status(404).send({ error })
     }
 
@@ -887,14 +896,27 @@ export const updateUserMemoryEnabled = async (
     )
 
     if (updateResult.matchedCount === 0) {
+      server.log.warn(
+        { agentId },
+        '[Memory Toggle] Agent not found during update',
+      )
       return reply.status(404).send({ error: 'Agent not found' })
     }
+
+    server.log.info(
+      {
+        agentId,
+        user_memory_enabled,
+        modifiedCount: updateResult.modifiedCount,
+      },
+      '[Memory Toggle] Successfully updated user_memory_enabled in database',
+    )
 
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error(
-      { err: error },
-      'Error updating user memory enabled status:',
+      { err: error, agentId },
+      '[Memory Toggle] Error updating user memory enabled status',
     )
     return reply.status(500).send({ error: 'Internal server error' })
   }
@@ -911,10 +933,19 @@ export const updateAgentMemoryEnabled = async (
   const { agentId } = request.params
   const { agent_memory_enabled } = request.body
 
+  server.log.info(
+    { agentId, agent_memory_enabled },
+    '[Memory Toggle] Received request to update agent_memory_enabled',
+  )
+
   try {
     // Validate agent access
     const { error } = await validateAgentAccess(agentId)
     if (error) {
+      server.log.warn(
+        { agentId, error },
+        '[Memory Toggle] Agent access validation failed',
+      )
       return reply.status(404).send({ error })
     }
 
@@ -932,14 +963,27 @@ export const updateAgentMemoryEnabled = async (
     )
 
     if (updateResult.matchedCount === 0) {
+      server.log.warn(
+        { agentId },
+        '[Memory Toggle] Agent not found during update',
+      )
       return reply.status(404).send({ error: 'Agent not found' })
     }
+
+    server.log.info(
+      {
+        agentId,
+        agent_memory_enabled,
+        modifiedCount: updateResult.modifiedCount,
+      },
+      '[Memory Toggle] Successfully updated agent_memory_enabled in database',
+    )
 
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error(
-      { err: error },
-      'Error updating agent memory enabled status:',
+      { err: error, agentId },
+      '[Memory Toggle] Error updating agent memory enabled status',
     )
     return reply.status(500).send({ error: 'Internal server error' })
   }
