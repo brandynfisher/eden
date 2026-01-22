@@ -360,7 +360,9 @@ const CollectiveMemory2: FC<CollectiveMemory2Props> = ({
               Collective Memory
             </Label>
             <p className="text-xs text-muted-foreground">
-              Allow {agent.name} to build shared memory across all conversations
+              Allow {agent.name} to build a shared memory from all its
+              conversations—ideal for community managers, team minds and
+              collaborative agents.
             </p>
           </div>
           <Switch
