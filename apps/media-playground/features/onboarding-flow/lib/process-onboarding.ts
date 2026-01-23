@@ -3,14 +3,12 @@ import { OnboardingState } from '../types'
 interface AgentPromptsExtractionResponse {
   agent_instructions: string
   agent_description: string
-  memory_instructions: string
   cost: number
 }
 
 interface AgentArgs {
   agentInstructions: string
   agentDescription: string
-  memoryInstructions: string
 }
 
 /**
@@ -55,14 +53,12 @@ export async function processOnboardingLLMCalls(
   const agentArgs: AgentArgs = {
     agentInstructions: data.agent_instructions,
     agentDescription: data.agent_description,
-    memoryInstructions: data.memory_instructions,
   }
 
   // Store the extracted data in Zustand
   const store = getState()
   store.setAgentInstructions(data.agent_instructions)
   store.setAgentDescription(data.agent_description)
-  store.setMemoryInstructions(data.memory_instructions)
 
   return agentArgs
 }
@@ -72,7 +68,7 @@ export async function processOnboardingLLMCalls(
  *
  * This will call the agent creation API endpoint with all the collected data:
  * - name, username, profileImageUrl, referenceImages
- * - agentInstructions, agentDescription, memoryInstructions
+ * - agentInstructions, agentDescription
  */
 export async function createAgentFromOnboardingState(
   getState: () => OnboardingState,
@@ -100,7 +96,6 @@ export async function createAgentFromOnboardingState(
       image: state.profileImageUrl,
       persona: state.agentInstructions,
       public: true,
-      owner_pays: 'deployments',
       tools: {
         create_image: true,
       },
@@ -116,38 +111,6 @@ export async function createAgentFromOnboardingState(
 
   const data = await response.json()
   const agentId = data.agentId
-
-  // Create collective memory with memory_instructions if they exist
-  if (state.memoryInstructions) {
-    try {
-      // Truncate memory instructions to 3000 chars max, pad to 300 chars min
-      let truncatedMemoryInstructions = state.memoryInstructions.slice(0, 3000)
-      if (truncatedMemoryInstructions.length < 300) {
-        truncatedMemoryInstructions = truncatedMemoryInstructions.padEnd(
-          300,
-          ' ',
-        )
-      }
-
-      const collectiveMemoryResponse = await fetch(
-        `/api/agents/${agentId}/collective-memory`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            shard_name: 'Collective Memory',
-            extraction_prompt: truncatedMemoryInstructions,
-          }),
-        },
-      )
-
-      if (!collectiveMemoryResponse.ok) {
-        // Don't throw - agent was created successfully, collective memory is supplementary
-      }
-    } catch (error) {
-      // Don't throw - agent was created successfully, collective memory is supplementary
-    }
-  }
 
   // Create a concept with reference images if they exist
   if (state.referenceImages && state.referenceImages.length > 0) {
