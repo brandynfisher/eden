@@ -129,7 +129,7 @@ export const DiscordDeploymentForm = ({
     if (form.formState.submitCount > 0) {
       form.trigger('channels')
     }
-  }, [form.formState.submitCount, form.trigger])
+  }, [form, form.formState.submitCount, form.trigger])
 
   const open = isInline ? true : isOpen
 

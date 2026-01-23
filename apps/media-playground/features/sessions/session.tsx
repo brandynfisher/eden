@@ -334,7 +334,11 @@ const Session = ({
   useEffect(() => {
     if (!pendingMessage) return
     nonStreamingState.setWaitingForResponse(true)
-  }, [pendingMessage, nonStreamingState.setWaitingForResponse])
+  }, [
+    pendingMessage,
+    nonStreamingState,
+    nonStreamingState.setWaitingForResponse,
+  ])
 
   // Error handling function
   const handleError = useCallback(
