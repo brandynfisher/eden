@@ -41,7 +41,6 @@ export interface OnboardingState {
   referenceImages: ReferenceImage[]
   agentInstructions: string | null
   agentDescription: string | null
-  memoryInstructions: string | null
   lastUpdated: number | null
   setSessionId: (sessionId: string) => void
   setProfileImageUrl: (url: string) => void
@@ -50,7 +49,6 @@ export interface OnboardingState {
   setReferenceImages: (images: ReferenceImage[]) => void
   setAgentInstructions: (instructions: string) => void
   setAgentDescription: (description: string) => void
-  setMemoryInstructions: (instructions: string) => void
   reset: () => void
 }
 

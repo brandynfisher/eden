@@ -8,7 +8,7 @@ import {
   ToolsTab,
 } from './AgentEditView'
 import AgentDashboardView from './agent-dashboard-view'
-import AgentMemoryView from './agent-memory-view'
+import AgentMemoryView2 from './agent-memory-view2'
 import AgentTasksView from './agent-tasks-view'
 import { Button } from '@/components/ui/button'
 import {
@@ -365,7 +365,11 @@ const AgentEditView: FC<{
                     />
                   )}
                 {activeTab === 'memories' && hasEditAccess && isPreviewUser && (
-                  <AgentMemoryView agent={agent} variant="panel" />
+                  <AgentMemoryView2
+                    agent={agent}
+                    agentQueryKey={String(agent._id)}
+                    variant="panel"
+                  />
                 )}
                 {activeTab === 'tasks' && hasEditAccess && isPreviewUser && (
                   <AgentTasksView agent={agent} variant="panel" />

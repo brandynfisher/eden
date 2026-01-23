@@ -12,7 +12,6 @@ const createInitialState = () => ({
   referenceImages: [] as ReferenceImage[],
   agentInstructions: null as string | null,
   agentDescription: null as string | null,
-  memoryInstructions: null as string | null,
   lastUpdated: null as number | null,
 })
 
@@ -39,8 +38,6 @@ export function createOnboardingStore(storageKey: string) {
             set({ agentInstructions: instructions, lastUpdated: Date.now() }),
           setAgentDescription: description =>
             set({ agentDescription: description, lastUpdated: Date.now() }),
-          setMemoryInstructions: instructions =>
-            set({ memoryInstructions: instructions, lastUpdated: Date.now() }),
           reset: () => set({ ...createInitialState(), lastUpdated: null }),
         }
       },
