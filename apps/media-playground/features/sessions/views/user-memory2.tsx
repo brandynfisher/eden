@@ -34,7 +34,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
-import { FC, useEffect, useMemo, useState } from 'react'
+import { Dispatch, FC, SetStateAction, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -85,6 +85,12 @@ interface Fact {
   access_count: number
 }
 
+interface MemoryData {
+  consolidatedContent: string
+  reflections: Reflection[]
+  facts: Fact[]
+}
+
 interface UserMemory2Props {
   agent: Agent
   hasEditAccess: boolean
@@ -92,6 +98,10 @@ interface UserMemory2Props {
   isMemoryEnabled: boolean
   isTogglingMemory: boolean
   onToggleMemory: (enabled: boolean) => void
+  // Cached data from parent
+  memoryData: MemoryData
+  setMemoryData: Dispatch<SetStateAction<MemoryData>>
+  isLoading: boolean
 }
 
 const UserMemory2: FC<UserMemory2Props> = ({
@@ -100,11 +110,10 @@ const UserMemory2: FC<UserMemory2Props> = ({
   isMemoryEnabled,
   isTogglingMemory,
   onToggleMemory,
+  memoryData,
+  setMemoryData,
+  isLoading,
 }) => {
-  const [consolidatedContent, setConsolidatedContent] = useState('')
-  const [reflections, setReflections] = useState<Reflection[]>([])
-  const [facts, setFacts] = useState<Fact[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Modal states
@@ -152,44 +161,22 @@ const UserMemory2: FC<UserMemory2Props> = ({
 
   // Sort reflections by date (newest first)
   const sortedReflections = useMemo(() => {
-    return [...reflections].sort(
+    return [...memoryData.reflections].sort(
       (a, b) =>
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
-  }, [reflections])
+  }, [memoryData.reflections])
 
   // Sort facts by date (newest first)
   const sortedFacts = useMemo(() => {
-    return [...facts].sort(
+    return [...memoryData.facts].sort(
       (a, b) =>
         new Date(b.formed_at).getTime() - new Date(a.formed_at).getTime(),
     )
-  }, [facts])
-
-  // Load data on mount
-  useEffect(() => {
-    const loadData = async () => {
-      if (!agent) return
-
-      try {
-        const response = await axios.get(`/api/agents/${agent._id}/memory2`)
-        setConsolidatedContent(response.data.consolidated_content || '')
-        setReflections(response.data.unabsorbed_reflections || [])
-        setFacts(response.data.facts || [])
-      } catch (error) {
-        console.error('Error loading memory2 data:', error)
-        setConsolidatedContent('')
-        setReflections([])
-        setFacts([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadData()
-  }, [agent._id])
+  }, [memoryData.facts])
 
   const handleEditClick = () => {
-    form.setValue('content', consolidatedContent)
+    form.setValue('content', memoryData.consolidatedContent)
     setIsEditModalOpen(true)
   }
 
@@ -208,7 +195,11 @@ const UserMemory2: FC<UserMemory2Props> = ({
         content: pendingContentData.content || '',
       })
 
-      setConsolidatedContent(pendingContentData.content || '')
+      // Update parent state
+      setMemoryData(prev => ({
+        ...prev,
+        consolidatedContent: pendingContentData.content || '',
+      }))
       toast.success('Memory saved successfully')
       setIsEditModalOpen(false)
       setIsContentConfirmationOpen(false)
@@ -242,14 +233,15 @@ const UserMemory2: FC<UserMemory2Props> = ({
         content: pendingReflectionData.content || '',
       })
 
-      // Update local state
-      setReflections(prev =>
-        prev.map(r =>
+      // Update parent state
+      setMemoryData(prev => ({
+        ...prev,
+        reflections: prev.reflections.map(r =>
           r._id === editingReflection._id
             ? { ...r, content: pendingReflectionData.content || '' }
             : r,
         ),
-      )
+      }))
 
       toast.success('Reflection updated successfully')
       setIsReflectionEditModalOpen(false)
@@ -266,18 +258,26 @@ const UserMemory2: FC<UserMemory2Props> = ({
 
   const handleReflectionDelete = async (reflectionId: string) => {
     // Store the reflection being deleted for potential revert
-    const reflectionToDelete = reflections.find(r => r._id === reflectionId)
+    const reflectionToDelete = memoryData.reflections.find(
+      r => r._id === reflectionId,
+    )
     if (!reflectionToDelete) return
 
-    // Optimistically update UI
-    setReflections(prev => prev.filter(r => r._id !== reflectionId))
+    // Optimistically update parent state
+    setMemoryData(prev => ({
+      ...prev,
+      reflections: prev.reflections.filter(r => r._id !== reflectionId),
+    }))
 
     try {
       await axios.delete(`/api/memory2-reflections/${reflectionId}`)
       // Success - no toast to avoid blocking UI
     } catch (error) {
       // Revert on error
-      setReflections(prev => [...prev, reflectionToDelete])
+      setMemoryData(prev => ({
+        ...prev,
+        reflections: [...prev.reflections, reflectionToDelete],
+      }))
       console.error('Error deleting reflection:', error)
       toast.error('Failed to remove reflection. Please try again.')
     }
@@ -304,13 +304,15 @@ const UserMemory2: FC<UserMemory2Props> = ({
         content: pendingFactData.content || '',
       })
 
-      setFacts(prev =>
-        prev.map(f =>
+      // Update parent state
+      setMemoryData(prev => ({
+        ...prev,
+        facts: prev.facts.map(f =>
           f._id === editingFact._id
             ? { ...f, content: pendingFactData.content || '' }
             : f,
         ),
-      )
+      }))
 
       toast.success('Fact updated successfully')
       setIsFactEditModalOpen(false)
@@ -326,15 +328,23 @@ const UserMemory2: FC<UserMemory2Props> = ({
   }
 
   const handleFactDelete = async (factId: string) => {
-    const factToDelete = facts.find(f => f._id === factId)
+    const factToDelete = memoryData.facts.find(f => f._id === factId)
     if (!factToDelete) return
 
-    setFacts(prev => prev.filter(f => f._id !== factId))
+    // Optimistically update parent state
+    setMemoryData(prev => ({
+      ...prev,
+      facts: prev.facts.filter(f => f._id !== factId),
+    }))
 
     try {
       await axios.delete(`/api/memory2-facts/${factId}`)
     } catch (error) {
-      setFacts(prev => [...prev, factToDelete])
+      // Revert on error
+      setMemoryData(prev => ({
+        ...prev,
+        facts: [...prev.facts, factToDelete],
+      }))
       console.error('Error deleting fact:', error)
       toast.error('Failed to remove fact. Please try again.')
     }
@@ -403,7 +413,7 @@ const UserMemory2: FC<UserMemory2Props> = ({
           </div>
           <div className="group relative rounded-lg border border-border bg-purple-50/15 dark:bg-purple-950/10 shadow-sm">
             <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
-              {consolidatedContent || (
+              {memoryData.consolidatedContent || (
                 <span className="text-muted-foreground italic">
                   No user memories stored yet. Just interact with {agent.name}{' '}
                   and the agent will automatically build memory about you here.

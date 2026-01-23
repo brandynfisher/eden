@@ -27,7 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar from '@/components/user/user-avatar'
 import { UserSettingsModal } from '@/features/account/user-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
-import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
+import AgentMemoryView2 from '@/features/sessions/views/agent-memory-view2'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -2234,7 +2234,10 @@ export const SessionsSidebarContent = ({
             <DialogHeader>
               <DialogTitle>Memories - {agent.name}</DialogTitle>
             </DialogHeader>
-            <AgentMemoryView agent={agent} />
+            <AgentMemoryView2
+              agent={agent}
+              agentQueryKey={agentId || agent.username || String(agent._id)}
+            />
           </DialogContent>
         </Dialog>
       )}

@@ -15,16 +15,40 @@ import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
-import { FC, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+
+// Types for memory data
+interface Reflection {
+  _id: string
+  content: string
+  formed_at: string
+}
+
+interface Fact {
+  _id: string
+  content: string
+  formed_at: string
+  scope: string
+  access_count: number
+}
+
+interface MemoryData {
+  consolidatedContent: string
+  reflections: Reflection[]
+  facts: Fact[]
+}
 
 interface AgentMemoryView2Props {
   agent: Agent
+  /** The query key used to fetch this agent - needed for proper cache updates */
+  agentQueryKey?: string
   variant?: 'standalone' | 'panel'
 }
 
 const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
   agent,
+  agentQueryKey,
   variant = 'standalone',
 }) => {
   const queryClient = useQueryClient()
@@ -41,6 +65,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
   )
   const [memoryTab, setMemoryTab] = useState<'user' | 'collective'>('user')
 
+  // The key used for React Query cache - use provided key or fall back to agent._id
+  const cacheKey = agentQueryKey || String(agent._id)
+
   // Lift toggle states to parent so they persist across tab switches
   // Initialize from agent prop (source of truth from React Query cache)
   const [userMemoryEnabled, setUserMemoryEnabled] = useState(
@@ -52,8 +79,103 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
   const [isTogglingUserMemory, setIsTogglingUserMemory] = useState(false)
   const [isTogglingAgentMemory, setIsTogglingAgentMemory] = useState(false)
 
+  // Lift data state to parent to cache across tab switches
+  // User memory data
+  const [userMemoryData, setUserMemoryData] = useState<MemoryData>({
+    consolidatedContent: '',
+    reflections: [],
+    facts: [],
+  })
+  const [isUserMemoryLoading, setIsUserMemoryLoading] = useState(true)
+  const [hasUserMemoryLoaded, setHasUserMemoryLoaded] = useState(false)
+
+  // Collective memory data
+  const [collectiveMemoryData, setCollectiveMemoryData] = useState<MemoryData>({
+    consolidatedContent: '',
+    reflections: [],
+    facts: [],
+  })
+  const [isCollectiveMemoryLoading, setIsCollectiveMemoryLoading] =
+    useState(true)
+  const [hasCollectiveMemoryLoaded, setHasCollectiveMemoryLoaded] =
+    useState(false)
+
+  // Sync local state when agent prop changes (e.g., modal reopened with fresh data)
+  // This ensures the UI reflects the database state when the component remounts
+  useEffect(() => {
+    setUserMemoryEnabled(agent.user_memory_enabled ?? true)
+    setAgentMemoryEnabled(agent.agent_memory_enabled ?? false)
+  }, [agent.user_memory_enabled, agent.agent_memory_enabled])
+
+  // Fetch user memory data
+  const fetchUserMemoryData = useCallback(async () => {
+    setIsUserMemoryLoading(true)
+    try {
+      const response = await axios.get(`/api/agents/${agent._id}/memory2`)
+      setUserMemoryData({
+        consolidatedContent: response.data.consolidated_content || '',
+        reflections: response.data.unabsorbed_reflections || [],
+        facts: response.data.facts || [],
+      })
+      setHasUserMemoryLoaded(true)
+    } catch (error) {
+      console.error('Error loading user memory2 data:', error)
+      setUserMemoryData({
+        consolidatedContent: '',
+        reflections: [],
+        facts: [],
+      })
+    } finally {
+      setIsUserMemoryLoading(false)
+    }
+  }, [agent._id])
+
+  // Fetch collective memory data
+  const fetchCollectiveMemoryData = useCallback(async () => {
+    setIsCollectiveMemoryLoading(true)
+    try {
+      const response = await axios.get(`/api/agents/${agent._id}/memory2-agent`)
+      setCollectiveMemoryData({
+        consolidatedContent: response.data.consolidated_content || '',
+        reflections: response.data.unabsorbed_reflections || [],
+        facts: response.data.facts || [],
+      })
+      setHasCollectiveMemoryLoaded(true)
+    } catch (error) {
+      console.error('Error loading collective memory2 data:', error)
+      setCollectiveMemoryData({
+        consolidatedContent: '',
+        reflections: [],
+        facts: [],
+      })
+    } finally {
+      setIsCollectiveMemoryLoading(false)
+    }
+  }, [agent._id])
+
+  // Initial fetch for user memory if enabled and not yet loaded
+  useEffect(() => {
+    if (userMemoryEnabled && !hasUserMemoryLoaded) {
+      fetchUserMemoryData()
+    } else if (!userMemoryEnabled) {
+      setIsUserMemoryLoading(false)
+    }
+  }, [userMemoryEnabled, hasUserMemoryLoaded, fetchUserMemoryData])
+
+  // Initial fetch for collective memory if enabled and not yet loaded
+  useEffect(() => {
+    if (agentMemoryEnabled && !hasCollectiveMemoryLoaded) {
+      fetchCollectiveMemoryData()
+    } else if (!agentMemoryEnabled) {
+      setIsCollectiveMemoryLoading(false)
+    }
+  }, [agentMemoryEnabled, hasCollectiveMemoryLoaded, fetchCollectiveMemoryData])
+
   // Handler for toggling user memory - manages state at parent level
   const handleToggleUserMemory = async (enabled: boolean) => {
+    // Store previous value for rollback
+    const previousValue = userMemoryEnabled
+
     // Optimistic update - update local state immediately
     setUserMemoryEnabled(enabled)
     setIsTogglingUserMemory(true)
@@ -64,9 +186,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
       })
 
       // Update the React Query cache so other components see the change
-      const agentIdStr = String(agent._id)
+      // Use the provided cache key to ensure we update the correct cache entry
       queryClient.setQueryData(
-        ['agents', agentIdStr],
+        ['agents', cacheKey],
         (oldData: { agent: Agent } | undefined) => {
           if (!oldData) return oldData
           return {
@@ -76,10 +198,15 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
         },
       )
 
+      // If turning on, fetch the data immediately
+      if (enabled && !hasUserMemoryLoaded) {
+        fetchUserMemoryData()
+      }
+
       toast.success(enabled ? 'User memory enabled' : 'User memory disabled')
     } catch (error) {
       // Revert on error
-      setUserMemoryEnabled(!enabled)
+      setUserMemoryEnabled(previousValue)
       console.error('Error toggling user memory:', error)
       toast.error('Failed to update memory setting')
     } finally {
@@ -89,6 +216,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
 
   // Handler for toggling agent/collective memory - manages state at parent level
   const handleToggleAgentMemory = async (enabled: boolean) => {
+    // Store previous value for rollback
+    const previousValue = agentMemoryEnabled
+
     // Optimistic update - update local state immediately
     setAgentMemoryEnabled(enabled)
     setIsTogglingAgentMemory(true)
@@ -99,9 +229,9 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
       })
 
       // Update the React Query cache so other components see the change
-      const agentIdStr = String(agent._id)
+      // Use the provided cache key to ensure we update the correct cache entry
       queryClient.setQueryData(
-        ['agents', agentIdStr],
+        ['agents', cacheKey],
         (oldData: { agent: Agent } | undefined) => {
           if (!oldData) return oldData
           return {
@@ -111,12 +241,17 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
         },
       )
 
+      // If turning on, fetch the data immediately
+      if (enabled && !hasCollectiveMemoryLoaded) {
+        fetchCollectiveMemoryData()
+      }
+
       toast.success(
         enabled ? 'Collective memory enabled' : 'Collective memory disabled',
       )
     } catch (error) {
       // Revert on error
-      setAgentMemoryEnabled(!enabled)
+      setAgentMemoryEnabled(previousValue)
       console.error('Error toggling collective memory:', error)
       toast.error('Failed to update memory setting')
     } finally {
@@ -238,6 +373,10 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
                 isMemoryEnabled={userMemoryEnabled}
                 isTogglingMemory={isTogglingUserMemory}
                 onToggleMemory={handleToggleUserMemory}
+                // Cached data from parent
+                memoryData={userMemoryData}
+                setMemoryData={setUserMemoryData}
+                isLoading={isUserMemoryLoading}
               />
             ) : (
               <LockedFeatureBanner
@@ -246,24 +385,6 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
                 description="Store and reuse personal context with Basic and above."
               />
             )
-          ) : isPanelLayout ? (
-            <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-              {collectiveMemoryGate.isAllowed ? (
-                <CollectiveMemory2
-                  agent={agent}
-                  hasEditAccess={collectiveMemoryAccess.hasAccess}
-                  isMemoryEnabled={agentMemoryEnabled}
-                  isTogglingMemory={isTogglingAgentMemory}
-                  onToggleMemory={handleToggleAgentMemory}
-                />
-              ) : (
-                <LockedFeatureBanner
-                  gate={collectiveMemoryGate}
-                  title="Collective memory is for subscribers"
-                  description="Upgrade to Basic or above to unlock collective memory—a shared memory that learns from all conversations, perfect for community managers and team assistants."
-                />
-              )}
-            </div>
           ) : collectiveMemoryGate.isAllowed ? (
             <CollectiveMemory2
               agent={agent}
@@ -271,6 +392,10 @@ const AgentMemoryView2: FC<AgentMemoryView2Props> = ({
               isMemoryEnabled={agentMemoryEnabled}
               isTogglingMemory={isTogglingAgentMemory}
               onToggleMemory={handleToggleAgentMemory}
+              // Cached data from parent
+              memoryData={collectiveMemoryData}
+              setMemoryData={setCollectiveMemoryData}
+              isLoading={isCollectiveMemoryLoading}
             />
           ) : (
             <LockedFeatureBanner

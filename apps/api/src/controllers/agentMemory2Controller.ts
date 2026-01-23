@@ -1,10 +1,63 @@
-import { Agent } from '../models/Agent'
+import { Agent, AgentDocument } from '../models/Agent'
 import {
   AgentPermission,
   AgentPermissionLevel,
 } from '../models/AgentPermission'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+
+/**
+ * Get the default value for agent_memory_enabled based on owner's subscription tier.
+ * Free users (tier 0) default to false, paid users (tier > 0) default to true.
+ */
+export const getAgentMemoryEnabledDefault = (
+  ownerSubscriptionTier: number | undefined,
+): boolean => {
+  const tier = ownerSubscriptionTier ?? SubscriptionTier.Free
+  return tier > SubscriptionTier.Free
+}
+
+/**
+ * Ensure memory fields have proper defaults and persist them to DB if they were undefined.
+ * - user_memory_enabled: defaults to true
+ * - agent_memory_enabled: defaults to true for paid users (subscription tier > 0), false for free users
+ *
+ * IMPORTANT: The agent must have owner populated with subscriptionTier for this to work correctly.
+ */
+export const ensureMemoryDefaults = async (
+  agent: AgentDocument,
+): Promise<{ user_memory_enabled: boolean; agent_memory_enabled: boolean }> => {
+  const updates: Record<string, boolean> = {}
+
+  // Default for user_memory_enabled is true
+  let userMemoryEnabled = agent.user_memory_enabled
+  if (userMemoryEnabled === undefined || userMemoryEnabled === null) {
+    userMemoryEnabled = true
+    updates.user_memory_enabled = true
+  }
+
+  // Default for agent_memory_enabled depends on owner subscription tier
+  let agentMemoryEnabled = agent.agent_memory_enabled
+  if (agentMemoryEnabled === undefined || agentMemoryEnabled === null) {
+    const ownerTier = (agent.owner as any)?.subscriptionTier
+    agentMemoryEnabled = getAgentMemoryEnabledDefault(ownerTier)
+    updates.agent_memory_enabled = agentMemoryEnabled
+  }
+
+  // Persist defaults to DB if any fields were undefined
+  if (Object.keys(updates).length > 0) {
+    await Agent.updateOne(
+      { _id: agent._id },
+      { $set: { ...updates, updatedAt: new Date() } },
+    )
+  }
+
+  return {
+    user_memory_enabled: userMemoryEnabled,
+    agent_memory_enabled: agentMemoryEnabled,
+  }
+}
 
 const validateAgentAccess = async (agentId: string) => {
   const query = createIdOrSlugQuery(agentId)
@@ -517,6 +570,148 @@ export const deleteMemory2Fact = async (
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error({ err: error }, 'Error deleting memory2 fact:')
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+/**
+ * PATCH /v2/agents/:agentId/user-memory-enabled
+ * Toggle user memory enabled for an agent
+ */
+export const updateUserMemoryEnabled = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { agentId: string }
+    Body: { user_memory_enabled: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params
+  const { user_memory_enabled } = request.body
+
+  server.log.info(
+    { agentId, user_memory_enabled },
+    '[Memory Toggle] Received request to update user_memory_enabled',
+  )
+
+  try {
+    // Validate agent access
+    const { error } = await validateAgentAccess(agentId)
+    if (error) {
+      server.log.warn(
+        { agentId, error },
+        '[Memory Toggle] Agent access validation failed',
+      )
+      return reply.status(404).send({ error })
+    }
+
+    // Permission check is handled by validateAgentAccess (same as other memory operations)
+
+    // Update the agent's user_memory_enabled field in users3 collection
+    const updateResult = await Agent.updateOne(
+      { _id: agentId },
+      {
+        $set: {
+          user_memory_enabled: user_memory_enabled,
+          updatedAt: new Date(),
+        },
+      },
+    )
+
+    if (updateResult.matchedCount === 0) {
+      server.log.warn(
+        { agentId },
+        '[Memory Toggle] Agent not found during update',
+      )
+      return reply.status(404).send({ error: 'Agent not found' })
+    }
+
+    server.log.info(
+      {
+        agentId,
+        user_memory_enabled,
+        modifiedCount: updateResult.modifiedCount,
+      },
+      '[Memory Toggle] Successfully updated user_memory_enabled in database',
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error(
+      { err: error, agentId },
+      '[Memory Toggle] Error updating user memory enabled status',
+    )
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+/**
+ * PATCH /v2/agents/:agentId/agent-memory-enabled
+ * Toggle agent memory enabled for an agent
+ */
+export const updateAgentMemoryEnabled = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { agentId: string }
+    Body: { agent_memory_enabled: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params
+  const { agent_memory_enabled } = request.body
+
+  server.log.info(
+    { agentId, agent_memory_enabled },
+    '[Memory Toggle] Received request to update agent_memory_enabled',
+  )
+
+  try {
+    // Validate agent access
+    const { error } = await validateAgentAccess(agentId)
+    if (error) {
+      server.log.warn(
+        { agentId, error },
+        '[Memory Toggle] Agent access validation failed',
+      )
+      return reply.status(404).send({ error })
+    }
+
+    // Permission check is handled by validateAgentAccess (same as other memory operations)
+
+    // Update the agent's agent_memory_enabled field in users3 collection
+    const updateResult = await Agent.updateOne(
+      { _id: agentId },
+      {
+        $set: {
+          agent_memory_enabled: agent_memory_enabled,
+          updatedAt: new Date(),
+        },
+      },
+    )
+
+    if (updateResult.matchedCount === 0) {
+      server.log.warn(
+        { agentId },
+        '[Memory Toggle] Agent not found during update',
+      )
+      return reply.status(404).send({ error: 'Agent not found' })
+    }
+
+    server.log.info(
+      {
+        agentId,
+        agent_memory_enabled,
+        modifiedCount: updateResult.modifiedCount,
+      },
+      '[Memory Toggle] Successfully updated agent_memory_enabled in database',
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error(
+      { err: error, agentId },
+      '[Memory Toggle] Error updating agent memory enabled status',
+    )
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }

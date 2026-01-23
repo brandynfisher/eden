@@ -17,22 +17,10 @@ import { sendPushNotification } from '../services/pushNotificationService'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
-  createMemoryAgent as _createMemoryAgent,
-  getAgentMemory as _getAgentMemory,
-  getAgentMemoryContext as _getAgentMemoryContext,
-  removeMemoryFromAgent as _removeMemoryFromAgent,
-  removeUnabsorbedMemory as _removeUnabsorbedMemory,
-  retrieveMemoryAgent as _retrieveMemoryAgent,
-  retrieveMemorySession as _retrieveMemorySession,
-  retrieveMemoryUser as _retrieveMemoryUser,
-  saveAgentMemory as _saveAgentMemory,
   updateAgentMemoryEnabled as _updateAgentMemoryEnabled,
-  updateMemoryAgent as _updateMemoryAgent,
-  updateMemorySession as _updateMemorySession,
-  updateMemoryUser as _updateMemoryUser,
   updateUserMemoryEnabled as _updateUserMemoryEnabled,
   ensureMemoryDefaults,
-} from './agentMemoryController'
+} from './agentMemory2Controller'
 // Import functions from specialized controllers for re-export
 import {
   deleteAgentDeployment as _deleteAgentDeployment,
@@ -113,20 +101,8 @@ export {
   _getDashboardData as getDashboardData,
 }
 
-// Re-export functions from agentMemoryController
+// Re-export functions from agentMemory2Controller
 export {
-  _getAgentMemory as getAgentMemory,
-  _getAgentMemoryContext as getAgentMemoryContext,
-  _saveAgentMemory as saveAgentMemory,
-  _retrieveMemoryUser as retrieveMemoryUser,
-  _retrieveMemoryAgent as retrieveMemoryAgent,
-  _updateMemoryAgent as updateMemoryAgent,
-  _removeMemoryFromAgent as removeMemoryFromAgent,
-  _retrieveMemorySession as retrieveMemorySession,
-  _updateMemoryUser as updateMemoryUser,
-  _updateMemorySession as updateMemorySession,
-  _removeUnabsorbedMemory as removeUnabsorbedMemory,
-  _createMemoryAgent as createMemoryAgent,
   _updateUserMemoryEnabled as updateUserMemoryEnabled,
   _updateAgentMemoryEnabled as updateAgentMemoryEnabled,
 }

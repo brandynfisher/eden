@@ -13,7 +13,6 @@ import {
 } from '../sessions/views/AgentEditView'
 import { getPersonaCharacterLimit } from '../sessions/views/agent-constants'
 import AgentDashboardView from '../sessions/views/agent-dashboard-view'
-import AgentMemoryView from '../sessions/views/agent-memory-view'
 import AgentMemoryView2 from '../sessions/views/agent-memory-view2'
 import AgentTasksView from '../sessions/views/agent-tasks-view'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -60,7 +59,7 @@ import {
   UserIcon,
   WrenchIcon,
 } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { FC, forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -135,8 +134,6 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 }) => {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const useLegacyMemory = searchParams.get('memory1') === 'true'
   const { user } = useAuthState()
   const {
     agent,
@@ -770,12 +767,13 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
                   {/* Tabs that have their own forms or don't need the agent settings form */}
                   {activeTab === 'memories' &&
-                    (hasEditAccess || memoriesOnly) &&
-                    (useLegacyMemory ? (
-                      <AgentMemoryView agent={agent} variant="panel" />
-                    ) : (
-                      <AgentMemoryView2 agent={agent} variant="panel" />
-                    ))}
+                    (hasEditAccess || memoriesOnly) && (
+                      <AgentMemoryView2
+                        agent={agent}
+                        agentQueryKey={agentId}
+                        variant="panel"
+                      />
+                    )}
 
                   {activeTab === 'tasks' && hasEditAccess && (
                     <AgentTasksView
