@@ -134,14 +134,26 @@ export const DeploymentFormFooter = ({
           },
         }
       } else if (platform === 'discord_v3') {
+        const channelConfigs = (data.channels || []).map((ch: any) => ({
+          guild_id: ch.guildId ?? data.guildId,
+          channel_id: ch.channelId,
+          channel_name: ch.channelName,
+          access: ch.access || 'read_write',
+        }))
+        if (channelConfigs.some((ch: { guild_id?: string }) => !ch.guild_id)) {
+          throw new Error('Each Discord channel must include a server id')
+        }
+        const guildIds = Array.from(
+          new Set(
+            channelConfigs
+              .map((ch: { guild_id?: string }) => ch.guild_id)
+              .filter(Boolean) as string[],
+          ),
+        )
         config = {
           discord: {
-            guild_id: data.guildId,
-            channel_configs: (data.channels || []).map((ch: any) => ({
-              channel_id: ch.channelId,
-              channel_name: ch.channelName,
-              access: ch.access || 'read_write',
-            })),
+            guilds: guildIds.map(guildId => ({ guild_id: guildId })),
+            channel_configs: channelConfigs,
           },
         }
       } else if (platform === 'telegram') {

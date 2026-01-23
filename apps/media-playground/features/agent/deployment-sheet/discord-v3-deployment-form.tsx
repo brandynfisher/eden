@@ -46,6 +46,7 @@ const schema = z.object({
         channelId: z.string(),
         channelName: z.string(),
         access: z.enum(['read_write', 'read_only']),
+        guildId: z.string().optional(),
       }),
     )
     .min(1, 'At least one channel is required'),
@@ -76,6 +77,7 @@ interface DiscordRole {
 }
 
 type DiscordV3ChannelConfig = {
+  guild_id?: string
   channel_id: string
   channel_name?: string
   access?: 'read_only' | 'read_write'
@@ -84,6 +86,12 @@ type DiscordV3ChannelConfig = {
 type DiscordV3DeploymentConfig = {
   discord?: {
     guild_id?: string
+    guilds?: Array<{
+      guild_id: string
+      guild_name?: string
+      role_id?: string
+      role_name?: string
+    }>
     channel_configs?: DiscordV3ChannelConfig[]
   }
 }
@@ -136,9 +144,6 @@ export const DiscordV3DeploymentForm = ({
   )
   const [isLoadingAccessRoles, setIsLoadingAccessRoles] = useState(false)
   const [isSavingAccessRoles, setIsSavingAccessRoles] = useState(false)
-  const channelSelectionsByGuildRef = useRef<
-    Record<string, DiscordV3FormDto['channels']>
-  >({})
 
   const deploymentConfig = useMemo(
     () =>
@@ -156,15 +161,20 @@ export const DiscordV3DeploymentForm = ({
         channelId: channel.channel_id,
         channelName: channel.channel_name || channel.channel_id,
         access: channel.access === 'read_only' ? 'read_only' : 'read_write',
+        guildId:
+          channel.guild_id ?? deploymentConfig?.discord?.guild_id ?? undefined,
       })) ?? [],
-    [deploymentConfig?.discord?.channel_configs],
+    [
+      deploymentConfig?.discord?.channel_configs,
+      deploymentConfig?.discord?.guild_id,
+    ],
   )
 
   const form = useForm<DiscordV3FormDto, undefined, DiscordV3FormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
       guildId: '',
-      channels: [],
+      channels: initialChannels,
     },
   })
 
@@ -202,15 +212,10 @@ export const DiscordV3DeploymentForm = ({
     }
     form.reset({
       guildId: '',
-      channels: [],
+      channels: initialChannels,
     })
     hasInitializedDeployment.current = true
   }, [deployment, form, initialChannels, initialGuildId])
-
-  useEffect(() => {
-    if (!initialGuildId) return
-    channelSelectionsByGuildRef.current[initialGuildId] = initialChannels
-  }, [initialChannels, initialGuildId])
 
   const cleanupPopup = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -469,6 +474,7 @@ export const DiscordV3DeploymentForm = ({
           channelId: channel.id,
           channelName: channel.name,
           access: 'read_write' as const,
+          guildId: selectedGuildId || undefined,
         },
       ]
       form.setValue('channels', newChannels, {
@@ -610,41 +616,18 @@ export const DiscordV3DeploymentForm = ({
       null
     )
   }, [availableServers, selectedGuildId])
-  const areChannelsEqual = useCallback(
-    (
-      left: DiscordV3FormDto['channels'],
-      right: DiscordV3FormDto['channels'],
-    ) => {
-      if (left.length !== right.length) return false
-      const rightMap = new Map(
-        right.map(channel => [channel.channelId, channel.access]),
-      )
-      return left.every(
-        channel => rightMap.get(channel.channelId) === channel.access,
-      )
-    },
-    [],
-  )
+  const selectedCountByGuild = useMemo(() => {
+    const counts = new Map<string, number>()
+    selectedChannels.forEach(channel => {
+      const guildId = channel.guildId || initialGuildId
+      if (!guildId) return
+      counts.set(guildId, (counts.get(guildId) ?? 0) + 1)
+    })
+    return counts
+  }, [initialGuildId, selectedChannels])
   const getSelectedCountForServer = useCallback(
-    (serverId: string) => {
-      if (selectedGuildId === serverId) {
-        return selectedChannels.length
-      }
-      const cached = channelSelectionsByGuildRef.current[serverId]
-      if (cached) {
-        return cached.length
-      }
-      if (initialGuildId === serverId) {
-        return initialChannels.length
-      }
-      return 0
-    },
-    [
-      initialChannels.length,
-      initialGuildId,
-      selectedChannels.length,
-      selectedGuildId,
-    ],
+    (serverId: string) => selectedCountByGuild.get(serverId) ?? 0,
+    [selectedCountByGuild],
   )
   const shouldBlockForOAuth =
     isAccountLoading || (isDiscordLinked && !hasLoadedServers)
@@ -657,12 +640,22 @@ export const DiscordV3DeploymentForm = ({
     return (
       <div
         key={channel.id}
-        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
+        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded cursor-pointer"
+        onClick={() => toggleChannel(channel)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            toggleChannel(channel)
+          }
+        }}
       >
         <div className="flex items-center gap-3 flex-1">
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => toggleChannel(channel)}
+            onClick={event => event.stopPropagation()}
           />
           <span className="text-sm">#{channel.name}</span>
         </div>
@@ -677,6 +670,7 @@ export const DiscordV3DeploymentForm = ({
                   checked ? 'read_write' : 'read_only',
                 )
               }
+              onClick={event => event.stopPropagation()}
             />
             <span className="text-xs text-muted-foreground w-20">
               {channelData?.access === 'read_write'
@@ -823,32 +817,8 @@ export const DiscordV3DeploymentForm = ({
                                 <FormLabel>Server</FormLabel>
                                 <Select
                                   onValueChange={value => {
-                                    const currentGuild =
-                                      form.getValues('guildId')
-                                    if (currentGuild) {
-                                      channelSelectionsByGuildRef.current[
-                                        currentGuild
-                                      ] = form.getValues('channels')
-                                    }
-
-                                    const savedChannels =
-                                      channelSelectionsByGuildRef.current[
-                                        value
-                                      ] ?? []
-                                    const isSameAsInitial =
-                                      value === initialGuildId &&
-                                      areChannelsEqual(
-                                        savedChannels,
-                                        initialChannels,
-                                      )
-                                    const shouldDirty = !isSameAsInitial
-
                                     form.setValue('guildId', value, {
-                                      shouldDirty,
-                                      shouldValidate: true,
-                                    })
-                                    form.setValue('channels', savedChannels, {
-                                      shouldDirty,
+                                      shouldDirty: false,
                                       shouldValidate: true,
                                     })
                                     loadChannels(value)
