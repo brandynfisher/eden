@@ -1239,7 +1239,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
               _id: Type.String(),
               content: Type.String(),
               formed_at: Type.Optional(Type.String()),
-              scope: Type.Array(Type.String()),
+              scope: Type.String(),
               access_count: Type.Number(),
             }),
           ),

@@ -81,7 +81,7 @@ interface Fact {
   _id: string
   content: string
   formed_at: string
-  scope: string[]
+  scope: string
   access_count: number
 }
 

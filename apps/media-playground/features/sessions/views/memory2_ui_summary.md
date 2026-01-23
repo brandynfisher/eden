@@ -6,9 +6,9 @@ MongoDB Collections → Fastify API → Next.js API Proxy → React Components
 ```
 
 ## MongoDB Collections
-- `memory2_consolidated` - Merged reflection blobs (scope_type: agent|user|session)
+- `memory2_consolidated` - Merged reflection blobs (scope: agent|user|session)
 - `memory2_reflections` - Individual reflections (absorbed: bool, scope: agent|user|session)
-- `memory2_facts` - RAG-retrieved facts (scope: [agent|user], access_count tracking)
+- `memory2_facts` - RAG-retrieved facts (scope: agent|user, access_count tracking)
 
 ## Backend (Fastify API)
 **Controller:** `apps/api/src/controllers/agentMemory2Controller.ts`

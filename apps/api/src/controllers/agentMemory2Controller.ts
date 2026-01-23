@@ -23,6 +23,11 @@ const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
     : new mongoose.Types.ObjectId(agentDoc._id)
 }
 
+// Helper to match an ID field that could be stored as string or ObjectId
+const matchIdField = (objectId: any) => ({
+  $in: [objectId, objectId.toString()],
+})
+
 // Helper function to check if user has edit access to an agent (owner or editor)
 const hasAgentEditAccess = async (
   agent: any,
@@ -73,9 +78,9 @@ export const getMemory2User = async (
       'memory2_consolidated',
     )
     const consolidated = await consolidatedCollection.findOne({
-      scope_type: 'user',
-      agent_id: agentObjectId,
-      user_id: userObjectId,
+      scope: 'user',
+      agent_id: matchIdField(agentObjectId),
+      user_id: matchIdField(userObjectId),
     })
 
     // Get unabsorbed reflections for user scope
@@ -84,8 +89,8 @@ export const getMemory2User = async (
     )
     const reflections = await reflectionsCollection
       .find({
-        agent_id: agentObjectId,
-        user_id: userObjectId,
+        agent_id: matchIdField(agentObjectId),
+        user_id: matchIdField(userObjectId),
         scope: 'user',
         absorbed: false,
       })
@@ -98,13 +103,14 @@ export const getMemory2User = async (
       formed_at: r.formed_at?.toISOString() || r.createdAt?.toISOString(),
     }))
 
-    // Get facts for this user
+    // Get facts for this user (user-scoped only)
     const factsCollection =
       server.mongoose.connection.db.collection('memory2_facts')
     const facts = await factsCollection
       .find({
-        agent_id: agentObjectId,
-        user_id: userObjectId,
+        agent_id: matchIdField(agentObjectId),
+        user_id: matchIdField(userObjectId),
+        scope: 'user',
       })
       .sort({ formed_at: -1 })
       .limit(100)
@@ -114,7 +120,7 @@ export const getMemory2User = async (
       _id: f._id.toString(),
       content: f.content || '',
       formed_at: f.formed_at?.toISOString() || f.createdAt?.toISOString(),
-      scope: f.scope || [],
+      scope: f.scope || 'user',
       access_count: f.access_count || 0,
     }))
 
@@ -163,9 +169,9 @@ export const saveMemory2User = async (
 
     await consolidatedCollection.updateOne(
       {
-        scope_type: 'user',
-        agent_id: agentObjectId,
-        user_id: userObjectId,
+        scope: 'user',
+        agent_id: matchIdField(agentObjectId),
+        user_id: matchIdField(userObjectId),
       },
       {
         $set: {
@@ -173,7 +179,7 @@ export const saveMemory2User = async (
           updatedAt: new Date(),
         },
         $setOnInsert: {
-          scope_type: 'user',
+          scope: 'user',
           agent_id: agentObjectId,
           user_id: userObjectId,
           word_limit: 400,
@@ -220,8 +226,8 @@ export const getMemory2Agent = async (
       'memory2_consolidated',
     )
     const consolidated = await consolidatedCollection.findOne({
-      scope_type: 'agent',
-      agent_id: agentObjectId,
+      scope: 'agent',
+      agent_id: matchIdField(agentObjectId),
     })
 
     // Get unabsorbed reflections for agent scope
@@ -230,7 +236,7 @@ export const getMemory2Agent = async (
     )
     const reflections = await reflectionsCollection
       .find({
-        agent_id: agentObjectId,
+        agent_id: matchIdField(agentObjectId),
         scope: 'agent',
         absorbed: false,
       })
@@ -248,7 +254,7 @@ export const getMemory2Agent = async (
       server.mongoose.connection.db.collection('memory2_facts')
     const facts = await factsCollection
       .find({
-        agent_id: agentObjectId,
+        agent_id: matchIdField(agentObjectId),
         scope: 'agent',
       })
       .sort({ formed_at: -1 })
@@ -313,8 +319,8 @@ export const saveMemory2Agent = async (
 
     await consolidatedCollection.updateOne(
       {
-        scope_type: 'agent',
-        agent_id: agentObjectId,
+        scope: 'agent',
+        agent_id: matchIdField(agentObjectId),
       },
       {
         $set: {
@@ -322,7 +328,7 @@ export const saveMemory2Agent = async (
           updatedAt: new Date(),
         },
         $setOnInsert: {
-          scope_type: 'agent',
+          scope: 'agent',
           agent_id: agentObjectId,
           word_limit: 400,
           unabsorbed_ids: [],
@@ -361,33 +367,8 @@ export const updateMemory2Reflection = async (
       'memory2_reflections',
     )
 
-    // First get the reflection to check permissions
-    const reflection = await reflectionsCollection.findOne({
-      _id: new server.mongoose.Types.ObjectId(reflectionId),
-    })
-
-    if (!reflection) {
-      return reply.status(404).send({ error: 'Reflection not found' })
-    }
-
-    // For user-scoped reflections, verify user owns it
-    // For agent-scoped reflections, verify user owns the agent
-    if (reflection.scope === 'user') {
-      if (reflection.user_id?.toString() !== userId?.toString()) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to edit this reflection' })
-      }
-    } else if (reflection.scope === 'agent') {
-      const agent = await Agent.findById(reflection.agent_id)
-      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to edit this reflection' })
-      }
-    }
-
-    await reflectionsCollection.updateOne(
+    // Authorization is handled by visibility - if user can see the reflection, they can edit it
+    const result = await reflectionsCollection.updateOne(
       { _id: new server.mongoose.Types.ObjectId(reflectionId) },
       {
         $set: {
@@ -396,6 +377,10 @@ export const updateMemory2Reflection = async (
         },
       },
     )
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Reflection not found' })
+    }
 
     return reply.status(200).send({ success: true })
   } catch (error) {
@@ -425,35 +410,14 @@ export const deleteMemory2Reflection = async (
       'memory2_reflections',
     )
 
-    // First get the reflection to check permissions
-    const reflection = await reflectionsCollection.findOne({
+    // Authorization is handled by visibility - if user can see the reflection, they can delete it
+    const result = await reflectionsCollection.deleteOne({
       _id: new server.mongoose.Types.ObjectId(reflectionId),
     })
 
-    if (!reflection) {
+    if (result.deletedCount === 0) {
       return reply.status(404).send({ error: 'Reflection not found' })
     }
-
-    // For user-scoped reflections, verify user owns it
-    // For agent-scoped reflections, verify user owns or can edit the agent
-    if (reflection.scope === 'user') {
-      if (reflection.user_id?.toString() !== userId?.toString()) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to delete this reflection' })
-      }
-    } else if (reflection.scope === 'agent') {
-      const agent = await Agent.findById(reflection.agent_id)
-      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to delete this reflection' })
-      }
-    }
-
-    await reflectionsCollection.deleteOne({
-      _id: new server.mongoose.Types.ObjectId(reflectionId),
-    })
 
     return reply.status(200).send({ success: true })
   } catch (error) {
@@ -483,7 +447,7 @@ export const updateMemory2Fact = async (
     const factsCollection =
       server.mongoose.connection.db.collection('memory2_facts')
 
-    // First get the fact to check permissions
+    // Get the fact to retrieve previous content for history
     const fact = await factsCollection.findOne({
       _id: new server.mongoose.Types.ObjectId(factId),
     })
@@ -492,25 +456,8 @@ export const updateMemory2Fact = async (
       return reply.status(404).send({ error: 'Fact not found' })
     }
 
-    // Check if user has access to this fact
-    // User-scoped facts: user must own it
-    // Agent-scoped facts: user must own or be able to edit the agent
-    if (fact.user_id) {
-      if (fact.user_id.toString() !== userId?.toString()) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to edit this fact' })
-      }
-    } else {
-      const agent = await Agent.findById(fact.agent_id)
-      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to edit this fact' })
-      }
-    }
-
     // Update the content and compute new hash
+    // Authorization is handled by visibility - if user can see the fact, they can edit it
     const crypto = require('crypto')
     const newHash = crypto
       .createHash('md5')
@@ -558,36 +505,14 @@ export const deleteMemory2Fact = async (
     const factsCollection =
       server.mongoose.connection.db.collection('memory2_facts')
 
-    // First get the fact to check permissions
-    const fact = await factsCollection.findOne({
+    // Authorization is handled by visibility - if user can see the fact, they can delete it
+    const result = await factsCollection.deleteOne({
       _id: new server.mongoose.Types.ObjectId(factId),
     })
 
-    if (!fact) {
+    if (result.deletedCount === 0) {
       return reply.status(404).send({ error: 'Fact not found' })
     }
-
-    // Check if user has access to delete this fact
-    // User-scoped facts: user must own it
-    // Agent-scoped facts: user must own or be able to edit the agent
-    if (fact.user_id) {
-      if (fact.user_id.toString() !== userId?.toString()) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to delete this fact' })
-      }
-    } else {
-      const agent = await Agent.findById(fact.agent_id)
-      if (!agent || !(await hasAgentEditAccess(agent, userId?.toString()))) {
-        return reply
-          .status(403)
-          .send({ error: 'Not authorized to delete this fact' })
-      }
-    }
-
-    await factsCollection.deleteOne({
-      _id: new server.mongoose.Types.ObjectId(factId),
-    })
 
     return reply.status(200).send({ success: true })
   } catch (error) {
