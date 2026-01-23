@@ -59,9 +59,23 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
 
   // Calculate aspect ratio for an output
   const getAspectRatio = (output: TasksV2ResultOutput) => {
-    const width = output.mediaAttributes?.width || 16
-    const height = output.mediaAttributes?.height || 9
-    return width / height
+    const rawWidth = output.mediaAttributes?.width
+    const rawHeight = output.mediaAttributes?.height
+    const width =
+      typeof rawWidth === 'number' && Number.isFinite(rawWidth) && rawWidth > 0
+        ? rawWidth
+        : null
+    const height =
+      typeof rawHeight === 'number' &&
+      Number.isFinite(rawHeight) &&
+      rawHeight > 0
+        ? rawHeight
+        : null
+    const fallback = 16 / 9
+    const ratio = width && height ? width / height : fallback
+    if (!Number.isFinite(ratio) || ratio <= 0) return fallback
+    // Clamp extreme ratios to avoid massive layout jumps.
+    return Math.min(Math.max(ratio, 0.5), 3)
   }
 
   // Determine grid layout based on count

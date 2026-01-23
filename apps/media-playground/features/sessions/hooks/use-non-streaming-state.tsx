@@ -34,6 +34,7 @@ export function useNonStreamingState({
     attachments?: string[],
     options?: { agent_ids?: string[]; thinking?: boolean },
   ) => Promise<void>
+  clearResponseState: () => void
   clearNonStreamingState: () => void
 } {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
@@ -142,7 +143,14 @@ export function useNonStreamingState({
         })
 
         if (!response.ok) {
-          throw new Error('Failed to send message')
+          let message = 'Failed to send message'
+          try {
+            const data = await response.json()
+            message = data?.message || data?.error || message
+          } catch {
+            // Ignore JSON parse errors
+          }
+          throw new Error(message)
         }
 
         // Handle session creation for optimistic sessions
@@ -158,13 +166,20 @@ export function useNonStreamingState({
         }
       } catch (error) {
         console.error('Error sending message:', error)
-        onError('Failed to send message')
+        const message =
+          error instanceof Error ? error.message : 'Failed to send message'
+        onError(message)
         setWaitingForResponse(false)
-        setOptimisticMessages([])
+        setRespondingAgentIds([])
       }
     },
     [user, sessionId, onError, onSessionCreated],
   )
+
+  const clearResponseState = useCallback(() => {
+    setWaitingForResponse(false)
+    setRespondingAgentIds([])
+  }, [])
 
   const clearNonStreamingState = useCallback(() => {
     setWaitingForResponse(false)
@@ -179,6 +194,7 @@ export function useNonStreamingState({
     setWaitingForResponse,
     setOptimisticMessages,
     sendMessage,
+    clearResponseState,
     clearNonStreamingState,
   }
 }

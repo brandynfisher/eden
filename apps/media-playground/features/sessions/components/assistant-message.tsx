@@ -232,45 +232,46 @@ export const AssistantMessage = ({
                   : toolCall
 
                 return (
-                  <TaskResultTool
-                    key={toolCall.id}
-                    toolCall={optimisticToolCall}
-                    messageId={message._id}
-                    onSessionClick={onSessionClick}
-                    onArtifactOpen={onArtifactOpen}
-                    onCancel={async () => {
-                      setOptimisticallyCancelled(prev =>
-                        new Set(prev).add(toolCall.id),
-                      )
-
-                      try {
-                        const response = await fetch(
-                          `/api/sessions/${sessionId}/cancel`,
-                          {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              tool_call_id: toolCall.id,
-                              tool_call_index:
-                                message.tool_calls?.indexOf(toolCall),
-                            }),
-                          },
+                  <div key={toolCall.id}>
+                    <TaskResultTool
+                      toolCall={optimisticToolCall}
+                      messageId={message._id}
+                      onSessionClick={onSessionClick}
+                      onArtifactOpen={onArtifactOpen}
+                      onCancel={async () => {
+                        setOptimisticallyCancelled(prev =>
+                          new Set(prev).add(toolCall.id),
                         )
-                        if (!response.ok) {
+
+                        try {
+                          const response = await fetch(
+                            `/api/sessions/${sessionId}/cancel`,
+                            {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                tool_call_id: toolCall.id,
+                                tool_call_index:
+                                  message.tool_calls?.indexOf(toolCall),
+                              }),
+                            },
+                          )
+                          if (!response.ok) {
+                            console.warn(
+                              'Cancel API call failed, but keeping UI cancelled state',
+                            )
+                          }
+                        } catch (error) {
                           console.warn(
-                            'Cancel API call failed, but keeping UI cancelled state',
+                            'Cancel API call error, but keeping UI cancelled state:',
+                            error,
                           )
                         }
-                      } catch (error) {
-                        console.warn(
-                          'Cancel API call error, but keeping UI cancelled state:',
-                          error,
-                        )
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 )
               })}
 

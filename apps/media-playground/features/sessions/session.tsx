@@ -7,27 +7,19 @@ import { ChildSessionSidebar } from './components/child-session-sidebar'
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
+import { SessionMessageGroups } from './components/session-message-groups'
 import SessionWelcome from './components/session-welcome'
 import { ViewModerator } from './components/view-moderator'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
-import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
-import {
-  getEffectiveSender,
-  groupConsecutiveMessages,
-  isOrchestratorMessage,
-} from './utils/group-messages'
+import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AssistantMessage } from '@/features/sessions/components/assistant-message'
-import { EdenMessage } from '@/features/sessions/components/eden-message'
-import { SystemMessage } from '@/features/sessions/components/system-message'
 import TypingIndicator from '@/features/sessions/components/typing-indicator'
-import { UserMessage } from '@/features/sessions/components/user-message'
 import { useUpdateUserPreferences } from '@/hooks/mutation/use-update-user-preferences'
 import { useArtifactsV3ListQuery } from '@/hooks/query/use-artifacts-v3-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
@@ -36,7 +28,6 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
-import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
@@ -90,14 +81,13 @@ const Session = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isNearBottomRef = useRef(true)
-  const previousScrollHeightRef = useRef(0)
   const paginationAnchorRef = useRef<{ id: string; offset: number } | null>(
     null,
   )
   const clearAnchorTimeoutRef = useRef<number | null>(null)
+  const paginationRestoreActiveRef = useRef(false)
   const { user, isSignedIn } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
-  const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
   const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
@@ -119,11 +109,6 @@ const Session = ({
 
   // Get optimistic notification clearing function
   const { markSessionAsRead } = useSessionNotificationsQuery()
-
-  // Connection state tracking
-  const [connectionState, setConnectionState] = useState<
-    'connecting' | 'connected' | 'disconnected' | 'reconnecting'
-  >('connecting')
 
   // Track the current session ID for live audio (handles session creation)
   const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId)
@@ -161,31 +146,16 @@ const Session = ({
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
 
-  // Use WebSocket for non-streaming mode
+  // Use WebSocket updates for new messages
   useSessionWebSocket({
     sessionId: sessionId as string,
-    enabled: !sessionConfig.useStreaming && !!sessionId && sessionId !== 'new',
+    enabled: !!sessionId && sessionId !== 'new',
   })
-
-  // Track which agents are currently waiting to respond (show loader)
-  const [agentsWaitingToRespond, setAgentsWaitingToRespond] = useState<
-    Set<string>
-  >(() => {
-    // If we have a pending message, mark the agent as waiting
-    if (pendingMessage) {
-      return new Set([pendingMessage.agent._id])
-    }
-    return new Set()
-  })
-
-  // Track streaming messages locally when using pendingMessage
-  const [streamingMessages, setStreamingMessages] = useState<Message[]>([])
 
   const {
     data: session,
     isLoading: isSessionLoading,
     error: sessionError,
-    addOrUpdateMessage,
     refetch: refetchSession,
     fetchOlderMessages,
     getPaginationData,
@@ -299,7 +269,7 @@ const Session = ({
   }, [session])
 
   // Create pending session data when we have a pendingMessage
-  const pendingSession = useMemo(() => {
+  const pendingSession = useMemo<SessionV2 | null>(() => {
     if (!pendingMessage || !user) return null
 
     return {
@@ -323,7 +293,7 @@ const Session = ({
           reactions: {},
         },
       ],
-    }
+    } as SessionV2
   }, [pendingMessage, user])
 
   // Use pending session if we have one, otherwise use real session
@@ -342,420 +312,10 @@ const Session = ({
     }
   }, [pendingMessage, session, onSessionLoaded])
 
-  useEffect(() => {
-    // Only connect to SSE if streaming is enabled
-    if (!sessionConfig.useStreaming) {
-      return
-    }
-
-    // Don't connect to SSE if we don't have a real session ID yet
-    if (!sessionId || sessionId === 'new') {
-      return
-    }
-
-    let eventSource: EventSource | null = null
-    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
-    let heartbeatInterval: ReturnType<typeof setInterval> | null = null
-    let isCleaningUp = false
-    let lastMessageTime = Date.now()
-    let reconnectAttempts = 0
-    let isReconnection = false
-    const MAX_RECONNECT_ATTEMPTS = 5
-    const INITIAL_RECONNECT_DELAY = 1000
-    const MAX_RECONNECT_DELAY = 30000
-    const HEARTBEAT_INTERVAL = 30000 // Check connection every 30 seconds
-    const STALE_CONNECTION_THRESHOLD = 60000 // Consider connection stale after 60 seconds
-
-    // Track multiple concurrent streams
-    const streamingMessages = new Map<
-      string,
-      {
-        accumulatedTokens: string
-        agent: Agent
-        messageId: string
-      }
-    >()
-
-    const connectToStream = () => {
-      if (isCleaningUp) return
-
-      try {
-        const streamUrl = `/api/sessions/${sessionId}/stream`
-
-        setConnectionState(
-          reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
-        )
-
-        if (eventSource) {
-          eventSource.close()
-          eventSource = null
-        }
-
-        eventSource = new EventSource(streamUrl)
-
-        eventSource.onopen = () => {
-          lastMessageTime = Date.now()
-          setConnectionState('connected')
-
-          // Refetch session data to catch up on any missed messages
-          // This is especially important after reconnecting from tab switch
-          if (isReconnection) {
-            refetchSession()
-          }
-
-          reconnectAttempts = 0 // Reset attempts on successful connection
-          isReconnection = true // Mark future connections as reconnections
-
-          // Start heartbeat to monitor connection health
-          if (heartbeatInterval) {
-            clearInterval(heartbeatInterval)
-          }
-
-          heartbeatInterval = setInterval(() => {
-            if (!isCleaningUp) {
-              const timeSinceLastMessage = Date.now() - lastMessageTime
-              if (timeSinceLastMessage > STALE_CONNECTION_THRESHOLD) {
-                if (eventSource) {
-                  eventSource.close()
-                  eventSource = null
-                }
-                reconnectAttempts = 0
-                connectToStream()
-              }
-            }
-          }, HEARTBEAT_INTERVAL)
-        }
-
-        eventSource.onmessage = event => {
-          try {
-            const data = JSON.parse(event.data)
-            lastMessageTime = Date.now() // Update last message time
-
-            // Handle session updates from SSE
-            if (data.type === 'start_prompt') {
-              const agent = data.agent
-              const agentId = agent?._id
-              const runId = data.session_run_id
-              const messageId = `streaming-${sessionId}-${runId}`
-
-              // Initialize streaming state for this run
-              streamingMessages.set(runId, {
-                accumulatedTokens: '',
-                agent: agent,
-                messageId: messageId,
-              })
-
-              // Mark this agent as waiting (shows loader)
-              if (agentId) {
-                setAgentsWaitingToRespond(prev => new Set(prev).add(agentId))
-              }
-            } else if (data.type === 'assistant_token') {
-              const runId = data.session_run_id
-              const streamState = streamingMessages.get(runId)
-
-              if (!streamState) {
-                return // No streaming state for this run
-              }
-
-              const agentId = streamState.agent._id
-
-              // First token received - remove loader for this agent
-              if (agentId && streamState.accumulatedTokens === '') {
-                setAgentsWaitingToRespond(prev => {
-                  const next = new Set(prev)
-                  next.delete(agentId)
-                  return next
-                })
-              }
-
-              // Accumulate tokens for this specific stream
-              streamState.accumulatedTokens += data.text
-
-              // Create/update streaming message
-              const streamingMessage: Message = {
-                _id: streamState.messageId,
-                session: [{ _id: sessionId } as SessionV2],
-                role: 'assistant',
-                content: streamState.accumulatedTokens,
-                sender: streamState.agent,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                attachments: [],
-                reactions: {},
-              }
-
-              // Use local state if query is disabled (pendingMessage mode)
-              if (pendingMessage) {
-                setStreamingMessages(prev => {
-                  const existing = prev.findIndex(
-                    m => m._id === streamingMessage._id,
-                  )
-                  if (existing >= 0) {
-                    const updated = [...prev]
-                    updated[existing] = streamingMessage
-                    return updated
-                  }
-                  return [...prev, streamingMessage]
-                })
-              } else {
-                addOrUpdateMessage(streamingMessage)
-              }
-            } else if (data.type === 'assistant_message' && data.message) {
-              const message = data.message as Message
-              const runId = data.session_run_id
-              const streamState = streamingMessages.get(runId)
-
-              if (streamState && streamState.agent?._id) {
-                setAgentsWaitingToRespond(prev => {
-                  const next = new Set(prev)
-                  next.delete(streamState.agent._id)
-                  return next
-                })
-              }
-
-              const isRateLimitEden =
-                message.role === 'eden' &&
-                message.eden_message_data?.message_type === 'rate_limit'
-              if (isRateLimitEden) {
-                setAgentsWaitingToRespond(new Set())
-                if (runId) {
-                  streamingMessages.delete(runId)
-                }
-                streamingState.clearStreamingState()
-              }
-
-              // If we get any eden message (including rate limit), clear loaders defensively
-              if (message.role === 'eden') {
-                setAgentsWaitingToRespond(new Set())
-                streamingMessages.clear()
-              }
-
-              // If we have a streaming state and this message has tool calls, merge them
-              if (
-                streamState &&
-                message.tool_calls &&
-                message.tool_calls.length > 0
-              ) {
-                const mergedMessage: Message = {
-                  ...message,
-                  _id: streamState.messageId,
-                  content: streamState.accumulatedTokens, // Keep the streamed content
-                }
-                if (pendingMessage) {
-                  setStreamingMessages(prev => {
-                    const existing = prev.findIndex(
-                      m => m._id === mergedMessage._id,
-                    )
-                    if (existing >= 0) {
-                      const updated = [...prev]
-                      updated[existing] = mergedMessage
-                      return updated
-                    }
-                    return [...prev, mergedMessage]
-                  })
-                } else {
-                  addOrUpdateMessage(mergedMessage)
-                }
-                // Reset accumulated tokens for potential post-tool streaming
-                streamState.accumulatedTokens = ''
-              } else if (message.tool_calls && message.tool_calls.length > 0) {
-                // Add tool call messages immediately
-                if (pendingMessage) {
-                  setStreamingMessages(prev => [...prev, message])
-                } else {
-                  addOrUpdateMessage(message)
-                }
-              } else {
-                // Normal assistant message (including errors like rate limits)
-                if (pendingMessage) {
-                  setStreamingMessages(prev => [...prev, message])
-                } else {
-                  addOrUpdateMessage(message)
-                }
-                // If no streaming state exists, also clear loaders based on sender
-                if (!streamState && message.sender?._id) {
-                  setAgentsWaitingToRespond(prev => {
-                    const next = new Set(prev)
-                    next.delete(message.sender._id)
-                    return next
-                  })
-                }
-              }
-            } else if (data.type === 'user_message' && data.message) {
-              // Handle user messages from other users in multi-user sessions
-              const userMessage = data.message as Message
-
-              // Skip processing user messages that are from the current user
-              // to avoid duplicating optimistic messages
-              const isCurrentUser = user?._id === userMessage.sender?._id
-              if (isCurrentUser) {
-                return
-              }
-
-              if (pendingMessage) {
-                setStreamingMessages(prev => [...prev, userMessage])
-              } else {
-                addOrUpdateMessage(userMessage)
-              }
-            } else if (data.type === 'end_prompt') {
-              const runId = data.session_run_id
-              const streamState = streamingMessages.get(runId)
-
-              // Make sure agent loader is removed before clearing state
-              if (streamState && streamState.agent._id) {
-                setAgentsWaitingToRespond(prev => {
-                  const next = new Set(prev)
-                  next.delete(streamState.agent._id)
-                  return next
-                })
-              }
-
-              // Clear streaming state for this specific run
-              if (runId) {
-                streamingMessages.delete(runId)
-              }
-              // Defensive: clear any loaders if no more active streams
-              if (streamingMessages.size === 0) {
-                setAgentsWaitingToRespond(new Set())
-              }
-            } else if (
-              data.type === 'tool_complete' ||
-              data.type === 'tool_cancelled'
-            ) {
-              // Tool updates - refetch to get updated data from DB
-              refetchSession()
-            }
-          } catch (error) {
-            console.error('[Session Stream] Failed to parse message:', error)
-          }
-        }
-
-        eventSource.onerror = () => {
-          setConnectionState('disconnected')
-
-          if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-            eventSource?.close()
-            eventSource = null
-
-            // Calculate reconnect delay with exponential backoff
-            const delay = Math.min(
-              INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts),
-              MAX_RECONNECT_DELAY,
-            )
-
-            reconnectAttempts += 1
-
-            reconnectTimeout = setTimeout(() => {
-              if (!isCleaningUp) {
-                connectToStream()
-              }
-            }, delay)
-          } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            eventSource?.close()
-            eventSource = null
-          }
-        }
-      } catch (error) {
-        // Attempt reconnection on initial connection failure
-        if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(
-            INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts),
-            MAX_RECONNECT_DELAY,
-          )
-          reconnectAttempts += 1
-
-          reconnectTimeout = setTimeout(() => {
-            if (!isCleaningUp) {
-              connectToStream()
-            }
-          }, delay)
-        }
-      }
-    }
-
-    // Handle visibility changes - reconnect when tab becomes visible
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // If we don't have an active EventSource or it's closed, reconnect
-        if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
-          reconnectAttempts = 0 // Reset attempts for visibility-based reconnection
-          connectToStream()
-        } else if (eventSource.readyState === EventSource.OPEN) {
-          // Check if we've received messages recently (within last 60 seconds)
-          const timeSinceLastMessage = Date.now() - lastMessageTime
-          if (timeSinceLastMessage > 60000) {
-            eventSource.close()
-            eventSource = null
-            reconnectAttempts = 0
-            connectToStream()
-          }
-        }
-      }
-    }
-
-    // Handle page focus - similar to visibility but more aggressive
-    const handleFocus = () => {
-      // Force reconnect if connection is not open
-      if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
-        reconnectAttempts = 0
-        connectToStream()
-      }
-    }
-
-    connectToStream()
-
-    // Add event listeners
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('focus', handleFocus)
-
-    return () => {
-      isCleaningUp = true
-
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout)
-      }
-
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval)
-      }
-
-      if (eventSource) {
-        eventSource.close()
-      }
-
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [sessionId, addOrUpdateMessage, refetchSession, pendingMessage, user])
-
-  // State management for streaming and non-streaming modes
-  const streamingState = useStreamingState({
-    sessionId: currentSessionId,
-    enabled: sessionConfig.useStreaming,
-    onError: (error: string) => handleError(error),
-    setOptimisticMessages: setter => {
-      if (sessionConfig.useStreaming) {
-        streamingOptimisticMessages.current =
-          typeof setter === 'function'
-            ? setter(streamingOptimisticMessages.current)
-            : setter
-      }
-    },
-    onSessionCreated: (newSessionId: string) => {
-      setCurrentSessionId(newSessionId)
-      // Also navigate to the new session URL to keep URL in sync
-      if (ischatRoute && params?.agentId) {
-        router.replace(`/chat/${params.agentId}/${newSessionId}`)
-      } else {
-        router.replace(`/sessions/${newSessionId}`)
-      }
-    },
-  })
-
   const nonStreamingState = useNonStreamingState({
     sessionId,
     session,
-    enabled: !sessionConfig.useStreaming,
+    enabled: !!sessionId && sessionId !== 'new',
     onError: (error: string) => handleError(error),
     user,
     onSessionCreated: (newSessionId: string) => {
@@ -769,22 +329,17 @@ const Session = ({
     },
   })
 
-  // Unified optimistic messages state
-  const streamingOptimisticMessages = useRef<Message[]>([])
-  const optimisticMessages = sessionConfig.useStreaming
-    ? streamingOptimisticMessages.current
-    : nonStreamingState.optimisticMessages
+  const optimisticMessages = nonStreamingState.optimisticMessages
+
+  useEffect(() => {
+    if (!pendingMessage) return
+    nonStreamingState.setWaitingForResponse(true)
+  }, [pendingMessage, nonStreamingState.setWaitingForResponse])
 
   // Error handling function
   const handleError = useCallback(
     (error: string) => {
-      // Clear appropriate state based on mode
-      if (sessionConfig.useStreaming) {
-        streamingState.clearStreamingState()
-      } else {
-        nonStreamingState.clearNonStreamingState()
-      }
-      setAgentsWaitingToRespond(new Set())
+      nonStreamingState.clearResponseState()
 
       // Determine error type and add appropriate error
       if (
@@ -847,56 +402,8 @@ const Session = ({
         })
       }
     },
-    [addError, clearErrors, router, streamingState, nonStreamingState],
+    [addError, clearErrors, router, nonStreamingState],
   )
-
-  // Determine which agent should be responding based on session data
-  const getRespondingAgent = useCallback(() => {
-    const currentStreamingAgent = sessionConfig.useStreaming
-      ? streamingState.streamingAgent
-      : null
-
-    // Use streamingAgent if available (from stream) - but enrich it if incomplete
-    if (currentStreamingAgent) {
-      // If streaming agent is missing userImage, try to enrich from session data
-      if (!currentStreamingAgent.userImage) {
-        const enrichedAgent =
-          displaySession?.agents && displaySession.agents.length > 0
-            ? displaySession.agents[0]
-            : null
-        if (enrichedAgent && enrichedAgent.userImage) {
-          return {
-            ...currentStreamingAgent,
-            userImage: enrichedAgent.userImage.startsWith('https://')
-              ? enrichedAgent.userImage
-              : getCloudfrontUrl(enrichedAgent.userImage),
-            name: currentStreamingAgent.name || enrichedAgent.name,
-          }
-        }
-      }
-      return currentStreamingAgent
-    }
-
-    // Otherwise use the first agent from the session (which has complete data)
-    if (displaySession?.agents && displaySession.agents.length > 0) {
-      const sessionAgent = displaySession.agents[0]
-      return {
-        _id: sessionAgent._id,
-        username: sessionAgent.username,
-        name: sessionAgent.name,
-        userImage: sessionAgent.userImage?.startsWith('https://')
-          ? sessionAgent.userImage
-          : getCloudfrontUrl(sessionAgent.userImage),
-      }
-    }
-
-    // Final fallback
-    return {
-      _id: 'agent',
-      username: 'Assistant',
-      name: 'Assistant',
-    }
-  }, [streamingState.streamingAgent, displaySession?.agents])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
@@ -954,6 +461,7 @@ const Session = ({
 
     clearAnchorTimeoutRef.current = window.setTimeout(() => {
       paginationAnchorRef.current = null
+      paginationRestoreActiveRef.current = false
     }, 400)
   }, [])
 
@@ -983,6 +491,7 @@ const Session = ({
 
         if (paginationData?.hasMore) {
           setIsLoadingOlderMessages(true)
+          paginationRestoreActiveRef.current = true
           capturePaginationAnchor()
 
           // Store current scroll position
@@ -1007,6 +516,7 @@ const Session = ({
               '[Message Pagination] Failed to load older messages:',
               error,
             )
+            scheduleClearPaginationAnchor()
           } finally {
             setIsLoadingOlderMessages(false)
           }
@@ -1024,7 +534,6 @@ const Session = ({
     isLoadingOlderMessages,
     fetchOlderMessages,
     getPaginationData,
-    displaySession,
     capturePaginationAnchor,
     restorePaginationAnchor,
     scheduleClearPaginationAnchor,
@@ -1036,6 +545,7 @@ const Session = ({
 
     const handleMediaLoad = () => {
       if (!paginationAnchorRef.current) return
+      if (!paginationRestoreActiveRef.current) return
       requestAnimationFrame(() => {
         restorePaginationAnchor()
         scheduleClearPaginationAnchor()
@@ -1055,7 +565,6 @@ const Session = ({
 
     const currentMessageCount = displaySession?.messages?.length || 0
     const previousMessageCount = previousMessageCountRef.current
-    const nextScrollHeight = container.scrollHeight
     const countIncreased = currentMessageCount > previousMessageCount
 
     if (!hasTriggeredInitialScroll && currentMessageCount > 0) {
@@ -1065,7 +574,6 @@ const Session = ({
         messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
       }, 100)
       previousMessageCountRef.current = currentMessageCount
-      previousScrollHeightRef.current = nextScrollHeight
       return
     }
 
@@ -1078,31 +586,14 @@ const Session = ({
         scrollToBottom()
       }
       previousMessageCountRef.current = currentMessageCount
-      previousScrollHeightRef.current = nextScrollHeight
       return
     }
 
     previousMessageCountRef.current = currentMessageCount
-    previousScrollHeightRef.current = nextScrollHeight
   }, [
     displaySession?.messages,
     hasTriggeredInitialScroll,
     isLoadingOlderMessages,
-    scrollToBottom,
-  ])
-
-  // Separate effect for streaming text to avoid double scroll
-  useEffect(() => {
-    if (
-      sessionConfig.useStreaming &&
-      streamingState.streamingText &&
-      streamingState.isStreamingTokens
-    ) {
-      scrollToBottom()
-    }
-  }, [
-    streamingState.streamingText,
-    streamingState.isStreamingTokens,
     scrollToBottom,
   ])
 
@@ -1178,8 +669,9 @@ const Session = ({
         return []
       }
 
+      const agents = displaySession?.agents || session?.agents || []
       return agentIds.map(agentId => {
-        const agent = session!.agents.find(a => a._id === agentId)
+        const agent = agents.find(a => a._id === agentId)
         if (agent) {
           return {
             _id: agent._id,
@@ -1197,7 +689,7 @@ const Session = ({
         }
       })
     },
-    [session],
+    [displaySession?.agents, session?.agents],
   )
 
   const filteredMessages = useMemo(() => {
@@ -1270,25 +762,7 @@ const Session = ({
       return [...messagesWithContext, ...optimisticMessages]
     }
 
-    // In non-streaming mode, include optimistic messages but avoid duplicates
-    if (!sessionConfig.useStreaming) {
-      // Filter out optimistic messages that have real counterparts
-      const uniqueOptimisticMessages = optimisticMessages.filter(
-        opt =>
-          !existingMessages.some(
-            real =>
-              real.role === opt.role &&
-              real.content === opt.content &&
-              Math.abs(
-                new Date(real.createdAt).getTime() -
-                  new Date(opt.createdAt).getTime(),
-              ) < 10000,
-          ),
-      )
-      return [...messagesWithContext, ...uniqueOptimisticMessages]
-    }
-
-    // In streaming mode, include optimistic messages but avoid duplicates
+    // Include optimistic messages but avoid duplicates
     const uniqueOptimisticMessages = optimisticMessages.filter(
       opt =>
         !existingMessages.some(
@@ -1302,20 +776,15 @@ const Session = ({
         ),
     )
 
-    // Include local streaming messages when in pendingMessage mode
-    return [
-      ...messagesWithContext,
-      ...uniqueOptimisticMessages,
-      ...streamingMessages,
-    ]
+    return [...messagesWithContext, ...uniqueOptimisticMessages]
   }, [
     displaySession?.messages,
     sessionId,
     isSessionLoading,
     optimisticMessages,
     ischatRoute,
-    streamingMessages,
     triggerData,
+    session?.context,
   ])
 
   const messageGroups = useMemo(
@@ -1555,33 +1024,6 @@ const Session = ({
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
-      {/* Connection status indicator - only show when not connected and using SSE streaming */}
-      {sessionConfig.useStreaming &&
-        connectionState !== 'connected' &&
-        sessionId &&
-        sessionId !== 'new' && (
-          <div className="fixed top-4 right-4 z-50 bg-background/90 backdrop-blur-sm border rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
-            {connectionState === 'connecting' && (
-              <>
-                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-                <span className="text-muted-foreground">Connecting...</span>
-              </>
-            )}
-            {connectionState === 'reconnecting' && (
-              <>
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-                <span className="text-muted-foreground">Reconnecting...</span>
-              </>
-            )}
-            {connectionState === 'disconnected' && (
-              <>
-                <div className="w-2 h-2 bg-red-500 rounded-full" />
-                <span className="text-muted-foreground">Disconnected</span>
-              </>
-            )}
-          </div>
-        )}
-
       {/* Split screen container for main session and child session sidebar */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Main session messages */}
@@ -1592,9 +1034,10 @@ const Session = ({
             messageGroups.length === 0 &&
               'flex flex-col justify-center items-center',
           )}
+          style={{ overflowAnchor: 'none' }}
         >
           {/* Floating controls - Agent Workspaces + Moderator + Conductor toggle - desktop only */}
-          <div className="hidden md:block sticky top-2 z-20 float-right mr-4 space-y-2">
+          <div className="hidden md:block sticky top-2 z-20 ml-auto mr-4 w-fit space-y-2">
             {session?.agent_sessions &&
               Object.keys(session.agent_sessions).length > 0 && (
                 <AgentWorkspaces
@@ -1628,7 +1071,10 @@ const Session = ({
               </button>
             )}
           </div>
-          <div className="p-4 pb-8 max-w-[51rem] mx-auto w-full clear-both">
+          <div
+            className="p-4 pb-8 max-w-[51rem] mx-auto w-full"
+            style={{ overflowAnchor: 'none' }}
+          >
             {/* Mobile-only controls - Agent Workspaces + Moderator + Conductor toggle */}
             {((session?.agent_sessions &&
               Object.keys(session.agent_sessions).length > 0) ||
@@ -1679,6 +1125,7 @@ const Session = ({
                 <button
                   onClick={async () => {
                     setIsLoadingOlderMessages(true)
+                    paginationRestoreActiveRef.current = true
                     capturePaginationAnchor()
 
                     const container = messagesContainerRef.current
@@ -1707,6 +1154,7 @@ const Session = ({
                       // Keep loading state true for a bit longer to let React update
                       setTimeout(() => setIsLoadingOlderMessages(false), 200)
                     } catch (error) {
+                      scheduleClearPaginationAnchor()
                       setIsLoadingOlderMessages(false)
                     }
                   }}
@@ -1729,539 +1177,105 @@ const Session = ({
                 <MessageSkeleton />
                 <MessageSkeleton />
               </div>
-            ) : (
-              (() => {
-                // Check if this is a newly created session waiting for first response
-                const isNewSession =
-                  session &&
-                  new Date().getTime() - new Date(session.createdAt).getTime() <
-                    30000 // Created within 30 seconds
-                // Check if we have only user messages (no assistant responses yet)
-                // Ignore system/eden messages when checking
-                const userMessages =
-                  session?.messages?.filter(
-                    (m: Message) => m.role === 'user',
-                  ) || []
-                const assistantMessages =
-                  session?.messages?.filter(
-                    (m: Message) => m.role === 'assistant',
-                  ) || []
-                const hasOnlyUserMessage =
-                  userMessages.length > 0 && assistantMessages.length === 0
-                const isWaitingForFirstResponse =
-                  isNewSession && hasOnlyUserMessage
-
-                if (isWaitingForFirstResponse) {
-                  // Parse mentions from the last user message to determine if we should show loader
-                  const lastUserMessage = userMessages[userMessages.length - 1]
-                  const mentions = lastUserMessage?.content
-                    ? parseMentions(lastUserMessage.content)
-                    : []
-                  const mentionedAgentIds = getAgentIdsFromMentions(mentions)
-                  const shouldShowLoader =
-                    (displaySession?.agents &&
-                      displaySession.agents.length === 1) ||
-                    mentionedAgentIds.length > 0
-
-                  return (
-                    <>
-                      {/* Show existing messages */}
-                      {messageGroups.map(group => {
-                        const firstMessage = group[0]
-                        const isNonOrchestratorEden =
-                          firstMessage.role === 'eden' &&
-                          !isOrchestratorMessage(firstMessage)
-                        const effectiveSender = getEffectiveSender(firstMessage)
-                        const isModeratorGroup = effectiveSender === 'eden'
-
-                        return (
-                          <div key={firstMessage._id}>
-                            {isNonOrchestratorEden
-                              ? // Non-orchestrator eden messages (agent_add, rate_limit, private_message)
-                                group.map(message => (
-                                  <div
-                                    key={message._id}
-                                    data-message-id={message._id}
-                                    className="transition-colors duration-500"
-                                  >
-                                    <EdenMessage
-                                      message={message}
-                                      agents={session?.agents}
-                                      showModeratorMessages={
-                                        showModeratorMessages
-                                      }
-                                    />
-                                  </div>
-                                ))
-                              : firstMessage.role === 'system'
-                              ? group.map(message => (
-                                  <div
-                                    key={message._id}
-                                    data-message-id={message._id}
-                                    className="transition-colors duration-500"
-                                  >
-                                    <SystemMessage message={message} />
-                                  </div>
-                                ))
-                              : isOwnMessage(firstMessage.sender?._id)
-                              ? group.map(message => (
-                                  <div
-                                    key={message._id}
-                                    data-message-id={message._id}
-                                    className="transition-colors duration-500"
-                                  >
-                                    <UserMessage
-                                      message={message}
-                                      session={session}
-                                    />
-                                  </div>
-                                ))
-                              : isModeratorGroup
-                              ? // Moderator group: mix of orchestrator eden messages and assistant messages from eden
-                                group
-                                  .filter(message => message.role !== 'tool')
-                                  .map((message, index) => (
-                                    <div
-                                      key={message._id}
-                                      data-message-id={message._id}
-                                      className="transition-colors duration-500"
-                                    >
-                                      {isOrchestratorMessage(message) ? (
-                                        <EdenMessage
-                                          message={message}
-                                          agents={session?.agents}
-                                          showModeratorMessages={
-                                            showModeratorMessages
-                                          }
-                                          showAvatar={index === 0}
-                                        />
-                                      ) : (
-                                        <AssistantMessage
-                                          sessionId={sessionId as string}
-                                          message={enrichMessageSender(message)}
-                                          showAvatar={index === 0}
-                                          isStreamingTokens={false}
-                                          isChatRoute={ischatRoute}
-                                          onSessionClick={
-                                            handleChildSessionClick
-                                          }
-                                          onArtifactOpen={handleArtifactOpen}
-                                        />
-                                      )}
-                                    </div>
-                                  ))
-                              : group
-                                  .filter(message => message.role !== 'tool')
-                                  .map((message, index) => (
-                                    <div
-                                      key={message._id}
-                                      data-message-id={message._id}
-                                      className="transition-colors duration-500"
-                                    >
-                                      <AssistantMessage
-                                        sessionId={sessionId as string}
-                                        message={enrichMessageSender(message)}
-                                        showAvatar={index === 0}
-                                        isStreamingTokens={false}
-                                        isChatRoute={ischatRoute}
-                                        onSessionClick={handleChildSessionClick}
-                                        onArtifactOpen={handleArtifactOpen}
-                                      />
-                                    </div>
-                                  ))}
-                          </div>
-                        )
-                      })}
-
-                      {/* Render standalone loaders for agents waiting to respond */}
-                      {Array.from(agentsWaitingToRespond).map(agentId => {
-                        const agent = displaySession?.agents?.find(
-                          a => a._id === agentId,
-                        )
-                        if (!agent) return null
-
-                        return (
-                          <div key={`loader-${agentId}`} className="mb-4">
-                            <AssistantMessage
-                              sessionId={sessionId as string}
-                              message={
+            ) : messageGroups.length === 0 ? (
+              displaySession?.agents && displaySession.agents.length > 0 ? (
+                <>
+                  <SessionWelcome
+                    variant="session"
+                    agents={displaySession.agents}
+                    sessionTitle={''}
+                  />
+                  {/* Show Start Session button if paused and no messages */}
+                  {session?.status === 'paused' &&
+                    messageGroups.length === 0 &&
+                    isOwner && (
+                      <div className="flex justify-center mt-8">
+                        <button
+                          onClick={async () => {
+                            try {
+                              // Send request to compute API to handle session status change
+                              const response = await fetch(
+                                '/api/sessions/status',
                                 {
-                                  _id: `loader-${agentId}`,
-                                  content: '',
-                                  sender: {
-                                    _id: agent._id,
-                                    username: agent.username,
-                                    name: agent.name,
-                                    userImage: agent.userImage?.startsWith(
-                                      'https://',
-                                    )
-                                      ? agent.userImage
-                                      : getCloudfrontUrl(agent.userImage),
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
                                   },
-                                  createdAt: new Date(),
-                                  updatedAt: new Date(),
-                                  session: [{ _id: sessionId } as SessionV2],
-                                  role: 'assistant',
-                                } as Message
-                              }
-                              showAvatar={true}
-                              isStreamingTokens={true}
-                              isChatRoute={ischatRoute}
-                              onSessionClick={handleChildSessionClick}
-                              onArtifactOpen={handleArtifactOpen}
-                            />
-                          </div>
-                        )
-                      })}
+                                  body: JSON.stringify({
+                                    session_id: sessionId,
+                                    status: 'active',
+                                  }),
+                                },
+                              )
 
-                      {/* Show user transcribing indicator when voice is being transcribed */}
-                      {isUserTranscribing && (
-                        <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
-                          <div className="max-w-[42rem] ml-auto flex flex-col items-end">
-                            <div className="flex flex-col items-end gap-2 max-w-[85%]">
-                              <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                  Transcribing
-                                </span>
-                                <TypingIndicator />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                              // Commented out: Direct MongoDB update
+                              // const response = await fetch(
+                              //   `/api/sessions/${sessionId}`,
+                              //   {
+                              //     method: 'PATCH',
+                              //     headers: {
+                              //       'Content-Type': 'application/json',
+                              //     },
+                              //     body: JSON.stringify({
+                              //       status: 'active',
+                              //     }),
+                              //   },
+                              // )
 
-                      {/* Show agent typing indicator only if SSE hasn't confirmed yet and no streaming messages */}
-                      {shouldShowLoader &&
-                        agentsWaitingToRespond.size === 0 &&
-                        streamingMessages.length === 0 && (
-                          <div className="mb-4">
-                            <AssistantMessage
-                              sessionId={sessionId as string}
-                              message={
-                                {
-                                  _id: 'loading-first-response',
-                                  content: '',
-                                  sender:
-                                    mentionedAgentIds.length > 0
-                                      ? getRespondingAgents(
-                                          mentionedAgentIds,
-                                        )[0] || getRespondingAgent()
-                                      : getRespondingAgent(),
-                                  createdAt: new Date(),
-                                  updatedAt: new Date(),
-                                  session: [{ _id: sessionId } as SessionV2],
-                                  role: 'assistant',
-                                } as Message
-                              }
-                              showAvatar={true}
-                              isStreamingTokens={true}
-                              isChatRoute={ischatRoute}
-                              onSessionClick={handleChildSessionClick}
-                              onArtifactOpen={handleArtifactOpen}
-                            />
-                          </div>
-                        )}
-                    </>
-                  )
-                }
+                              if (response.ok) {
+                                const result = await response.json()
 
-                // If messageGroups is empty, handle empty state
-                if (messageGroups.length === 0) {
-                  // If we have explicit waiting states, show loading
-                  if (
-                    !sessionConfig.useStreaming &&
-                    nonStreamingState.waitingForResponse &&
-                    ((session?.messages && session.messages.length > 0) ||
-                      session?.title)
-                  ) {
-                    return (
-                      <div className="mb-4">
-                        <AssistantMessage
-                          sessionId={sessionId as string}
-                          message={
-                            {
-                              _id: 'loading-non-streaming',
-                              content: '',
-                              sender: getRespondingAgent(),
-                              createdAt: new Date(),
-                              updatedAt: new Date(),
-                              session: [{ _id: sessionId } as SessionV2],
-                              role: 'assistant',
-                            } as Message
-                          }
-                          showAvatar={true}
-                          isStreamingTokens={true}
-                          isChatRoute={ischatRoute}
-                          onSessionClick={handleChildSessionClick}
-                          onArtifactOpen={handleArtifactOpen}
-                        />
-                      </div>
-                    )
-                  }
-
-                  if (
-                    sessionConfig.useStreaming &&
-                    (streamingState.isStreamingTokens ||
-                      streamingState.waitingForWebSocket) &&
-                    ((session?.messages && session.messages.length > 0) ||
-                      session?.title)
-                  ) {
-                    return (
-                      <div className="mb-4">
-                        <AssistantMessage
-                          sessionId={sessionId as string}
-                          message={
-                            {
-                              _id: 'loading-streaming',
-                              content: streamingState.streamingText || '',
-                              sender: getRespondingAgent(),
-                              createdAt: new Date(),
-                              updatedAt: new Date(),
-                              session: [{ _id: sessionId } as SessionV2],
-                              role: 'assistant',
-                            } as Message
-                          }
-                          showAvatar={true}
-                          isStreamingTokens={
-                            streamingState.isStreamingTokens &&
-                            !streamingState.hasReceivedTokens
-                          }
-                          isChatRoute={ischatRoute}
-                          onSessionClick={handleChildSessionClick}
-                          onArtifactOpen={handleArtifactOpen}
-                        />
-                      </div>
-                    )
-                  }
-
-                  // Otherwise show welcome screen
-                  return displaySession?.agents &&
-                    displaySession.agents.length > 0 ? (
-                    <>
-                      <SessionWelcome
-                        variant="session"
-                        agents={displaySession.agents}
-                        sessionTitle={''}
-                      />
-                      {/* Show Start Session button if paused and no messages */}
-                      {session?.status === 'paused' &&
-                        messageGroups.length === 0 &&
-                        isOwner && (
-                          <div className="flex justify-center mt-8">
-                            <button
-                              onClick={async () => {
-                                try {
-                                  // Send request to compute API to handle session status change
-                                  const response = await fetch(
-                                    '/api/sessions/status',
-                                    {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                      },
-                                      body: JSON.stringify({
-                                        session_id: sessionId,
-                                        status: 'active',
-                                      }),
-                                    },
-                                  )
-
-                                  // Commented out: Direct MongoDB update
-                                  // const response = await fetch(
-                                  //   `/api/sessions/${sessionId}`,
-                                  //   {
-                                  //     method: 'PATCH',
-                                  //     headers: {
-                                  //       'Content-Type': 'application/json',
-                                  //     },
-                                  //     body: JSON.stringify({
-                                  //       status: 'active',
-                                  //     }),
-                                  //   },
-                                  // )
-
-                                  if (response.ok) {
-                                    const result = await response.json()
-
-                                    if (result.success && session) {
-                                      session.status = 'active'
-                                      refetchSession()
-                                    } else {
-                                      // Show error notification
-                                      console.error(
-                                        'Failed to start session:',
-                                        result.error,
-                                      )
-                                    }
-                                  }
-                                } catch (error) {
+                                if (result.success && session) {
+                                  session.status = 'active'
+                                  refetchSession()
+                                } else {
+                                  // Show error notification
                                   console.error(
                                     'Failed to start session:',
-                                    error,
+                                    result.error,
                                   )
                                 }
-                              }}
-                              className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl"
-                            >
-                              Start Session
-                            </button>
-                          </div>
-                        )}
-                    </>
-                  ) : null
-                }
-
-                // Normal case - show messages
-                return (
-                  <>
-                    {messageGroups.map(group => {
-                      const firstMessage = group[0]
-                      const isNonOrchestratorEden =
-                        firstMessage.role === 'eden' &&
-                        !isOrchestratorMessage(firstMessage)
-                      const effectiveSender = getEffectiveSender(firstMessage)
-                      const isModeratorGroup = effectiveSender === 'eden'
-
-                      return (
-                        <div key={firstMessage._id}>
-                          {isNonOrchestratorEden
-                            ? // Non-orchestrator eden messages (agent_add, rate_limit, private_message)
-                              group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <EdenMessage
-                                    message={message}
-                                    agents={session?.agents}
-                                    showModeratorMessages={
-                                      showModeratorMessages
-                                    }
-                                  />
-                                </div>
-                              ))
-                            : firstMessage.role === 'system'
-                            ? group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <SystemMessage message={message} />
-                                </div>
-                              ))
-                            : isOwnMessage(firstMessage.sender?._id)
-                            ? group.map(message => (
-                                <div
-                                  key={message._id}
-                                  data-message-id={message._id}
-                                  className="transition-colors duration-500"
-                                >
-                                  <UserMessage
-                                    message={message}
-                                    session={session}
-                                  />
-                                </div>
-                              ))
-                            : isModeratorGroup
-                            ? // Moderator group: mix of orchestrator eden messages and assistant messages from eden
-                              group
-                                .filter(message => message.role !== 'tool')
-                                .map((message, index) => (
-                                  <div
-                                    key={message._id}
-                                    data-message-id={message._id}
-                                    className="transition-colors duration-500"
-                                  >
-                                    {isOrchestratorMessage(message) ? (
-                                      <EdenMessage
-                                        message={message}
-                                        agents={session?.agents}
-                                        showModeratorMessages={
-                                          showModeratorMessages
-                                        }
-                                        showAvatar={index === 0}
-                                      />
-                                    ) : (
-                                      <AssistantMessage
-                                        sessionId={sessionId as string}
-                                        message={enrichMessageSender(message)}
-                                        showAvatar={index === 0}
-                                        isStreamingTokens={false}
-                                        isChatRoute={ischatRoute}
-                                        onSessionClick={handleChildSessionClick}
-                                        onArtifactOpen={handleArtifactOpen}
-                                      />
-                                    )}
-                                  </div>
-                                ))
-                            : group
-                                .filter(message => message.role !== 'tool')
-                                .map((message, index) => (
-                                  <div
-                                    key={message._id}
-                                    data-message-id={message._id}
-                                    className="transition-colors duration-500"
-                                  >
-                                    <AssistantMessage
-                                      sessionId={sessionId as string}
-                                      message={enrichMessageSender(message)}
-                                      isStreamingTokens={false}
-                                      showAvatar={index === 0}
-                                      isChatRoute={ischatRoute}
-                                      onSessionClick={handleChildSessionClick}
-                                      onArtifactOpen={handleArtifactOpen}
-                                    />
-                                  </div>
-                                ))}
-                        </div>
-                      )
-                    })}
-
-                    {/* Render standalone loaders for agents waiting to respond */}
-                    {Array.from(agentsWaitingToRespond).map(agentId => {
-                      const agent = displaySession?.agents?.find(
-                        a => a._id === agentId,
-                      )
-                      if (!agent) return null
-
-                      return (
-                        <div key={`loader-${agentId}`}>
-                          <AssistantMessage
-                            sessionId={sessionId as string}
-                            message={
-                              {
-                                _id: `loader-${agentId}`,
-                                content: '',
-                                sender: {
-                                  _id: agent._id,
-                                  username: agent.username,
-                                  name: agent.name,
-                                  userImage: agent.userImage?.startsWith(
-                                    'https://',
-                                  )
-                                    ? agent.userImage
-                                    : getCloudfrontUrl(agent.userImage),
-                                },
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                                session: [{ _id: sessionId } as SessionV2],
-                                role: 'assistant',
-                              } as Message
+                              }
+                            } catch (error) {
+                              console.error('Failed to start session:', error)
                             }
-                            showAvatar={true}
-                            isStreamingTokens={true}
-                            isChatRoute={ischatRoute}
-                            onSessionClick={handleChildSessionClick}
-                            onArtifactOpen={handleArtifactOpen}
-                          />
-                        </div>
-                      )
-                    })}
-                  </>
-                )
-              })()
+                          }}
+                          className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                        >
+                          Start Session
+                        </button>
+                      </div>
+                    )}
+                </>
+              ) : null
+            ) : (
+              <SessionMessageGroups
+                groups={messageGroups}
+                sessionId={sessionId as string}
+                session={displaySession}
+                isChatRoute={ischatRoute ?? false}
+                showModeratorMessages={showModeratorMessages}
+                isOwnMessage={isOwnMessage}
+                enrichMessageSender={enrichMessageSender}
+                onChildSessionClick={handleChildSessionClick}
+                onArtifactOpen={handleArtifactOpen}
+              />
+            )}
+
+            {/* Show user transcribing indicator when voice is being transcribed */}
+            {isUserTranscribing && (
+              <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
+                <div className="max-w-[42rem] ml-auto flex flex-col items-end">
+                  <div className="flex flex-col items-end gap-2 max-w-[85%]">
+                    <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        Transcribing
+                      </span>
+                      <TypingIndicator />
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {isReadOnlySession && (
@@ -2271,19 +1285,16 @@ const Session = ({
               </div>
             )}
 
-            {/* Non-streaming loading indicator */}
-            {!sessionConfig.useStreaming && (
-              <NonStreamingMessageDisplay
-                sessionId={sessionId as string}
-                waitingForResponse={nonStreamingState.waitingForResponse}
-                getRespondingAgents={() => {
-                  // Get agents from stored agent IDs
-                  return getRespondingAgents(
-                    nonStreamingState.respondingAgentIds || [],
-                  )
-                }}
-              />
-            )}
+            <NonStreamingMessageDisplay
+              sessionId={sessionId as string}
+              waitingForResponse={nonStreamingState.waitingForResponse}
+              getRespondingAgents={() => {
+                // Get agents from stored agent IDs
+                return getRespondingAgents(
+                  nonStreamingState.respondingAgentIds || [],
+                )
+              }}
+            />
 
             {/* Error Display */}
             <ErrorDisplay
@@ -2291,11 +1302,6 @@ const Session = ({
               onDismiss={removeError}
               className="mb-4"
             />
-            {cancelledNotice && (
-              <div className="text-center text-sm text-muted-foreground py-2">
-                ⛔ Cancelled by user
-              </div>
-            )}
 
             <div ref={messagesEndRef} />
           </div>
@@ -2340,7 +1346,6 @@ const Session = ({
               enableVoiceInput={true}
               onStreamingMessage={(content, attachments, thinking) => {
                 clearErrors()
-                setCancelledNotice(false)
 
                 // Parse mentions to get agent IDs
                 const mentions = parseMentions(content)
@@ -2358,73 +1363,35 @@ const Session = ({
                 // For multi-agent sessions with no mentions, agentIds will remain empty array
                 // This will still create the user message but won't trigger any agent responses
 
-                if (sessionConfig.useStreaming) {
-                  // Show optimistic loaders for responding agents
-                  agentIds.forEach(agentId => {
-                    setAgentsWaitingToRespond(prev =>
-                      new Set(prev).add(agentId),
-                    )
-                  })
+                nonStreamingState.setWaitingForResponse(true)
 
-                  streamingState.initializeStreaming()
-                  streamingState.sendMessage(content, attachments, {
-                    agent_ids: agentIds,
-                    thinking,
-                  })
+                const userMessage: Message = {
+                  _id: `optimistic-user-${Date.now()}`,
+                  content: content,
+                  sender: {
+                    _id: user?._id || 'user',
+                    username: user?.username || 'User',
+                    name: user?.username || 'You',
+                    userImage: user?.userImage,
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  session: [{ _id: sessionId } as SessionV2],
+                  role: 'user',
+                  attachments: attachments || [],
+                } as Message
 
-                  // Add optimistic user message only (agents show as loaders)
-                  const optimisticUserMessage = {
-                    _id: `optimistic-user-${Date.now()}`,
-                    content: content,
-                    sender: {
-                      _id: user?._id || 'user',
-                      username: user?.username || 'User',
-                      name: user?.username || 'You',
-                      userImage: user?.userImage,
-                    },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    session: [{ _id: sessionId } as SessionV2],
-                    role: 'user',
-                  } as Message
+                nonStreamingState.setOptimisticMessages(prev => [
+                  ...prev,
+                  userMessage,
+                ])
 
-                  streamingOptimisticMessages.current = [
-                    ...streamingOptimisticMessages.current,
-                    optimisticUserMessage,
-                  ]
-
-                  setTimeout(scrollToBottom, 100)
-                } else {
-                  nonStreamingState.setWaitingForResponse(true)
-
-                  const userMessage: Message = {
-                    _id: `optimistic-user-${Date.now()}`,
-                    content: content,
-                    sender: {
-                      _id: user?._id || 'user',
-                      username: user?.username || 'User',
-                      name: user?.username || 'You',
-                      userImage: user?.userImage,
-                    },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    session: [{ _id: sessionId } as SessionV2],
-                    role: 'user',
-                    attachments: attachments || [],
-                  } as Message
-
-                  nonStreamingState.setOptimisticMessages(prev => [
-                    ...prev,
-                    userMessage,
-                  ])
-
-                  // Pass agent_ids and thinking in options
-                  nonStreamingState.sendMessage(content, attachments, {
-                    agent_ids: agentIds,
-                    thinking,
-                  })
-                  setTimeout(scrollToBottom, 100)
-                }
+                // Pass agent_ids and thinking in options
+                nonStreamingState.sendMessage(content, attachments, {
+                  agent_ids: agentIds,
+                  thinking,
+                })
+                setTimeout(scrollToBottom, 100)
               }}
               onTranscribingChange={setIsUserTranscribing}
             />

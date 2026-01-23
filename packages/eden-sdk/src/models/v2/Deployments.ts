@@ -24,12 +24,34 @@ export type AllowlistItem = {
 // Discord Types
 export type DiscordAllowlistItem = AllowlistItem
 
+export type DiscordChannelConfig = {
+  guild_id?: string
+  channel_id: string
+  channel_name?: string
+  access?: 'read_write' | 'read_only'
+  webhook_id?: string
+  webhook_token?: string
+}
+
+export type DiscordGuildConfig = {
+  guild_id: string
+  guild_name?: string
+  role_id?: string
+  role_name?: string
+}
+
 export type DeploymentSettingsDiscord = {
   oauth_client_id?: string
   oauth_url?: string
   channel_allowlist?: DiscordAllowlistItem[]
   read_access_channels?: DiscordAllowlistItem[]
   dm_user_allowlist?: DiscordAllowlistItem[]
+  guilds?: DiscordGuildConfig[]
+  guild_id?: string
+  guild_name?: string
+  role_id?: string
+  role_name?: string
+  channel_configs?: DiscordChannelConfig[]
 }
 
 export type DeploymentSecretsDiscord = {
