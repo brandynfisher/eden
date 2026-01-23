@@ -1719,6 +1719,15 @@ const fetchDiscordGuildRoles = async (botToken: string, guildId: string) => {
   return response.data
 }
 
+const fetchDiscordBotUser = async (botToken: string) => {
+  const response = await axios.get('https://discord.com/api/v10/users/@me', {
+    headers: {
+      Authorization: `Bot ${botToken}`,
+    },
+  })
+  return response.data
+}
+
 const fetchDiscordMemberRoles = async (
   botToken: string,
   guildId: string,
@@ -1733,6 +1742,142 @@ const fetchDiscordMemberRoles = async (
     },
   )
   return response.data?.roles ?? []
+}
+
+const PERMISSION_VIEW_CHANNEL = 1n << 10n
+const PERMISSION_SEND_MESSAGES = 1n << 11n
+const PERMISSION_READ_MESSAGE_HISTORY = 1n << 16n
+const PERMISSION_MANAGE_WEBHOOKS = 1n << 29n
+const PERMISSION_ADMINISTRATOR = 1n << 3n
+const ALL_PERMISSIONS = (1n << 53n) - 1n
+
+type DiscordPermissionOverwrite = {
+  id: string
+  type: number | string
+  allow: string
+  deny: string
+}
+
+const parsePermissionBits = (value?: string) => {
+  if (!value) return 0n
+  try {
+    return BigInt(value)
+  } catch {
+    return 0n
+  }
+}
+
+const normalizeOverwriteType = (value: number | string) => {
+  if (value === 0 || value === 'role') return 'role'
+  if (value === 1 || value === 'member') return 'member'
+  return 'unknown'
+}
+
+const computeGuildBasePermissions = (
+  roles: Array<{ id: string; permissions: string }>,
+  memberRoleIds: string[],
+  guildId: string,
+) => {
+  const rolesById = new Map<string, bigint>()
+  let hasAdmin = false
+
+  for (const role of roles) {
+    const perms = parsePermissionBits(role.permissions)
+    rolesById.set(role.id, perms)
+    if ((perms & PERMISSION_ADMINISTRATOR) === PERMISSION_ADMINISTRATOR) {
+      if (memberRoleIds.includes(role.id) || role.id === guildId) {
+        hasAdmin = true
+      }
+    }
+  }
+
+  if (hasAdmin) {
+    return ALL_PERMISSIONS
+  }
+
+  let base = rolesById.get(guildId) ?? 0n
+  for (const roleId of memberRoleIds) {
+    base |= rolesById.get(roleId) ?? 0n
+  }
+
+  return base
+}
+
+const applyChannelOverwrites = (
+  basePermissions: bigint,
+  overwrites: DiscordPermissionOverwrite[] | undefined,
+  memberRoleIds: string[],
+  memberId: string,
+  guildId: string,
+) => {
+  if (!overwrites || overwrites.length === 0) return basePermissions
+
+  const normalized = overwrites.map(overwrite => ({
+    id: overwrite.id,
+    type: normalizeOverwriteType(overwrite.type),
+    allow: parsePermissionBits(overwrite.allow),
+    deny: parsePermissionBits(overwrite.deny),
+  }))
+
+  let permissions = basePermissions
+
+  const everyoneOverwrite = normalized.find(
+    overwrite => overwrite.type === 'role' && overwrite.id === guildId,
+  )
+  if (everyoneOverwrite) {
+    permissions =
+      (permissions & ~everyoneOverwrite.deny) | everyoneOverwrite.allow
+  }
+
+  let roleAllow = 0n
+  let roleDeny = 0n
+  for (const overwrite of normalized) {
+    if (overwrite.type !== 'role') continue
+    if (!memberRoleIds.includes(overwrite.id)) continue
+    roleAllow |= overwrite.allow
+    roleDeny |= overwrite.deny
+  }
+
+  permissions = (permissions & ~roleDeny) | roleAllow
+
+  const memberOverwrite = normalized.find(
+    overwrite => overwrite.type === 'member' && overwrite.id === memberId,
+  )
+  if (memberOverwrite) {
+    permissions = (permissions & ~memberOverwrite.deny) | memberOverwrite.allow
+  }
+
+  return permissions
+}
+
+const hasPermission = (permissions: bigint, flag: bigint) =>
+  (permissions & flag) === flag
+
+const fetchDiscordChannelWebhooks = async (
+  botToken: string,
+  channelId: string,
+) => {
+  const response = await axios.get(
+    `https://discord.com/api/v10/channels/${channelId}/webhooks`,
+    {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    },
+  )
+  return response.data
+}
+
+const fetchDiscordChannel = async (botToken: string, channelId: string) => {
+  const response = await axios.get(
+    `https://discord.com/api/v10/channels/${channelId}`,
+    {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    },
+  )
+  return response.data
 }
 
 const checkBotInGuild = async (botToken: string, guildId: string) => {
@@ -2080,27 +2225,152 @@ export const getDiscordGuildChannels = async (
   const botToken = server.config.DISCORD_BOT_TOKEN
 
   try {
-    const response = await axios.get(
-      `https://discord.com/api/v10/guilds/${guildId}/channels`,
-      {
+    type ChannelPermissions = {
+      can_view: boolean
+      can_read_history: boolean
+      can_send: boolean
+      can_manage_webhooks: boolean
+    }
+    type ChannelValidation = {
+      errors: string[]
+      warnings: string[]
+      has_webhook: boolean | null
+    }
+    type ChannelWithPermissions = {
+      id: string
+      name: string
+      type: number
+      permissions: ChannelPermissions
+      validation: ChannelValidation
+    }
+
+    if (!botToken) {
+      return reply.status(500).send({
+        message: 'Discord bot token not configured',
+      })
+    }
+
+    const [channelsResponse, botUser, roles] = await Promise.all([
+      axios.get(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
         headers: {
           Authorization: `Bot ${botToken}`,
         },
+      }),
+      fetchDiscordBotUser(botToken),
+      fetchDiscordGuildRoles(botToken, guildId),
+    ])
+
+    const botUserId = botUser?.id
+    if (!botUserId) {
+      return reply.status(500).send({
+        message: 'Discord bot identity unavailable',
+      })
+    }
+
+    const memberRoleIds = await fetchDiscordMemberRoles(
+      botToken,
+      guildId,
+      botUserId,
+    )
+    const basePermissions = computeGuildBasePermissions(
+      roles,
+      memberRoleIds,
+      guildId,
+    )
+
+    const allChannels = channelsResponse.data
+
+    // Filter to text channels only (type 0 = GUILD_TEXT, type 5 = GUILD_NEWS)
+    const textChannels = allChannels.filter(
+      (ch: any) => ch.type === 0 || ch.type === 5,
+    )
+
+    const withPermissions: ChannelWithPermissions[] = textChannels.map(
+      (ch: any) => {
+        const permissions = applyChannelOverwrites(
+          basePermissions,
+          ch.permission_overwrites as DiscordPermissionOverwrite[] | undefined,
+          memberRoleIds,
+          botUserId,
+          guildId,
+        )
+        const canView = hasPermission(permissions, PERMISSION_VIEW_CHANNEL)
+        const canReadHistory = hasPermission(
+          permissions,
+          PERMISSION_READ_MESSAGE_HISTORY,
+        )
+        const canSend = hasPermission(permissions, PERMISSION_SEND_MESSAGES)
+        const canManageWebhooks = hasPermission(
+          permissions,
+          PERMISSION_MANAGE_WEBHOOKS,
+        )
+
+        const errors: string[] = []
+        if (!canView) errors.push('missing_view_channel')
+        if (!canReadHistory) errors.push('missing_read_message_history')
+        if (!canManageWebhooks) errors.push('missing_manage_webhooks')
+
+        const warnings: string[] = []
+        if (!canSend) warnings.push('missing_send_messages')
+
+        return {
+          id: ch.id,
+          name: ch.name,
+          type: ch.type,
+          permissions: {
+            can_view: canView,
+            can_read_history: canReadHistory,
+            can_send: canSend,
+            can_manage_webhooks: canManageWebhooks,
+          },
+          validation: {
+            errors,
+            warnings,
+            has_webhook: null as boolean | null,
+          },
+        }
       },
     )
 
-    const allChannels = response.data
+    const webhookName = 'Eden Agent Webhook'
+    const channelsToCheck = withPermissions.filter(
+      (channel: ChannelWithPermissions) =>
+        channel.permissions.can_manage_webhooks &&
+        channel.validation.errors.length === 0,
+    )
+    const batchSize = 8
+    for (let i = 0; i < channelsToCheck.length; i += batchSize) {
+      const batch = channelsToCheck.slice(i, i + batchSize)
+      const results = await Promise.all(
+        batch.map(async (channel: ChannelWithPermissions) => {
+          try {
+            const webhooks = await fetchDiscordChannelWebhooks(
+              botToken,
+              channel.id,
+            )
+            const hasWebhook = Array.isArray(webhooks)
+              ? webhooks.some((hook: any) => hook?.name === webhookName)
+              : false
+            return { id: channel.id, hasWebhook }
+          } catch {
+            return { id: channel.id, hasWebhook: false }
+          }
+        }),
+      )
 
-    // Filter to text channels only (type 0 = GUILD_TEXT, type 5 = GUILD_NEWS)
-    const textChannels = allChannels
-      .filter((ch: any) => ch.type === 0 || ch.type === 5)
-      .map((ch: any) => ({
-        id: ch.id,
-        name: ch.name,
-        type: ch.type,
-      }))
+      for (const result of results) {
+        const channel = withPermissions.find(
+          (channel: ChannelWithPermissions) => channel.id === result.id,
+        )
+        if (!channel) continue
+        channel.validation.has_webhook = result.hasWebhook
+        if (!result.hasWebhook) {
+          channel.validation.warnings.push('missing_webhook')
+        }
+      }
+    }
 
-    return reply.send({ channels: textChannels })
+    return reply.send({ channels: withPermissions })
   } catch (error: any) {
     server.log.error({ error, guildId }, 'Failed to fetch guild channels')
     return reply.status(500).send({
@@ -2139,6 +2409,132 @@ export const getDiscordGuildRoles = async (
     server.log.error({ error, guildId }, 'Failed to fetch guild roles')
     return reply.status(500).send({
       message: 'Failed to fetch roles',
+    })
+  }
+}
+
+export const validateDiscordBotChannels = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { token, channelIds, channels } = request.body as {
+    token?: string
+    channelIds?: string[]
+    channels?: Array<{ id: string; readOnly?: boolean }>
+  }
+
+  const normalizedChannels: Array<{ id: string; readOnly?: boolean }> =
+    Array.isArray(channels) && channels.length > 0
+      ? channels
+      : (channelIds || []).map(id => ({ id, readOnly: false }))
+
+  if (!token || normalizedChannels.length === 0) {
+    return reply.status(400).send({
+      message: 'Missing bot token or channel ids',
+    })
+  }
+
+  try {
+    const botUser = await fetchDiscordBotUser(token)
+    const botUserId = botUser?.id
+    if (!botUserId) {
+      return reply.status(400).send({
+        message: 'Invalid Discord bot token',
+      })
+    }
+
+    const guildCache = new Map<
+      string,
+      { roles: any[]; memberRoleIds: string[]; basePermissions: bigint }
+    >()
+
+    const results = []
+
+    for (const channelInput of normalizedChannels) {
+      const channelId = channelInput.id
+      try {
+        const channel = await fetchDiscordChannel(token, channelId)
+        const guildId = channel?.guild_id
+        if (!guildId) {
+          results.push({
+            id: channelId,
+            name: channel?.name ?? channelId,
+            guild_id: null,
+            permissions: null,
+            read_only: channelInput.readOnly ?? false,
+            validation: { errors: ['missing_guild_id'] },
+          })
+          continue
+        }
+
+        let guildInfo = guildCache.get(guildId)
+        if (!guildInfo) {
+          const [roles, memberRoleIds] = await Promise.all([
+            fetchDiscordGuildRoles(token, guildId),
+            fetchDiscordMemberRoles(token, guildId, botUserId),
+          ])
+          const basePermissions = computeGuildBasePermissions(
+            roles,
+            memberRoleIds,
+            guildId,
+          )
+          guildInfo = { roles, memberRoleIds, basePermissions }
+          guildCache.set(guildId, guildInfo)
+        }
+
+        const permissions = applyChannelOverwrites(
+          guildInfo.basePermissions,
+          channel.permission_overwrites as
+            | DiscordPermissionOverwrite[]
+            | undefined,
+          guildInfo.memberRoleIds,
+          botUserId,
+          guildId,
+        )
+        const canView = hasPermission(permissions, PERMISSION_VIEW_CHANNEL)
+        const canReadHistory = hasPermission(
+          permissions,
+          PERMISSION_READ_MESSAGE_HISTORY,
+        )
+        const canSend = hasPermission(permissions, PERMISSION_SEND_MESSAGES)
+
+        const errors: string[] = []
+        if (!canView) errors.push('missing_view_channel')
+        if (!canReadHistory) errors.push('missing_read_message_history')
+        if (!channelInput.readOnly && !canSend) {
+          errors.push('missing_send_messages')
+        }
+
+        results.push({
+          id: channelId,
+          name: channel?.name ?? channelId,
+          guild_id: guildId,
+          permissions: {
+            can_view: canView,
+            can_read_history: canReadHistory,
+            can_send: canSend,
+          },
+          read_only: channelInput.readOnly ?? false,
+          validation: { errors },
+        })
+      } catch {
+        results.push({
+          id: channelId,
+          name: channelId,
+          guild_id: null,
+          permissions: null,
+          read_only: channelInput.readOnly ?? false,
+          validation: { errors: ['channel_not_found'] },
+        })
+      }
+    }
+
+    return reply.send({ channels: results })
+  } catch (error: any) {
+    server.log.error({ error }, 'Failed to validate Discord channels')
+    return reply.status(500).send({
+      message: 'Failed to validate Discord channels',
     })
   }
 }

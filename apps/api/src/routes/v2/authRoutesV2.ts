@@ -21,6 +21,7 @@ import {
   twitterIntegrationOAuth,
   twitterOAuth,
   updateDiscordGuildAccess,
+  validateDiscordBotChannels,
 } from '../../controllers/auth/v2/authControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -132,6 +133,31 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
     handler: (request, reply) =>
       updateDiscordGuildAccess(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.post('/v2/deployments/discord/validate-bot-channels', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Validate Discord Bot Channel Permissions',
+      description:
+        'Validate that a Discord bot token has access to the provided channels.',
+      hide: true,
+      body: Type.Object({
+        token: Type.String(),
+        channelIds: Type.Optional(Type.Array(Type.String())),
+        channels: Type.Optional(
+          Type.Array(
+            Type.Object({
+              id: Type.String(),
+              readOnly: Type.Optional(Type.Boolean()),
+            }),
+          ),
+        ),
+      }),
+    },
+    handler: (request, reply) =>
+      validateDiscordBotChannels(server, request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 

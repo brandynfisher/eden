@@ -67,6 +67,17 @@ interface DiscordChannel {
   id: string
   name: string
   type: number
+  permissions?: {
+    can_view?: boolean
+    can_read_history?: boolean
+    can_send?: boolean
+    can_manage_webhooks?: boolean
+  }
+  validation?: {
+    errors?: string[]
+    warnings?: string[]
+    has_webhook?: boolean | null
+  }
 }
 
 interface DiscordRole {
@@ -74,6 +85,14 @@ interface DiscordRole {
   name: string
   color?: number
   managed?: boolean
+}
+
+const CHANNEL_VALIDATION_LABELS: Record<string, string> = {
+  missing_view_channel: 'No View Channel',
+  missing_read_message_history: 'No Read History',
+  missing_manage_webhooks: 'No Manage Webhooks',
+  missing_send_messages: 'No Send Messages',
+  missing_webhook: 'No webhook',
 }
 
 type DiscordV3ChannelConfig = {
@@ -452,6 +471,16 @@ export const DiscordV3DeploymentForm = ({
   }
 
   const toggleChannel = (channel: DiscordChannel) => {
+    const hasErrors = (channel.validation?.errors || []).length > 0
+    if (hasErrors) {
+      toast.error('Cannot select channel', {
+        description:
+          channel.validation?.errors
+            ?.map(error => CHANNEL_VALIDATION_LABELS[error] || error)
+            .join(', ') || 'Missing required permissions',
+      })
+      return
+    }
     const currentChannels = form.getValues('channels')
     const existingIndex = currentChannels.findIndex(
       ch => ch.channelId === channel.id,
@@ -580,6 +609,25 @@ export const DiscordV3DeploymentForm = ({
     () => new Set(selectedChannels.map(channel => channel.channelId)),
     [selectedChannels],
   )
+  const invalidSelectedChannels = useMemo(() => {
+    const availableById = new Map(
+      availableChannels.map(channel => [channel.id, channel]),
+    )
+    return selectedChannels.filter(channel => {
+      const info = availableById.get(channel.channelId)
+      return (info?.validation?.errors?.length ?? 0) > 0
+    })
+  }, [availableChannels, selectedChannels])
+  const invalidSelectedChannelNames = useMemo(() => {
+    if (invalidSelectedChannels.length === 0) return []
+    const availableById = new Map(
+      availableChannels.map(channel => [channel.id, channel]),
+    )
+    return invalidSelectedChannels.map(channel => {
+      const info = availableById.get(channel.channelId)
+      return info?.name ? `#${info.name}` : channel.channelId
+    })
+  }, [availableChannels, invalidSelectedChannels])
   const normalizedSearch = channelSearch.trim().toLowerCase()
   const matchSearch = useCallback(
     (channel: DiscordChannel) => {
@@ -636,18 +684,28 @@ export const DiscordV3DeploymentForm = ({
   const renderChannelRow = (channel: DiscordChannel) => {
     const isSelected = selectedChannelIds.has(channel.id)
     const channelData = selectedChannels.find(ch => ch.channelId === channel.id)
+    const errors = channel.validation?.errors ?? []
+    const warnings = channel.validation?.warnings ?? []
+    const hasErrors = errors.length > 0
+    const hasWarnings = warnings.length > 0
 
     return (
       <div
         key={channel.id}
-        className="flex items-center justify-between p-2 hover:bg-muted/50 rounded cursor-pointer"
-        onClick={() => toggleChannel(channel)}
+        className={cn(
+          'flex items-center justify-between p-2 rounded',
+          hasErrors ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+          !hasErrors && 'hover:bg-muted/50',
+        )}
+        onClick={() => {
+          if (!hasErrors) toggleChannel(channel)
+        }}
         role="button"
         tabIndex={0}
         onKeyDown={event => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            toggleChannel(channel)
+            if (!hasErrors) toggleChannel(channel)
           }
         }}
       >
@@ -656,8 +714,33 @@ export const DiscordV3DeploymentForm = ({
             checked={isSelected}
             onCheckedChange={() => toggleChannel(channel)}
             onClick={event => event.stopPropagation()}
+            disabled={hasErrors}
           />
-          <span className="text-sm">#{channel.name}</span>
+          <div className="flex flex-col">
+            <span className="text-sm">#{channel.name}</span>
+            {(hasErrors || hasWarnings) && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {errors.map(error => (
+                  <Badge
+                    key={error}
+                    variant="destructive"
+                    className="text-[10px]"
+                  >
+                    {CHANNEL_VALIDATION_LABELS[error] || error}
+                  </Badge>
+                ))}
+                {warnings.map(warning => (
+                  <Badge
+                    key={warning}
+                    variant="secondary"
+                    className="text-[10px]"
+                  >
+                    {CHANNEL_VALIDATION_LABELS[warning] || warning}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {isSelected && (
@@ -909,6 +992,13 @@ export const DiscordV3DeploymentForm = ({
                                     }
                                     placeholder="Search channels"
                                   />
+                                  {invalidSelectedChannelNames.length > 0 && (
+                                    <div className="text-xs text-destructive">
+                                      Some selected channels are missing
+                                      required permissions:{' '}
+                                      {invalidSelectedChannelNames.join(', ')}
+                                    </div>
+                                  )}
 
                                   <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
                                     {selectedChannelsForGuild.length > 0 && (
@@ -988,6 +1078,7 @@ export const DiscordV3DeploymentForm = ({
                             isDeployed={isDeployed ?? false}
                             guideUrl="https://docs.eden.art/integrations/discord"
                             valid={deployment?.valid}
+                            canSubmit={invalidSelectedChannels.length === 0}
                           />
                         </div>
                       </Form>
