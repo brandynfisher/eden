@@ -13,6 +13,7 @@ import { AudioLinesIcon, PauseIcon, PlayIcon } from 'lucide-react'
 import NextImage, { ImageProps } from 'next/image'
 import React from 'react'
 import { ReactNode, createContext, useContext, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Lightbox, { Slide } from 'yet-another-react-lightbox'
 import Captions from 'yet-another-react-lightbox/plugins/captions'
 import Counter from 'yet-another-react-lightbox/plugins/counter'
@@ -99,6 +100,7 @@ export const LightboxGallery = ({
   const [open, setOpen] = useState(false)
   const [startIndex, setStartIndex] = useState(0)
   const [slides, setSlides] = useState<Slide[]>([])
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
   // Clear slides when component unmounts or key changes
   React.useEffect(() => {
@@ -119,6 +121,12 @@ export const LightboxGallery = ({
       }
     }
   }, [galleryKey])
+
+  React.useEffect(() => {
+    if (typeof document !== 'undefined') {
+      setPortalTarget(document.body)
+    }
+  }, [])
 
   const addSlide = React.useCallback(
     (slide: Slide) => {
@@ -157,6 +165,85 @@ export const LightboxGallery = ({
     ...(enableDownload ? [Download] : []),
   ]
   const hasSingleSlide = slides.length <= 1
+  const lightboxElement = (
+    <Lightbox
+      plugins={plugins}
+      zoom={{
+        maxZoomPixelRatio: 12,
+        scrollToZoom: true,
+      }}
+      captions={{
+        showToggle: true,
+        descriptionMaxLines: 2,
+        hidden: true,
+      }}
+      // counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
+      open={open}
+      index={startIndex}
+      close={() => setOpen(false)}
+      slides={slides}
+      carousel={{
+        finite: hasSingleSlide,
+      }}
+      controller={{ closeOnBackdropClick: true }}
+      on={{
+        view: props => {
+          // Handle both audio and video elements
+          const audios = document.querySelectorAll(
+            '.audio-component audio',
+          ) as NodeListOf<HTMLAudioElement>
+
+          // Handle audio elements
+          audios.forEach(audio => {
+            const currentSlide = slides[props.index]
+            if (!currentSlide || !('src' in currentSlide)) {
+              audio.pause()
+              audio.currentTime = 0
+              return
+            }
+            if (audio.src === currentSlide.src) {
+              audio.play().catch(() => {
+                // Handle autoplay policy errors silently
+              })
+              audio.currentTime = 0
+            } else {
+              audio.pause()
+              audio.currentTime = 0
+            }
+          })
+        },
+        entered: () => {
+          window.dispatchEvent(new Event(`lightbox-open`))
+        },
+        exiting: () => {
+          // Prevent Escape key from bubbling to parent modals
+          // Add a small flag to indicate lightbox is closing
+          window.dispatchEvent(new Event(`lightbox-closing`))
+        },
+        exited: () => {
+          window.dispatchEvent(new Event(`lightbox-close`))
+        },
+      }}
+      render={{
+        buttonPrev: slides.length === 1 ? () => null : undefined,
+        buttonNext: slides.length === 1 ? () => null : undefined,
+        slide: props => {
+          // @ts-expect-error slide.src is not always defined
+          if (props.slide.type === 'audio') {
+            return (
+              <AudioComponent
+                // @ts-expect-error slide.src is not always defined
+                src={props.slide.src}
+                autoPlay={props.offset === 0}
+              />
+            )
+          }
+          return null
+        },
+      }}
+    />
+  )
+
   return (
     <LightboxContext.Provider
       value={{
@@ -170,82 +257,7 @@ export const LightboxGallery = ({
       }}
     >
       {children}
-      <Lightbox
-        plugins={plugins}
-        zoom={{
-          maxZoomPixelRatio: 12,
-          scrollToZoom: true,
-        }}
-        captions={{
-          showToggle: true,
-          descriptionMaxLines: 2,
-          hidden: true,
-        }}
-        // counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
-        open={open}
-        index={startIndex}
-        close={() => setOpen(false)}
-        slides={slides}
-        carousel={{
-          finite: hasSingleSlide,
-        }}
-        controller={{ closeOnBackdropClick: true }}
-        on={{
-          view: props => {
-            // Handle both audio and video elements
-            const audios = document.querySelectorAll(
-              '.audio-component audio',
-            ) as NodeListOf<HTMLAudioElement>
-
-            // Handle audio elements
-            audios.forEach(audio => {
-              const currentSlide = slides[props.index]
-              if (!currentSlide || !('src' in currentSlide)) {
-                audio.pause()
-                audio.currentTime = 0
-                return
-              }
-              if (audio.src === currentSlide.src) {
-                audio.play().catch(() => {
-                  // Handle autoplay policy errors silently
-                })
-                audio.currentTime = 0
-              } else {
-                audio.pause()
-                audio.currentTime = 0
-              }
-            })
-          },
-          entered: () => {
-            window.dispatchEvent(new Event(`lightbox-open`))
-          },
-          exiting: () => {
-            // Prevent Escape key from bubbling to parent modals
-            // Add a small flag to indicate lightbox is closing
-            window.dispatchEvent(new Event(`lightbox-closing`))
-          },
-          exited: () => {
-            window.dispatchEvent(new Event(`lightbox-close`))
-          },
-        }}
-        render={{
-          buttonPrev: slides.length === 1 ? () => null : undefined,
-          buttonNext: slides.length === 1 ? () => null : undefined,
-          slide: props => {
-            // @ts-expect-error slide.src is not always defined
-            if (props.slide.type === 'audio') {
-              return (
-                <AudioComponent
-                  // @ts-expect-error slide.src is not always defined
-                  src={props.slide.src}
-                  autoPlay={props.offset === 0}
-                />
-              )
-            }
-            return null
-          },
-        }}
-      />
+      {portalTarget ? createPortal(lightboxElement, portalTarget) : null}
     </LightboxContext.Provider>
   )
 }
@@ -389,6 +401,10 @@ export function LightboxImageTrigger({
     ignoredHeight > 0
   const width = hasKnownDimensions ? ignoredWidth : 1024
   const height = hasKnownDimensions ? ignoredHeight : 1024
+  const rawAspectRatio = width / height
+  const clampedAspectRatio = Number.isFinite(rawAspectRatio)
+    ? Math.min(Math.max(rawAspectRatio, 0.5), 3)
+    : 1
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
   const [isHighResLoaded, setIsHighResLoaded] = React.useState(false)
   const [isThumbnailLoaded, setIsThumbnailLoaded] = React.useState(false)
@@ -404,7 +420,10 @@ export function LightboxImageTrigger({
       <img
         src={src}
         alt={alt}
-        className={cn('h-auto', className)}
+        className={cn(
+          'block w-full h-auto max-h-[60vh] object-contain',
+          className,
+        )}
         draggable={false}
         loading={loading ?? 'lazy'}
         onLoad={propsOnLoad as React.ReactEventHandler<HTMLImageElement>}
@@ -415,7 +434,7 @@ export function LightboxImageTrigger({
   return (
     <div
       className={cn('relative w-full', className)}
-      style={{ aspectRatio: `${width}/${height}` }}
+      style={{ aspectRatio: clampedAspectRatio.toString() }}
     >
       <div className="absolute inset-0">
         {/* Layer 1: Blurhash - instant placeholder, fades out when thumbnail or high-res loads */}
