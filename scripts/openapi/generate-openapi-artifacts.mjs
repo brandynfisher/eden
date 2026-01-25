@@ -66,4 +66,12 @@ if (mcpJobs.length > 0) {
   }
 }
 
+const docsStatus = runCommand('node', [
+  'scripts/openapi/copy-openapi-to-mintlify.mjs',
+])
+if (docsStatus !== 0) {
+  console.error('\n[openapi] Failed: mintlify-docs copy')
+  process.exit(docsStatus)
+}
+
 console.log('\n[openapi] OpenAPI artifacts generated.')

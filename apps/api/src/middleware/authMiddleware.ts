@@ -78,11 +78,7 @@ const apiKeyVerify = async (
   apiKeyValue?: string,
 ) => {
   const key = apiKeyValue ?? getApiKeyFromRequest(request)
-  const { apiKey, user, requestUser } = await verifyApiKey(server, key)
-  server.log.info(
-    { apiKey: apiKey.apiKey, username: user?.username },
-    'API Key access detected:',
-  )
+  const { requestUser } = await verifyApiKey(server, key)
 
   request.user = requestUser
 }

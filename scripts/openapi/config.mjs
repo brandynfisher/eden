@@ -23,15 +23,29 @@ export const openapiJobs = [
     ],
   },
   {
-    name: 'public-placeholder',
-    spec: 'apps/api/openapi/public.yaml',
+    name: 'artifacts-v3',
+    spec: 'apps/api/openapi/artifacts-v3.yaml',
     mcp: false,
-    outputs: [],
+    outputs: [
+      {
+        type: 'openapi-typescript',
+        workspace: '@edenlabs/eden-sdk-v3',
+        output: 'src/generated/artifacts-v3.ts',
+        eslintDisable: true,
+      },
+    ],
   },
   {
-    name: 'internal-placeholder',
-    spec: 'apps/api/openapi/internal.yaml',
+    name: 'manna-v3',
+    spec: 'apps/api/openapi/manna-v3.yaml',
     mcp: false,
-    outputs: [],
+    outputs: [
+      {
+        type: 'openapi-typescript',
+        workspace: '@edenlabs/eden-sdk-v3',
+        output: 'src/generated/manna-v3.ts',
+        eslintDisable: true,
+      },
+    ],
   },
 ]

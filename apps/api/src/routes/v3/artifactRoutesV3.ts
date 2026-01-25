@@ -1,4 +1,3 @@
-import { paginatedResponse, paginationProperties } from '..'
 import {
   createArtifactV3,
   deleteArtifactV3,
@@ -11,10 +10,12 @@ import {
   updateArtifactV3,
 } from '../../controllers/v3/artifactControllerV3'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
-import { Type } from '@sinclair/typebox'
+import registerOpenApiSchemas from '../../plugins/openapiSchemas'
 import { FastifyPluginAsync } from 'fastify'
 
 const artifactRoutesV3: FastifyPluginAsync = async server => {
+  await server.register(registerOpenApiSchemas, { id: 'artifacts-v3' })
+
   server.get('/v3/artifacts', {
     schema: {
       tags: ['Artifacts V3'],
@@ -23,16 +24,12 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
         'Retrieve a paginated list of artifacts, optionally filtered by owner, type, or session.',
       security: [{ apiKey: [] }],
       querystring: {
-        type: 'object',
-        properties: {
-          ownerId: { type: 'string' },
-          type: { type: 'string' },
-          sessionId: { type: 'string' },
-          ...paginationProperties(),
-        },
+        $ref: 'artifacts-v3#/components/schemas/ArtifactsListQuery',
       },
       response: {
-        200: paginatedResponse(Type.Any()),
+        200: {
+          $ref: 'artifacts-v3#/components/schemas/PaginatedArtifactsResponse',
+        },
       },
     },
     preHandler: [request => maybeAuth(server, request)],
@@ -46,13 +43,11 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       description:
         'Retrieve detailed information about a specific artifact by its ID.',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
-      },
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
       response: {
-        200: { artifact: Type.Any() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [request => maybeAuth(server, request)],
@@ -65,18 +60,11 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'Create Artifact V3',
       description: 'Create a new artifact.',
       security: [{ apiKey: [] }],
-      body: Type.Object({
-        title: Type.String(),
-        type: Type.String(),
-        public: Type.Optional(Type.Boolean()),
-        session: Type.Optional(Type.String()),
-        items: Type.Optional(Type.Record(Type.String(), Type.Any())),
-        content: Type.Optional(Type.String()),
-      }),
+      body: { $ref: 'artifacts-v3#/components/schemas/ArtifactCreateRequest' },
       response: {
-        201: { artifact: Type.Any() },
-        401: { message: Type.String() },
-        422: { message: Type.String() },
+        201: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        422: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -89,19 +77,12 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'Update Artifact V3',
       description: "Update an existing artifact's properties.",
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
-      },
-      body: Type.Object({
-        title: Type.Optional(Type.String()),
-        type: Type.Optional(Type.String()),
-        public: Type.Optional(Type.Boolean()),
-        session: Type.Optional(Type.Union([Type.String(), Type.Null()])),
-      }),
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      body: { $ref: 'artifacts-v3#/components/schemas/ArtifactUpdateRequest' },
       response: {
-        200: { artifact: Type.Any() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -115,30 +96,15 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       description:
         'Apply JSON Patch operations (RFC 6902) to artifact items. Supports add, remove, and replace operations.',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      body: {
+        $ref: 'artifacts-v3#/components/schemas/ArtifactPatchItemsRequest',
       },
-      body: Type.Object({
-        operations: Type.Array(
-          Type.Object({
-            op: Type.Union([
-              Type.Literal('add'),
-              Type.Literal('remove'),
-              Type.Literal('replace'),
-            ]),
-            path: Type.String({
-              description: 'JSON Pointer path (e.g., /characters/0/name)',
-            }),
-            value: Type.Optional(Type.Any()),
-          }),
-        ),
-        reason: Type.Optional(Type.String()),
-      }),
       response: {
-        200: { artifact: Type.Any() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
-        422: { message: Type.String() },
+        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        422: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -151,13 +117,11 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'Delete Artifact V3',
       description: 'Soft delete an artifact.',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
-      },
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
       response: {
-        200: { message: Type.String() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: { $ref: 'artifacts-v3#/components/schemas/MessageResponse' },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -170,13 +134,13 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'Get Artifact Permissions',
       description: 'Retrieve permissions for an artifact.',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
-      },
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
       response: {
-        200: { permissions: Type.Any() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: {
+          $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsResponse',
+        },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -189,25 +153,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'Update Artifact Permissions',
       description: 'Replace permissions for an artifact (artifact-level only).',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      body: {
+        $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsUpdateRequest',
       },
-      body: Type.Object({
-        permissions: Type.Array(
-          Type.Object({
-            subjectId: Type.String(),
-            level: Type.Union([
-              Type.Literal('viewer'),
-              Type.Literal('editor'),
-              Type.Literal('owner'),
-            ]),
-          }),
-        ),
-      }),
       response: {
-        200: { permissions: Type.Any() },
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: {
+          $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsResponse',
+        },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -220,19 +175,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
       summary: 'List Artifact History',
       description: 'Retrieve a paginated list of artifact edit history.',
       security: [{ apiKey: [] }],
-      params: {
-        artifactId: Type.String(),
-      },
+      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
       querystring: {
-        type: 'object',
-        properties: {
-          ...paginationProperties(),
-        },
+        $ref: 'artifacts-v3#/components/schemas/ArtifactsHistoryQuery',
       },
       response: {
-        200: paginatedResponse(Type.Any()),
-        401: { message: Type.String() },
-        404: { message: Type.String() },
+        200: {
+          $ref: 'artifacts-v3#/components/schemas/PaginatedArtifactsHistoryResponse',
+        },
+        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
