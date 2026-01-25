@@ -487,10 +487,47 @@ const ChatLaunchpad = () => {
           throw new Error('Failed to send message')
         }
 
-        const result = await response.json()
-        if (result.session_id) {
-          // Navigate to the session
-          router.push(`/sessions/${result.session_id}`)
+        // Parse SSE stream to extract session_id from session_created event
+        const reader = response.body?.getReader()
+        if (!reader) {
+          throw new Error('No response body')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+        let sessionId: string | null = null
+
+        while (!sessionId) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const payload = line.slice(6).trim()
+                if (!payload || payload === '[DONE]') continue
+                const data = JSON.parse(payload)
+                if (data.event === 'session_created' && data.data?.session_id) {
+                  sessionId = data.data.session_id
+                  break
+                }
+              } catch {
+                // Ignore parse errors for incomplete lines
+              }
+            }
+          }
+        }
+
+        reader.releaseLock()
+
+        if (sessionId) {
+          router.push(`/sessions/${sessionId}`)
+        } else {
+          throw new Error('No session_id received from stream')
         }
       } catch (error) {
         console.error('Error creating session:', error)

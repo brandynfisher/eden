@@ -1,3 +1,4 @@
+import { updatePlatformFilters } from '../../controllers/userPreferencesController'
 import {
   SubmitFeedbackBody,
   addLastAgent,
@@ -137,6 +138,46 @@ const userRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unpinAgent(request, reply),
+  })
+
+  server.patch('/v2/user-preferences/platform-filters', {
+    schema: {
+      tags: ['User'],
+      summary: 'Update Platform Filters',
+      description:
+        'Update session platform filters for the sidebar. Platforms not in the list will be hidden.',
+      hide: true,
+      body: Type.Object({
+        platforms: Type.Array(
+          Type.Union([
+            Type.Literal('web'),
+            Type.Literal('discord'),
+            Type.Literal('telegram'),
+            Type.Literal('twitter'),
+            Type.Literal('farcaster'),
+          ]),
+        ),
+      }),
+      response: {
+        200: Type.Object({
+          session_platform_filters: Type.Array(Type.String()),
+          message: Type.String(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      updatePlatformFilters(
+        server,
+        request as FastifyRequest<{ Body: { platforms: string[] } }>,
+        reply,
+      ),
   })
 
   server.post('/v2/user/feedback', {

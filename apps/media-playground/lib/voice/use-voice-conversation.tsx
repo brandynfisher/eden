@@ -655,8 +655,8 @@ export function useVoiceConversation(
   })
 
   const startConversation = useCallback(async () => {
-    // Fetch agent ID if not already loaded (API key not needed for public agents)
-    let currentAgentId = agentId
+    // Use per-agent ElevenLabs agent ID if configured, otherwise fall back to default
+    let currentAgentId = config.realtimeSettings.elevenlabs_agent_id || agentId
 
     if (!currentAgentId) {
       const configData = await fetchConfig()
@@ -665,6 +665,13 @@ export function useVoiceConversation(
         return
       }
       currentAgentId = configData.agentId
+    }
+
+    if (config.realtimeSettings.elevenlabs_agent_id) {
+      addDebugLog(
+        `Using per-agent ElevenLabs ID: ${config.realtimeSettings.elevenlabs_agent_id}`,
+        'info',
+      )
     }
 
     let stream: MediaStream | null = null
@@ -853,13 +860,17 @@ export function useVoiceConversation(
       })
 
       try {
-        // Build the config - try with just dynamic variables first (no overrides)
-        // The agent has defaults configured in ElevenLabs dashboard
+        // Check if using a per-agent ElevenLabs agent ID
+        const usingCustomAgent = !!config.realtimeSettings.elevenlabs_agent_id
+
+        // Build the config
+        // - If using custom agent: skip overrides (agent has settings baked in)
+        // - If using default shared agent: apply overrides for voice, language, TTS
         const fullConfig = {
           agentId: currentAgentId,
           dynamicVariables: sessionConfig.dynamicVariables,
-          // Temporarily skip overrides to debug connection issue
-          // overrides: sessionConfig.overrides,
+          // Only apply overrides when using the default shared agent
+          ...(!usingCustomAgent && { overrides: sessionConfig.overrides }),
           ...(wrappedClientTools && { clientTools: wrappedClientTools }),
         }
 
@@ -871,6 +882,13 @@ export function useVoiceConversation(
         )
         // eslint-disable-next-line no-console
         console.log('[ELEVENLABS CONFIG] Agent ID:', currentAgentId)
+        // eslint-disable-next-line no-console
+        console.log(
+          '[ELEVENLABS CONFIG] Using custom agent:',
+          usingCustomAgent
+            ? 'YES (skipping overrides)'
+            : 'NO (applying overrides)',
+        )
         // eslint-disable-next-line no-console
         console.log(
           '[ELEVENLABS CONFIG] Client tools registered:',
@@ -890,6 +908,16 @@ export function useVoiceConversation(
           } tools with ElevenLabs`,
           'info',
         )
+        if (!usingCustomAgent) {
+          addDebugLog(
+            `Applying overrides: voice=${
+              sessionConfig.overrides?.tts?.voiceId || 'default'
+            }, language=${
+              sessionConfig.overrides?.agent?.language || 'default'
+            }`,
+            'info',
+          )
+        }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (conversation.startSession as any)(fullConfig)
@@ -932,6 +960,7 @@ export function useVoiceConversation(
     config.edenAgentId,
     config.userInfo,
     config.clientTools,
+    config.realtimeSettings,
     prepareConversationConfig,
     getBuiltInToolHandlers,
     wrapClientTools,

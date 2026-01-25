@@ -25,6 +25,8 @@ export type RealtimeTTSModel =
 
 export interface RealtimeSettings {
   agent: string
+  /** Per-agent ElevenLabs agent ID (if set, uses this instead of the default shared agent) */
+  elevenlabs_agent_id?: string | null
   voice_id?: string | null
   language: string
   first_message?: string | null

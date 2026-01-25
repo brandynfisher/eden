@@ -1,5 +1,12 @@
 import mongoose, { Document, Schema } from 'mongoose'
 
+export type SessionPlatformFilter =
+  | 'web'
+  | 'discord'
+  | 'telegram'
+  | 'twitter'
+  | 'farcaster'
+
 export interface UserPreferencesSchema {
   user: Schema.Types.ObjectId
   last_agents: Schema.Types.ObjectId[]
@@ -10,6 +17,7 @@ export interface UserPreferencesSchema {
     session_permissions: boolean
     agent_permissions: boolean
   }
+  session_platform_filters?: SessionPlatformFilter[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -68,6 +76,11 @@ const userPreferencesSchema = new Schema<UserPreferencesDocument>(
         session_permissions: true,
         agent_permissions: true,
       }),
+    },
+    session_platform_filters: {
+      type: [String],
+      enum: ['web', 'discord', 'telegram', 'twitter', 'farcaster'],
+      default: ['web', 'discord', 'telegram', 'twitter', 'farcaster'],
     },
   },
   {
@@ -158,6 +171,18 @@ userPreferencesSchema.statics.unpinAgent = async function (
   await userPrefs.save()
 }
 
+// Static method to update session platform filters
+userPreferencesSchema.statics.updatePlatformFilters = async function (
+  userId: mongoose.Types.ObjectId,
+  platforms: SessionPlatformFilter[],
+) {
+  return this.findOneAndUpdate(
+    { user: userId },
+    { $set: { session_platform_filters: platforms } },
+    { upsert: true, new: true },
+  )
+}
+
 export const UserPreferences = mongoose.model<
   UserPreferencesDocument,
   mongoose.Model<UserPreferencesDocument> & {
@@ -173,5 +198,9 @@ export const UserPreferences = mongoose.model<
       userId: mongoose.Types.ObjectId,
       agentId: mongoose.Types.ObjectId,
     ) => Promise<void>
+    updatePlatformFilters: (
+      userId: mongoose.Types.ObjectId,
+      platforms: SessionPlatformFilter[],
+    ) => Promise<UserPreferencesDocument>
   }
 >('UserPreferences', userPreferencesSchema)

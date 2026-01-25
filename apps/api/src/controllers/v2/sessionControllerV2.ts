@@ -1024,7 +1024,9 @@ export const listSessions = async (
       page,
       sort: {
         ...sort,
-        pinned: -1, // Pinned sessions always appear first
+        // Note: Don't sort by pinned here - MongoDB sorts missing values after false,
+        // which breaks pagination for sessions without the pinned field.
+        // The frontend handles pinned sorting after fetching.
         updatedAt: -1,
         createdAt: -1,
       },

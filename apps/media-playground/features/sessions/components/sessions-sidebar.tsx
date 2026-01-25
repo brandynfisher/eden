@@ -1,6 +1,7 @@
 'use client'
 
 import { AgentAvatars } from './agent-avatars'
+import { PlatformFilterModal } from './platform-filter-modal'
 import { RecentAgents } from './recent-agents'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
@@ -53,6 +54,7 @@ import {
   PinIcon,
   PinOffIcon,
   Share2,
+  SlidersHorizontalIcon,
   TrashIcon,
   UserIcon,
 } from 'lucide-react'
@@ -634,6 +636,10 @@ const MainLeft = ({
   // Always show "Recent Chats" label
   const sessionsLabel = 'Recent Chats'
   const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+
+  // Get platform filters from user preferences
+  const { platformFilters } = useUserPreferencesQuery({ enabled: !!isSignedIn })
   const {
     isLoading,
     hasMore,
@@ -718,6 +724,11 @@ const MainLeft = ({
     const filteredSessions = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
+
+        // Platform filter (whitelist mode)
+        const sessionPlatform = session.platform || 'web'
+        if (!platformFilters.includes(sessionPlatform)) return false
+
         if (session.visible === false) return false
         if (session.visible === true) return true
         if (session.parent_session) return false
@@ -741,7 +752,7 @@ const MainLeft = ({
 
     // Combine pinned and unpinned sessions with pinned first
     return [...pinnedSessions, ...unpinnedSessions]
-  }, [sessions])
+  }, [sessions, platformFilters])
 
   // Show loading state until mounted and data is loaded
   const showLoading = !hasMounted || isLoading
@@ -759,18 +770,35 @@ const MainLeft = ({
           {isSignedIn && (
             <>
               {/* Sessions header - collapsible */}
-              <button
-                onClick={() => setIsSessionsCollapsed(!isSessionsCollapsed)}
-                className="pb-1 mb-1 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ChevronRightIcon
+              <div className="pb-1 mb-1 flex items-center gap-1">
+                <button
+                  onClick={() => setIsSessionsCollapsed(!isSessionsCollapsed)}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronRightIcon
+                    className={cn(
+                      'h-3 w-3 transition-transform',
+                      !isSessionsCollapsed && 'rotate-90',
+                    )}
+                  />
+                  {sessionsLabel}
+                </button>
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setIsFilterModalOpen(true)
+                  }}
                   className={cn(
-                    'h-3 w-3 transition-transform',
-                    !isSessionsCollapsed && 'rotate-90',
+                    'ml-auto p-1 rounded transition-opacity',
+                    platformFilters.length < 5
+                      ? 'opacity-100 text-primary'
+                      : 'opacity-50 hover:opacity-100',
                   )}
-                />
-                {sessionsLabel}
-              </button>
+                  title="Filter by platform"
+                >
+                  <SlidersHorizontalIcon className="h-3 w-3" />
+                </button>
+              </div>
 
               {/* Scrollable session list */}
               {!isSessionsCollapsed && (
@@ -811,6 +839,13 @@ const MainLeft = ({
           )}
         </>
       )}
+
+      {/* Platform Filter Modal */}
+      <PlatformFilterModal
+        open={isFilterModalOpen}
+        onOpenChange={setIsFilterModalOpen}
+        selectedPlatforms={platformFilters}
+      />
     </div>
   )
 }
