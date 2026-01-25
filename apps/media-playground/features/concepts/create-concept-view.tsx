@@ -40,7 +40,7 @@ const conceptSchema = z.object({
   images: z
     .array(conceptImageSchema)
     .min(1, 'At least one image is required')
-    .max(25, 'Maximum 25 images allowed'),
+    .max(100, 'Maximum 100 images allowed'),
 })
 
 type ConceptFormDto = z.infer<typeof conceptSchema>
@@ -122,7 +122,7 @@ const CreateConceptView = ({
   }
 
   const addImage = () => {
-    if (fields.length < 25) {
+    if (fields.length < 100) {
       append({ image: '', usage_instructions: '' })
     }
   }
@@ -192,7 +192,7 @@ const CreateConceptView = ({
             Create New Concept
           </h1>
           <p className="text-base text-muted-foreground">
-            Create a concept with up to 25 reference images and usage
+            Create a concept with up to 100 reference images and usage
             instructions for each one.
           </p>
         </div>
@@ -278,11 +278,11 @@ const CreateConceptView = ({
                   Reference Images
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload up to 25 reference images to train your concept.
+                  Upload up to 100 reference images to train your concept.
                 </p>
                 <div className="mt-3">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {fields.length} of 25 images
+                    {fields.length} of 100 images
                   </span>
                 </div>
               </div>
@@ -367,7 +367,7 @@ const CreateConceptView = ({
                   <Button
                     type="button"
                     onClick={addImage}
-                    disabled={fields.length >= 25}
+                    disabled={fields.length >= 100}
                     className="h-12 px-8 text-base font-medium"
                     size="lg"
                   >

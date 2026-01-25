@@ -112,20 +112,33 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
     schema: {
       tags: ['Artifacts V3'],
       summary: 'Patch Artifact Items',
-      description: 'Set/unset artifact item keys.',
+      description:
+        'Apply JSON Patch operations (RFC 6902) to artifact items. Supports add, remove, and replace operations.',
       security: [{ apiKey: [] }],
       params: {
         artifactId: Type.String(),
       },
       body: Type.Object({
-        set: Type.Optional(Type.Record(Type.String(), Type.Any())),
-        unset: Type.Optional(Type.Array(Type.String())),
+        operations: Type.Array(
+          Type.Object({
+            op: Type.Union([
+              Type.Literal('add'),
+              Type.Literal('remove'),
+              Type.Literal('replace'),
+            ]),
+            path: Type.String({
+              description: 'JSON Pointer path (e.g., /characters/0/name)',
+            }),
+            value: Type.Optional(Type.Any()),
+          }),
+        ),
         reason: Type.Optional(Type.String()),
       }),
       response: {
         200: { artifact: Type.Any() },
         401: { message: Type.String() },
         404: { message: Type.String() },
+        422: { message: Type.String() },
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -174,7 +187,7 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
     schema: {
       tags: ['Artifacts V3 - Permissions'],
       summary: 'Update Artifact Permissions',
-      description: 'Replace permissions for an artifact.',
+      description: 'Replace permissions for an artifact (artifact-level only).',
       security: [{ apiKey: [] }],
       params: {
         artifactId: Type.String(),
@@ -188,7 +201,6 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
               Type.Literal('editor'),
               Type.Literal('owner'),
             ]),
-            key: Type.Optional(Type.String()),
           }),
         ),
       }),

@@ -1,13 +1,24 @@
+/**
+ * @deprecated This model is deprecated and will be removed in a future version.
+ * Use ArtifactVersionV3 instead for tracking artifact history as full snapshots.
+ * This model is kept for backwards compatibility during migration.
+ */
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 
+/**
+ * @deprecated Use ArtifactVersionV3 instead
+ */
 export type ArtifactEditOperationV3 = {
   op: 'set' | 'unset'
   path: string
   value?: string
 }
 
+/**
+ * @deprecated Use ArtifactVersionV3 instead
+ */
 export interface ArtifactEditV3Schema {
   artifact: ObjectId
   actor: ObjectId

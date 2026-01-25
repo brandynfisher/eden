@@ -1,11 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
-export type ArtifactItemValueV3 = string | ArtifactItemsV3
-
-export type ArtifactItemsV3 = {
-  [key: string]: ArtifactItemValueV3
-}
+export type ArtifactItemsV3 = Record<string, unknown>
 
 export type ArtifactV3 = {
   _id: string
@@ -16,6 +12,7 @@ export type ArtifactV3 = {
   session?: string | null
   originSession?: string | null
   items: ArtifactItemsV3
+  version: number
   createdAt: Date
   updatedAt: Date
   deleted?: boolean
@@ -40,16 +37,38 @@ export type ArtifactPermissionV3 = {
         type?: string
       }
   level: ArtifactPermissionLevelV3
-  key?: string
   grantedAt: Date
 }
 
+export type JsonPatchOperationV3 = {
+  op: 'add' | 'remove' | 'replace'
+  path: string
+  value?: unknown
+}
+
+export type ArtifactVersionV3 = {
+  _id: string
+  artifact: string
+  version: number
+  items: ArtifactItemsV3
+  operations?: JsonPatchOperationV3[]
+  actor: string
+  reason?: string
+  createdAt: Date
+}
+
+/**
+ * @deprecated Use ArtifactVersionV3 instead for tracking artifact history
+ */
 export type ArtifactEditOperationV3 = {
   op: 'set' | 'unset'
   path: string
   value?: string
 }
 
+/**
+ * @deprecated Use ArtifactVersionV3 instead for tracking artifact history
+ */
 export type ArtifactEditV3 = {
   _id: string
   artifact: string
@@ -92,8 +111,7 @@ export interface ArtifactsV3UpdateArguments extends WebAPICallOptions {
 
 export interface ArtifactsV3PatchItemsArguments extends WebAPICallOptions {
   artifactId: string
-  set?: Record<string, string | number | boolean>
-  unset?: string[]
+  operations: JsonPatchOperationV3[]
   reason?: string
 }
 
@@ -111,7 +129,6 @@ export interface ArtifactsV3UpdatePermissionsArguments
   permissions: Array<{
     subjectId: string
     level: ArtifactPermissionLevelV3
-    key?: string
   }>
 }
 
@@ -168,7 +185,10 @@ export const artifactsV3PatchItemsRequestConfig = (
   return {
     method: 'PATCH',
     url: `v3/artifacts/${args.artifactId}/items`,
-    data: args,
+    data: {
+      operations: args.operations,
+      reason: args.reason,
+    },
   }
 }
 
@@ -261,7 +281,7 @@ export type ArtifactsV3UpdatePermissionsResponse = WebAPICallResult & {
 }
 
 export interface ArtifactsV3HistoryResponse extends WebAPICallResult {
-  docs: ArtifactEditV3[]
+  docs: ArtifactVersionV3[]
   total: number
   limit: number
   pages: number
