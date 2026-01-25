@@ -18,6 +18,8 @@
     "build": "turbo run build",
     "dev:dummy": "turbo run dev:dummy --parallel",
     "dev:eden": "turbo run dev:eden --parallel",
+    "dev:openapi-types": "node scripts/openapi/watch-openapi.mjs",
+    "generate:openapi-types": "node scripts/openapi/generate-openapi-artifacts.mjs",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -55,6 +57,10 @@
       "eslint --fix --quiet"
     ],
     "packages/eden-sdk/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "packages/eden-sdk-v3/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ],

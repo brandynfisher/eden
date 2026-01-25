@@ -9,6 +9,8 @@ paths:
   /v3/sessions/prompt:
     post:
       summary: Prompt a session (non-streaming)
+      x-eden:
+        mcp: true
       tags: [SessionsV3]
       security:
         - bearerAuth: []

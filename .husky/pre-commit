@@ -4,6 +4,14 @@
 # Run lint-staged for formatting and linting
 npx lint-staged
 
+# Generate v3 OpenAPI-derived types and MCP tool stubs
+echo "🔧 Generating OpenAPI types + MCP tools..."
+yarn generate:openapi-types
+if [ $? -ne 0 ]; then
+  echo "❌ Generation failed. Fix the errors before committing."
+  exit 1
+fi
+
 # Check TypeScript compilation for apps/api
 echo "🔍 Checking TypeScript compilation for apps/api..."
 cd apps/api && yarn tsc --noEmit --incremental

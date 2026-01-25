@@ -1,6 +1,9 @@
-import { promptSessionV3 } from '@/lib/sessions-v3-client'
+'use client'
+
+import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
 import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
+import { createSessionsV3Api } from '@edenlabs/eden-sdk-v3'
 import {
   Dispatch,
   SetStateAction,
@@ -11,12 +14,18 @@ import {
 
 interface UseNonStreamingStateProps {
   sessionId: string
-  session?: SessionV2 // Made optional
+  session?: SessionV2
   enabled: boolean
   onError: (error: string) => void
-  user?: Creator // Made optional
+  user?: Creator
   onSessionCreated?: (sessionId: string) => void
 }
+
+const createApi = (token: string) =>
+  createSessionsV3Api({
+    baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+    token,
+  })
 
 export function useNonStreamingState({
   sessionId,
@@ -186,24 +195,21 @@ export function useNonStreamingState({
           throw new Error('Not authenticated')
         }
 
-        result = await promptSessionV3({
-          token,
-          body: {
-            session_run_id: options?.session_run_id,
-            session_id: sessionId,
-            actor_agent_ids: options?.agent_ids,
-            thinking: options?.thinking,
-            creation:
-              (!sessionId ||
-                sessionId === 'new' ||
-                sessionId.startsWith('temp-')) &&
-              options?.agent_ids
-                ? { agent_ids: options.agent_ids }
-                : undefined,
-            message: {
-              content,
-              attachments: attachments ?? [],
-            },
+        result = await createApi(token).prompt({
+          session_run_id: options?.session_run_id,
+          session_id: sessionId,
+          actor_agent_ids: options?.agent_ids,
+          thinking: options?.thinking,
+          creation:
+            (!sessionId ||
+              sessionId === 'new' ||
+              sessionId.startsWith('temp-')) &&
+            options?.agent_ids
+              ? { agent_ids: options.agent_ids }
+              : undefined,
+          message: {
+            content,
+            attachments: attachments ?? [],
           },
         })
 
@@ -225,7 +231,7 @@ export function useNonStreamingState({
         setRespondingAgentIds([])
       }
     },
-    [user, sessionId, onError, onSessionCreated],
+    [user, sessionId, onError, onSessionCreated, getToken],
   )
 
   const clearResponseState = useCallback(() => {

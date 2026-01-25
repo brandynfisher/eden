@@ -1,0 +1,10 @@
+openapi: 3.0.3
+info:
+  title: Eden Internal API (placeholder)
+  version: 0.1.0
+  description: Internal API surface (placeholder). Populate when ready.
+servers:
+  - url: http://127.0.0.1:5050
+paths: {}
+components:
+  schemas: {}
