@@ -80,6 +80,22 @@ const createServer = async (opts: CreateServerOpts) => {
   server.register(import('@fastify/cors'), () => {
     return (req: FastifyRequest, callback: any) => {
       let corsOptions = {}
+      if (server.config.NODE_ENV === 'development') {
+        corsOptions = {
+          origin: true,
+          methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+          allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'cache-control',
+            'baggage',
+            'sentry-trace',
+            'X-Api-Key',
+            'X-Api-Secret',
+          ],
+          credentials: true,
+        }
+      }
       if (req.url.startsWith('/tasks/events')) {
         corsOptions = {
           origin: ['*'],
@@ -88,6 +104,21 @@ const createServer = async (opts: CreateServerOpts) => {
             'Content-Type',
             'Authorization',
             'cache-control',
+            'X-Api-Key',
+            'X-Api-Secret',
+          ],
+          credentials: true,
+        }
+      }
+      if (req.url.startsWith('/v3/sessions/prompt')) {
+        corsOptions = {
+          origin: true,
+          methods: ['POST', 'OPTIONS'],
+          allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'baggage',
+            'sentry-trace',
             'X-Api-Key',
             'X-Api-Secret',
           ],

@@ -18,6 +18,7 @@ type AssistantMessageProps = {
   isStreamingTokens?: boolean
   showAvatar?: boolean
   isChatRoute?: boolean
+  suppressTypingIndicator?: boolean
   /** If provided, clicking a child session card will call this instead of navigating */
   onSessionClick?: (sessionId: string) => void
   /** If provided, clicking an artifact card will open the artifact */
@@ -54,6 +55,7 @@ export const AssistantMessage = ({
   isStreamingTokens = false,
   showAvatar = true,
   isChatRoute = false,
+  suppressTypingIndicator = false,
   onSessionClick,
   onArtifactOpen,
 }: AssistantMessageProps) => {
@@ -112,6 +114,17 @@ export const AssistantMessage = ({
     message.sender?.name,
     message.sender?.username,
   )
+  const actionBarVisibilityClass = message.tool_calls?.some(
+    toolCall =>
+      toolCall.status === 'completed' && hasDisplayableResults(toolCall.result),
+  )
+    ? 'opacity-100'
+    : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
+  const actionBarClassName = `transition-opacity ${
+    isStreamingTokens
+      ? 'opacity-0 pointer-events-none'
+      : actionBarVisibilityClass
+  }`
 
   // Different layouts for /chat vs /sessions
   if (!isChatRoute) {
@@ -275,27 +288,18 @@ export const AssistantMessage = ({
                 )
               })}
 
-            {isStreamingTokens && isEmpty && !message.tool_calls && (
-              <div className="py-2">
-                <TypingIndicator />
-              </div>
-            )}
+            {isStreamingTokens &&
+              isEmpty &&
+              !message.tool_calls &&
+              !suppressTypingIndicator && (
+                <div className="py-2">
+                  <TypingIndicator />
+                </div>
+              )}
 
-            {!isStreamingTokens && (
-              <div
-                className={`transition-opacity ${
-                  message.tool_calls?.some(
-                    toolCall =>
-                      toolCall.status === 'completed' &&
-                      hasDisplayableResults(toolCall.result),
-                  )
-                    ? 'opacity-100'
-                    : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
-                }`}
-              >
-                <ActionBar sessionId={sessionId} message={message} />
-              </div>
-            )}
+            <div className={actionBarClassName} aria-hidden={isStreamingTokens}>
+              <ActionBar sessionId={sessionId} message={message} />
+            </div>
           </div>
         </div>
 
@@ -459,27 +463,21 @@ export const AssistantMessage = ({
                   )
                 })}
 
-              {isStreamingTokens && isEmpty && !message.tool_calls && (
-                <div className="py-2">
-                  <TypingIndicator />
-                </div>
-              )}
+              {isStreamingTokens &&
+                isEmpty &&
+                !message.tool_calls &&
+                !suppressTypingIndicator && (
+                  <div className="py-2">
+                    <TypingIndicator />
+                  </div>
+                )}
 
-              {!isStreamingTokens && (
-                <div
-                  className={`transition-opacity ${
-                    message.tool_calls?.some(
-                      toolCall =>
-                        toolCall.status === 'completed' &&
-                        hasDisplayableResults(toolCall.result),
-                    )
-                      ? 'opacity-100'
-                      : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
-                  }`}
-                >
-                  <ActionBar sessionId={sessionId} message={message} />
-                </div>
-              )}
+              <div
+                className={actionBarClassName}
+                aria-hidden={isStreamingTokens}
+              >
+                <ActionBar sessionId={sessionId} message={message} />
+              </div>
             </div>
           </div>
         </div>
@@ -640,27 +638,18 @@ export const AssistantMessage = ({
             )
           })}
 
-        {isStreamingTokens && isEmpty && !message.tool_calls && (
-          <div className="py-2">
-            <TypingIndicator />
-          </div>
-        )}
+        {isStreamingTokens &&
+          isEmpty &&
+          !message.tool_calls &&
+          !suppressTypingIndicator && (
+            <div className="py-2">
+              <TypingIndicator />
+            </div>
+          )}
 
-        {!isStreamingTokens && (
-          <div
-            className={`transition-opacity ${
-              message.tool_calls?.some(
-                toolCall =>
-                  toolCall.status === 'completed' &&
-                  hasDisplayableResults(toolCall.result),
-              )
-                ? 'opacity-100'
-                : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
-            }`}
-          >
-            <ActionBar sessionId={sessionId} message={message} />
-          </div>
-        )}
+        <div className={actionBarClassName} aria-hidden={isStreamingTokens}>
+          <ActionBar sessionId={sessionId} message={message} />
+        </div>
       </div>
     </div>
   )

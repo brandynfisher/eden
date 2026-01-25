@@ -1,0 +1,28 @@
+meta {
+  name: Sessions V3 - Prompt (Create)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/v3/sessions/prompt
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{USER_API_KEY}}
+}
+
+body:json {
+  {
+    "creation": {
+      "agent_ids": ["{{AGENT_ID}}"]
+    },
+    "thinking": false,
+    "message": {
+      "content": "hello from bruno (create)",
+      "attachments": []
+    }
+  }
+}

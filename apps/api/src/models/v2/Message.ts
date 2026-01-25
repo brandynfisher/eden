@@ -33,6 +33,12 @@ export interface MessageSchema {
   apiKey?: string
   /** Reference to raw LLM call data in llm_calls collection */
   llm_call?: Schema.Types.ObjectId | null
+  observability?: {
+    session_run_id?: string
+    session_id?: string
+    trace_id?: string
+    generation_id?: string
+  } | null
   createdAt?: Date
   updatedAt?: Date
 }
@@ -123,6 +129,9 @@ const messageSchema = new Schema<MessageDocument>(
       type: Schema.Types.ObjectId,
       ref: 'llm_calls',
       default: null,
+    },
+    observability: {
+      type: Schema.Types.Mixed,
     },
   },
   {
