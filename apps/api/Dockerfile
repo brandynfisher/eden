@@ -76,6 +76,7 @@ COPY --from=installer /app/apps/api/package.json .
 COPY --from=installer /app/node_modules ./node_modules
 #COPY --from=installer /app/apps/api/node_modules/@clerk/fastify ./node_modules/@clerk/fastify
 COPY --from=installer /app/packages/eden-sdk ./packages/eden-sdk
+COPY --from=installer /app/apps/api/openapi ./openapi
 
 RUN apk add ffmpeg
 RUN apk update
@@ -86,5 +87,6 @@ RUN adduser --system --uid 1001 nodejs
 USER nodejs
 
 ENV NODE_ENV="production"
+ENV EDEN_OPENAPI_PATH="/app/openapi/sessions-v3.yaml"
 
 CMD ["yarn", "start"]
