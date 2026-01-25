@@ -1,0 +1,13 @@
+[project]
+name = "eden-sdk-v3"
+version = "0.1.0"
+description = "OpenAPI-generated Python SDK for Eden Sessions v3"
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["eden_sdk_v3"]
+package-dir = {"" = "src"}

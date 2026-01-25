@@ -2,6 +2,7 @@
   "name": "@edenlabs/eden-sdk",
   "version": "0.4.6",
   "description": "SDK for interacting with the Eden API",
+  "deprecated": "Use @edenlabs/eden-sdk-v3 for OpenAPI-based Sessions v3 types and clients.",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "module": "dist/index.m.js",

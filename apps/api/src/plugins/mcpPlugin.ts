@@ -13,6 +13,8 @@ import {
 import { verifyMcpToken } from '../lib/mcpTokens'
 import { verifyApiKey } from '../middleware/authMiddleware'
 import { ArtifactPermissionLevelV3 } from '../models/v3/ArtifactPermissionV3'
+import { generatedMcpTools } from './mcpGeneratedTools'
+import { callSessionsV3Tool } from './mcpSessionsV3Tools'
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
@@ -178,6 +180,40 @@ const isInitializePayload = (payload: unknown) => {
   return isInitializeRequest(payload)
 }
 
+const buildGeneratedToolSchema = (
+  params: Record<string, { type: string; required: boolean }>,
+) => {
+  const shape: Record<string, z.ZodTypeAny> = {}
+  for (const [key, param] of Object.entries(params)) {
+    let schema: z.ZodTypeAny = z.any()
+    switch (param.type) {
+      case 'string':
+        schema = z.string()
+        break
+      case 'boolean':
+        schema = z.boolean()
+        break
+      case 'integer':
+        schema = z.number().int()
+        break
+      case 'number':
+        schema = z.number()
+        break
+      case 'array':
+        schema = z.array(z.any())
+        break
+      case 'object':
+        schema = z.record(z.any())
+        break
+      default:
+        schema = z.any()
+        break
+    }
+    shape[key] = param.required ? schema : schema.optional()
+  }
+  return shape
+}
+
 const createMcpServer = (server: FastifyInstance) => {
   const mcp = new McpServer({
     name: 'eden-mcp',
@@ -249,6 +285,46 @@ const createMcpServer = (server: FastifyInstance) => {
       }
     },
   )
+
+  for (const generatedTool of generatedMcpTools) {
+    const schema = buildGeneratedToolSchema(generatedTool.params)
+    tool(
+      generatedTool.name,
+      generatedTool.description,
+      schema,
+      async (args: Record<string, unknown>, extra: ToolExtra) => {
+        const authUserId =
+          typeof extra?.authInfo?.extra?.userId === 'string'
+            ? extra.authInfo.extra.userId
+            : null
+        if (!authUserId) {
+          throw new Error('Missing MCP user context')
+        }
+        if (generatedTool.path.startsWith('/v3/sessions')) {
+          const result = await callSessionsV3Tool({
+            method: generatedTool.method,
+            path: generatedTool.path,
+            args,
+            userId: authUserId,
+            apiKeyId:
+              typeof extra?.authInfo?.extra?.apiKeyId === 'string'
+                ? extra.authInfo.extra.apiKeyId
+                : undefined,
+            server,
+          })
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result),
+              },
+            ],
+          }
+        }
+        throw new Error(`Unsupported MCP tool path: ${generatedTool.path}`)
+      },
+    )
+  }
 
   const artifactListSchema = {
     ownerId: z.string().optional(),

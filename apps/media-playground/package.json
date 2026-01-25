@@ -9,7 +9,6 @@
     "build": "next build --debug",
     "start": "next start",
     "lint": "eslint app components features hooks lib stories types --fix",
-    "generate:sessions-v3-types": "openapi-typescript ../api/openapi/sessions-v3.yaml --output types/sessions-v3.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "jest"
@@ -26,6 +25,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@edenlabs/eden-react": "*",
     "@edenlabs/eden-sdk": "*",
+    "@edenlabs/eden-sdk-v3": "*",
     "@elevenlabs/elevenlabs-js": "^2.24.1",
     "@elevenlabs/react": "^0.11.0",
     "@hookform/resolvers": "^3.9.0",

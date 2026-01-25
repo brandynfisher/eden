@@ -1,7 +1,8 @@
 'use client'
 
-import { promptSessionV3Stream } from '@/lib/sessions-v3-client'
+import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
+import { createSessionsV3Api } from '@edenlabs/eden-sdk-v3'
 import { useCallback, useRef } from 'react'
 
 interface StreamMessage {
@@ -66,6 +67,12 @@ interface UseSessionStreamProps {
   onSessionCreated?: (sessionId: string) => void
 }
 
+const createApi = (token: string) =>
+  createSessionsV3Api({
+    baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+    token,
+  })
+
 export const useSessionStream = ({
   sessionId,
   onToken,
@@ -119,21 +126,18 @@ export const useSessionStream = ({
           throw new Error('Not authenticated')
         }
 
-        response = await promptSessionV3Stream({
-          token,
-          body: {
-            session_run_id: creationArgs?.session_run_id,
-            session_id: sessionId,
-            actor_agent_ids: creationArgs?.agent_ids,
-            thinking: creationArgs?.thinking,
-            creation:
-              !sessionId && creationArgs?.agent_ids
-                ? { agent_ids: creationArgs.agent_ids }
-                : undefined,
-            message: {
-              content,
-              attachments: attachments ?? [],
-            },
+        response = await createApi(token).promptStream({
+          session_run_id: creationArgs?.session_run_id,
+          session_id: sessionId,
+          actor_agent_ids: creationArgs?.agent_ids,
+          thinking: creationArgs?.thinking,
+          creation:
+            !sessionId && creationArgs?.agent_ids
+              ? { agent_ids: creationArgs.agent_ids }
+              : undefined,
+          message: {
+            content,
+            attachments: attachments ?? [],
           },
         })
 
@@ -142,7 +146,6 @@ export const useSessionStream = ({
           throw new Error('Failed to start stream')
         }
 
-        // Create EventSource from the response
         const reader = response.body?.getReader()
         if (!reader) {
           throw new Error('No response body')
@@ -166,9 +169,8 @@ export const useSessionStream = ({
               const chunkText = decoder.decode(value, { stream: true })
               buffer += chunkText
 
-              // Process complete messages
               const lines = buffer.split('\n')
-              buffer = lines.pop() || '' // Keep incomplete line in buffer
+              buffer = lines.pop() || ''
 
               for (const line of lines) {
                 if (line.startsWith('data: ')) {
@@ -211,7 +213,6 @@ export const useSessionStream = ({
                         data.data.agent
                       ) {
                         onAgentInfo?.(data.data.agent, data.data.session_run_id)
-                        // Extract session ID from agent context if available
                         if (
                           !sessionIdReceived &&
                           !sessionId &&
@@ -233,8 +234,8 @@ export const useSessionStream = ({
                       onError?.(data.data.error || 'Stream error')
                       break
                     }
-                  } catch (e) {
-                    // Ignore parse errors for incomplete lines
+                  } catch {
+                    // ignore parse errors
                   }
                 }
               }
@@ -262,6 +263,7 @@ export const useSessionStream = ({
       onDone,
       onAgentInfo,
       onSessionCreated,
+      getToken,
     ],
   )
 

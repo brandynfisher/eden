@@ -1,5 +1,7 @@
 # Eden SDK
 
+> Deprecated: use `@edenlabs/eden-sdk-v3` for OpenAPI-based Sessions v3 types and clients.
+
 The official SDK for interacting with the Eden API. Supports both Node.js and browser environments.
 
 ## Installation

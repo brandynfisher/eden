@@ -2756,6 +2756,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@edenlabs/eden-sdk-v3@workspace:packages/eden-sdk-v3":
+  version: 0.0.0-use.local
+  resolution: "@edenlabs/eden-sdk-v3@workspace:packages/eden-sdk-v3"
+  dependencies:
+    microbundle: "npm:^0.15.1"
+    openapi-fetch: "npm:^0.10.1"
+    openapi-typescript: "npm:^6.7.6"
+    typescript: "npm:^5"
+  languageName: unknown
+  linkType: soft
+
 "@edenlabs/eden-sdk@npm:*, @edenlabs/eden-sdk@workspace:packages/eden-sdk":
   version: 0.0.0-use.local
   resolution: "@edenlabs/eden-sdk@workspace:packages/eden-sdk"
@@ -4114,6 +4125,13 @@ __metadata:
     ajv-formats: "npm:^2.1.1"
     fast-uri: "npm:^2.0.0"
   checksum: 10c0/f0be2ca1f75833492829c52c5f5ef0ec118bdd010614e002a6366952c27297c0f6a7dafb5917a0f9c4aaa84aa32a39e520c6d837fa251748717d58590cfc8177
+  languageName: node
+  linkType: hard
+
+"@fastify/busboy@npm:^2.0.0":
+  version: 2.1.1
+  resolution: "@fastify/busboy@npm:2.1.1"
+  checksum: 10c0/6f8027a8cba7f8f7b736718b013f5a38c0476eea67034c94a0d3c375e2b114366ad4419e6a6fa7ffc2ef9c6d3e0435d76dd584a7a1cbac23962fda7650b579e3
   languageName: node
   linkType: hard
 
@@ -11814,6 +11832,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-colors@npm:^4.1.3":
+  version: 4.1.3
+  resolution: "ansi-colors@npm:4.1.3"
+  checksum: 10c0/ec87a2f59902f74e61eada7f6e6fe20094a628dab765cfdbd03c3477599368768cffccdb5d3bb19a1b6c99126783a143b1fee31aab729b31ffe5836c7e5e28b9
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^4.2.1":
   version: 4.3.2
   resolution: "ansi-escapes@npm:4.3.2"
@@ -12019,6 +12044,7 @@ __metadata:
     viem: "npm:^2.38.3"
     vite: "npm:^4.3.5"
     vitest: "npm:^4.0.8"
+    yaml: "npm:^2.4.2"
     zod: "npm:^3.25.0"
   languageName: unknown
   linkType: soft
@@ -15459,6 +15485,12 @@ __metadata:
     vite: "npm:^4.3.5"
     vitest: "npm:^0.32.0"
     vitest-mongodb: "npm:^0.0.4"
+  languageName: unknown
+  linkType: soft
+
+"eden-sdk-py@workspace:packages/eden-sdk-py":
+  version: 0.0.0-use.local
+  resolution: "eden-sdk-py@workspace:packages/eden-sdk-py"
   languageName: unknown
   linkType: soft
 
@@ -22210,6 +22242,7 @@ __metadata:
     next-themes: "npm:^0.3.0"
     next-timeago: "npm:^0.2.0"
     openai: "npm:^4.0.0"
+    openapi-typescript: "npm:^6.7.6"
     photoswipe: "npm:^5.4.4"
     postcss: "npm:^8"
     qrcode.react: "npm:^4.2.0"
@@ -24593,10 +24626,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:^0.10.1":
+  version: 0.10.6
+  resolution: "openapi-fetch@npm:0.10.6"
+  dependencies:
+    openapi-typescript-helpers: "npm:^0.0.11"
+  checksum: 10c0/a47681394b90d91bbaf1d441feb385a8d35f8cea260822e216496d3bb609041da3edef85131e171189a24d9f2973b70ac7c79d5266b0b7d3d4b5b392dac60bec
+  languageName: node
+  linkType: hard
+
 "openapi-types@npm:^12.0.0, openapi-types@npm:^12.0.2, openapi-types@npm:^12.1.0":
   version: 12.1.3
   resolution: "openapi-types@npm:12.1.3"
   checksum: 10c0/4ad4eb91ea834c237edfa6ab31394e87e00c888fc2918009763389c00d02342345195d6f302d61c3fd807f17723cd48df29b47b538b68375b3827b3758cd520f
+  languageName: node
+  linkType: hard
+
+"openapi-typescript-helpers@npm:^0.0.11":
+  version: 0.0.11
+  resolution: "openapi-typescript-helpers@npm:0.0.11"
+  checksum: 10c0/582b09b191d0922f46c6f48aee04829233f89463ed1b92cc94863beff2910b64ec1326d4a37a618dbcf35bfa051cd875ead65ead31e055dced35c63fef123d21
+  languageName: node
+  linkType: hard
+
+"openapi-typescript@npm:^6.7.6":
+  version: 6.7.6
+  resolution: "openapi-typescript@npm:6.7.6"
+  dependencies:
+    ansi-colors: "npm:^4.1.3"
+    fast-glob: "npm:^3.3.2"
+    js-yaml: "npm:^4.1.0"
+    supports-color: "npm:^9.4.0"
+    undici: "npm:^5.28.4"
+    yargs-parser: "npm:^21.1.1"
+  bin:
+    openapi-typescript: bin/cli.js
+  checksum: 10c0/43b5a64cca2a53a0adc7f8763152db67c56369f06bdb5063d0c7aa3d4d53e76f54131cdbaee7e5e30404da15784b92ae3f814389f1f71428bcaa4ffcfa1c5197
   languageName: node
   linkType: hard
 
@@ -29726,6 +29791,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"supports-color@npm:^9.4.0":
+  version: 9.4.0
+  resolution: "supports-color@npm:9.4.0"
+  checksum: 10c0/6c24e6b2b64c6a60e5248490cfa50de5924da32cf09ae357ad8ebbf305cc5d2717ba705a9d4cb397d80bbf39417e8fdc8d7a0ce18bd0041bf7b5b456229164e4
+  languageName: node
+  linkType: hard
+
 "supports-hyperlinks@npm:^2.0.0":
   version: 2.3.0
   resolution: "supports-hyperlinks@npm:2.3.0"
@@ -30959,6 +31031,15 @@ __metadata:
   version: 7.16.0
   resolution: "undici-types@npm:7.16.0"
   checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
+  languageName: node
+  linkType: hard
+
+"undici@npm:^5.28.4":
+  version: 5.29.0
+  resolution: "undici@npm:5.29.0"
+  dependencies:
+    "@fastify/busboy": "npm:^2.0.0"
+  checksum: 10c0/e4e4d631ca54ee0ad82d2e90e7798fa00a106e27e6c880687e445cc2f13b4bc87c5eba2a88c266c3eecffb18f26e227b778412da74a23acc374fca7caccec49b
   languageName: node
   linkType: hard
 
@@ -32404,6 +32485,15 @@ __metadata:
   bin:
     yaml: bin.mjs
   checksum: 10c0/7c587be00d9303d2ae1566e03bc5bc7fe978ba0d9bf39cc418c3139d37929dfcb93a230d9749f2cb578b6aa5d9ebebc322415e4b653cb83acd8bc0bc321707f3
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.4.2":
+  version: 2.8.2
+  resolution: "yaml@npm:2.8.2"
+  bin:
+    yaml: bin.mjs
+  checksum: 10c0/703e4dc1e34b324aa66876d63618dcacb9ed49f7e7fe9b70f1e703645be8d640f68ab84f12b86df8ac960bac37acf5513e115de7c970940617ce0343c8c9cd96
   languageName: node
   linkType: hard
 
