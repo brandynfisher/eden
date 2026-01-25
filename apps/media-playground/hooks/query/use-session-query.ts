@@ -76,6 +76,12 @@ export function useSessionQuery({
         const newMessageIds = new Set(
           response.data.session.messages.map(m => m._id),
         )
+        const responseMessages = response.data.session.messages
+        const newestResponseMessage =
+          responseMessages[responseMessages.length - 1]
+        const newestResponseTimestamp = newestResponseMessage?.createdAt
+          ? new Date(newestResponseMessage.createdAt).getTime()
+          : 0
         // Filter older messages, excluding optimistic messages (they should be replaced by real messages from API)
         const olderMessages = existingSession.messages.filter(
           m =>
@@ -83,10 +89,17 @@ export function useSessionQuery({
             !m._id.startsWith(OPTIMISTIC_ID_PREFIX),
         )
 
+        const newerMessages = existingSession.messages.filter(m => {
+          if (newMessageIds.has(m._id)) return false
+          if (m._id.startsWith(OPTIMISTIC_ID_PREFIX)) return false
+          if (!m.createdAt) return false
+          return new Date(m.createdAt).getTime() > newestResponseTimestamp
+        })
+
         // Prepend older messages to the new session data
         return {
           ...response.data.session,
-          messages: [...olderMessages, ...response.data.session.messages],
+          messages: [...olderMessages, ...responseMessages, ...newerMessages],
         }
       }
 

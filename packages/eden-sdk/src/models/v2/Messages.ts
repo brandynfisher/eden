@@ -73,6 +73,28 @@ export type Message = {
   tool_calls?: ToolCall[]
   thought?: Thought[]
   apiKey?: string
+  observability?: {
+    provider?: string
+    session_id?: string
+    session_run_id?: string
+    trace_id?: string
+    generation_id?: string
+    tokens_spent?: number
+    prompt_tokens?: number
+    completion_tokens?: number
+    cached_prompt_tokens?: number
+    cached_completion_tokens?: number
+    cost_usd?: number
+    sentry_trace_id?: string | null
+    usage?: {
+      prompt_tokens?: number
+      completion_tokens?: number
+      cached_prompt_tokens?: number
+      cached_completion_tokens?: number
+      total_tokens?: number
+      cost_usd?: number
+    }
+  }
   /** Reference to raw LLM call data */
   llm_call?: string
   createdAt: Date

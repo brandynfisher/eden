@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Eden Sessions V3 (PoC)
+  version: 0.1.0
+  description: Minimal contract for session prompting + streaming (v3 PoC).
+servers:
+  - url: http://127.0.0.1:5050
+paths:
+  /v3/sessions/prompt:
+    post:
+      summary: Prompt a session (non-streaming)
+      tags: [SessionsV3]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionPromptRequest'
+      responses:
+        '200':
+          description: Prompt accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionPromptResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v3/sessions/prompt/stream:
+    post:
+      summary: Prompt a session (streaming SSE)
+      tags: [SessionsV3]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionPromptRequest'
+      responses:
+        '200':
+          description: SSE stream of session updates
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/SessionStreamEvent'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SessionMessageInput:
+      type: object
+      additionalProperties: false
+      required: [content]
+      properties:
+        content:
+          type: string
+        attachments:
+          type: array
+          items:
+            type: string
+          default: []
+    SessionPromptRequest:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        session_run_id:
+          type: string
+        session_id:
+          type: string
+        actor_agent_ids:
+          type: array
+          items:
+            type: string
+        thinking:
+          type: boolean
+        creation:
+          $ref: '#/components/schemas/SessionCreationInput'
+        message:
+          $ref: '#/components/schemas/SessionMessageInput'
+    SessionCreationInput:
+      type: object
+      additionalProperties: false
+      required: [agent_ids]
+      properties:
+        agent_ids:
+          type: array
+          items:
+            type: string
+    SessionPromptResponse:
+      type: object
+      additionalProperties: false
+      required: [session_id, session_run_id]
+      properties:
+        session_id:
+          type: string
+        session_run_id:
+          type: string
+        message_id:
+          type: string
+    SessionStreamEvent:
+      type: object
+      additionalProperties: false
+      required: [event, data]
+      properties:
+        event:
+          type: string
+          enum: [session_created, update, done, error, heartbeat]
+        data:
+          type: object
+          additionalProperties: true
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message:
+          type: string

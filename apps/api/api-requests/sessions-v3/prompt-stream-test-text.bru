@@ -1,0 +1,28 @@
+meta {
+  name: Sessions V3 - Prompt (Stream Test Text)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/v3/sessions/prompt/stream
+  body: json
+}
+
+headers {
+  Accept: text/event-stream
+  Content-Type: application/json
+  X-Api-Key: {{USER_API_KEY}}
+}
+
+body:json {
+  {
+    "session_id": "{{SESSION_ID}}",
+    "actor_agent_ids": ["{{AGENT_ID}}"],
+    "thinking": false,
+    "message": {
+      "content": "===test",
+      "attachments": []
+    }
+  }
+}

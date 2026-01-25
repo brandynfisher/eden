@@ -31,7 +31,9 @@ export const env = {
 // Session configuration
 export const sessionConfig = {
   // Whether to use streaming for session responses (true) or websocket-only updates (false)
-  useStreaming: false,
+  useStreaming: true,
+  // Whether to use the v3 session pipeline (direct Fastify + OpenAPI contract)
+  useSessionsV3: true,
 }
 
 export const siteConfig: SiteConfig = {

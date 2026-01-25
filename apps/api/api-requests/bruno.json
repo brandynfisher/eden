@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "eden-api-requests",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

@@ -1,0 +1,7 @@
+{
+  "event": "update",
+  "data": {
+    "type": "assistant_token",
+    "text": "hello"
+  }
+}
