@@ -73,13 +73,59 @@ export interface components {
       message: string
     }
     Artifact: {
+      _id: string
+      owner: string
+      title: string
+      type: string
+      public: boolean
+      session?: string | null
+      originSession?: string | null
+      version: number
+      deleted?: boolean
+      createdAt: string
+      updatedAt: string
+      items: {
+        [key: string]: unknown
+      }
       [key: string]: unknown
     }
     ArtifactResponse: {
-      artifact: components['schemas']['Artifact']
+      artifact: {
+        _id: string
+        owner: string
+        title: string
+        type: string
+        public: boolean
+        session?: string | null
+        originSession?: string | null
+        version: number
+        deleted?: boolean
+        createdAt: string
+        updatedAt: string
+        items: {
+          [key: string]: unknown
+        }
+        [key: string]: unknown
+      }
     }
     PaginatedArtifactsResponse: {
-      docs: components['schemas']['Artifact'][]
+      docs: {
+        _id: string
+        owner: string
+        title: string
+        type: string
+        public: boolean
+        session?: string | null
+        originSession?: string | null
+        version: number
+        deleted?: boolean
+        createdAt: string
+        updatedAt: string
+        items: {
+          [key: string]: unknown
+        }
+        [key: string]: unknown
+      }[]
       total: number
       limit: number
       pages: number
@@ -90,8 +136,43 @@ export interface components {
       prevPage?: number | null
       nextPage?: number | null
     }
+    ArtifactHistoryEntry: {
+      _id: string
+      artifact: string
+      version: number
+      items: {
+        [key: string]: unknown
+      }
+      operations?: {
+        /** @enum {string} */
+        op: 'add' | 'remove' | 'replace'
+        path: string
+        value?: unknown
+      }[]
+      actor: string
+      reason?: string
+      createdAt: string
+      updatedAt?: string
+      [key: string]: unknown
+    }
     PaginatedArtifactsHistoryResponse: {
       docs: {
+        _id: string
+        artifact: string
+        version: number
+        items: {
+          [key: string]: unknown
+        }
+        operations?: {
+          /** @enum {string} */
+          op: 'add' | 'remove' | 'replace'
+          path: string
+          value?: unknown
+        }[]
+        actor: string
+        reason?: string
+        createdAt: string
+        updatedAt?: string
         [key: string]: unknown
       }[]
       total: number
@@ -138,6 +219,9 @@ export interface components {
     }
     ArtifactPermissionsResponse: {
       permissions: {
+        subjectId?: string
+        /** @enum {string} */
+        level: 'viewer' | 'editor' | 'owner'
         [key: string]: unknown
       }[]
     }

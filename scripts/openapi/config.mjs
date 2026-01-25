@@ -26,6 +26,7 @@ export const openapiJobs = [
     name: 'artifacts-v3',
     spec: 'apps/api/openapi/artifacts-v3.yaml',
     mcp: false,
+    watch: ['apps/api/src/domain/v3/artifacts.ts'],
     outputs: [
       {
         type: 'openapi-typescript',
@@ -39,6 +40,7 @@ export const openapiJobs = [
     name: 'manna-v3',
     spec: 'apps/api/openapi/manna-v3.yaml',
     mcp: false,
+    watch: ['apps/api/src/domain/v3/manna.ts'],
     outputs: [
       {
         type: 'openapi-typescript',

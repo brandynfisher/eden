@@ -9,27 +9,21 @@ import {
   updateArtifactPermissionsV3,
   updateArtifactV3,
 } from '../../controllers/v3/artifactControllerV3'
+import { ArtifactsV3Domain } from '../../domain/v3/artifacts'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
-import registerOpenApiSchemas from '../../plugins/openapiSchemas'
 import { FastifyPluginAsync } from 'fastify'
 
 const artifactRoutesV3: FastifyPluginAsync = async server => {
-  await server.register(registerOpenApiSchemas, { id: 'artifacts-v3' })
-
   server.get('/v3/artifacts', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'List Artifacts V3',
       description:
         'Retrieve a paginated list of artifacts, optionally filtered by owner, type, or session.',
       security: [{ apiKey: [] }],
-      querystring: {
-        $ref: 'artifacts-v3#/components/schemas/ArtifactsListQuery',
-      },
+      querystring: ArtifactsV3Domain.query.list,
       response: {
-        200: {
-          $ref: 'artifacts-v3#/components/schemas/PaginatedArtifactsResponse',
-        },
+        200: ArtifactsV3Domain.response.paginated,
       },
     },
     preHandler: [request => maybeAuth(server, request)],
@@ -38,16 +32,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.get('/v3/artifacts/:artifactId', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'Get Artifact V3 Details',
       description:
         'Retrieve detailed information about a specific artifact by its ID.',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      params: ArtifactsV3Domain.params.artifactId,
       response: {
-        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.artifact,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [request => maybeAuth(server, request)],
@@ -56,15 +50,15 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.post('/v3/artifacts', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'Create Artifact V3',
       description: 'Create a new artifact.',
       security: [{ apiKey: [] }],
-      body: { $ref: 'artifacts-v3#/components/schemas/ArtifactCreateRequest' },
+      body: ArtifactsV3Domain.request.create,
       response: {
-        201: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        422: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        201: ArtifactsV3Domain.response.artifact,
+        401: ArtifactsV3Domain.response.error,
+        422: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -73,16 +67,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.patch('/v3/artifacts/:artifactId', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'Update Artifact V3',
       description: "Update an existing artifact's properties.",
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
-      body: { $ref: 'artifacts-v3#/components/schemas/ArtifactUpdateRequest' },
+      params: ArtifactsV3Domain.params.artifactId,
+      body: ArtifactsV3Domain.request.update,
       response: {
-        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.artifact,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -91,20 +85,18 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.patch('/v3/artifacts/:artifactId/items', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'Patch Artifact Items',
       description:
         'Apply JSON Patch operations (RFC 6902) to artifact items. Supports add, remove, and replace operations.',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
-      body: {
-        $ref: 'artifacts-v3#/components/schemas/ArtifactPatchItemsRequest',
-      },
+      params: ArtifactsV3Domain.params.artifactId,
+      body: ArtifactsV3Domain.request.patchItems,
       response: {
-        200: { $ref: 'artifacts-v3#/components/schemas/ArtifactResponse' },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        422: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.artifact,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
+        422: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -113,15 +105,15 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.delete('/v3/artifacts/:artifactId', {
     schema: {
-      tags: ['Artifacts V3'],
+      tags: ['Artifacts'],
       summary: 'Delete Artifact V3',
       description: 'Soft delete an artifact.',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      params: ArtifactsV3Domain.params.artifactId,
       response: {
-        200: { $ref: 'artifacts-v3#/components/schemas/MessageResponse' },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.message,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -130,17 +122,15 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.get('/v3/artifacts/:artifactId/permissions', {
     schema: {
-      tags: ['Artifacts V3 - Permissions'],
+      tags: ['Artifacts - Permissions'],
       summary: 'Get Artifact Permissions',
       description: 'Retrieve permissions for an artifact.',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
+      params: ArtifactsV3Domain.params.artifactId,
       response: {
-        200: {
-          $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsResponse',
-        },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.permissions,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -149,20 +139,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.put('/v3/artifacts/:artifactId/permissions', {
     schema: {
-      tags: ['Artifacts V3 - Permissions'],
+      tags: ['Artifacts - Permissions'],
       summary: 'Update Artifact Permissions',
       description: 'Replace permissions for an artifact (artifact-level only).',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
-      body: {
-        $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsUpdateRequest',
-      },
+      params: ArtifactsV3Domain.params.artifactId,
+      body: ArtifactsV3Domain.request.permissionsUpdate,
       response: {
-        200: {
-          $ref: 'artifacts-v3#/components/schemas/ArtifactPermissionsResponse',
-        },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.permissions,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
@@ -171,20 +157,16 @@ const artifactRoutesV3: FastifyPluginAsync = async server => {
 
   server.get('/v3/artifacts/:artifactId/history', {
     schema: {
-      tags: ['Artifacts V3 - History'],
+      tags: ['Artifacts - History'],
       summary: 'List Artifact History',
       description: 'Retrieve a paginated list of artifact edit history.',
       security: [{ apiKey: [] }],
-      params: { $ref: 'artifacts-v3#/components/schemas/ArtifactIdParam' },
-      querystring: {
-        $ref: 'artifacts-v3#/components/schemas/ArtifactsHistoryQuery',
-      },
+      params: ArtifactsV3Domain.params.artifactId,
+      querystring: ArtifactsV3Domain.query.history,
       response: {
-        200: {
-          $ref: 'artifacts-v3#/components/schemas/PaginatedArtifactsHistoryResponse',
-        },
-        401: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
-        404: { $ref: 'artifacts-v3#/components/schemas/ErrorResponse' },
+        200: ArtifactsV3Domain.response.history,
+        401: ArtifactsV3Domain.response.error,
+        404: ArtifactsV3Domain.response.error,
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],

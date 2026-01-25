@@ -1,6 +1,6 @@
 import { MannaDocument } from './Manna'
-import { MannaVoucherDocument } from './MannaVoucher'
 import { TaskDocument } from './Task'
+import { MannaVoucherDocument } from './v3/MannaVoucher'
 import { TransactionType } from '@edenlabs/eden-sdk'
 import mongoose, { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'

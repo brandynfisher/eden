@@ -1,13 +1,13 @@
 import { randomId } from '../lib/util'
 import { Manna } from '../models/Manna'
+import { Transaction } from '../models/Transaction'
+import { User, UserDocument } from '../models/User'
 import {
   MannaVoucher,
   MannaVoucherDocument,
   VoucherAction,
-} from '../models/MannaVoucher'
-import { Transaction } from '../models/Transaction'
-import { User, UserDocument } from '../models/User'
-import { MannaVoucherRedemption } from '../models/v2/MannaVoucherRedemption'
+} from '../models/v3/MannaVoucher'
+import { MannaVoucherRedemption } from '../models/v3/MannaVoucherRedemption'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 import { FeatureFlag, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'

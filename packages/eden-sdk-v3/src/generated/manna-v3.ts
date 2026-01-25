@@ -25,9 +25,11 @@ export interface components {
       code: string
     }
     MannaVoucherRedeemResponse: {
+      action: string
       success?: boolean
-      action?: string
       manna?: number
+      subscriptionBalance?: number
+      topupAmount?: number
       transactionId?: string
     }
   }

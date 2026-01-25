@@ -1,30 +1,26 @@
 import { redeemMannaVoucher } from '../../controllers/mannaController'
+import { MannaV3Domain } from '../../domain/v3/manna'
 import { isAuth } from '../../middleware/authMiddleware'
-import registerOpenApiSchemas from '../../plugins/openapiSchemas'
-import { MannaVoucherRedeemRequest } from '@edenlabs/eden-sdk-v3'
+import { Static } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const mannaRoutesV3: FastifyPluginAsync = async server => {
-  await server.register(registerOpenApiSchemas, { id: 'manna-v3' })
-
-  server.post<{ Body: MannaVoucherRedeemRequest }>(
+  server.post<{
+    Body: Static<typeof MannaV3Domain.request.redeemVoucher>
+  }>(
     '/v3/manna/vouchers/redeem',
     {
       schema: {
-        tags: ['MannaV3'],
+        tags: ['Manna'],
         summary: 'Redeem Manna Voucher',
         description:
           "Redeem a manna voucher code to add manna to the authenticated user's account.",
         security: [{ apiKey: [] }],
-        body: {
-          $ref: 'manna-v3#/components/schemas/MannaVoucherRedeemRequest',
-        },
+        body: MannaV3Domain.request.redeemVoucher,
         response: {
-          200: {
-            $ref: 'manna-v3#/components/schemas/MannaVoucherRedeemResponse',
-          },
-          400: { $ref: 'manna-v3#/components/schemas/ErrorResponse' },
-          401: { $ref: 'manna-v3#/components/schemas/ErrorResponse' },
+          200: MannaV3Domain.response.redeemVoucher,
+          400: MannaV3Domain.response.error,
+          401: MannaV3Domain.response.error,
         },
       },
       preHandler: [(request, reply) => isAuth(server, request, reply)],

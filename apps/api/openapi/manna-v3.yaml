@@ -5,68 +5,85 @@ info:
   description: v3 manna endpoints
 servers:
   - url: /
-
-paths:
-  /v3/manna/vouchers/redeem:
-    post:
-      tags: [Manna]
-      summary: Redeem manna voucher
-      description:
-        Redeem a manna voucher code to add manna to the authenticated user's
-        account.
-      operationId: manna.redeemVoucher
-      x-eden:
-        method: manna.redeemVoucher
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MannaVoucherRedeemRequest'
-      responses:
-        '200':
-          description: Voucher redeemed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MannaVoucherRedeemResponse'
-        '400':
-          $ref: '#/components/responses/ErrorResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-
+tags:
+  - name: Manna
 components:
-  responses:
-    ErrorResponse:
-      description: Error response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-
   schemas:
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-      required: [message]
-
+      required:
+        - message
     MannaVoucherRedeemRequest:
       type: object
       properties:
         code:
           type: string
-      required: [code]
-
+      required:
+        - code
     MannaVoucherRedeemResponse:
       type: object
       properties:
-        success:
-          type: boolean
         action:
           type: string
+        success:
+          type: boolean
         manna:
+          type: number
+        subscriptionBalance:
+          type: number
+        topupAmount:
           type: number
         transactionId:
           type: string
+      required:
+        - action
+  responses:
+    ErrorResponse:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /v3/manna/vouchers/redeem:
+    post:
+      tags:
+        - Manna
+      summary: Redeem manna voucher
+      description: Redeem a manna voucher code to add manna to the authenticated
+        user's account.
+      operationId: manna.redeemVoucher
+      x-eden:
+        method: manna.redeemVoucher
+      security:
+        - apiKey: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MannaVoucherRedeemRequest"
+      responses:
+        "200":
+          description: Voucher redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MannaVoucherRedeemResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"

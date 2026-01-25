@@ -5,229 +5,456 @@ info:
   description: v3 artifact endpoints
 servers:
   - url: /
-
-paths:
-  /v3/artifacts:
-    get:
-      tags: [Artifacts]
-      summary: List artifacts
-      description: Retrieve a paginated list of artifacts.
-      operationId: artifacts.list
-      x-eden:
-        method: artifacts.list
-      parameters:
-        - $ref: '#/components/parameters/ownerId'
-        - $ref: '#/components/parameters/type'
-        - $ref: '#/components/parameters/sessionId'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/orderBy'
-        - $ref: '#/components/parameters/direction'
-      responses:
-        '200':
-          description: A paginated list of artifacts
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedArtifactsResponse'
-    post:
-      tags: [Artifacts]
-      summary: Create artifact
-      description: Create a new artifact.
-      operationId: artifacts.create
-      x-eden:
-        method: artifacts.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtifactCreateRequest'
-      responses:
-        '201':
-          description: Artifact created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '422':
-          $ref: '#/components/responses/ErrorResponse'
-
-  /v3/artifacts/{artifactId}:
-    get:
-      tags: [Artifacts]
-      summary: Get artifact
-      description: Retrieve a specific artifact.
-      operationId: artifacts.get
-      x-eden:
-        method: artifacts.get
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      responses:
-        '200':
-          description: Artifact details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-    patch:
-      tags: [Artifacts]
-      summary: Update artifact
-      description: Update an existing artifact.
-      operationId: artifacts.update
-      x-eden:
-        method: artifacts.update
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtifactUpdateRequest'
-      responses:
-        '200':
-          description: Artifact updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-    delete:
-      tags: [Artifacts]
-      summary: Delete artifact
-      description: Soft delete an artifact.
-      operationId: artifacts.delete
-      x-eden:
-        method: artifacts.delete
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      responses:
-        '200':
-          description: Artifact deleted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-
-  /v3/artifacts/{artifactId}/items:
-    patch:
-      tags: [Artifacts]
-      summary: Patch artifact items
-      description: Apply JSON Patch operations (RFC 6902) to artifact items.
-      operationId: artifacts.patchItems
-      x-eden:
-        method: artifacts.patchItems
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtifactPatchItemsRequest'
-      responses:
-        '200':
-          description: Artifact updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-        '422':
-          $ref: '#/components/responses/ErrorResponse'
-
-  /v3/artifacts/{artifactId}/permissions:
-    get:
-      tags: [Artifacts]
-      summary: Get artifact permissions
-      description: Retrieve permissions for an artifact.
-      operationId: artifacts.getPermissions
-      x-eden:
-        method: artifacts.getPermissions
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      responses:
-        '200':
-          description: Permissions
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactPermissionsResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-    put:
-      tags: [Artifacts]
-      summary: Update artifact permissions
-      description: Replace permissions for an artifact.
-      operationId: artifacts.updatePermissions
-      x-eden:
-        method: artifacts.updatePermissions
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtifactPermissionsUpdateRequest'
-      responses:
-        '200':
-          description: Permissions updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ArtifactPermissionsResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-
-  /v3/artifacts/{artifactId}/history:
-    get:
-      tags: [Artifacts]
-      summary: List artifact history
-      description: Retrieve a paginated list of artifact edit history.
-      operationId: artifacts.history
-      x-eden:
-        method: artifacts.history
-      parameters:
-        - $ref: '#/components/parameters/artifactId'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/orderBy'
-        - $ref: '#/components/parameters/direction'
-      responses:
-        '200':
-          description: Artifact history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedArtifactsHistoryResponse'
-        '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '404':
-          $ref: '#/components/responses/ErrorResponse'
-
+tags:
+  - name: Artifacts
 components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    Artifact:
+      additionalProperties: true
+      type: object
+      properties:
+        _id:
+          type: string
+        owner:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        public:
+          type: boolean
+        session:
+          nullable: true
+          type: string
+        originSession:
+          nullable: true
+          type: string
+        version:
+          type: integer
+        deleted:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        items:
+          additionalProperties: true
+          type: object
+          properties: {}
+      required:
+        - _id
+        - owner
+        - title
+        - type
+        - public
+        - version
+        - createdAt
+        - updatedAt
+        - items
+    ArtifactResponse:
+      type: object
+      properties:
+        artifact:
+          additionalProperties: true
+          type: object
+          properties:
+            _id:
+              type: string
+            owner:
+              type: string
+            title:
+              type: string
+            type:
+              type: string
+            public:
+              type: boolean
+            session:
+              nullable: true
+              type: string
+            originSession:
+              nullable: true
+              type: string
+            version:
+              type: integer
+            deleted:
+              type: boolean
+            createdAt:
+              type: string
+            updatedAt:
+              type: string
+            items:
+              additionalProperties: true
+              type: object
+              properties: {}
+          required:
+            - _id
+            - owner
+            - title
+            - type
+            - public
+            - version
+            - createdAt
+            - updatedAt
+            - items
+      required:
+        - artifact
+    PaginatedArtifactsResponse:
+      type: object
+      properties:
+        docs:
+          type: array
+          items:
+            additionalProperties: true
+            type: object
+            properties:
+              _id:
+                type: string
+              owner:
+                type: string
+              title:
+                type: string
+              type:
+                type: string
+              public:
+                type: boolean
+              session:
+                nullable: true
+                type: string
+              originSession:
+                nullable: true
+                type: string
+              version:
+                type: integer
+              deleted:
+                type: boolean
+              createdAt:
+                type: string
+              updatedAt:
+                type: string
+              items:
+                additionalProperties: true
+                type: object
+                properties: {}
+            required:
+              - _id
+              - owner
+              - title
+              - type
+              - public
+              - version
+              - createdAt
+              - updatedAt
+              - items
+        total:
+          type: number
+        limit:
+          type: number
+        pages:
+          type: number
+        page:
+          type: number
+        pagingCounter:
+          type: number
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+        prevPage:
+          nullable: true
+          type: number
+        nextPage:
+          nullable: true
+          type: number
+      required:
+        - docs
+        - total
+        - limit
+        - pages
+        - page
+        - pagingCounter
+        - hasPrevPage
+        - hasNextPage
+    ArtifactHistoryEntry:
+      additionalProperties: true
+      type: object
+      properties:
+        _id:
+          type: string
+        artifact:
+          type: string
+        version:
+          type: integer
+        items:
+          additionalProperties: true
+          type: object
+          properties: {}
+        operations:
+          type: array
+          items:
+            type: object
+            properties:
+              op:
+                enum:
+                  - add
+                  - remove
+                  - replace
+                type: string
+              path:
+                type: string
+              value: {}
+            required:
+              - op
+              - path
+        actor:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - _id
+        - artifact
+        - version
+        - items
+        - actor
+        - createdAt
+    PaginatedArtifactsHistoryResponse:
+      type: object
+      properties:
+        docs:
+          type: array
+          items:
+            additionalProperties: true
+            type: object
+            properties:
+              _id:
+                type: string
+              artifact:
+                type: string
+              version:
+                type: integer
+              items:
+                additionalProperties: true
+                type: object
+                properties: {}
+              operations:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    op:
+                      enum:
+                        - add
+                        - remove
+                        - replace
+                      type: string
+                    path:
+                      type: string
+                    value: {}
+                  required:
+                    - op
+                    - path
+              actor:
+                type: string
+              reason:
+                type: string
+              createdAt:
+                type: string
+              updatedAt:
+                type: string
+            required:
+              - _id
+              - artifact
+              - version
+              - items
+              - actor
+              - createdAt
+        total:
+          type: number
+        limit:
+          type: number
+        pages:
+          type: number
+        page:
+          type: number
+        pagingCounter:
+          type: number
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+        prevPage:
+          nullable: true
+          type: number
+        nextPage:
+          nullable: true
+          type: number
+      required:
+        - docs
+        - total
+        - limit
+        - pages
+        - page
+        - pagingCounter
+        - hasPrevPage
+        - hasNextPage
+    ArtifactCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        public:
+          type: boolean
+        session:
+          nullable: true
+          type: string
+        items:
+          additionalProperties: true
+          type: object
+          properties: {}
+        content:
+          type: string
+      required:
+        - title
+        - type
+    ArtifactUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        public:
+          type: boolean
+        session:
+          nullable: true
+          type: string
+    ArtifactPatchItemsRequest:
+      type: object
+      properties:
+        operations:
+          type: array
+          items:
+            type: object
+            properties:
+              op:
+                enum:
+                  - add
+                  - remove
+                  - replace
+                type: string
+              path:
+                type: string
+              value: {}
+            required:
+              - op
+              - path
+        reason:
+          type: string
+      required:
+        - operations
+    ArtifactPermissionsUpdateRequest:
+      type: object
+      properties:
+        permissions:
+          type: array
+          items:
+            type: object
+            properties:
+              subjectId:
+                type: string
+              level:
+                enum:
+                  - viewer
+                  - editor
+                  - owner
+                type: string
+            required:
+              - subjectId
+              - level
+      required:
+        - permissions
+    ArtifactPermissionsResponse:
+      type: object
+      properties:
+        permissions:
+          type: array
+          items:
+            additionalProperties: true
+            type: object
+            properties:
+              subjectId:
+                type: string
+              level:
+                enum:
+                  - viewer
+                  - editor
+                  - owner
+                type: string
+            required:
+              - level
+      required:
+        - permissions
+    ArtifactIdParam:
+      type: object
+      properties:
+        artifactId:
+          type: string
+      required:
+        - artifactId
+    ArtifactsListQuery:
+      type: object
+      properties:
+        ownerId:
+          type: string
+        type:
+          type: string
+        sessionId:
+          type: string
+        page:
+          type: integer
+        limit:
+          type: integer
+        orderBy:
+          type: string
+        direction:
+          type: integer
+    ArtifactsHistoryQuery:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        orderBy:
+          type: string
+        direction:
+          type: integer
+  responses:
+    ErrorResponse:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   parameters:
     artifactId:
       in: path
@@ -238,15 +465,18 @@ components:
     ownerId:
       in: query
       name: ownerId
-      schema: { type: string }
+      schema:
+        type: string
     type:
       in: query
       name: type
-      schema: { type: string }
+      schema:
+        type: string
     sessionId:
       in: query
       name: sessionId
-      schema: { type: string }
+      schema:
+        type: string
     page:
       in: query
       name: page
@@ -267,226 +497,248 @@ components:
       name: direction
       schema:
         type: integer
-
-  responses:
-    ErrorResponse:
-      description: Error response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-
-  schemas:
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-      required: [message]
-
-    MessageResponse:
-      type: object
-      properties:
-        message:
-          type: string
-      required: [message]
-
-    Artifact:
-      type: object
-      additionalProperties: true
-
-    ArtifactResponse:
-      type: object
-      properties:
-        artifact:
-          $ref: '#/components/schemas/Artifact'
-      required: [artifact]
-
-    PaginatedArtifactsResponse:
-      type: object
-      properties:
-        docs:
-          type: array
-          items:
-            $ref: '#/components/schemas/Artifact'
-        total:
-          type: number
-        limit:
-          type: number
-        pages:
-          type: number
-        page:
-          type: number
-        pagingCounter:
-          type: number
-        hasPrevPage:
-          type: boolean
-        hasNextPage:
-          type: boolean
-        prevPage:
-          type: number
-          nullable: true
-        nextPage:
-          type: number
-          nullable: true
-      required:
-        - docs
-        - total
-        - limit
-        - pages
-        - page
-        - pagingCounter
-        - hasPrevPage
-        - hasNextPage
-
-    PaginatedArtifactsHistoryResponse:
-      type: object
-      properties:
-        docs:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-        total:
-          type: number
-        limit:
-          type: number
-        pages:
-          type: number
-        page:
-          type: number
-        pagingCounter:
-          type: number
-        hasPrevPage:
-          type: boolean
-        hasNextPage:
-          type: boolean
-        prevPage:
-          type: number
-          nullable: true
-        nextPage:
-          type: number
-          nullable: true
-      required:
-        - docs
-        - total
-        - limit
-        - pages
-        - page
-        - pagingCounter
-        - hasPrevPage
-        - hasNextPage
-
-    ArtifactCreateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-        type:
-          type: string
-        public:
-          type: boolean
-        session:
-          type: string
-          nullable: true
-        items:
-          type: object
-          additionalProperties: true
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /v3/artifacts:
+    get:
+      tags:
+        - Artifacts
+      summary: List artifacts
+      description: Retrieve a paginated list of artifacts.
+      operationId: artifacts.list
+      x-eden:
+        method: artifacts.list
+      security: &a1
+        - apiKey: []
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ownerId"
+        - $ref: "#/components/parameters/type"
+        - $ref: "#/components/parameters/sessionId"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/orderBy"
+        - $ref: "#/components/parameters/direction"
+      responses:
+        "200":
+          description: A paginated list of artifacts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedArtifactsResponse"
+    post:
+      tags:
+        - Artifacts
+      summary: Create artifact
+      description: Create a new artifact.
+      operationId: artifacts.create
+      x-eden:
+        method: artifacts.create
+      security: *a1
+      requestBody:
+        required: true
         content:
-          type: string
-      required: [title, type]
-
-    ArtifactUpdateRequest:
-      type: object
-      properties:
-        title:
-          type: string
-        type:
-          type: string
-        public:
-          type: boolean
-        session:
-          type: string
-          nullable: true
-
-    ArtifactPatchItemsRequest:
-      type: object
-      properties:
-        operations:
-          type: array
-          items:
-            type: object
-            properties:
-              op:
-                type: string
-                enum: [add, remove, replace]
-              path:
-                type: string
-              value: {}
-            required: [op, path]
-        reason:
-          type: string
-      required: [operations]
-
-    ArtifactPermissionsUpdateRequest:
-      type: object
-      properties:
-        permissions:
-          type: array
-          items:
-            type: object
-            properties:
-              subjectId:
-                type: string
-              level:
-                type: string
-                enum: [viewer, editor, owner]
-            required: [subjectId, level]
-      required: [permissions]
-
-    ArtifactPermissionsResponse:
-      type: object
-      properties:
-        permissions:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-      required: [permissions]
-
-    ArtifactIdParam:
-      type: object
-      properties:
-        artifactId:
-          type: string
-      required: [artifactId]
-
-    ArtifactsListQuery:
-      type: object
-      properties:
-        ownerId:
-          type: string
-        type:
-          type: string
-        sessionId:
-          type: string
-        page:
-          type: integer
-        limit:
-          type: integer
-        orderBy:
-          type: string
-        direction:
-          type: integer
-
-    ArtifactsHistoryQuery:
-      type: object
-      properties:
-        page:
-          type: integer
-        limit:
-          type: integer
-        orderBy:
-          type: string
-        direction:
-          type: integer
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtifactCreateRequest"
+      responses:
+        "201":
+          description: Artifact created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "422":
+          $ref: "#/components/responses/ErrorResponse"
+  /v3/artifacts/{artifactId}:
+    get:
+      tags:
+        - Artifacts
+      summary: Get artifact
+      description: Retrieve a specific artifact.
+      operationId: artifacts.get
+      x-eden:
+        method: artifacts.get
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      responses:
+        "200":
+          description: Artifact details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+    patch:
+      tags:
+        - Artifacts
+      summary: Update artifact
+      description: Update an existing artifact.
+      operationId: artifacts.update
+      x-eden:
+        method: artifacts.update
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtifactUpdateRequest"
+      responses:
+        "200":
+          description: Artifact updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+    delete:
+      tags:
+        - Artifacts
+      summary: Delete artifact
+      description: Soft delete an artifact.
+      operationId: artifacts.delete
+      x-eden:
+        method: artifacts.delete
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      responses:
+        "200":
+          description: Artifact deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /v3/artifacts/{artifactId}/items:
+    patch:
+      tags:
+        - Artifacts
+      summary: Patch artifact items
+      description: Apply JSON Patch operations (RFC 6902) to artifact items.
+      operationId: artifacts.patchItems
+      x-eden:
+        method: artifacts.patchItems
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtifactPatchItemsRequest"
+      responses:
+        "200":
+          description: Artifact updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+        "422":
+          $ref: "#/components/responses/ErrorResponse"
+  /v3/artifacts/{artifactId}/permissions:
+    get:
+      tags:
+        - Artifacts
+      summary: Get artifact permissions
+      description: Retrieve permissions for an artifact.
+      operationId: artifacts.getPermissions
+      x-eden:
+        method: artifacts.getPermissions
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      responses:
+        "200":
+          description: Permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactPermissionsResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+    put:
+      tags:
+        - Artifacts
+      summary: Update artifact permissions
+      description: Replace permissions for an artifact.
+      operationId: artifacts.updatePermissions
+      x-eden:
+        method: artifacts.updatePermissions
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtifactPermissionsUpdateRequest"
+      responses:
+        "200":
+          description: Permissions updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtifactPermissionsResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /v3/artifacts/{artifactId}/history:
+    get:
+      tags:
+        - Artifacts
+      summary: List artifact history
+      description: Retrieve a paginated list of artifact edit history.
+      operationId: artifacts.history
+      x-eden:
+        method: artifacts.history
+      security: *a1
+      parameters:
+        - $ref: "#/components/parameters/artifactId"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/orderBy"
+        - $ref: "#/components/parameters/direction"
+      responses:
+        "200":
+          description: Artifact history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedArtifactsHistoryResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"

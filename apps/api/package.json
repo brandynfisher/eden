@@ -12,7 +12,8 @@
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "generate:openapi": "DOTENV_PATH=.env.eden tsx scripts/generate-openapi.ts"
+    "generate:openapi": "DOTENV_PATH=.env.eden tsx scripts/generate-openapi.ts",
+    "generate:openapi-v3-domain": "tsx scripts/generate-openapi-v3-domain.ts"
   },
   "engines": {
     "node": ">=16.0.0"
