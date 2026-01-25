@@ -1,19 +1,31 @@
 import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
-import { readFileSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import yaml from 'yaml'
 
 const SCHEMA_ID_PREFIX = 'sessions-v3#/components/schemas/'
 
-const loadOpenApi = () => {
-  const openapiPath = resolve(process.cwd(), 'openapi', 'sessions-v3.yaml')
-  const file = readFileSync(openapiPath, 'utf-8')
-  return yaml.parse(file)
+const findOpenApiPath = () => {
+  const candidates = [
+    process.env.EDEN_OPENAPI_PATH,
+    resolve(process.cwd(), 'openapi', 'sessions-v3.yaml'),
+    resolve(process.cwd(), 'apps', 'api', 'openapi', 'sessions-v3.yaml'),
+  ].filter((candidate): candidate is string => Boolean(candidate))
+
+  return candidates.find(candidate => existsSync(candidate)) ?? null
 }
 
 const registerSessionsV3Schemas: FastifyPluginAsync = async server => {
-  const openapi = loadOpenApi()
+  const openapiPath = findOpenApiPath()
+  if (!openapiPath) {
+    server.log.warn(
+      'Sessions v3 OpenAPI schema file not found; skipping schema registration',
+    )
+    return
+  }
+  const file = readFileSync(openapiPath, 'utf-8')
+  const openapi = yaml.parse(file)
   const schemas = openapi?.components?.schemas
 
   if (!schemas || typeof schemas !== 'object') {
