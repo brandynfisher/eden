@@ -81,9 +81,9 @@ export const conceptV2Schema = new Schema<ConceptV2Document>(
       required: true,
       validate: {
         validator: function (images: ConceptImageSchema[]) {
-          return images.length <= 25 && images.length > 0
+          return images.length <= 100 && images.length > 0
         },
-        message: 'Images array must contain between 1 and 25 items',
+        message: 'Images array must contain between 1 and 100 items',
       },
     },
     sdxl_lora: {

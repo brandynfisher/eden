@@ -85,7 +85,7 @@ const conceptRoutesV2: FastifyPluginAsync = async server => {
             image: Type.String(),
             usage_instructions: Type.String(),
           }),
-          { minItems: 1, maxItems: 25 },
+          { minItems: 1, maxItems: 100 },
         ),
       }),
       response: {
@@ -130,7 +130,7 @@ const conceptRoutesV2: FastifyPluginAsync = async server => {
               image: Type.String(),
               usage_instructions: Type.String(),
             }),
-            { minItems: 1, maxItems: 25 },
+            { minItems: 1, maxItems: 100 },
           ),
         ),
       }),
