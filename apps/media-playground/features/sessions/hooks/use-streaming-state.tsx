@@ -1,13 +1,38 @@
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { Message } from '@edenlabs/eden-sdk'
-import { useCallback, useRef, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+
+type StreamingAgentState = {
+  agent: {
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }
+  text: string
+  isStreamingTokens: boolean
+  hasReceivedTokens: boolean
+  waitingForWebSocket: boolean
+  streamingMessageId: string | null
+  awaitingToolCall: boolean
+  sessionRunId?: string
+}
 
 interface UseStreamingStateProps {
   sessionId: string | undefined
   enabled: boolean
   onError: (error: string) => void
-  setOptimisticMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  setOptimisticMessages: Dispatch<SetStateAction<Message[]>>
   onSessionCreated?: (sessionId: string) => void
+  onAgentStart?: (agentId: string, sessionRunId?: string) => void
+  onAgentOutput?: (agentId: string, sessionRunId?: string) => void
 }
 
 export function useStreamingState({
@@ -16,103 +41,200 @@ export function useStreamingState({
   onError,
   setOptimisticMessages,
   onSessionCreated,
+  onAgentStart,
+  onAgentOutput,
 }: UseStreamingStateProps) {
-  const [streamingText, setStreamingText] = useState('')
-  const [isStreamingTokens, setIsStreamingTokens] = useState(false)
-  const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
-  const [waitingForWebSocket, setWaitingForWebSocket] = useState(false)
-  const [streamingAgent, setStreamingAgent] = useState<{
-    _id: string
-    username: string
-    name: string
-    userImage?: string
-  } | null>(null)
-  const streamingMessageIdRef = useRef<string | null>(null)
+  const [streamingByAgent, setStreamingByAgent] = useState<
+    Record<string, StreamingAgentState>
+  >({})
+  const latestAgentIdRef = useRef<string | null>(null)
+  const latestAgentRef = useRef<StreamingAgentState['agent'] | null>(null)
 
   const clearStreamingState = useCallback(() => {
-    setStreamingText('')
-    setIsStreamingTokens(false)
-    setHasReceivedTokens(false)
-    setWaitingForWebSocket(false)
-    setStreamingAgent(null)
-    streamingMessageIdRef.current = null
+    setStreamingByAgent({})
+    latestAgentIdRef.current = null
   }, [])
+
+  const upsertStreamingAgent = useCallback(
+    (
+      agent: {
+        _id: string
+        username: string
+        name: string
+        userImage?: string
+      },
+      updater: (prev: StreamingAgentState) => StreamingAgentState,
+      sessionRunId?: string,
+    ) => {
+      latestAgentIdRef.current = agent._id
+      latestAgentRef.current = agent
+      setStreamingByAgent(prev => {
+        const existing = prev[agent._id] ?? {
+          agent,
+          text: '',
+          isStreamingTokens: false,
+          hasReceivedTokens: false,
+          waitingForWebSocket: false,
+          streamingMessageId: null,
+          awaitingToolCall: false,
+          sessionRunId,
+        }
+        return {
+          ...prev,
+          [agent._id]: updater({
+            ...existing,
+            agent,
+            sessionRunId: sessionRunId ?? existing.sessionRunId,
+          }),
+        }
+      })
+    },
+    [],
+  )
 
   const { sendMessage } = useSessionStream({
     sessionId: enabled ? sessionId : undefined,
-    onToken: text => {
-      if (enabled) {
-        setStreamingText(prev => prev + text)
-        setIsStreamingTokens(true)
-        setHasReceivedTokens(true)
-      }
+    onToken: (text, meta) => {
+      if (!enabled) return
+      const agent = meta?.agent ?? latestAgentRef.current ?? undefined
+      if (!agent) return
+      onAgentOutput?.(agent._id, meta?.sessionRunId)
+      upsertStreamingAgent(
+        agent,
+        prev => ({
+          ...prev,
+          text: prev.text + text,
+          isStreamingTokens: true,
+          hasReceivedTokens: true,
+          awaitingToolCall: false,
+        }),
+        meta?.sessionRunId,
+      )
     },
-    onMessage: content => {
+    onMessage: (content, meta) => {
       if (enabled) {
-        setStreamingText(content)
-        setIsStreamingTokens(false)
-        setWaitingForWebSocket(true)
-        streamingMessageIdRef.current = content
+        const agent = meta?.agent ?? latestAgentRef.current ?? undefined
+        if (!agent) return
+        const trimmed = content.trim()
+        const awaitingToolCall = trimmed.length === 0
+        if (trimmed.length > 0) {
+          onAgentOutput?.(agent._id, meta?.sessionRunId)
+        }
+        upsertStreamingAgent(
+          agent,
+          prev => ({
+            ...prev,
+            text: prev.text.length > 0 ? prev.text : content,
+            isStreamingTokens: false,
+            waitingForWebSocket: true,
+            streamingMessageId: meta?.messageId ?? content,
+            awaitingToolCall,
+          }),
+          meta?.sessionRunId,
+        )
         setOptimisticMessages([])
-
-        setTimeout(() => {
-          if (
-            streamingMessageIdRef.current === content &&
-            waitingForWebSocket
-          ) {
-            setHasReceivedTokens(false)
-            setWaitingForWebSocket(false)
-            streamingMessageIdRef.current = null
-          }
-        }, 3000)
       }
     },
     onToolComplete: () => {
       if (enabled) {
-        setStreamingText('')
-        setIsStreamingTokens(true)
-        setHasReceivedTokens(false)
-        setWaitingForWebSocket(false)
-        streamingMessageIdRef.current = null
+        setStreamingByAgent(prev => {
+          const next: Record<string, StreamingAgentState> = {}
+          Object.entries(prev).forEach(([agentId, state]) => {
+            next[agentId] = {
+              ...state,
+              text: '',
+              isStreamingTokens: true,
+              hasReceivedTokens: false,
+              waitingForWebSocket: false,
+              streamingMessageId: null,
+              awaitingToolCall: false,
+            }
+          })
+          return next
+        })
         setOptimisticMessages([])
-
-        setTimeout(() => {
-          if (!hasReceivedTokens) {
-            clearStreamingState()
-          }
-        }, 3000)
       }
     },
     onError,
     onDone: () => {
-      if (enabled && !waitingForWebSocket) {
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
+      if (enabled) {
+        setStreamingByAgent(prev => {
+          const next: Record<string, StreamingAgentState> = {}
+          Object.entries(prev).forEach(([agentId, state]) => {
+            if (state.waitingForWebSocket) {
+              next[agentId] = state
+            }
+          })
+          return next
+        })
         setOptimisticMessages([])
       }
     },
-    onAgentInfo: agent => {
+    onAgentInfo: (agent, sessionRunId) => {
       if (enabled) {
-        setStreamingAgent(agent)
+        upsertStreamingAgent(
+          agent,
+          prev => ({
+            ...prev,
+            agent,
+            // Show the streaming placeholder as soon as start_prompt arrives.
+            isStreamingTokens: prev.hasReceivedTokens
+              ? prev.isStreamingTokens
+              : true,
+            hasReceivedTokens: prev.hasReceivedTokens,
+            awaitingToolCall: false,
+          }),
+          sessionRunId,
+        )
+        onAgentStart?.(agent._id, sessionRunId)
       }
     },
     onSessionCreated,
   })
 
   const initializeStreaming = useCallback(() => {
-    setIsStreamingTokens(true)
-    setHasReceivedTokens(false)
-    setStreamingText('')
-    setStreamingAgent(null)
+    setStreamingByAgent({})
+    latestAgentIdRef.current = null
+  }, [])
+
+  const streamingAgentIds = useMemo(
+    () => Object.keys(streamingByAgent),
+    [streamingByAgent],
+  )
+
+  const resolveStreamingWithMessages = useCallback((messages: Message[]) => {
+    if (!messages || messages.length === 0) return
+    setStreamingByAgent(prev => {
+      let changed = false
+      const next: Record<string, StreamingAgentState> = {}
+      Object.entries(prev).forEach(([agentId, state]) => {
+        if (
+          state.waitingForWebSocket &&
+          state.streamingMessageId &&
+          messages.find(
+            msg =>
+              msg.role === 'assistant' &&
+              ((msg as { _id?: string })._id === state.streamingMessageId ||
+                (msg as { id?: string }).id === state.streamingMessageId ||
+                msg.content === state.streamingMessageId) &&
+              (typeof msg.sender === 'string'
+                ? msg.sender === agentId
+                : msg.sender?._id === agentId),
+          )
+        ) {
+          changed = true
+          return
+        }
+        next[agentId] = state
+      })
+      return changed ? next : prev
+    })
   }, [])
 
   return {
-    streamingText,
-    isStreamingTokens,
-    hasReceivedTokens,
-    waitingForWebSocket,
-    streamingAgent,
-    streamingMessageIdRef,
+    streamingByAgent,
+    streamingAgentIds,
+    resolveStreamingWithMessages,
     sendMessage,
     clearStreamingState,
     initializeStreaming,

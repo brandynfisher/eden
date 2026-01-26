@@ -1,0 +1,27 @@
+meta {
+  name: Sessions V3 - Prompt
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/v3/sessions/prompt
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  X-Api-Key: {{USER_API_KEY}}
+}
+
+body:json {
+  {
+    "session_id": "{{SESSION_ID}}",
+    "actor_agent_ids": ["{{AGENT_ID}}"],
+    "thinking": false,
+    "message": {
+      "content": "hello from bruno",
+      "attachments": []
+    }
+  }
+}

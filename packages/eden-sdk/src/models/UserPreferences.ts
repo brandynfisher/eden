@@ -10,9 +10,17 @@ export interface MinimalAgent {
   owner?: string | { _id: string; username?: string }
 }
 
+export type SessionPlatformFilter =
+  | 'web'
+  | 'discord'
+  | 'telegram'
+  | 'twitter'
+  | 'farcaster'
+
 export interface UserPreferencesGetResponse extends WebAPICallResult {
   last_agents: MinimalAgent[]
   pinned_agents: MinimalAgent[]
+  session_platform_filters?: SessionPlatformFilter[]
 }
 
 export interface UserPreferencesGetArguments {

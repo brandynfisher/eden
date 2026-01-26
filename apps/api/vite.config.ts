@@ -3,10 +3,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    setupFiles: [
-      './tests/setup/mongo-memory-server.ts',
-      './tests/setup/server-setup.ts',
-    ],
+    setupFiles: ['./tests/setup/index.ts'],
   },
   resolve: {
     alias: {

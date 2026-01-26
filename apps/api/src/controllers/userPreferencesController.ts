@@ -1,6 +1,17 @@
 import { User } from '../models/User'
-import { UserPreferences } from '../models/UserPreferences'
+import {
+  SessionPlatformFilter,
+  UserPreferences,
+} from '../models/UserPreferences'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+
+const VALID_PLATFORMS: SessionPlatformFilter[] = [
+  'web',
+  'discord',
+  'telegram',
+  'twitter',
+  'farcaster',
+]
 
 export const getUserPreferences = async (
   _server: FastifyInstance,
@@ -48,6 +59,7 @@ export const getUserPreferences = async (
       return reply.status(200).send({
         last_agents: [],
         pinned_agents: [],
+        session_platform_filters: VALID_PLATFORMS,
       })
     }
 
@@ -66,6 +78,8 @@ export const getUserPreferences = async (
     return reply.status(200).send({
       last_agents: topAgents,
       pinned_agents: validPinnedAgents,
+      session_platform_filters:
+        preferences.session_platform_filters || VALID_PLATFORMS,
     })
   } catch (e) {
     console.error('Error fetching user preferences:', e)
@@ -207,6 +221,63 @@ export const updateNotificationPreferences = async (
     console.error('Error updating notification preferences:', e)
     return reply.status(500).send({
       message: 'Failed to update notification preferences',
+    })
+  }
+}
+
+export const updatePlatformFilters = async (
+  _server: FastifyInstance,
+  request: FastifyRequest<{ Body: { platforms: string[] } }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  const { platforms } = request.body
+
+  if (!userId) {
+    return reply.status(401).send({
+      message: 'Unauthorized',
+    })
+  }
+
+  if (!platforms || !Array.isArray(platforms)) {
+    return reply.status(400).send({
+      message: 'platforms must be an array',
+    })
+  }
+
+  // Validate all platforms are valid
+  const invalidPlatforms = platforms.filter(
+    p => !VALID_PLATFORMS.includes(p as SessionPlatformFilter),
+  )
+  if (invalidPlatforms.length > 0) {
+    return reply.status(400).send({
+      message: `Invalid platforms: ${invalidPlatforms.join(
+        ', ',
+      )}. Valid platforms are: ${VALID_PLATFORMS.join(', ')}`,
+    })
+  }
+
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    const updatedPrefs = await UserPreferences.updatePlatformFilters(
+      userId,
+      platforms as SessionPlatformFilter[],
+    )
+
+    return reply.status(200).send({
+      session_platform_filters: updatedPrefs.session_platform_filters,
+      message: 'Platform filters updated successfully',
+    })
+  } catch (e) {
+    console.error('Error updating platform filters:', e)
+    return reply.status(500).send({
+      message: 'Failed to update platform filters',
     })
   }
 }

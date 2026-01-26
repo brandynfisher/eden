@@ -60,12 +60,12 @@ jobs:
           git config user.email "actions@github.com"
 
           # Check if there are changes
-          if git diff --quiet openapi.json; then
+          if git diff --quiet openapi.json openapi-sessions-v3.json; then
             echo "No changes to OpenAPI spec"
             exit 0
           fi
 
-          git add openapi.json
+          git add openapi.json openapi-sessions-v3.json
           git commit -m "Update API documentation from eden repo
 
           Generated from: ${{ github.repository }}@${{ github.sha }}

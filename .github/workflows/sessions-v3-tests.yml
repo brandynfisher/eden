@@ -1,0 +1,59 @@
+name: Sessions v3 Offline Tests
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/openapi/sessions-v3.yaml'
+      - 'apps/api/tests/test/**'
+      - 'apps/api/src/routes/v3/**'
+      - 'apps/api/src/plugins/sessionsV3Schemas.ts'
+      - 'apps/api/src/routes/v3/**'
+      - 'apps/media-playground/**'
+      - 'packages/eden-sdk-v3/**'
+      - 'scripts/openapi/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/api/openapi/sessions-v3.yaml'
+      - 'apps/api/tests/test/**'
+      - 'apps/api/src/routes/v3/**'
+      - 'apps/api/src/plugins/sessionsV3Schemas.ts'
+      - 'apps/media-playground/**'
+      - 'packages/eden-sdk-v3/**'
+      - 'scripts/openapi/**'
+
+jobs:
+  sessions-v3-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate OpenAPI types + MCP manifests
+        run: yarn generate:openapi-types
+
+      - name: Ensure generated artifacts are committed
+        run: git diff --exit-code
+
+      - name: Run sessions v3 offline tests
+        working-directory: apps/api
+        run: |
+          yarn test \
+            tests/test/openapi-sessions-v3.test.ts \
+            tests/test/sessions-v3-schemas.test.ts \
+            tests/test/openapi-sessions-v3-ajv.test.ts \
+            tests/test/sessions-v3-sse.test.ts \
+            tests/test/sessions-v3-golden.test.ts

@@ -9,10 +9,13 @@ import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
 import { SessionMessageGroups } from './components/session-message-groups'
 import SessionWelcome from './components/session-welcome'
+import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { ViewModerator } from './components/view-moderator'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
+import { usePendingAgentResponses } from './hooks/use-pending-agent-responses'
 import { useSessionCompletionConfetti } from './hooks/use-session-completion-confetti'
+import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
@@ -28,7 +31,9 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
+import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
+import { hasDisplayableResults } from '@/lib/tool-results'
 import { cn } from '@/lib/utils'
 import {
   Agent,
@@ -75,12 +80,14 @@ const Session = ({
   void _hideNavbar
   const params = useParams()
   const router = useRouter()
+
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const isNearBottomRef = useRef(true)
+  const pendingMessageRunIdRef = useRef<string | null>(null)
   const paginationAnchorRef = useRef<{ id: string; offset: number } | null>(
     null,
   )
@@ -312,33 +319,71 @@ const Session = ({
     }
   }, [pendingMessage, session, onSessionLoaded])
 
-  const nonStreamingState = useNonStreamingState({
-    sessionId,
-    session,
-    enabled: !!sessionId && sessionId !== 'new',
-    onError: (error: string) => handleError(error),
-    user,
-    onSessionCreated: (newSessionId: string) => {
+  const handleSessionCreated = useCallback(
+    (newSessionId: string) => {
       setCurrentSessionId(newSessionId)
-      // Also navigate to the new session URL to keep URL in sync
       if (ischatRoute && params?.agentId) {
         router.replace(`/chat/${params.agentId}/${newSessionId}`)
       } else {
         router.replace(`/sessions/${newSessionId}`)
       }
     },
+    [ischatRoute, params?.agentId, router],
+  )
+
+  const nonStreamingState = useNonStreamingState({
+    sessionId,
+    session,
+    enabled: !!sessionId && sessionId !== 'new',
+    onError: (error: string) => handleError(error),
+    user,
+    onSessionCreated: handleSessionCreated,
   })
 
   const optimisticMessages = nonStreamingState.optimisticMessages
+  const useStreaming = sessionConfig.useStreaming && sessionConfig.useSessionsV3
+  const {
+    pendingAgentIds,
+    registerPendingAgents,
+    resetPending: resetPendingAgents,
+    resolvePendingAgent,
+  } = usePendingAgentResponses({
+    sessionId,
+    messages: session?.messages,
+  })
+
+  const createSessionRunId = useCallback(() => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID()
+    }
+    return `run_${Date.now()}_${Math.random().toString(16).slice(2)}`
+  }, [])
 
   useEffect(() => {
-    if (!pendingMessage) return
+    if (!pendingMessage) {
+      pendingMessageRunIdRef.current = null
+      return
+    }
     nonStreamingState.setWaitingForResponse(true)
-  }, [pendingMessage, nonStreamingState.setWaitingForResponse])
+    if (!pendingMessageRunIdRef.current) {
+      const runId = createSessionRunId()
+      pendingMessageRunIdRef.current = runId
+      if (pendingMessage.agent?._id) {
+        registerPendingAgents(runId, [pendingMessage.agent._id])
+      }
+    }
+  }, [
+    pendingMessage,
+    nonStreamingState,
+    nonStreamingState.setWaitingForResponse,
+    createSessionRunId,
+    registerPendingAgents,
+  ])
 
   // Error handling function
   const handleError = useCallback(
     (error: string) => {
+      resetPendingAgents()
       nonStreamingState.clearResponseState()
 
       // Determine error type and add appropriate error
@@ -402,12 +447,57 @@ const Session = ({
         })
       }
     },
-    [addError, clearErrors, router, nonStreamingState],
+    [addError, clearErrors, router, nonStreamingState, resetPendingAgents],
   )
+
+  const streamingState = useStreamingState({
+    sessionId,
+    enabled: useStreaming,
+    onError: handleError,
+    setOptimisticMessages: nonStreamingState.setOptimisticMessages,
+    onSessionCreated: handleSessionCreated,
+    onAgentStart: undefined,
+    onAgentOutput: (agentId, sessionRunId) => {
+      if (sessionRunId) {
+        resolvePendingAgent(sessionRunId, agentId)
+      }
+    },
+  })
+
+  const streamingAgentsWithOutput = useMemo(() => {
+    if (!useStreaming) return []
+    return Object.values(streamingState.streamingByAgent)
+      .filter(
+        stream =>
+          stream.hasReceivedTokens ||
+          stream.text.length > 0 ||
+          stream.waitingForWebSocket,
+      )
+      .map(stream => stream.agent._id)
+  }, [streamingState.streamingByAgent, useStreaming])
+
+  const pendingAgentIdsForLoader = useMemo(() => {
+    if (!useStreaming || streamingAgentsWithOutput.length === 0) {
+      return pendingAgentIds
+    }
+    return pendingAgentIds.filter(id => !streamingAgentsWithOutput.includes(id))
+  }, [pendingAgentIds, streamingAgentsWithOutput, useStreaming])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [])
+
+  const streamingTextSignature = useMemo(() => {
+    if (!useStreaming) return ''
+    return Object.values(streamingState.streamingByAgent)
+      .map(
+        stream =>
+          `${stream.agent._id}:${stream.text.length}:${
+            stream.waitingForWebSocket ? 1 : 0
+          }`,
+      )
+      .join('|')
+  }, [streamingState.streamingByAgent, useStreaming])
 
   const capturePaginationAnchor = useCallback(() => {
     const container = messagesContainerRef.current
@@ -596,6 +686,34 @@ const Session = ({
     isLoadingOlderMessages,
     scrollToBottom,
   ])
+
+  useEffect(() => {
+    if (!useStreaming || !streamingTextSignature) return
+    if (isNearBottomRef.current) {
+      scrollToBottom()
+    }
+  }, [streamingTextSignature, scrollToBottom, useStreaming])
+
+  const toolResultsCount = useMemo(() => {
+    if (!displaySession?.messages) return 0
+    return displaySession.messages.reduce((count, message) => {
+      if (message.role !== 'assistant') return count
+      const toolCalls = message.tool_calls ?? []
+      const completedWithResults = toolCalls.filter(call =>
+        hasDisplayableResults(call?.result),
+      )
+      return count + completedWithResults.length
+    }, 0)
+  }, [displaySession?.messages])
+
+  const previousToolResultsCountRef = useRef(toolResultsCount)
+  useEffect(() => {
+    const previousCount = previousToolResultsCountRef.current
+    if (toolResultsCount > previousCount && isNearBottomRef.current) {
+      scrollToBottom()
+    }
+    previousToolResultsCountRef.current = toolResultsCount
+  }, [toolResultsCount, scrollToBottom])
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -786,6 +904,25 @@ const Session = ({
     triggerData,
     session?.context,
   ])
+
+  const pendingAgentsForDisplay = useMemo(() => {
+    const lastMessage = filteredMessages[filteredMessages.length - 1]
+    const lastSenderId =
+      typeof lastMessage?.sender === 'string'
+        ? lastMessage?.sender
+        : lastMessage?.sender?._id
+    return getRespondingAgents(pendingAgentIdsForLoader).map(agent => ({
+      ...agent,
+      showAvatar: !(
+        lastMessage?.role === 'assistant' && lastSenderId === agent._id
+      ),
+    }))
+  }, [filteredMessages, getRespondingAgents, pendingAgentIdsForLoader])
+
+  useEffect(() => {
+    if (!useStreaming) return
+    streamingState.resolveStreamingWithMessages(filteredMessages)
+  }, [filteredMessages, streamingState, useStreaming])
 
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),
@@ -1285,16 +1422,116 @@ const Session = ({
               </div>
             )}
 
-            <NonStreamingMessageDisplay
-              sessionId={sessionId as string}
-              waitingForResponse={nonStreamingState.waitingForResponse}
-              getRespondingAgents={() => {
-                // Get agents from stored agent IDs
-                return getRespondingAgents(
-                  nonStreamingState.respondingAgentIds || [],
-                )
-              }}
-            />
+            {useStreaming ? (
+              <>
+                {Object.values(streamingState.streamingByAgent).map(stream =>
+                  (() => {
+                    const lastMessage =
+                      filteredMessages[filteredMessages.length - 1]
+                    const lastSenderId =
+                      typeof lastMessage?.sender === 'string'
+                        ? lastMessage?.sender
+                        : lastMessage?.sender?._id
+                    const showAvatar = !(
+                      lastMessage?.role === 'assistant' &&
+                      lastSenderId === stream.agent._id
+                    )
+                    const streamRunId = stream.sessionRunId
+                    const hasToolCallMessageForRun = filteredMessages.some(
+                      message => {
+                        if (message.role !== 'assistant') return false
+                        const senderId =
+                          typeof message.sender === 'string'
+                            ? message.sender
+                            : message.sender?._id
+                        if (!senderId || senderId !== stream.agent._id)
+                          return false
+                        if (
+                          streamRunId &&
+                          message.observability?.session_run_id &&
+                          message.observability.session_run_id !== streamRunId
+                        ) {
+                          return false
+                        }
+                        return (
+                          message.tool_calls?.length &&
+                          message.tool_calls.length > 0
+                        )
+                      },
+                    )
+                    const matchingMessageExists = filteredMessages.some(
+                      message => {
+                        if (message.role !== 'assistant') return false
+                        const senderId =
+                          typeof message.sender === 'string'
+                            ? message.sender
+                            : message.sender?._id
+                        if (!senderId || senderId !== stream.agent._id)
+                          return false
+                        if (
+                          streamRunId &&
+                          message.observability?.session_run_id
+                        ) {
+                          return (
+                            message.observability.session_run_id === streamRunId
+                          )
+                        }
+                        if (!stream.streamingMessageId) return false
+                        const messageId =
+                          (message as { _id?: string })._id ??
+                          (message as { id?: string }).id
+                        return (
+                          messageId === stream.streamingMessageId ||
+                          message.content === stream.streamingMessageId
+                        )
+                      },
+                    )
+                    const suppressTypingIndicator = hasToolCallMessageForRun
+                    const hideWhileEmpty =
+                      hasToolCallMessageForRun &&
+                      stream.text.length === 0 &&
+                      !stream.hasReceivedTokens
+                    return (
+                      <StreamingMessageDisplay
+                        key={`streaming-${stream.agent._id}`}
+                        sessionId={sessionId as string}
+                        isChatRoute={ischatRoute ?? false}
+                        showAvatar={showAvatar}
+                        isStreamingTokens={stream.isStreamingTokens}
+                        waitingForWebSocket={stream.waitingForWebSocket}
+                        streamingText={stream.text}
+                        hasReceivedTokens={stream.hasReceivedTokens}
+                        suppressTypingIndicator={suppressTypingIndicator}
+                        hideWhileEmpty={hideWhileEmpty}
+                        matchingMessageExists={matchingMessageExists}
+                        streamingAgent={stream.agent}
+                        getRespondingAgent={() => stream.agent}
+                        filteredMessages={filteredMessages}
+                        streamingMessageId={stream.streamingMessageId}
+                        onStreamingComplete={() => {
+                          streamingState.resolveStreamingWithMessages(
+                            filteredMessages,
+                          )
+                        }}
+                      />
+                    )
+                  })(),
+                )}
+                <NonStreamingMessageDisplay
+                  sessionId={sessionId as string}
+                  isChatRoute={ischatRoute ?? false}
+                  waitingForResponse={pendingAgentIdsForLoader.length > 0}
+                  respondingAgents={pendingAgentsForDisplay}
+                />
+              </>
+            ) : (
+              <NonStreamingMessageDisplay
+                sessionId={sessionId as string}
+                isChatRoute={ischatRoute ?? false}
+                waitingForResponse={pendingAgentIdsForLoader.length > 0}
+                respondingAgents={pendingAgentsForDisplay}
+              />
+            )}
 
             {/* Error Display */}
             <ErrorDisplay
@@ -1363,7 +1600,10 @@ const Session = ({
                 // For multi-agent sessions with no mentions, agentIds will remain empty array
                 // This will still create the user message but won't trigger any agent responses
 
-                nonStreamingState.setWaitingForResponse(true)
+                const sessionRunId = createSessionRunId()
+                if (agentIds.length > 0) {
+                  registerPendingAgents(sessionRunId, agentIds)
+                }
 
                 const userMessage: Message = {
                   _id: `optimistic-user-${Date.now()}`,
@@ -1386,11 +1626,22 @@ const Session = ({
                   userMessage,
                 ])
 
-                // Pass agent_ids and thinking in options
-                nonStreamingState.sendMessage(content, attachments, {
-                  agent_ids: agentIds,
-                  thinking,
-                })
+                if (useStreaming) {
+                  streamingState.initializeStreaming()
+                  streamingState.sendMessage(content, attachments, {
+                    agent_ids: agentIds,
+                    thinking,
+                    session_run_id: sessionRunId,
+                  })
+                } else {
+                  nonStreamingState.setWaitingForResponse(true)
+                  // Pass agent_ids and thinking in options
+                  nonStreamingState.sendMessage(content, attachments, {
+                    agent_ids: agentIds,
+                    thinking,
+                    session_run_id: sessionRunId,
+                  })
+                }
                 setTimeout(scrollToBottom, 100)
               }}
               onTranscribingChange={setIsUserTranscribing}

@@ -1,6 +1,17 @@
 import { fetcher } from '@/lib/fetcher'
-import { UserPreferencesGetResponse } from '@edenlabs/eden-sdk'
+import {
+  SessionPlatformFilter,
+  UserPreferencesGetResponse,
+} from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
+
+const ALL_PLATFORMS: SessionPlatformFilter[] = [
+  'web',
+  'discord',
+  'telegram',
+  'twitter',
+  'farcaster',
+]
 
 export const useUserPreferencesQuery = ({
   enabled,
@@ -23,6 +34,7 @@ export const useUserPreferencesQuery = ({
   return {
     lastAgents: data?.last_agents || [],
     pinnedAgents: data?.pinned_agents || [],
+    platformFilters: data?.session_platform_filters || ALL_PLATFORMS,
     isLoading,
     error,
     refetch,

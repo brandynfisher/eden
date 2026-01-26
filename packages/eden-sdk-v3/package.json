@@ -1,0 +1,29 @@
+{
+  "name": "@edenlabs/eden-sdk-v3",
+  "version": "0.1.0",
+  "description": "OpenAPI-based SDK for Eden Sessions v3",
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.m.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && microbundle --tsconfig tsconfig.json --no-sourcemap",
+    "dev": "microbundle watch --tsconfig tsconfig.json --no-sourcemap",
+    "dev:eden": "yarn dev",
+    "dev:dummy": "yarn dev",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "author": "Eden Labs",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "openapi-fetch": "^0.10.1"
+  },
+  "devDependencies": {
+    "microbundle": "^0.15.1",
+    "openapi-typescript": "^6.7.6",
+    "typescript": "^5"
+  }
+}

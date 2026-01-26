@@ -1,8 +1,23 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Generate OpenAPI-derived artifacts before linting
+# (ensures generated files get formatted/linted and staged)
+echo "🔧 Generating OpenAPI types + MCP tools..."
+yarn generate:openapi-types
+if [ $? -ne 0 ]; then
+  echo "❌ Generation failed. Fix the errors before committing."
+  exit 1
+fi
+
+# Stage generated artifacts up front so lint-staged sees them
+git add apps/api/src/plugins/mcpGeneratedTools.ts packages/eden-sdk-v3/src/generated/sessions-v3.ts
+
 # Run lint-staged for formatting and linting
 npx lint-staged
+
+# Re-stage generated files in case lint-staged modified them
+git add apps/api/src/plugins/mcpGeneratedTools.ts packages/eden-sdk-v3/src/generated/sessions-v3.ts
 
 # Check TypeScript compilation for apps/api
 echo "🔍 Checking TypeScript compilation for apps/api..."

@@ -11,6 +11,8 @@ export type RealtimeLLM =
 
 export interface AgentRealtimeSchema {
   agent: AgentDocument['_id']
+  // ElevenLabs agent ID (if set, uses this instead of the default shared agent)
+  elevenlabs_agent_id?: string
   // Voice settings
   voice_id?: string
   // Language code (e.g., 'en', 'nl')
@@ -38,6 +40,9 @@ const AgentRealtimeSchema = new Schema<AgentRealtimeDocument>(
       ref: 'users3',
       required: true,
       unique: true,
+    },
+    elevenlabs_agent_id: {
+      type: String,
     },
     voice_id: {
       type: String,

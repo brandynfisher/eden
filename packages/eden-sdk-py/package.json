@@ -1,0 +1,9 @@
+{
+  "name": "eden-sdk-py",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scaffolding for the OpenAPI-based Python SDK (Sessions v3)",
+  "scripts": {
+    "generate:sessions-v3-client": "bash scripts/generate-client.sh"
+  }
+}

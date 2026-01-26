@@ -1,9 +1,10 @@
 import { dummyTaskHandlers } from '../src/lib/taskHandlers/dummy'
 import createServer from '../src/server'
 import { config as dotenvConfig } from 'dotenv'
-import { writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { convertObj } from 'swagger2openapi'
+import yaml from 'yaml'
 
 async function generateOpenAPISpec() {
   console.log('🚀 Starting OpenAPI generation...')
@@ -191,6 +192,25 @@ async function generateOpenAPISpec() {
       console.log(`⚠️ Could not write to docs directory: ${docsPath}`)
       console.log(
         `   You may need to manually copy openapi.json to your docs directory`,
+      )
+    }
+
+    // Copy sessions v3 OpenAPI to docs (JSON) for Mintlify
+    const sessionsV3Path = resolve(process.cwd(), 'openapi', 'sessions-v3.yaml')
+    const sessionsV3DocsPath = resolve(
+      process.cwd(),
+      '../../../mintlify-docs/openapi-sessions-v3.json',
+    )
+    try {
+      const rawSessionsV3 = readFileSync(sessionsV3Path, 'utf-8')
+      const sessionsV3Spec = yaml.parse(rawSessionsV3)
+      writeFileSync(sessionsV3DocsPath, JSON.stringify(sessionsV3Spec, null, 2))
+      console.log(
+        `✅ Sessions v3 OpenAPI copied to docs: ${sessionsV3DocsPath}`,
+      )
+    } catch (error) {
+      console.log(
+        `⚠️ Could not write Sessions v3 OpenAPI to docs: ${sessionsV3DocsPath}`,
       )
     }
 

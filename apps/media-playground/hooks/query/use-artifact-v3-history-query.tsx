@@ -1,4 +1,7 @@
-import { ArtifactEditV3, ArtifactsV3HistoryResponse } from '@edenlabs/eden-sdk'
+import {
+  ArtifactVersionV3,
+  ArtifactsV3HistoryResponse,
+} from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import axios, { AxiosResponse } from 'axios'
 
@@ -31,6 +34,6 @@ export function useArtifactV3HistoryQuery({
 
   return {
     ...query,
-    history: query.data?.docs ?? ([] as ArtifactEditV3[]),
+    history: query.data?.docs ?? ([] as ArtifactVersionV3[]),
   }
 }

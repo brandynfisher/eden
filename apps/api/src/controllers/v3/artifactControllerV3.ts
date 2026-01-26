@@ -1,23 +1,26 @@
 import {
-  filterItemsByPermissions,
   getPermissionWeight,
-  matchKeyPattern,
-  maxPermissionLevel,
   sanitizeItemsInput,
-  validateKeyPath,
-  validateKeyPattern,
+  validateJsonPointer,
 } from '../../lib/artifactPermissionsV3'
-import { ArtifactEditV3 } from '../../models/v3/ArtifactEditV3'
 import {
   ArtifactPermissionLevelV3,
   ArtifactPermissionV3,
 } from '../../models/v3/ArtifactPermissionV3'
 import { ArtifactV3 } from '../../models/v3/ArtifactV3'
+import { ArtifactVersionV3 } from '../../models/v3/ArtifactVersionV3'
 import ArtifactV3Repository from '../../repositories/ArtifactV3Repository'
+import jsonpatch from 'fast-json-patch'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 type PermissionLevel = ArtifactPermissionLevelV3
+
+export type JsonPatchOperation = {
+  op: 'add' | 'remove' | 'replace'
+  path: string
+  value?: unknown
+}
 
 const ensureObjectId = (value?: string | ObjectId | null) => {
   if (!value) {
@@ -39,7 +42,7 @@ const isOwner = (artifactOwner?: ObjectId, subjectId?: ObjectId) => {
 const resolveArtifactLevel = (
   { owner, public: isPublic }: { owner: ObjectId; public: boolean },
   subjectId?: ObjectId,
-  permissions: Array<{ key?: string; level: PermissionLevel }> = [],
+  permissions: Array<{ level: PermissionLevel }> = [],
 ): PermissionLevel | null => {
   if (isOwner(owner, subjectId)) {
     return ArtifactPermissionLevelV3.Owner
@@ -47,7 +50,7 @@ const resolveArtifactLevel = (
   if (isPublic) {
     return ArtifactPermissionLevelV3.Viewer
   }
-  const artifactPermission = permissions.find(permission => !permission.key)
+  const artifactPermission = permissions[0]
   return artifactPermission?.level ?? null
 }
 
@@ -55,133 +58,13 @@ const isOwnerLevel = (level?: PermissionLevel | null) =>
   getPermissionWeight(level) >=
   getPermissionWeight(ArtifactPermissionLevelV3.Owner)
 
-const hasAnyPermission = (
-  artifactLevel: PermissionLevel | null,
-  permissions: Array<{ key?: string; level: PermissionLevel }>,
-) => {
-  if (artifactLevel) {
-    return true
-  }
-  return permissions.some(
-    permission =>
-      !!permission.key &&
-      getPermissionWeight(permission.level) >=
-        getPermissionWeight(ArtifactPermissionLevelV3.Viewer),
-  )
-}
+const isEditorLevel = (level?: PermissionLevel | null) =>
+  getPermissionWeight(level) >=
+  getPermissionWeight(ArtifactPermissionLevelV3.Editor)
 
-const resolveKeyLevel = (
-  keyPath: string,
-  permissions: Array<{ key?: string; level: PermissionLevel }>,
-): PermissionLevel | null => {
-  const matching = permissions.filter(permission => {
-    if (!permission.key) {
-      return false
-    }
-    return matchKeyPattern(permission.key, keyPath)
-  })
-
-  return maxPermissionLevel(matching.map(permission => permission.level))
-}
-
-const canReadKey = (
-  keyPath: string,
-  artifactLevel: PermissionLevel | null,
-  permissions: Array<{ key?: string; level: PermissionLevel }>,
-) => {
-  const effective = maxPermissionLevel([
-    artifactLevel,
-    resolveKeyLevel(keyPath, permissions),
-  ])
-  return (
-    getPermissionWeight(effective) >=
-    getPermissionWeight(ArtifactPermissionLevelV3.Viewer)
-  )
-}
-
-const canWriteKey = (
-  keyPath: string,
-  artifactLevel: PermissionLevel | null,
-  permissions: Array<{ key?: string; level: PermissionLevel }>,
-) => {
-  const effective = maxPermissionLevel([
-    artifactLevel,
-    resolveKeyLevel(keyPath, permissions),
-  ])
-  return (
-    getPermissionWeight(effective) >=
-    getPermissionWeight(ArtifactPermissionLevelV3.Editor)
-  )
-}
-
-const applyItemPatch = (
-  items: Record<string, unknown>,
-  set: Record<string, string>,
-  unset: string[],
-) => {
-  const applySet = (
-    obj: Record<string, unknown>,
-    path: string,
-    value: string,
-  ) => {
-    const segments = path.split('.').filter(Boolean)
-    let cursor: Record<string, unknown> = obj
-    segments.forEach((segment, index) => {
-      if (index === segments.length - 1) {
-        cursor[segment] = value
-        return
-      }
-      const next = cursor[segment]
-      if (!next || typeof next !== 'object' || Array.isArray(next)) {
-        cursor[segment] = {}
-      }
-      cursor = cursor[segment] as Record<string, unknown>
-    })
-  }
-
-  const applyUnset = (obj: Record<string, unknown>, path: string) => {
-    const segments = path.split('.').filter(Boolean)
-    let cursor: Record<string, unknown> = obj
-    segments.forEach((segment, index) => {
-      if (index === segments.length - 1) {
-        delete cursor[segment]
-        return
-      }
-      const next = cursor[segment]
-      if (!next || typeof next !== 'object' || Array.isArray(next)) {
-        return
-      }
-      cursor = next as Record<string, unknown>
-    })
-  }
-
-  Object.entries(set).forEach(([path, value]) => applySet(items, path, value))
-  unset.forEach(path => applyUnset(items, path))
-}
-
-const filterArtifactItems = (
-  items: Record<string, unknown>,
-  artifactLevel: PermissionLevel | null,
-  permissions: Array<{ key?: string; level: PermissionLevel }>,
-) => {
-  if (
-    artifactLevel &&
-    getPermissionWeight(artifactLevel) >=
-      getPermissionWeight(ArtifactPermissionLevelV3.Viewer)
-  ) {
-    return items
-  }
-
-  const filtered = filterItemsByPermissions(items, keyPath =>
-    canReadKey(keyPath, artifactLevel, permissions),
-  )
-
-  if (!filtered || typeof filtered === 'string') {
-    return {}
-  }
-
-  return filtered
-}
+const isViewerLevel = (level?: PermissionLevel | null) =>
+  getPermissionWeight(level) >=
+  getPermissionWeight(ArtifactPermissionLevelV3.Viewer)
 
 const loadArtifactPermissions = async (
   artifactId: ObjectId,
@@ -215,15 +98,13 @@ const formatArtifactResponse = async (artifact: any, subjectId?: ObjectId) => {
     permissions,
   )
 
-  const items = filterArtifactItems(
-    artifact.items || {},
-    artifactLevel,
-    permissions,
-  )
+  if (!isViewerLevel(artifactLevel)) {
+    return null
+  }
 
   return {
     ...artifact,
-    items,
+    items: artifact.items || {},
   }
 }
 
@@ -308,7 +189,7 @@ export async function listArtifactsV3Core({
 
   return {
     ...result,
-    docs: artifacts,
+    docs: artifacts.filter(Boolean),
   }
 }
 
@@ -341,22 +222,16 @@ export async function getArtifactV3Core({
     permissions,
   )
 
-  if (!hasAnyPermission(artifactLevel, permissions)) {
+  if (!isViewerLevel(artifactLevel)) {
     const error = new Error('Not authorized to view this artifact')
     ;(error as any).statusCode = 401
     throw error
   }
 
-  const items = filterArtifactItems(
-    artifact.items || {},
-    artifactLevel,
-    permissions,
-  )
-
   return {
     artifact: {
       ...artifact,
-      items,
+      items: artifact.items || {},
     },
   }
 }
@@ -411,6 +286,7 @@ export async function createArtifactV3Core({
     session: session ? new ObjectId(session) : undefined,
     originSession: session ? new ObjectId(session) : undefined,
     items: sanitized,
+    version: 1,
   })
 
   await ArtifactPermissionV3.create({
@@ -418,6 +294,15 @@ export async function createArtifactV3Core({
     subject: subjectId,
     level: ArtifactPermissionLevelV3.Owner,
     grantedBy: subjectId,
+  })
+
+  // Create initial version snapshot
+  await ArtifactVersionV3.create({
+    artifact: artifact._id,
+    version: 1,
+    items: sanitized,
+    actor: subjectId,
+    reason: 'Initial creation',
   })
 
   return {
@@ -460,11 +345,7 @@ export async function updateArtifactV3Core({
     permissions,
   )
 
-  if (
-    !artifactLevel ||
-    getPermissionWeight(artifactLevel) <
-      getPermissionWeight(ArtifactPermissionLevelV3.Editor)
-  ) {
+  if (!isEditorLevel(artifactLevel)) {
     const error = new Error('Not authorized to update this artifact')
     ;(error as any).statusCode = 401
     throw error
@@ -543,14 +424,12 @@ export async function deleteArtifactV3Core({
 
 export async function patchArtifactItemsV3Core({
   artifactId,
-  set = {},
-  unset = [],
+  operations,
   reason,
   authUserId,
 }: {
   artifactId: string
-  set?: Record<string, unknown>
-  unset?: string[]
+  operations: JsonPatchOperation[]
   reason?: string
   authUserId?: string | ObjectId
 }) {
@@ -574,131 +453,94 @@ export async function patchArtifactItemsV3Core({
     permissions,
   )
 
-  if (set && (typeof set !== 'object' || Array.isArray(set))) {
-    const error = new Error('set must be an object')
+  if (!isEditorLevel(artifactLevel)) {
+    const error = new Error('Not authorized to edit this artifact')
+    ;(error as any).statusCode = 401
+    throw error
+  }
+
+  if (!operations || !Array.isArray(operations) || operations.length === 0) {
+    const error = new Error('operations array is required')
     ;(error as any).statusCode = 422
     throw error
   }
 
-  const setEntries: Record<string, string> = {}
-  for (const [path, value] of Object.entries(set || {})) {
-    if (!validateKeyPath(path)) {
-      const error = new Error(`Invalid key path: ${path}`)
+  // Validate operations
+  const validOps = ['add', 'remove', 'replace']
+  for (const op of operations) {
+    if (!op.op || !validOps.includes(op.op)) {
+      const error = new Error(
+        `Invalid operation: ${op.op}. Must be one of: ${validOps.join(', ')}`,
+      )
       ;(error as any).statusCode = 422
       throw error
     }
-    if (!canWriteKey(path, artifactLevel, permissions)) {
-      const error = new Error(`Not authorized to edit key: ${path}`)
-      ;(error as any).statusCode = 401
+    if (!op.path || !validateJsonPointer(op.path)) {
+      const error = new Error(
+        `Invalid path: ${op.path}. Must be a valid JSON Pointer (e.g., /characters/0/name)`,
+      )
+      ;(error as any).statusCode = 422
       throw error
     }
-    if (typeof value === 'string') {
-      setEntries[path] = value
-    } else if (value === null || value === undefined) {
-      setEntries[path] = ''
-    } else if (typeof value === 'number' || typeof value === 'boolean') {
-      setEntries[path] = String(value)
-    } else {
-      const error = new Error(`Invalid value for key: ${path}`)
+    if ((op.op === 'add' || op.op === 'replace') && op.value === undefined) {
+      const error = new Error(`Operation ${op.op} requires a value`)
       ;(error as any).statusCode = 422
       throw error
     }
   }
 
-  if (unset && !Array.isArray(unset)) {
-    const error = new Error('unset must be an array of strings')
-    ;(error as any).statusCode = 422
-    throw error
-  }
+  // Get current items
+  const currentItems = (artifact.items as Record<string, unknown>) || {}
 
-  const unsetEntries = (unset || []).filter(Boolean)
-  for (const path of unsetEntries) {
-    if (!validateKeyPath(path)) {
-      const error = new Error(`Invalid key path: ${path}`)
-      ;(error as any).statusCode = 422
-      throw error
-    }
-    if (!canWriteKey(path, artifactLevel, permissions)) {
-      const error = new Error(`Not authorized to edit key: ${path}`)
-      ;(error as any).statusCode = 401
-      throw error
-    }
-  }
-
-  if (!Object.keys(setEntries).length && !unsetEntries.length) {
-    const error = new Error('set or unset is required')
-    ;(error as any).statusCode = 422
-    throw error
-  }
-
-  const updateOps: Record<string, any> = {}
-  if (Object.keys(setEntries).length) {
-    updateOps.$set = Object.fromEntries(
-      Object.entries(setEntries).map(([path, value]) => [
-        `items.${path}`,
-        value,
-      ]),
+  // Apply JSON Patch operations
+  let patchedItems: Record<string, unknown>
+  try {
+    const result = jsonpatch.applyPatch(
+      jsonpatch.deepClone(currentItems),
+      operations.map(op => ({
+        op: op.op,
+        path: op.path,
+        value: op.value,
+      })),
+      true, // validate
+      false, // mutate (false = don't mutate original)
     )
-  }
-  if (unsetEntries.length) {
-    updateOps.$unset = Object.fromEntries(
-      unsetEntries.map(path => [`items.${path}`, '']),
-    )
-  }
-
-  if (Object.keys(updateOps).length) {
-    await ArtifactV3.updateOne({ _id: artifact._id }, updateOps)
+    patchedItems = result.newDocument as Record<string, unknown>
+  } catch (err: any) {
+    const error = new Error(`Failed to apply patch: ${err.message}`)
+    ;(error as any).statusCode = 422
+    throw error
   }
 
-  const patch = [
-    ...Object.entries(setEntries).map(([path, value]) => ({
-      op: 'set' as const,
-      path,
-      value,
-    })),
-    ...unsetEntries.map(path => ({
-      op: 'unset' as const,
-      path,
-    })),
-  ]
+  // Increment version and update
+  const newVersion = (artifact.version || 1) + 1
 
-  if (patch.length) {
-    await ArtifactEditV3.create({
-      artifact: artifact._id,
-      actor: subjectId,
-      patch,
-      reason,
-    })
-  }
+  await ArtifactV3.updateOne(
+    { _id: artifact._id },
+    {
+      $set: {
+        items: patchedItems,
+        version: newVersion,
+      },
+    },
+  )
+
+  // Create version snapshot with operations
+  await ArtifactVersionV3.create({
+    artifact: artifact._id,
+    version: newVersion,
+    items: patchedItems,
+    operations,
+    actor: subjectId,
+    reason,
+  })
 
   const updated = await ArtifactV3.findById(artifact._id)
-  const updatedObj = updated ? updated.toObject() : artifact.toObject()
-
-  if (
-    !updatedObj.items ||
-    typeof updatedObj.items !== 'object' ||
-    Array.isArray(updatedObj.items)
-  ) {
-    updatedObj.items = {}
-  }
-
-  applyItemPatch(
-    updatedObj.items as Record<string, unknown>,
-    setEntries,
-    unsetEntries,
-  )
-
-  const filteredItems = filterArtifactItems(
-    updatedObj.items || {},
-    artifactLevel,
-    permissions,
-  )
 
   return {
-    artifact: {
-      ...updatedObj,
-      items: filteredItems,
-    },
+    artifact: updated
+      ? updated.toObject()
+      : { ...artifact.toObject(), items: patchedItems, version: newVersion },
   }
 }
 
@@ -751,7 +593,6 @@ export async function updateArtifactPermissionsV3Core({
   permissions: Array<{
     subjectId: string
     level: ArtifactPermissionLevelV3
-    key?: string
   }>
   authUserId?: string | ObjectId
 }) {
@@ -788,10 +629,9 @@ export async function updateArtifactPermissionsV3Core({
     artifact: ObjectId
     subject: ObjectId
     level: ArtifactPermissionLevelV3
-    key?: string
     grantedBy: ObjectId
   }> = []
-  const dedupe = new Map<string, number>()
+  const dedupe = new Set<string>()
 
   for (const permission of permissions || []) {
     if (!permission.subjectId || !permission.level) {
@@ -803,32 +643,19 @@ export async function updateArtifactPermissionsV3Core({
     if (!Object.values(ArtifactPermissionLevelV3).includes(permission.level)) {
       continue
     }
-    if (permission.key !== undefined) {
-      if (!permission.key || !validateKeyPattern(permission.key)) {
-        const error = new Error(`Invalid key pattern: ${permission.key}`)
-        ;(error as any).statusCode = 422
-        throw error
-      }
-    }
 
-    const payload = {
+    const dedupeKey = permission.subjectId
+    if (dedupe.has(dedupeKey)) {
+      continue
+    }
+    dedupe.add(dedupeKey)
+
+    sanitized.push({
       artifact: artifact._id,
       subject: new ObjectId(permission.subjectId),
       level: permission.level,
-      key: permission.key || undefined,
       grantedBy: subjectId,
-    }
-
-    const dedupeKey = `${payload.subject.toString()}::${
-      payload.key ?? '__all__'
-    }`
-    const existingIndex = dedupe.get(dedupeKey)
-    if (existingIndex !== undefined) {
-      sanitized[existingIndex] = payload
-    } else {
-      dedupe.set(dedupeKey, sanitized.length)
-      sanitized.push(payload)
-    }
+    })
   }
 
   await ArtifactPermissionV3.deleteMany({ artifact: artifact._id })
@@ -885,7 +712,7 @@ export async function listArtifactHistoryV3Core({
     permissions,
   )
 
-  if (!hasAnyPermission(artifactLevel, permissions)) {
+  if (!isViewerLevel(artifactLevel)) {
     const error = new Error('Not authorized to view artifact history')
     ;(error as any).statusCode = 401
     throw error
@@ -895,7 +722,7 @@ export async function listArtifactHistoryV3Core({
   const sortDirection =
     typeof direction === 'number' ? (direction < 0 ? -1 : 1) : -1
 
-  const paginated = await (ArtifactEditV3 as any).paginate(
+  const paginated = await (ArtifactVersionV3 as any).paginate(
     { artifact: artifact._id },
     {
       page,
@@ -905,36 +732,12 @@ export async function listArtifactHistoryV3Core({
     },
   )
 
-  const filteredDocs = paginated.docs
-    .map((doc: any) => {
-      const edit = typeof doc.toObject === 'function' ? doc.toObject() : doc
-      if (
-        artifactLevel &&
-        getPermissionWeight(artifactLevel) >=
-          getPermissionWeight(ArtifactPermissionLevelV3.Viewer)
-      ) {
-        return edit
-      }
-      const filteredPatch = (edit.patch || []).filter((op: any) => {
-        if (!op?.path || typeof op.path !== 'string') {
-          return false
-        }
-        return canReadKey(op.path, artifactLevel, permissions)
-      })
-      if (!filteredPatch.length) {
-        return null
-      }
-      return {
-        ...edit,
-        patch: filteredPatch,
-      }
-    })
-    .filter(Boolean)
+  const docs = paginated.docs.map((doc: any) =>
+    typeof doc.toObject === 'function' ? doc.toObject() : doc,
+  )
 
   const total =
-    (paginated as any).total ??
-    (paginated as any).totalDocs ??
-    filteredDocs.length
+    (paginated as any).total ?? (paginated as any).totalDocs ?? docs.length
   const pages =
     (paginated as any).pages ??
     (paginated as any).totalPages ??
@@ -944,7 +747,7 @@ export async function listArtifactHistoryV3Core({
     ...paginated,
     total,
     pages,
-    docs: filteredDocs,
+    docs,
   }
 }
 

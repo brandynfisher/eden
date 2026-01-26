@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:dummy": "DOTENV_PATH=.env.dummy tsx watch --clear-screen=false src .env.dummy | pino-pretty --colorize",
-    "dev:eden": "DOTENV_PATH=.env.eden tsx watch --clear-screen=false src .env.eden | pino-pretty --colorize",
+    "dev:eden": "node scripts/dev-eden.mjs",
     "build": "tsc --outDir build",
     "test": "vitest",
     "start": "tsx build/src/index.js",
@@ -56,6 +56,7 @@
     "cron-parser": "^5.4.0",
     "dotenv": "^16.0.3",
     "expo-server-sdk": "^4.0.0",
+    "fast-json-patch": "^3.1.1",
     "fastify": "^4.26.2",
     "fastify-healthcheck": "^4.4.0",
     "fastify-plugin": "^4.5.1",
@@ -81,6 +82,7 @@
     "tar": "^6.2.0",
     "uuid": "^9.0.0",
     "viem": "^2.38.3",
+    "yaml": "^2.4.2",
     "zod": "^3.25.0"
   },
   "devDependencies": {

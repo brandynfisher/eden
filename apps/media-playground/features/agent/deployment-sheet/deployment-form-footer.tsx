@@ -103,14 +103,53 @@ export const DeploymentFormFooter = ({
     try {
       let config = {}
       if (platform === 'discord') {
+        const normalizedChannels = (data.channels || [])
+          .map((ch: { id: string; note?: string; readOnly?: boolean }) => ({
+            id: ch.id?.trim(),
+            note: ch.note,
+            readOnly: ch.readOnly ?? false,
+          }))
+          .filter((ch: { id?: string }) => ch.id)
+
+        if (data.token && normalizedChannels.length > 0) {
+          const validationResponse = await axios.post(
+            '/api/integrations/discord/validate-bot-channels',
+            {
+              token: data.token,
+              channels: normalizedChannels.map(
+                (channel: { id: string; readOnly: boolean }) => ({
+                  id: channel.id,
+                  readOnly: channel.readOnly,
+                }),
+              ),
+            },
+          )
+          const invalidChannels = (
+            validationResponse.data?.channels || []
+          ).filter(
+            (channel: { validation?: { errors?: string[] } }) =>
+              (channel.validation?.errors?.length ?? 0) > 0,
+          )
+          if (invalidChannels.length > 0) {
+            const channelLabels = invalidChannels
+              .map((channel: { name?: string; id: string }) =>
+                channel.name ? `#${channel.name}` : channel.id,
+              )
+              .join(', ')
+            throw new Error(
+              `Bot lacks required permissions for: ${channelLabels}`,
+            )
+          }
+        }
+
         // Split unified channels into allowed and read-only lists
-        const allowedChannels = (data.channels || [])
+        const allowedChannels = normalizedChannels
           .filter((ch: { readOnly?: boolean }) => !ch.readOnly)
           .map((ch: { id: string; note?: string }) => ({
             id: ch.id,
             note: ch.note,
           }))
-        const readAccessChannels = (data.channels || [])
+        const readAccessChannels = normalizedChannels
           .filter((ch: { readOnly?: boolean }) => ch.readOnly)
           .map((ch: { id: string; note?: string }) => ({
             id: ch.id,

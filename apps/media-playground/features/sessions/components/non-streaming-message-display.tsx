@@ -1,29 +1,31 @@
 'use client'
 
-import { OtherMessage } from '@/features/sessions/components/other-message'
+import { AssistantMessage } from '@/features/sessions/components/assistant-message'
+import { Message } from '@edenlabs/eden-sdk'
 
 interface NonStreamingMessageDisplayProps {
   sessionId: string
+  isChatRoute?: boolean
   waitingForResponse: boolean
-  getRespondingAgents: () => Array<{
+  respondingAgents: Array<{
     _id: string
     username: string
     name: string
     userImage?: string | undefined
+    showAvatar?: boolean
   }>
 }
 
-export const NonStreamingMessageDisplay: React.FC<NonStreamingMessageDisplayProps> = ({
+export const NonStreamingMessageDisplay = ({
   sessionId,
+  isChatRoute = false,
   waitingForResponse,
-  getRespondingAgents,
-}) => {
+  respondingAgents,
+}: NonStreamingMessageDisplayProps) => {
   if (!waitingForResponse) {
     return null
   }
 
-  const respondingAgents = getRespondingAgents()
-  
   // Don't show anything if no agents should respond
   if (respondingAgents.length === 0) {
     return null
@@ -32,22 +34,23 @@ export const NonStreamingMessageDisplay: React.FC<NonStreamingMessageDisplayProp
   return (
     <div className="mb-4">
       {respondingAgents.map((agent, index) => (
-        <OtherMessage
+        <AssistantMessage
           key={`loading-${agent._id}-${index}`}
           sessionId={sessionId}
           message={
             {
               _id: `loading-${agent._id}-${index}`,
+              session: [] as Message['session'],
               content: '',
               sender: agent,
               createdAt: new Date(),
               updatedAt: new Date(),
-              session: sessionId,
               role: 'assistant',
-            } as any
+            } as Message
           }
-          showAvatar={true}
+          showAvatar={agent.showAvatar ?? true}
           isStreamingTokens={true} // This will show the loading indicator
+          isChatRoute={isChatRoute}
         />
       ))}
     </div>

@@ -13,6 +13,8 @@ import {
 import { verifyMcpToken } from '../lib/mcpTokens'
 import { verifyApiKey } from '../middleware/authMiddleware'
 import { ArtifactPermissionLevelV3 } from '../models/v3/ArtifactPermissionV3'
+import { generatedMcpTools } from './mcpGeneratedTools'
+import { callSessionsV3Tool } from './mcpSessionsV3Tools'
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
@@ -54,7 +56,6 @@ type ArtifactCreateArgs = {
   type: string
   public?: boolean
   session?: string
-  content?: string
   items?: Record<string, unknown>
 }
 
@@ -64,14 +65,15 @@ type ArtifactUpdateArgs = {
   type?: string
   public?: boolean
   session?: string | null
-  content?: string
-  items?: Record<string, unknown>
 }
 
 type ArtifactPatchItemsArgs = {
   artifactId: string
-  set?: Record<string, unknown>
-  unset?: string[]
+  operations: Array<{
+    op: 'add' | 'remove' | 'replace'
+    path: string
+    value?: unknown
+  }>
   reason?: string
 }
 
@@ -84,7 +86,6 @@ type ArtifactUpdatePermissionsArgs = {
   permissions: Array<{
     subjectId: string
     level: ArtifactPermissionLevelV3
-    key?: string
   }>
 }
 
@@ -136,7 +137,7 @@ const parseMaybeJson = <T>(value: unknown): T | undefined => {
   return value as T
 }
 
-const flattenItems = (
+const _flattenItems = (
   items: Record<string, unknown>,
   prefix = '',
   out: Record<string, unknown> = {},
@@ -144,7 +145,7 @@ const flattenItems = (
   for (const [key, value] of Object.entries(items)) {
     const path = prefix ? `${prefix}.${key}` : key
     if (value && typeof value === 'object' && !Array.isArray(value)) {
-      flattenItems(value as Record<string, unknown>, path, out)
+      _flattenItems(value as Record<string, unknown>, path, out)
     } else {
       out[path] = value as unknown
     }
@@ -177,6 +178,40 @@ const isInitializePayload = (payload: unknown) => {
     return payload.some(item => isInitializeRequest(item))
   }
   return isInitializeRequest(payload)
+}
+
+const buildGeneratedToolSchema = (
+  params: Record<string, { type: string; required: boolean }>,
+) => {
+  const shape: Record<string, z.ZodTypeAny> = {}
+  for (const [key, param] of Object.entries(params)) {
+    let schema: z.ZodTypeAny = z.any()
+    switch (param.type) {
+      case 'string':
+        schema = z.string()
+        break
+      case 'boolean':
+        schema = z.boolean()
+        break
+      case 'integer':
+        schema = z.number().int()
+        break
+      case 'number':
+        schema = z.number()
+        break
+      case 'array':
+        schema = z.array(z.any())
+        break
+      case 'object':
+        schema = z.record(z.any())
+        break
+      default:
+        schema = z.any()
+        break
+    }
+    shape[key] = param.required ? schema : schema.optional()
+  }
+  return shape
 }
 
 const createMcpServer = (server: FastifyInstance) => {
@@ -251,6 +286,46 @@ const createMcpServer = (server: FastifyInstance) => {
     },
   )
 
+  for (const generatedTool of generatedMcpTools) {
+    const schema = buildGeneratedToolSchema(generatedTool.params)
+    tool(
+      generatedTool.name,
+      generatedTool.description,
+      schema,
+      async (args: Record<string, unknown>, extra: ToolExtra) => {
+        const authUserId =
+          typeof extra?.authInfo?.extra?.userId === 'string'
+            ? extra.authInfo.extra.userId
+            : null
+        if (!authUserId) {
+          throw new Error('Missing MCP user context')
+        }
+        if (generatedTool.path.startsWith('/v3/sessions')) {
+          const result = await callSessionsV3Tool({
+            method: generatedTool.method,
+            path: generatedTool.path,
+            args,
+            userId: authUserId,
+            apiKeyId:
+              typeof extra?.authInfo?.extra?.apiKeyId === 'string'
+                ? extra.authInfo.extra.apiKeyId
+                : undefined,
+            server,
+          })
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result),
+              },
+            ],
+          }
+        }
+        throw new Error(`Unsupported MCP tool path: ${generatedTool.path}`)
+      },
+    )
+  }
+
   const artifactListSchema = {
     ownerId: z.string().optional(),
     type: z.string().optional(),
@@ -320,13 +395,17 @@ const createMcpServer = (server: FastifyInstance) => {
     type: z.string(),
     public: z.boolean().optional(),
     session: z.string().optional(),
-    content: z.string().optional(),
-    items: z.record(z.any()).optional(),
+    items: z
+      .record(z.any())
+      .optional()
+      .describe(
+        'Initial data as native JSON (objects, arrays, numbers, booleans, strings). Do NOT stringify JSON - pass native structures directly.',
+      ),
   } as Record<string, z.ZodTypeAny>
 
   tool(
     'eden_artifacts_v3_create',
-    'Create an Eden artifact (V3).',
+    'Create an Eden artifact (V3). Store structured data directly in items using native JSON types.',
     artifactCreateSchema,
     async (args: ArtifactCreateArgs, extra: ToolExtra) => {
       const authUserId =
@@ -357,48 +436,21 @@ const createMcpServer = (server: FastifyInstance) => {
     type: z.string().optional(),
     public: z.boolean().optional(),
     session: z.union([z.string(), z.null()]).optional(),
-    content: z.string().optional(),
-    items: z.record(z.any()).optional(),
   } as Record<string, z.ZodTypeAny>
 
   tool(
     'eden_artifacts_v3_update',
-    'Update an Eden artifact (V3).',
+    'Update artifact metadata (title, type, public, session). For updating items data, use eden_artifacts_v3_patch_items with JSON Patch operations.',
     artifactUpdateSchema,
     async (args: ArtifactUpdateArgs, extra: ToolExtra) => {
       const authUserId =
         typeof extra?.authInfo?.extra?.userId === 'string'
           ? extra.authInfo.extra.userId
           : undefined
-      const { content, items, ...updateArgs } = args
-      const hasMetadataUpdates =
-        updateArgs.title !== undefined ||
-        updateArgs.type !== undefined ||
-        updateArgs.public !== undefined ||
-        updateArgs.session !== undefined
-
-      let result: any | undefined
-      if (hasMetadataUpdates) {
-        result = await updateArtifactV3Core({
-          ...updateArgs,
-          authUserId,
-        })
-      }
-
-      if (content !== undefined || items !== undefined) {
-        const parsedItems =
-          parseMaybeJson<Record<string, unknown>>(items) ?? items
-        const flattenedItems = parsedItems ? flattenItems(parsedItems) : {}
-        const set = {
-          ...(content !== undefined ? { content } : {}),
-          ...flattenedItems,
-        }
-        result = await patchArtifactItemsV3Core({
-          artifactId: args.artifactId,
-          set,
-          authUserId,
-        })
-      }
+      const result = await updateArtifactV3Core({
+        ...args,
+        authUserId,
+      })
 
       return {
         content: [
@@ -442,23 +494,36 @@ const createMcpServer = (server: FastifyInstance) => {
 
   const artifactPatchSchema = {
     artifactId: z.string(),
-    set: z.record(z.any()).optional(),
-    unset: z.array(z.string()).optional(),
+    operations: z
+      .array(
+        z.object({
+          op: z.enum(['add', 'remove', 'replace']),
+          path: z
+            .string()
+            .describe('JSON Pointer path (e.g., /characters/0/name)'),
+          value: z.any().optional(),
+        }),
+      )
+      .describe('JSON Patch operations to apply'),
     reason: z.string().optional(),
   } as Record<string, z.ZodTypeAny>
 
   tool(
     'eden_artifacts_v3_patch_items',
-    'Patch items for an Eden artifact (V3).',
+    'Apply JSON Patch operations (RFC 6902) to artifact items. Supports add, remove, and replace operations with JSON Pointer paths.',
     artifactPatchSchema,
     async (args: ArtifactPatchItemsArgs, extra: ToolExtra) => {
       const authUserId =
         typeof extra?.authInfo?.extra?.userId === 'string'
           ? extra.authInfo.extra.userId
           : undefined
+      const parsedOperations =
+        parseMaybeJson<ArtifactPatchItemsArgs['operations']>(args.operations) ??
+        args.operations
       const result = await patchArtifactItemsV3Core({
-        ...args,
-        set: parseMaybeJson<Record<string, unknown>>(args.set) ?? args.set,
+        artifactId: args.artifactId,
+        operations: parsedOperations,
+        reason: args.reason,
         authUserId,
       })
 
@@ -508,7 +573,6 @@ const createMcpServer = (server: FastifyInstance) => {
       z.object({
         subjectId: z.string(),
         level: z.nativeEnum(ArtifactPermissionLevelV3),
-        key: z.string().optional(),
       }),
     ),
   } as Record<string, z.ZodTypeAny>

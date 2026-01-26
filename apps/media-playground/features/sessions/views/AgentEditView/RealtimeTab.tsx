@@ -84,6 +84,7 @@ const CUSTOM_VOICE_VALUE = '__custom__'
 
 interface RealtimeSettings {
   agent: string
+  elevenlabs_agent_id: string | null
   voice_id: string | null
   language: string
   first_message: string | null
@@ -152,6 +153,7 @@ export const RealtimeTab = forwardRef<RealtimeTabHandle, RealtimeTabProps>(
     const hasUnsavedChanges = useMemo(() => {
       if (!savedSettings) return false
       return (
+        settings.elevenlabs_agent_id !== savedSettings.elevenlabs_agent_id ||
         settings.voice_id !== savedSettings.voice_id ||
         settings.language !== savedSettings.language ||
         settings.first_message !== savedSettings.first_message ||
@@ -176,6 +178,7 @@ export const RealtimeTab = forwardRef<RealtimeTabHandle, RealtimeTabProps>(
       setIsSubmitting(true)
       try {
         await axios.patch(`/api/agents/${agent._id}/realtime`, {
+          elevenlabs_agent_id: settings.elevenlabs_agent_id || undefined,
           voice_id: settings.voice_id || undefined,
           language: settings.language,
           first_message: settings.first_message || undefined,
@@ -459,6 +462,37 @@ export const RealtimeTab = forwardRef<RealtimeTabHandle, RealtimeTabProps>(
             <p className="text-sm text-muted-foreground">
               Configure ElevenLabs voice and conversation settings for this
               agent.
+            </p>
+          </div>
+
+          {/* ElevenLabs Agent ID */}
+          <div className="space-y-2">
+            <Label htmlFor="elevenlabs_agent_id">
+              ElevenLabs Agent ID (Optional)
+            </Label>
+            <Input
+              id="elevenlabs_agent_id"
+              placeholder="Leave empty to use shared agent with overrides"
+              value={settings.elevenlabs_agent_id || ''}
+              onChange={e =>
+                setSettings(prev => ({
+                  ...prev,
+                  elevenlabs_agent_id: e.target.value || null,
+                }))
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              {settings.elevenlabs_agent_id ? (
+                <>
+                  Using custom agent. Voice and TTS settings below are{' '}
+                  <strong>ignored</strong> (configured in ElevenLabs dashboard).
+                </>
+              ) : (
+                <>
+                  Using shared agent. Voice and settings below are applied as
+                  overrides at runtime.
+                </>
+              )}
             </p>
           </div>
 

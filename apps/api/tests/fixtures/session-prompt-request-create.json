@@ -1,0 +1,9 @@
+{
+  "creation": {
+    "agent_ids": ["agent-1", "agent-2"]
+  },
+  "message": {
+    "content": "create session",
+    "attachments": []
+  }
+}

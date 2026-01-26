@@ -1,0 +1,9 @@
+{
+  "session_id": "session-123",
+  "actor_agent_ids": ["agent-1"],
+  "thinking": true,
+  "message": {
+    "content": "hello from test",
+    "attachments": ["https://example.com/a.png"]
+  }
+}

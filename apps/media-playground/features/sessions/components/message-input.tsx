@@ -461,8 +461,16 @@ export const MessageInput = ({
     }
   }, [handleFilesDropped])
 
+  // Check if any attachments are still uploading
+  const hasUploadingAttachments = attachments.some(
+    a => a.status === 'uploading',
+  )
+
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (isSubmitting) return
+
+    // Prevent submission while uploads are in progress
+    if (hasUploadingAttachments) return
 
     // Check character limit
     if (data.content.length > characterLimit) {
@@ -1046,9 +1054,7 @@ export const MessageInput = ({
                                 )}
                                 disabled={
                                   !form.formState.isValid ||
-                                  attachments.some(
-                                    a => a.status === 'uploading',
-                                  ) ||
+                                  hasUploadingAttachments ||
                                   isSubmitting ||
                                   isOverLimit
                                 }
@@ -1255,9 +1261,7 @@ export const MessageInput = ({
                               )}
                               disabled={
                                 !form.formState.isValid ||
-                                attachments.some(
-                                  a => a.status === 'uploading',
-                                ) ||
+                                hasUploadingAttachments ||
                                 isSubmitting ||
                                 isOverLimit
                               }

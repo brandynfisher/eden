@@ -15,6 +15,7 @@ export interface ArtifactV3Schema {
   session?: ObjectId
   originSession?: ObjectId
   items: Record<string, unknown>
+  version: number
   createdAt: Date
   updatedAt: Date
   deleted?: boolean
@@ -28,6 +29,7 @@ export interface ArtifactV3Input {
   session?: ObjectId
   originSession?: ObjectId
   items?: Record<string, unknown>
+  version?: number
 }
 
 export interface ArtifactV3Document
@@ -68,6 +70,10 @@ export const artifactV3Schema = new Schema<ArtifactV3Document>(
     items: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    version: {
+      type: Number,
+      default: 1,
     },
     deleted: {
       type: Boolean,

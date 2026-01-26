@@ -1024,7 +1024,9 @@ export const listSessions = async (
       page,
       sort: {
         ...sort,
-        pinned: -1, // Pinned sessions always appear first
+        // Note: Don't sort by pinned here - MongoDB sorts missing values after false,
+        // which breaks pagination for sessions without the pinned field.
+        // The frontend handles pinned sorting after fetching.
         updatedAt: -1,
         createdAt: -1,
       },
@@ -1277,7 +1279,7 @@ export const getSession = async (
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call observability',
       )
 
     // Take up to limit messages (we fetched limit+1 to check if there are more)
@@ -1495,7 +1497,7 @@ export const getSessionMessages = async (
       .sort({ createdAt: -1, _id: -1 })
       .limit(fetchLimit)
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions llm_call observability',
       )
 
     // Take up to limit messages (we fetched limit+1 to check if there are more)
@@ -2315,7 +2317,7 @@ export const getSharedSession = async (
       })
       .sort({ createdAt: 1 })
       .select(
-        '_id content sender role eden_message_data tool_calls thought attachments createdAt llm_call',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt llm_call observability',
       )
 
     // Ensure eden agent sender is properly populated for orchestrator messages
