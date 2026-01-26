@@ -31,6 +31,7 @@ import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-quer
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
+import { sessionConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
@@ -487,47 +488,59 @@ const ChatLaunchpad = () => {
           throw new Error('Failed to send message')
         }
 
-        // Parse SSE stream to extract session_id from session_created event
-        const reader = response.body?.getReader()
-        if (!reader) {
-          throw new Error('No response body')
-        }
-
-        const decoder = new TextDecoder()
-        let buffer = ''
         let sessionId: string | null = null
 
-        while (!sessionId) {
-          const { done, value } = await reader.read()
-          if (done) break
+        // Check if we're using streaming or not based on config
+        if (!sessionConfig.useStreaming) {
+          // Non-streaming: response body is JSON (even though route sets SSE headers)
+          const text = await response.text()
+          const data = JSON.parse(text)
+          sessionId = data.session_id
+        } else {
+          // Streaming: parse SSE stream to extract session_id from session_created event
+          const reader = response.body?.getReader()
+          if (!reader) {
+            throw new Error('No response body')
+          }
 
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
+          const decoder = new TextDecoder()
+          let buffer = ''
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const payload = line.slice(6).trim()
-                if (!payload || payload === '[DONE]') continue
-                const data = JSON.parse(payload)
-                if (data.event === 'session_created' && data.data?.session_id) {
-                  sessionId = data.data.session_id
-                  break
+          while (!sessionId) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() || ''
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const eventPayload = line.slice(6).trim()
+                  if (!eventPayload || eventPayload === '[DONE]') continue
+                  const data = JSON.parse(eventPayload)
+                  if (
+                    data.event === 'session_created' &&
+                    data.data?.session_id
+                  ) {
+                    sessionId = data.data.session_id
+                    break
+                  }
+                } catch {
+                  // Ignore parse errors for incomplete lines
                 }
-              } catch {
-                // Ignore parse errors for incomplete lines
               }
             }
           }
-        }
 
-        reader.releaseLock()
+          reader.releaseLock()
+        }
 
         if (sessionId) {
           router.push(`/sessions/${sessionId}`)
         } else {
-          throw new Error('No session_id received from stream')
+          throw new Error('No session_id received from response')
         }
       } catch (error) {
         console.error('Error creating session:', error)
