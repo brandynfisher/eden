@@ -2756,7 +2756,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@edenlabs/eden-sdk-v3@workspace:packages/eden-sdk-v3":
+"@edenlabs/eden-sdk-v3@npm:*, @edenlabs/eden-sdk-v3@workspace:packages/eden-sdk-v3":
   version: 0.0.0-use.local
   resolution: "@edenlabs/eden-sdk-v3@workspace:packages/eden-sdk-v3"
   dependencies:
@@ -22157,6 +22157,7 @@ __metadata:
     "@edenlabs/config": "npm:*"
     "@edenlabs/eden-react": "npm:*"
     "@edenlabs/eden-sdk": "npm:*"
+    "@edenlabs/eden-sdk-v3": "npm:*"
     "@edenlabs/tsconfig": "npm:*"
     "@elevenlabs/elevenlabs-js": "npm:^2.24.1"
     "@elevenlabs/react": "npm:^0.11.0"
