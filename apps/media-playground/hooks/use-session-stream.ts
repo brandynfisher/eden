@@ -2,7 +2,7 @@
 
 import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
-import { createSessionsV3Api } from '@edenlabs/eden-sdk-v3'
+import { createEdenClient } from '@edenlabs/eden-sdk-v3'
 import { useCallback, useRef } from 'react'
 
 interface StreamMessage {
@@ -68,7 +68,7 @@ interface UseSessionStreamProps {
 }
 
 const createApi = (token: string) =>
-  createSessionsV3Api({
+  createEdenClient({
     baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
     token,
   })
@@ -126,7 +126,7 @@ export const useSessionStream = ({
           throw new Error('Not authenticated')
         }
 
-        response = await createApi(token).promptStream({
+        response = await createApi(token).sessions.promptStream({
           session_run_id: creationArgs?.session_run_id,
           session_id: sessionId,
           actor_agent_ids: creationArgs?.agent_ids,

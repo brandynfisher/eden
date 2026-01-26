@@ -1,6 +1,7 @@
 import { extractTraceHeaders } from '../../lib/traceHeaders'
 import { isAuth } from '../../middleware/authMiddleware'
-import registerSessionsV3Schemas from '../../plugins/sessionsV3Schemas'
+import registerOpenApiSchemas from '../../plugins/openapiSchemas'
+import { SessionPromptRequest } from '@edenlabs/eden-sdk-v3'
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
@@ -9,24 +10,10 @@ const MAX_STREAMS_PER_USER = Number(
   process.env.SESSIONS_V3_MAX_STREAMS_PER_USER ?? 2,
 )
 
-type SessionPromptRequestBody = {
-  session_run_id?: string
-  session_id?: string
-  actor_agent_ids?: string[]
-  thinking?: boolean
-  creation?: {
-    agent_ids: string[]
-  }
-  message: {
-    content: string
-    attachments?: string[]
-  }
-}
-
 const activeStreamsByUser = new Map<string, number>()
 
 const sessionRoutesV3: FastifyPluginAsync = async server => {
-  await server.register(registerSessionsV3Schemas)
+  await server.register(registerOpenApiSchemas, { id: 'sessions-v3' })
 
   const sessionPreHandler = async (
     request: FastifyRequest,
@@ -35,7 +22,7 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
     await isAuth(server, request, reply)
   }
 
-  server.post<{ Body: SessionPromptRequestBody }>(
+  server.post<{ Body: SessionPromptRequest }>(
     '/v3/sessions/prompt',
     {
       preHandler: sessionPreHandler,
@@ -106,7 +93,7 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
     },
   )
 
-  server.post<{ Body: SessionPromptRequestBody }>(
+  server.post<{ Body: SessionPromptRequest }>(
     '/v3/sessions/prompt/stream',
     {
       preHandler: sessionPreHandler,
@@ -118,6 +105,7 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
         response: {
           400: { $ref: 'sessions-v3#/components/schemas/ErrorResponse' },
           401: { $ref: 'sessions-v3#/components/schemas/ErrorResponse' },
+          429: { $ref: 'sessions-v3#/components/schemas/ErrorResponse' },
         },
       },
     },
@@ -129,15 +117,26 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
 
       const currentStreams = activeStreamsByUser.get(userId) ?? 0
       if (currentStreams >= MAX_STREAMS_PER_USER) {
-        return reply.status(429).send({
-          message: 'Too many concurrent session streams',
-        })
+        return reply
+          .status(429)
+          .send({ message: 'Too many concurrent streams' })
       }
 
       activeStreamsByUser.set(userId, currentStreams + 1)
+      const decrement = () => {
+        const current = activeStreamsByUser.get(userId) ?? 1
+        const next = Math.max(current - 1, 0)
+        if (next === 0) {
+          activeStreamsByUser.delete(userId)
+        } else {
+          activeStreamsByUser.set(userId, next)
+        }
+      }
+
+      request.raw.on('close', decrement)
+      request.raw.on('error', decrement)
 
       const traceHeaders = extractTraceHeaders(request)
-
       const sessionRunId = request.body.session_run_id ?? randomUUID()
       const payload = {
         session_run_id: sessionRunId,
@@ -153,73 +152,10 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
         creation_args: request.body.creation
           ? { agent_ids: request.body.creation.agent_ids }
           : undefined,
-        stream: true,
       }
-
-      const abortController = new AbortController()
-      let cleanedUp = false
-
-      const cleanupStream = () => {
-        if (cleanedUp) return
-        cleanedUp = true
-        const nextCount = (activeStreamsByUser.get(userId) ?? 1) - 1
-        if (nextCount <= 0) {
-          activeStreamsByUser.delete(userId)
-        } else {
-          activeStreamsByUser.set(userId, nextCount)
-        }
-        abortController.abort()
-      }
-
-      const safeWrite = (chunk: Buffer | string) => {
-        if (cleanedUp || reply.raw.destroyed || reply.raw.writableEnded) {
-          return
-        }
-        try {
-          reply.raw.write(chunk)
-        } catch (err) {
-          server.log.warn({ err }, '[v3] stream write failed')
-          cleanupStream()
-        }
-      }
-
-      const safeEnd = () => {
-        if (reply.raw.destroyed || reply.raw.writableEnded) {
-          cleanupStream()
-          return
-        }
-        try {
-          reply.raw.end()
-        } catch (err) {
-          server.log.warn({ err }, '[v3] stream end failed')
-        } finally {
-          cleanupStream()
-        }
-      }
-
-      request.raw.on('close', cleanupStream)
-      request.raw.on('aborted', cleanupStream)
-      reply.raw.on('close', cleanupStream)
-      reply.raw.on('error', err => {
-        server.log.warn({ err }, '[v3] reply stream error')
-        cleanupStream()
-      })
-
-      const originHeader = request.headers.origin ?? '*'
-      reply.raw.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-        'X-Accel-Buffering': 'no',
-        'Access-Control-Allow-Origin': originHeader,
-        'Access-Control-Allow-Credentials': 'true',
-        Vary: 'Origin',
-      })
-      reply.raw.setTimeout(0)
-      reply.hijack()
 
       try {
-        const upstream = await axios.post(
+        const stream = await axios.post(
           `${server.config.EDEN_COMPUTE_API_URL}/v3/sessions/prompt/stream`,
           payload,
           {
@@ -228,36 +164,33 @@ const sessionRoutesV3: FastifyPluginAsync = async server => {
               ...traceHeaders,
             },
             responseType: 'stream',
-            signal: abortController.signal,
           },
         )
 
-        upstream.data.on('data', (chunk: Buffer) => {
-          safeWrite(chunk)
+        reply.raw.setHeader('Content-Type', 'text/event-stream')
+        reply.raw.setHeader('Cache-Control', 'no-cache')
+        reply.raw.setHeader('Connection', 'keep-alive')
+        reply.raw.flushHeaders()
+
+        stream.data.on('data', (chunk: Buffer) => {
+          reply.raw.write(chunk)
         })
 
-        upstream.data.on('end', () => {
-          safeEnd()
+        stream.data.on('end', () => {
+          reply.raw.end()
         })
 
-        upstream.data.on('error', (streamError: Error) => {
-          safeWrite(
-            `data: ${JSON.stringify({
-              event: 'error',
-              data: { error: streamError.message },
-            })}\n\n`,
-          )
-          safeEnd()
+        stream.data.on('error', (err: Error) => {
+          server.log.error({ err }, '[v3] stream error')
+          reply.raw.end()
         })
       } catch (error) {
         server.log.error({ err: error }, '[v3] Prompt stream failed')
-        safeWrite(
-          `data: ${JSON.stringify({
-            event: 'error',
-            data: { error: 'Failed to establish stream' },
-          })}\n\n`,
-        )
-        safeEnd()
+        const message =
+          axios.isAxiosError(error) && error.response?.data?.message
+            ? error.response.data.message
+            : 'Failed to prompt session stream'
+        reply.status(500).send({ message })
       }
     },
   )

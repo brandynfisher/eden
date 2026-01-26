@@ -11,7 +11,7 @@ paths:
       summary: Prompt a session (non-streaming)
       x-eden:
         mcp: true
-      tags: [SessionsV3]
+      tags: [Sessions]
       security:
         - bearerAuth: []
       requestBody:
@@ -42,7 +42,7 @@ paths:
   /v3/sessions/prompt/stream:
     post:
       summary: Prompt a session (streaming SSE)
-      tags: [SessionsV3]
+      tags: [Sessions]
       security:
         - bearerAuth: []
       requestBody:

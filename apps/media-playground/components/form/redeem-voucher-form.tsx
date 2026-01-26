@@ -12,9 +12,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { MannaVoucherRedeemResponse } from '@edenlabs/eden-sdk'
+import { env } from '@/lib/config'
+import { useAuth } from '@clerk/nextjs'
+import {
+  MannaVoucherRedeemResponse,
+  createEdenClient,
+} from '@edenlabs/eden-sdk-v3'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios, { AxiosError } from 'axios'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -30,6 +34,7 @@ type RedeemVoucherFormProps = {
 
 const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
   const { refetchMe } = useAuthState()
+  const { getToken } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,12 +47,20 @@ const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
     setIsSubmitting(true)
 
     try {
-      const response: MannaVoucherRedeemResponse = await axios.post(
-        '/api/voucher/redeem',
-        {
+      const token = await getToken()
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
+
+      const eden = createEdenClient({
+        baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+        token,
+      })
+
+      const response: MannaVoucherRedeemResponse =
+        await eden.manna.redeemVoucher({
           code: values.code,
-        },
-      )
+        })
 
       toast.success(`Code redeemed`, {
         description: (
@@ -63,12 +76,10 @@ const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
       onSuccess?.()
     } catch (err) {
       console.error(err)
-      const errorMessage = axios.isAxiosError(err)
-        ? JSON.parse((err as AxiosError).request.responseText)?.message
-        : 'Unknown Error'
+      const message = err instanceof Error ? err.message : 'Unknown Error'
 
       toast.error(`Failed to redeem code!`, {
-        description: JSON.stringify(errorMessage),
+        description: JSON.stringify(message),
         dismissible: true,
         richColors: true,
       })
