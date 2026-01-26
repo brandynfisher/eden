@@ -3,7 +3,7 @@
 import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
 import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
-import { createSessionsV3Api } from '@edenlabs/eden-sdk-v3'
+import { createEdenClient } from '@edenlabs/eden-sdk-v3'
 import {
   Dispatch,
   SetStateAction,
@@ -22,7 +22,7 @@ interface UseNonStreamingStateProps {
 }
 
 const createApi = (token: string) =>
-  createSessionsV3Api({
+  createEdenClient({
     baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
     token,
   })
@@ -195,7 +195,7 @@ export function useNonStreamingState({
           throw new Error('Not authenticated')
         }
 
-        result = await createApi(token).prompt({
+        result = await createApi(token).sessions.prompt({
           session_run_id: options?.session_run_id,
           session_id: sessionId,
           actor_agent_ids: options?.agent_ids,

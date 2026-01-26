@@ -5,8 +5,9 @@ on:
     branches:
       - main
     paths:
+      - 'apps/api/openapi/**'
+      - 'scripts/openapi/**'
       - 'apps/api/src/routes/**'
-      - 'apps/api/scripts/generate-openapi.ts'
 
 jobs:
   generate-and-deploy-docs:
@@ -39,19 +40,9 @@ jobs:
         working-directory: eden
         run: yarn install --immutable
 
-      - name: Build eden-sdk
+      - name: Generate OpenAPI artifacts
         working-directory: eden
-        run: yarn workspace @edenlabs/eden-sdk build
-
-      - name: Generate OpenAPI specification
-        working-directory: eden/apps/api
-        run: yarn run generate:openapi
-        env:
-          DOTENV_PATH: .env.example
-
-      - name: Copy OpenAPI spec to mintlify-docs
-        run: |
-          cp eden/apps/api/openapi.json mintlify-docs/openapi.json
+        run: yarn generate:openapi-types
 
       - name: Commit and push to mintlify-docs
         working-directory: mintlify-docs
@@ -60,12 +51,12 @@ jobs:
           git config user.email "actions@github.com"
 
           # Check if there are changes
-          if git diff --quiet openapi.json openapi-sessions-v3.json; then
+          if git diff --quiet openapi/sessions-v3.yaml openapi/artifacts-v3.yaml openapi/manna-v3.yaml; then
             echo "No changes to OpenAPI spec"
             exit 0
           fi
 
-          git add openapi.json openapi-sessions-v3.json
+          git add openapi/sessions-v3.yaml openapi/artifacts-v3.yaml openapi/manna-v3.yaml
           git commit -m "Update API documentation from eden repo
 
           Generated from: ${{ github.repository }}@${{ github.sha }}

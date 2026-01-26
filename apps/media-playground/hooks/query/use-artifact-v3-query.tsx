@@ -1,6 +1,8 @@
-import { ArtifactV3, ArtifactsV3GetResponse } from '@edenlabs/eden-sdk'
+import { env } from '@/lib/config'
+import { useAuth } from '@clerk/nextjs'
+import { ArtifactV3 } from '@edenlabs/eden-sdk'
+import { ArtifactResponse, createEdenClient } from '@edenlabs/eden-sdk-v3'
 import { useQuery } from '@tanstack/react-query'
-import axios, { AxiosResponse } from 'axios'
 
 export function useArtifactV3Query({
   artifactId,
@@ -9,13 +11,22 @@ export function useArtifactV3Query({
   artifactId?: string | null
   enabled?: boolean
 }) {
+  const { getToken } = useAuth()
+
   const query = useQuery({
     queryKey: ['artifacts-v3', 'get', artifactId],
     queryFn: async () => {
-      const response: AxiosResponse<ArtifactsV3GetResponse> = await axios.get(
-        `/api/artifacts-v3/${artifactId}`,
-      )
-      return response.data
+      const token = await getToken()
+      const eden = createEdenClient({
+        baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+        token: token || undefined,
+      })
+
+      if (!artifactId) {
+        throw new Error('Artifact ID is required')
+      }
+
+      return eden.artifacts.get(artifactId) as Promise<ArtifactResponse>
     },
     enabled: enabled && !!artifactId,
     staleTime: 2000,

@@ -219,7 +219,10 @@ const updateToolConstants = toolNames => {
     ),
   )
   if (!match) {
-    throw new Error('Missing EDEN MCP tool markers in tool_constants.py')
+    console.warn(
+      '[mcp] Skipping tool_constants.py update (missing EDEN MCP tool markers)',
+    )
+    return
   }
   const indent = match[1].match(/^[ \\t]*/)?.[0] ?? '    '
   const listLines = toolNames.map(name => `${indent}\"${name}\",`)

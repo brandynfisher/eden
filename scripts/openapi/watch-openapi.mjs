@@ -9,7 +9,12 @@ const generatorPath = resolve(
 )
 
 const watchedSpecs = Array.from(
-  new Set(openapiJobs.map(job => resolve(repoRoot, job.spec))),
+  new Set(
+    openapiJobs.flatMap(job => [
+      resolve(repoRoot, job.spec),
+      ...(job.watch ?? []).map(path => resolve(repoRoot, path)),
+    ]),
+  ),
 )
 
 let pending = null
