@@ -4,114 +4,115 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-  '/v3/sessions/prompt': {
+  "/v3/sessions/prompt": {
     /** Prompt a session (non-streaming) */
     post: {
       requestBody: {
         content: {
-          'application/json': components['schemas']['SessionPromptRequest']
-        }
-      }
+          "application/json": components["schemas"]["SessionPromptRequest"];
+        };
+      };
       responses: {
         /** @description Prompt accepted */
         200: {
           content: {
-            'application/json': components['schemas']['SessionPromptResponse']
-          }
-        }
+            "application/json": components["schemas"]["SessionPromptResponse"];
+          };
+        };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
+            "application/json": components["schemas"]["ErrorResponse"];
+          };
+        };
         /** @description Unauthorized */
         401: {
           content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-      }
-    }
-  }
-  '/v3/sessions/prompt/stream': {
+            "application/json": components["schemas"]["ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
+  "/v3/sessions/prompt/stream": {
     /** Prompt a session (streaming SSE) */
     post: {
       requestBody: {
         content: {
-          'application/json': components['schemas']['SessionPromptRequest']
-        }
-      }
+          "application/json": components["schemas"]["SessionPromptRequest"];
+        };
+      };
       responses: {
         /** @description SSE stream of session updates */
         200: {
           content: {
-            'text/event-stream': components['schemas']['SessionStreamEvent']
-          }
-        }
+            "text/event-stream": components["schemas"]["SessionStreamEvent"];
+          };
+        };
         /** @description Invalid request */
         400: {
           content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
+            "application/json": components["schemas"]["ErrorResponse"];
+          };
+        };
         /** @description Unauthorized */
         401: {
           content: {
-            'application/json': components['schemas']['ErrorResponse']
-          }
-        }
-      }
-    }
-  }
+            "application/json": components["schemas"]["ErrorResponse"];
+          };
+        };
+      };
+    };
+  };
 }
 
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
     SessionMessageInput: {
-      content: string
+      content: string;
       /** @default [] */
-      attachments?: string[]
-    }
+      attachments?: string[];
+    };
     SessionPromptRequest: {
-      session_run_id?: string
-      session_id?: string
-      actor_agent_ids?: string[]
-      thinking?: boolean
-      creation?: components['schemas']['SessionCreationInput']
-      message: components['schemas']['SessionMessageInput']
-    }
+      session_run_id?: string;
+      session_id?: string;
+      actor_agent_ids?: string[];
+      thinking?: boolean;
+      creation?: components["schemas"]["SessionCreationInput"];
+      message: components["schemas"]["SessionMessageInput"];
+    };
     SessionCreationInput: {
-      agent_ids: string[]
-    }
+      agent_ids: string[];
+    };
     SessionPromptResponse: {
-      session_id: string
-      session_run_id: string
-      message_id?: string
-    }
+      session_id: string;
+      session_run_id: string;
+      message_id?: string;
+    };
     SessionStreamEvent: {
       /** @enum {string} */
-      event: 'session_created' | 'update' | 'done' | 'error' | 'heartbeat'
+      event: "session_created" | "update" | "done" | "error" | "heartbeat";
       data: {
-        [key: string]: unknown
-      }
-    }
+        [key: string]: unknown;
+      };
+    };
     ErrorResponse: {
-      message: string
-    }
-  }
-  responses: never
-  parameters: never
-  requestBodies: never
-  headers: never
-  pathItems: never
+      message: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 
-export type external = Record<string, never>
+export type external = Record<string, never>;
 
-export type operations = Record<string, never>
+export type operations = Record<string, never>;

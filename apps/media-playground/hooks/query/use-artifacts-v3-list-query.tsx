@@ -1,7 +1,7 @@
 import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
-import { ArtifactV3 } from '@edenlabs/eden-sdk'
 import {
+  Artifact,
   PaginatedArtifactsResponse,
   createEdenClient,
 } from '@edenlabs/eden-sdk-v3'
@@ -41,6 +41,6 @@ export function useArtifactsV3ListQuery({
 
   return {
     ...query,
-    artifacts: (query.data?.docs ?? []) as ArtifactV3[],
+    artifacts: (query.data?.docs ?? []) as Artifact[],
   }
 }

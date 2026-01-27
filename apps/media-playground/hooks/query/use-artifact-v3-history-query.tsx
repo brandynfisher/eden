@@ -1,7 +1,7 @@
 import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
-import { ArtifactVersionV3 } from '@edenlabs/eden-sdk'
 import {
+  ArtifactHistoryEntry,
   PaginatedArtifactsHistoryResponse,
   createEdenClient,
 } from '@edenlabs/eden-sdk-v3'
@@ -44,6 +44,6 @@ export function useArtifactV3HistoryQuery({
 
   return {
     ...query,
-    history: (query.data?.docs ?? []) as ArtifactVersionV3[],
+    history: (query.data?.docs ?? []) as ArtifactHistoryEntry[],
   }
 }

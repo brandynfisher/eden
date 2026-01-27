@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useArtifactV3HistoryQuery } from '@/hooks/query/use-artifact-v3-history-query'
 import { useArtifactV3Query } from '@/hooks/query/use-artifact-v3-query'
 import { cn } from '@/lib/utils'
-import { ArtifactV3, ArtifactVersionV3 } from '@edenlabs/eden-sdk'
+import { Artifact, ArtifactHistoryEntry } from '@edenlabs/eden-sdk-v3'
 import {
   ChevronRightIcon as ChevronClosedIcon,
   ChevronDownIcon,
@@ -28,7 +28,7 @@ import { MouseEvent, useMemo, useState } from 'react'
 
 type ArtifactSidebarProps = {
   artifactId: string | null
-  artifacts?: ArtifactV3[]
+  artifacts?: Artifact[]
   isOpen: boolean
   onClose: () => void
   onSelectArtifact?: (artifactId: string) => void
@@ -231,7 +231,7 @@ const JsonValue = ({
 }
 
 type HistoryEntryProps = {
-  entry: ArtifactVersionV3
+  entry: ArtifactHistoryEntry
 }
 
 const HistoryEntry = ({ entry }: HistoryEntryProps) => {
@@ -370,7 +370,7 @@ export const ArtifactSidebar = ({
   })
 
   const artifactOptions = useMemo(() => {
-    const map = new Map<string, ArtifactV3>()
+    const map = new Map<string, Artifact>()
     artifacts.forEach(item => {
       map.set(item._id, item)
     })
@@ -601,7 +601,7 @@ export const ArtifactSidebar = ({
                       No version history yet.
                     </div>
                   )}
-                  {history.map((entry: ArtifactVersionV3) => (
+                  {history.map((entry: ArtifactHistoryEntry) => (
                     <HistoryEntry key={entry._id} entry={entry} />
                   ))}
                 </TabsContent>

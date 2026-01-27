@@ -4,487 +4,489 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-  '/v3/artifacts': {
+  "/v3/artifacts": {
     /**
      * List artifacts
      * @description Retrieve a paginated list of artifacts.
      */
-    get: operations['artifacts.list']
+    get: operations["artifacts.list"];
     /**
      * Create artifact
      * @description Create a new artifact.
      */
-    post: operations['artifacts.create']
-  }
-  '/v3/artifacts/{artifactId}': {
+    post: operations["artifacts.create"];
+  };
+  "/v3/artifacts/{artifactId}": {
     /**
      * Get artifact
      * @description Retrieve a specific artifact.
      */
-    get: operations['artifacts.get']
+    get: operations["artifacts.get"];
     /**
      * Delete artifact
      * @description Soft delete an artifact.
      */
-    delete: operations['artifacts.delete']
+    delete: operations["artifacts.delete"];
     /**
      * Update artifact
      * @description Update an existing artifact.
      */
-    patch: operations['artifacts.update']
-  }
-  '/v3/artifacts/{artifactId}/items': {
+    patch: operations["artifacts.update"];
+  };
+  "/v3/artifacts/{artifactId}/items": {
     /**
      * Patch artifact items
      * @description Apply JSON Patch operations (RFC 6902) to artifact items.
      */
-    patch: operations['artifacts.patchItems']
-  }
-  '/v3/artifacts/{artifactId}/permissions': {
+    patch: operations["artifacts.patchItems"];
+  };
+  "/v3/artifacts/{artifactId}/permissions": {
     /**
      * Get artifact permissions
      * @description Retrieve permissions for an artifact.
      */
-    get: operations['artifacts.getPermissions']
+    get: operations["artifacts.getPermissions"];
     /**
      * Update artifact permissions
      * @description Replace permissions for an artifact.
      */
-    put: operations['artifacts.updatePermissions']
-  }
-  '/v3/artifacts/{artifactId}/history': {
+    put: operations["artifacts.updatePermissions"];
+  };
+  "/v3/artifacts/{artifactId}/history": {
     /**
      * List artifact history
      * @description Retrieve a paginated list of artifact edit history.
      */
-    get: operations['artifacts.history']
-  }
+    get: operations["artifacts.history"];
+  };
 }
 
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
     ErrorResponse: {
-      message: string
-    }
+      message: string;
+    };
     MessageResponse: {
-      message: string
-    }
+      message: string;
+    };
     Artifact: {
-      _id: string
-      owner: string
-      title: string
-      type: string
-      public: boolean
-      session?: string | null
-      originSession?: string | null
-      version: number
-      deleted?: boolean
-      createdAt: string
-      updatedAt: string
+      _id: string;
+      owner: string;
+      title: string;
+      type: string;
+      public: boolean;
+      session?: string | null;
+      originSession?: string | null;
+      version: number;
+      deleted?: boolean;
+      createdAt: string;
+      updatedAt: string;
       items: {
-        [key: string]: unknown
-      }
-      [key: string]: unknown
-    }
+        [key: string]: unknown;
+      };
+      [key: string]: unknown;
+    };
     ArtifactResponse: {
       artifact: {
-        _id: string
-        owner: string
-        title: string
-        type: string
-        public: boolean
-        session?: string | null
-        originSession?: string | null
-        version: number
-        deleted?: boolean
-        createdAt: string
-        updatedAt: string
+        _id: string;
+        owner: string;
+        title: string;
+        type: string;
+        public: boolean;
+        session?: string | null;
+        originSession?: string | null;
+        version: number;
+        deleted?: boolean;
+        createdAt: string;
+        updatedAt: string;
         items: {
-          [key: string]: unknown
-        }
-        [key: string]: unknown
-      }
-    }
+          [key: string]: unknown;
+        };
+        [key: string]: unknown;
+      };
+    };
     PaginatedArtifactsResponse: {
-      docs: {
-        _id: string
-        owner: string
-        title: string
-        type: string
-        public: boolean
-        session?: string | null
-        originSession?: string | null
-        version: number
-        deleted?: boolean
-        createdAt: string
-        updatedAt: string
-        items: {
-          [key: string]: unknown
-        }
-        [key: string]: unknown
-      }[]
-      total: number
-      limit: number
-      pages: number
-      page: number
-      pagingCounter: number
-      hasPrevPage: boolean
-      hasNextPage: boolean
-      prevPage?: number | null
-      nextPage?: number | null
-    }
+      docs: ({
+          _id: string;
+          owner: string;
+          title: string;
+          type: string;
+          public: boolean;
+          session?: string | null;
+          originSession?: string | null;
+          version: number;
+          deleted?: boolean;
+          createdAt: string;
+          updatedAt: string;
+          items: {
+            [key: string]: unknown;
+          };
+          [key: string]: unknown;
+        })[];
+      total: number;
+      limit: number;
+      pages: number;
+      page: number;
+      pagingCounter: number;
+      hasPrevPage: boolean;
+      hasNextPage: boolean;
+      prevPage?: number | null;
+      nextPage?: number | null;
+    };
     ArtifactHistoryEntry: {
-      _id: string
-      artifact: string
-      version: number
+      _id: string;
+      artifact: string;
+      version: number;
       items: {
-        [key: string]: unknown
-      }
-      operations?: {
-        /** @enum {string} */
-        op: 'add' | 'remove' | 'replace'
-        path: string
-        value?: unknown
-      }[]
-      actor: string
-      reason?: string
-      createdAt: string
-      updatedAt?: string
-      [key: string]: unknown
-    }
-    PaginatedArtifactsHistoryResponse: {
-      docs: {
-        _id: string
-        artifact: string
-        version: number
-        items: {
-          [key: string]: unknown
-        }
-        operations?: {
+        [key: string]: unknown;
+      };
+      operations?: ({
           /** @enum {string} */
-          op: 'add' | 'remove' | 'replace'
-          path: string
-          value?: unknown
-        }[]
-        actor: string
-        reason?: string
-        createdAt: string
-        updatedAt?: string
-        [key: string]: unknown
-      }[]
-      total: number
-      limit: number
-      pages: number
-      page: number
-      pagingCounter: number
-      hasPrevPage: boolean
-      hasNextPage: boolean
-      prevPage?: number | null
-      nextPage?: number | null
-    }
+          op: "add" | "remove" | "replace";
+          path: string;
+          value?: unknown;
+        })[];
+      actor: string;
+      reason?: string;
+      createdAt: string;
+      updatedAt?: string;
+      [key: string]: unknown;
+    };
+    PaginatedArtifactsHistoryResponse: {
+      docs: ({
+          _id: string;
+          artifact: string;
+          version: number;
+          items: {
+            [key: string]: unknown;
+          };
+          operations?: ({
+              /** @enum {string} */
+              op: "add" | "remove" | "replace";
+              path: string;
+              value?: unknown;
+            })[];
+          actor: string;
+          reason?: string;
+          createdAt: string;
+          updatedAt?: string;
+          [key: string]: unknown;
+        })[];
+      total: number;
+      limit: number;
+      pages: number;
+      page: number;
+      pagingCounter: number;
+      hasPrevPage: boolean;
+      hasNextPage: boolean;
+      prevPage?: number | null;
+      nextPage?: number | null;
+    };
     ArtifactCreateRequest: {
-      title: string
-      type: string
-      public?: boolean
-      session?: string | null
+      title: string;
+      type: string;
+      public?: boolean;
+      session?: string | null;
       items?: {
-        [key: string]: unknown
-      }
-      content?: string
-    }
+        [key: string]: unknown;
+      };
+      content?: string;
+    };
     ArtifactUpdateRequest: {
-      title?: string
-      type?: string
-      public?: boolean
-      session?: string | null
-    }
+      title?: string;
+      type?: string;
+      public?: boolean;
+      session?: string | null;
+    };
     ArtifactPatchItemsRequest: {
-      operations: {
-        /** @enum {string} */
-        op: 'add' | 'remove' | 'replace'
-        path: string
-        value?: unknown
-      }[]
-      reason?: string
-    }
+      operations: ({
+          /** @enum {string} */
+          op: "add" | "remove" | "replace";
+          path: string;
+          value?: unknown;
+        })[];
+      reason?: string;
+    };
     ArtifactPermissionsUpdateRequest: {
-      permissions: {
-        subjectId: string
-        /** @enum {string} */
-        level: 'viewer' | 'editor' | 'owner'
-      }[]
-    }
+      permissions: ({
+          subjectId: string;
+          /** @enum {string} */
+          level: "viewer" | "editor" | "owner";
+        })[];
+    };
     ArtifactPermissionsResponse: {
-      permissions: {
-        subjectId?: string
-        /** @enum {string} */
-        level: 'viewer' | 'editor' | 'owner'
-        [key: string]: unknown
-      }[]
-    }
+      permissions: ({
+          subjectId?: string;
+          /** @enum {string} */
+          level: "viewer" | "editor" | "owner";
+          [key: string]: unknown;
+        })[];
+    };
     ArtifactIdParam: {
-      artifactId: string
-    }
+      artifactId: string;
+    };
     ArtifactsListQuery: {
-      ownerId?: string
-      type?: string
-      sessionId?: string
-      page?: number
-      limit?: number
-      orderBy?: string
-      direction?: number
-    }
+      ownerId?: string;
+      type?: string;
+      sessionId?: string;
+      page?: number;
+      limit?: number;
+      orderBy?: string;
+      direction?: number;
+    };
     ArtifactsHistoryQuery: {
-      page?: number
-      limit?: number
-      orderBy?: string
-      direction?: number
-    }
-  }
+      page?: number;
+      limit?: number;
+      orderBy?: string;
+      direction?: number;
+    };
+  };
   responses: {
     /** @description Error response */
     ErrorResponse: {
       content: {
-        'application/json': components['schemas']['ErrorResponse']
-      }
-    }
-  }
+        "application/json": components["schemas"]["ErrorResponse"];
+      };
+    };
+  };
   parameters: {
-    artifactId: string
-    ownerId?: string
-    type?: string
-    sessionId?: string
-    page?: number
-    limit?: number
-    orderBy?: string
-    direction?: number
-  }
-  requestBodies: never
-  headers: never
-  pathItems: never
+    artifactId: string;
+    ownerId?: string;
+    type?: string;
+    sessionId?: string;
+    page?: number;
+    limit?: number;
+    orderBy?: string;
+    direction?: number;
+  };
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 
-export type external = Record<string, never>
+export type external = Record<string, never>;
 
 export interface operations {
+
   /**
    * List artifacts
    * @description Retrieve a paginated list of artifacts.
    */
-  'artifacts.list': {
+  "artifacts.list": {
     parameters: {
       query?: {
-        ownerId?: components['parameters']['ownerId']
-        type?: components['parameters']['type']
-        sessionId?: components['parameters']['sessionId']
-        page?: components['parameters']['page']
-        limit?: components['parameters']['limit']
-        orderBy?: components['parameters']['orderBy']
-        direction?: components['parameters']['direction']
-      }
-    }
+        ownerId?: components["parameters"]["ownerId"];
+        type?: components["parameters"]["type"];
+        sessionId?: components["parameters"]["sessionId"];
+        page?: components["parameters"]["page"];
+        limit?: components["parameters"]["limit"];
+        orderBy?: components["parameters"]["orderBy"];
+        direction?: components["parameters"]["direction"];
+      };
+    };
     responses: {
       /** @description A paginated list of artifacts */
       200: {
         content: {
-          'application/json': components['schemas']['PaginatedArtifactsResponse']
-        }
-      }
-    }
-  }
+          "application/json": components["schemas"]["PaginatedArtifactsResponse"];
+        };
+      };
+    };
+  };
   /**
    * Create artifact
    * @description Create a new artifact.
    */
-  'artifacts.create': {
+  "artifacts.create": {
     requestBody: {
       content: {
-        'application/json': components['schemas']['ArtifactCreateRequest']
-      }
-    }
+        "application/json": components["schemas"]["ArtifactCreateRequest"];
+      };
+    };
     responses: {
       /** @description Artifact created */
       201: {
         content: {
-          'application/json': components['schemas']['ArtifactResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      422: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      422: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Get artifact
    * @description Retrieve a specific artifact.
    */
-  'artifacts.get': {
+  "artifacts.get": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     responses: {
       /** @description Artifact details */
       200: {
         content: {
-          'application/json': components['schemas']['ArtifactResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Delete artifact
    * @description Soft delete an artifact.
    */
-  'artifacts.delete': {
+  "artifacts.delete": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     responses: {
       /** @description Artifact deleted */
       200: {
         content: {
-          'application/json': components['schemas']['MessageResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["MessageResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Update artifact
    * @description Update an existing artifact.
    */
-  'artifacts.update': {
+  "artifacts.update": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ArtifactUpdateRequest']
-      }
-    }
+        "application/json": components["schemas"]["ArtifactUpdateRequest"];
+      };
+    };
     responses: {
       /** @description Artifact updated */
       200: {
         content: {
-          'application/json': components['schemas']['ArtifactResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Patch artifact items
    * @description Apply JSON Patch operations (RFC 6902) to artifact items.
    */
-  'artifacts.patchItems': {
+  "artifacts.patchItems": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ArtifactPatchItemsRequest']
-      }
-    }
+        "application/json": components["schemas"]["ArtifactPatchItemsRequest"];
+      };
+    };
     responses: {
       /** @description Artifact updated */
       200: {
         content: {
-          'application/json': components['schemas']['ArtifactResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-      422: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+      422: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Get artifact permissions
    * @description Retrieve permissions for an artifact.
    */
-  'artifacts.getPermissions': {
+  "artifacts.getPermissions": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     responses: {
       /** @description Permissions */
       200: {
         content: {
-          'application/json': components['schemas']['ArtifactPermissionsResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactPermissionsResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * Update artifact permissions
    * @description Replace permissions for an artifact.
    */
-  'artifacts.updatePermissions': {
+  "artifacts.updatePermissions": {
     parameters: {
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     requestBody: {
       content: {
-        'application/json': components['schemas']['ArtifactPermissionsUpdateRequest']
-      }
-    }
+        "application/json": components["schemas"]["ArtifactPermissionsUpdateRequest"];
+      };
+    };
     responses: {
       /** @description Permissions updated */
       200: {
         content: {
-          'application/json': components['schemas']['ArtifactPermissionsResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["ArtifactPermissionsResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
   /**
    * List artifact history
    * @description Retrieve a paginated list of artifact edit history.
    */
-  'artifacts.history': {
+  "artifacts.history": {
     parameters: {
       query?: {
-        page?: components['parameters']['page']
-        limit?: components['parameters']['limit']
-        orderBy?: components['parameters']['orderBy']
-        direction?: components['parameters']['direction']
-      }
+        page?: components["parameters"]["page"];
+        limit?: components["parameters"]["limit"];
+        orderBy?: components["parameters"]["orderBy"];
+        direction?: components["parameters"]["direction"];
+      };
       path: {
-        artifactId: components['parameters']['artifactId']
-      }
-    }
+        artifactId: components["parameters"]["artifactId"];
+      };
+    };
     responses: {
       /** @description Artifact history */
       200: {
         content: {
-          'application/json': components['schemas']['PaginatedArtifactsHistoryResponse']
-        }
-      }
-      401: components['responses']['ErrorResponse']
-      404: components['responses']['ErrorResponse']
-    }
-  }
+          "application/json": components["schemas"]["PaginatedArtifactsHistoryResponse"];
+        };
+      };
+      401: components["responses"]["ErrorResponse"];
+      404: components["responses"]["ErrorResponse"];
+    };
+  };
 }

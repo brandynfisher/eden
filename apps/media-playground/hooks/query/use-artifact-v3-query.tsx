@@ -1,7 +1,10 @@
 import { env } from '@/lib/config'
 import { useAuth } from '@clerk/nextjs'
-import { ArtifactV3 } from '@edenlabs/eden-sdk'
-import { ArtifactResponse, createEdenClient } from '@edenlabs/eden-sdk-v3'
+import {
+  Artifact,
+  ArtifactResponse,
+  createEdenClient,
+} from '@edenlabs/eden-sdk-v3'
 import { useQuery } from '@tanstack/react-query'
 
 export function useArtifactV3Query({
@@ -34,6 +37,6 @@ export function useArtifactV3Query({
 
   return {
     ...query,
-    artifact: (query.data?.artifact as ArtifactV3 | undefined) ?? undefined,
+    artifact: (query.data?.artifact as Artifact | undefined) ?? undefined,
   }
 }
