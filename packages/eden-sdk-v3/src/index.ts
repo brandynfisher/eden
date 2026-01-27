@@ -1,4 +1,7 @@
-import type { paths as ArtifactsPaths } from './generated/artifacts-v3'
+import type {
+  components as ArtifactsComponents,
+  paths as ArtifactsPaths,
+} from './generated/artifacts-v3'
 import type { paths as MannaPaths } from './generated/manna-v3'
 import type { paths as SessionsPaths } from './generated/sessions-v3'
 import createClient, { type ClientOptions } from 'openapi-fetch'
@@ -36,6 +39,10 @@ export type {
   MannaVoucherRedeemRequest,
   MannaVoucherRedeemResponse,
 } from './methods'
+
+export type Artifact = ArtifactsComponents['schemas']['Artifact']
+export type ArtifactHistoryEntry =
+  ArtifactsComponents['schemas']['ArtifactHistoryEntry']
 
 export const createSessionsV3Client = (options: ClientOptions = {}) =>
   createClient<SessionsPaths>(options)
