@@ -177,7 +177,6 @@ const ChatLaunchpad = () => {
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [isSessionModeHelpOpen, setIsSessionModeHelpOpen] = useState(false)
   const addAgentGate = useGatedResource(GatedResource.AddAgent)
-  const sessionSettingsGate = useGatedResource(GatedResource.SessionSettings)
   const queryClient = useQueryClient()
 
   // Session settings state
@@ -681,145 +680,137 @@ const ChatLaunchpad = () => {
             </div>
 
             {/* Session Settings / Mode Selector - different for single vs multi-agent */}
-            {sessionSettingsGate.shouldRender && (
-              <>
-                {/* Single agent: Show "Add context" button */}
-                <button
-                  className="session-settings-btn"
-                  style={{
-                    display: selectedAgents.length === 1 ? 'flex' : 'none',
-                  }}
-                  onClick={() => {
-                    if (!sessionSettingsGate.isAllowed) {
-                      sessionSettingsGate.openGate()
-                      return
+            <>
+              {/* Single agent: Show "Add context" button */}
+              <button
+                className="session-settings-btn"
+                style={{
+                  display: selectedAgents.length === 1 ? 'flex' : 'none',
+                }}
+                onClick={() => setIsSessionSettingsOpen(true)}
+              >
+                <PenLine className="w-4 h-4" />
+                <span>Add context</span>
+              </button>
+
+              {/* Multi-agent: Show response mode selector inline */}
+              <div
+                className="session-mode-selector"
+                style={{
+                  display: selectedAgents.length > 1 ? 'flex' : 'none',
+                }}
+              >
+                {/* Compact header with inline help */}
+                <div className="session-mode-compact-header">
+                  <span className="session-mode-label-compact">
+                    Response Mode
+                  </span>
+                  <button
+                    className="session-mode-help-btn-compact"
+                    onClick={() => setIsSessionModeHelpOpen(true)}
+                    aria-label="Help"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Segmented control for mode selection */}
+                <div className="session-mode-segmented">
+                  <button
+                    type="button"
+                    className={`session-mode-segment ${
+                      sessionSettings.type === 'passive' ? 'active' : ''
+                    }`}
+                    onClick={() =>
+                      setSessionSettings({
+                        ...sessionSettings,
+                        type: 'passive',
+                      })
                     }
-                    setIsSessionSettingsOpen(true)
-                  }}
-                >
-                  <PenLine className="w-4 h-4" />
-                  <span>Add context</span>
-                </button>
+                  >
+                    Passive
+                  </button>
+                  <button
+                    type="button"
+                    className={`session-mode-segment ${
+                      sessionSettings.type === 'natural' ? 'active' : ''
+                    }`}
+                    onClick={() =>
+                      setSessionSettings({
+                        ...sessionSettings,
+                        type: 'natural',
+                      })
+                    }
+                  >
+                    Natural
+                  </button>
+                  <button
+                    type="button"
+                    className={`session-mode-segment session-mode-segment-automatic ${
+                      sessionSettings.type === 'automatic' ? 'active' : ''
+                    }`}
+                    onClick={() =>
+                      setSessionSettings({
+                        ...sessionSettings,
+                        type: 'automatic',
+                      })
+                    }
+                  >
+                    Automatic
+                    <span className="beta-tag">BETA</span>
+                  </button>
+                </div>
 
-                {/* Multi-agent: Show response mode selector inline */}
-                <div
-                  className="session-mode-selector"
-                  style={{
-                    display: selectedAgents.length > 1 ? 'flex' : 'none',
-                  }}
-                >
-                  {/* Compact header with inline help */}
-                  <div className="session-mode-compact-header">
-                    <span className="session-mode-label-compact">
-                      Response Mode
-                    </span>
-                    <button
-                      className="session-mode-help-btn-compact"
-                      onClick={() => setIsSessionModeHelpOpen(true)}
-                      aria-label="Help"
-                    >
-                      <HelpCircle className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  {/* Segmented control for mode selection */}
-                  <div className="session-mode-segmented">
-                    <button
-                      type="button"
-                      className={`session-mode-segment ${
-                        sessionSettings.type === 'passive' ? 'active' : ''
-                      }`}
-                      onClick={() =>
-                        setSessionSettings({
-                          ...sessionSettings,
-                          type: 'passive',
-                        })
-                      }
-                    >
-                      Passive
-                    </button>
-                    <button
-                      type="button"
-                      className={`session-mode-segment ${
-                        sessionSettings.type === 'natural' ? 'active' : ''
-                      }`}
-                      onClick={() =>
-                        setSessionSettings({
-                          ...sessionSettings,
-                          type: 'natural',
-                        })
-                      }
-                    >
-                      Natural
-                    </button>
-                    <button
-                      type="button"
-                      className={`session-mode-segment session-mode-segment-automatic ${
-                        sessionSettings.type === 'automatic' ? 'active' : ''
-                      }`}
-                      onClick={() =>
-                        setSessionSettings({
-                          ...sessionSettings,
-                          type: 'automatic',
-                        })
-                      }
-                    >
-                      Automatic
-                      <span className="beta-tag">BETA</span>
-                    </button>
-                  </div>
-
-                  {/* Description and warning inline */}
-                  <div className="session-mode-meta">
-                    <span className="session-mode-description-compact">
-                      {sessionSettings.type === 'passive' &&
-                        'Agents respond only when mentioned'}
-                      {sessionSettings.type === 'natural' &&
-                        'Agents listen and decide when to speak'}
-                      {sessionSettings.type === 'automatic' &&
-                        'Agents play out entire scenario'}
-                    </span>
-                    {sessionSettings.type === 'automatic' && (
-                      <>
-                        <span className="session-mode-divider">•</span>
-                        <span className="session-mode-warning-compact">
-                          <AlertTriangle className="w-3 h-3" />
-                          High Manna cost
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Response time - only for automatic mode */}
+                {/* Description and warning inline */}
+                <div className="session-mode-meta">
+                  <span className="session-mode-description-compact">
+                    {sessionSettings.type === 'passive' &&
+                      'Agents respond only when mentioned'}
+                    {sessionSettings.type === 'natural' &&
+                      'Agents listen and decide when to speak'}
+                    {sessionSettings.type === 'automatic' &&
+                      'Agents play out entire scenario'}
+                  </span>
                   {sessionSettings.type === 'automatic' && (
-                    <div className="session-mode-delay-row">
-                      <span className="delay-label">Response time:</span>
-                      <Select
-                        value={sessionSettings.delay_interval.toString()}
-                        onValueChange={value =>
-                          setSessionSettings({
-                            ...sessionSettings,
-                            delay_interval: parseInt(value),
-                          })
-                        }
-                      >
-                        <SelectTrigger className="session-mode-delay-select">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0">Instant</SelectItem>
-                          <SelectItem value="60">1 min</SelectItem>
-                          <SelectItem value="300">5 min</SelectItem>
-                          <SelectItem value="1800">30 min</SelectItem>
-                          <SelectItem value="10800">3 hrs</SelectItem>
-                          <SelectItem value="86400">1 day</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <span className="session-mode-divider">•</span>
+                      <span className="session-mode-warning-compact">
+                        <AlertTriangle className="w-3 h-3" />
+                        High Manna cost
+                      </span>
+                    </>
                   )}
                 </div>
-              </>
-            )}
+
+                {/* Response time - only for automatic mode */}
+                {sessionSettings.type === 'automatic' && (
+                  <div className="session-mode-delay-row">
+                    <span className="delay-label">Response time:</span>
+                    <Select
+                      value={sessionSettings.delay_interval.toString()}
+                      onValueChange={value =>
+                        setSessionSettings({
+                          ...sessionSettings,
+                          delay_interval: parseInt(value),
+                        })
+                      }
+                    >
+                      <SelectTrigger className="session-mode-delay-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Instant</SelectItem>
+                        <SelectItem value="60">1 min</SelectItem>
+                        <SelectItem value="300">5 min</SelectItem>
+                        <SelectItem value="1800">30 min</SelectItem>
+                        <SelectItem value="10800">3 hrs</SelectItem>
+                        <SelectItem value="86400">1 day</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </>
           </div>
 
           {/* Message Input below agents */}

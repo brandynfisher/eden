@@ -11,13 +11,14 @@ if [ $? -ne 0 ]; then
 fi
 
 # Stage generated artifacts up front so lint-staged sees them
-git add apps/api/src/plugins/mcpGeneratedTools.ts packages/eden-sdk-v3/src/generated/sessions-v3.ts
+GENERATED_FILES="apps/api/openapi/*.yaml apps/api/src/plugins/mcpGeneratedTools.ts packages/eden-sdk-v3/src/generated/*.ts"
+git add $GENERATED_FILES
 
 # Run lint-staged for formatting and linting
 npx lint-staged
 
 # Re-stage generated files in case lint-staged modified them
-git add apps/api/src/plugins/mcpGeneratedTools.ts packages/eden-sdk-v3/src/generated/sessions-v3.ts
+git add $GENERATED_FILES
 
 # Check TypeScript compilation for apps/api
 echo "🔍 Checking TypeScript compilation for apps/api..."
