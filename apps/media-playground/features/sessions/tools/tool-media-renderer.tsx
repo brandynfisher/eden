@@ -30,8 +30,8 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
     ? [results]
     : []
 
-  // Flatten all media outputs from all results
-  const allMediaOutputs =
+  // Flatten all outputs from all results
+  const allOutputs =
     normalizedResults.flatMap((result, resultIndex) =>
       Array.isArray(result?.output)
         ? result.output.map((output, outputIndex) => ({
@@ -42,17 +42,43 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
         : [],
     ) || []
 
-  // Separate audio from visual media
-  const audioOutputs = allMediaOutputs.filter(
+  // Helper to check if an output has actual renderable media
+  const hasRenderableMedia = (
+    output: TasksV2ResultOutput | string,
+  ): boolean => {
+    // Strings are never media
+    if (typeof output === 'string') return false
+    // Must have a filename to be renderable as media
+    if (!output?.filename) return false
+    // Check if it has a media mimeType (image, video, audio)
+    const mimeType = output.mediaAttributes?.mimeType
+    if (mimeType) {
+      const type = mimeType.split('/')[0]
+      return ['image', 'video', 'audio'].includes(type)
+    }
+    // If no mimeType but has filename, assume it might be media
+    // (fallback for legacy data)
+    return true
+  }
+
+  // Separate audio from visual media - only include items with actual media
+  const audioOutputs = allOutputs.filter(
     item =>
+      hasRenderableMedia(item.output) &&
       getFileTypeByMimeType(item.output.mediaAttributes?.mimeType) === 'audio',
   )
-  const visualOutputs = allMediaOutputs.filter(
+  const visualOutputs = allOutputs.filter(
     item =>
+      hasRenderableMedia(item.output) &&
       getFileTypeByMimeType(item.output.mediaAttributes?.mimeType) !== 'audio',
   )
 
-  // Text-only results
+  // Text-only items from array outputs (items without renderable media)
+  const textOnlyOutputs = allOutputs.filter(
+    item => !hasRenderableMedia(item.output),
+  )
+
+  // Text-only results (when output is a string, not an array)
   const textResults = normalizedResults.filter(
     result => !Array.isArray(result?.output),
   )
@@ -102,10 +128,11 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
 
   const layout = getGridLayout(visualOutputs.length)
 
-  // If no media outputs, return null
+  // If no outputs at all, return null
   if (
     visualOutputs.length === 0 &&
     audioOutputs.length === 0 &&
+    textOnlyOutputs.length === 0 &&
     textResults.length === 0
   ) {
     return null
@@ -215,28 +242,69 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
         </div>
       )}
 
-      {/* Text results */}
-      {textResults.map((result, index) => (
-        <div
-          key={`text-${index}`}
-          className="px-4 p-2 bg-accent rounded-md border border-secondary text-sm mb-2"
-        >
+      {/* Text-only outputs from array results */}
+      {textOnlyOutputs.length > 0 && (
+        <div className="mb-2">
           <TextClampMore
             text={
-              typeof result?.output === 'string' ? (
-                <ReactMarkdown>
-                  {(result.output as string).replace(/\n/g, '  \n')}
-                </ReactMarkdown>
-              ) : (
-                <pre className="whitespace-pre-wrap font-mono text-xs">
-                  {JSON.stringify(result?.output, null, 2)}
-                </pre>
-              )
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5">
+                {textOnlyOutputs.map(item => {
+                  const output = item.output
+                  // Handle different output formats
+                  const textContent =
+                    typeof output === 'string'
+                      ? output
+                      : output?.text ||
+                        (typeof output === 'object'
+                          ? JSON.stringify(output, null, 2)
+                          : String(output))
+
+                  const isMarkdownText =
+                    typeof output === 'string' || output?.text
+
+                  return (
+                    <div
+                      key={`text-output-${item.resultIndex}-${item.outputIndex}`}
+                    >
+                      {isMarkdownText ? (
+                        <ReactMarkdown>{textContent}</ReactMarkdown>
+                      ) : (
+                        <pre className="whitespace-pre-wrap font-mono text-xs bg-muted/50 p-2 rounded">
+                          {textContent}
+                        </pre>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             }
-            lines={3}
+            lines={4}
           />
         </div>
-      ))}
+      )}
+
+      {/* Text results (when output is string, not array) */}
+      {textResults.length > 0 && (
+        <div className="mb-2">
+          {textResults.map((result, index) => (
+            <TextClampMore
+              key={`text-${index}`}
+              text={
+                typeof result?.output === 'string' ? (
+                  <ReactMarkdown>
+                    {(result.output as string).replace(/\n/g, '  \n')}
+                  </ReactMarkdown>
+                ) : (
+                  <pre className="whitespace-pre-wrap font-mono text-xs">
+                    {JSON.stringify(result?.output, null, 2)}
+                  </pre>
+                )
+              }
+              lines={4}
+            />
+          ))}
+        </div>
+      )}
     </LightboxGallery>
   )
 }
