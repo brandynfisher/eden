@@ -18,7 +18,6 @@ export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
 
 export enum GatedResource {
   AddAgent = 'AddAgent',
-  SessionSettings = 'SessionSettings',
   MakePrivate = 'MakePrivate',
   Tasks = 'Tasks',
   UserMemory = 'UserMemory',
@@ -50,11 +49,6 @@ type GateConfig = PreviewGateConfig | SubscriptionGateConfig
 
 const gatedResourceConfig: Record<GatedResource, GateConfig> = {
   [GatedResource.AddAgent]: {
-    type: 'preview',
-    featureFlag: FeatureFlag.Preview,
-    lockedBehavior: 'hide',
-  },
-  [GatedResource.SessionSettings]: {
     type: 'preview',
     featureFlag: FeatureFlag.Preview,
     lockedBehavior: 'hide',

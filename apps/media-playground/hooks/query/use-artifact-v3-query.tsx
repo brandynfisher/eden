@@ -1,6 +1,6 @@
 import { env } from '@/lib/config'
+import type { ArtifactV3 } from '@/types/artifacts-v3'
 import { useAuth } from '@clerk/nextjs'
-import { ArtifactV3 } from '@edenlabs/eden-sdk'
 import { ArtifactResponse, createEdenClient } from '@edenlabs/eden-sdk-v3'
 import { useQuery } from '@tanstack/react-query'
 
@@ -32,8 +32,10 @@ export function useArtifactV3Query({
     staleTime: 2000,
   })
 
+  const artifact: ArtifactV3 | undefined = query.data?.artifact
+
   return {
     ...query,
-    artifact: (query.data?.artifact as ArtifactV3 | undefined) ?? undefined,
+    artifact,
   }
 }

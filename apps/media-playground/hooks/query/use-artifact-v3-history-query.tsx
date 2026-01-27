@@ -1,10 +1,11 @@
 import { env } from '@/lib/config'
-import { useAuth } from '@clerk/nextjs'
-import { ArtifactVersionV3 } from '@edenlabs/eden-sdk'
 import {
-  PaginatedArtifactsHistoryResponse,
-  createEdenClient,
-} from '@edenlabs/eden-sdk-v3'
+  type ArtifactHistoryEntryUI,
+  toArtifactHistoryUI,
+} from '@/types/artifacts-v3'
+import { useAuth } from '@clerk/nextjs'
+import { createEdenClient } from '@edenlabs/eden-sdk-v3'
+import type { PaginatedArtifactsHistoryResponse } from '@edenlabs/eden-sdk-v3'
 import { useQuery } from '@tanstack/react-query'
 
 export function useArtifactV3HistoryQuery({
@@ -42,8 +43,12 @@ export function useArtifactV3HistoryQuery({
     staleTime: 2000,
   })
 
+  const history: ArtifactHistoryEntryUI[] = (query.data?.docs ?? []).map(
+    toArtifactHistoryUI,
+  )
+
   return {
     ...query,
-    history: (query.data?.docs ?? []) as ArtifactVersionV3[],
+    history,
   }
 }

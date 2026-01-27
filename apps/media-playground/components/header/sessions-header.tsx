@@ -15,7 +15,6 @@ import { useSessionsLayoutContext } from '@/features/sessions/context/sessions-l
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useSharedSessionQuery } from '@/hooks/query/use-shared-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { getCloudfrontUrl } from '@/lib/media'
 import { Agent, SessionPermissionLevel, SessionType } from '@edenlabs/eden-sdk'
 import {
@@ -29,6 +28,8 @@ import {
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
 
 // Sessions header for /sessions route with double navbar structure
 
@@ -155,9 +156,6 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   const sessionsLayoutContext = useSessionsLayoutContext()
   const artifactControls = sessionsLayoutContext?.artifactControls
   const sessionId = params?.id as string
-  const { isAllowed: isSessionSettingsAllowed } = useGatedResource(
-    GatedResource.SessionSettings,
-  )
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
     type: 'natural',
@@ -198,7 +196,7 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     (session.owner._id === user._id ||
       session.permission_level_for_user === SessionPermissionLevel.Editor ||
       session.permission_level_for_user === SessionPermissionLevel.Owner)
-  const canOpenSessionSettings = canManageSession && isSessionSettingsAllowed
+  const canOpenSessionSettings = canManageSession
 
   // Update session settings when session data loads
   // IMPORTANT: Only sync from server when modal is CLOSED to avoid resetting user edits

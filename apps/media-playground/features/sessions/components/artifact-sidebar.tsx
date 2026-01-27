@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useArtifactV3HistoryQuery } from '@/hooks/query/use-artifact-v3-history-query'
 import { useArtifactV3Query } from '@/hooks/query/use-artifact-v3-query'
 import { cn } from '@/lib/utils'
-import { ArtifactV3, ArtifactVersionV3 } from '@edenlabs/eden-sdk'
+import type { ArtifactHistoryEntryUI, ArtifactV3 } from '@/types/artifacts-v3'
 import {
   ChevronRightIcon as ChevronClosedIcon,
   ChevronDownIcon,
@@ -231,7 +231,7 @@ const JsonValue = ({
 }
 
 type HistoryEntryProps = {
-  entry: ArtifactVersionV3
+  entry: ArtifactHistoryEntryUI
 }
 
 const HistoryEntry = ({ entry }: HistoryEntryProps) => {
@@ -601,7 +601,7 @@ export const ArtifactSidebar = ({
                       No version history yet.
                     </div>
                   )}
-                  {history.map((entry: ArtifactVersionV3) => (
+                  {history.map((entry: ArtifactHistoryEntryUI) => (
                     <HistoryEntry key={entry._id} entry={entry} />
                   ))}
                 </TabsContent>

@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { openapiJobs, repoRoot, workspaces } from './config.mjs'
 
 const eslintBanner = '/* eslint-disable @typescript-eslint/naming-convention */\n'
+const prettierTargets = new Set()
 
 const runCommand = (cmd, args) => {
   const result = spawnSync(cmd, args, {
@@ -65,6 +66,8 @@ for (const job of openapiJobs) {
     if (output.eslintDisable) {
       ensureBanner(outputPath)
     }
+
+    prettierTargets.add(outputPath)
   }
 }
 
@@ -73,6 +76,20 @@ if (mcpJobs.length > 0) {
   const status = runCommand('node', ['scripts/openapi/generate-mcp-tools.mjs'])
   if (status !== 0) {
     console.error('\n[openapi] Failed: mcp-tools')
+    process.exit(status)
+  }
+
+  prettierTargets.add('apps/api/src/plugins/mcpGeneratedTools.ts')
+}
+
+if (prettierTargets.size > 0) {
+  const status = runCommand('yarn', [
+    'prettier',
+    '--write',
+    ...prettierTargets,
+  ])
+  if (status !== 0) {
+    console.error('\n[openapi] Failed: prettier')
     process.exit(status)
   }
 }
