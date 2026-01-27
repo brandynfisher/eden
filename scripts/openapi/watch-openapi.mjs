@@ -10,10 +10,14 @@ const generatorPath = resolve(
 
 const watchedSpecs = Array.from(
   new Set(
-    openapiJobs.flatMap(job => [
-      resolve(repoRoot, job.spec),
-      ...(job.watch ?? []).map(path => resolve(repoRoot, path)),
-    ]),
+    openapiJobs.flatMap(job => {
+      // If job has watch sources, those files generate the spec - don't watch the spec itself
+      if (job.watch && job.watch.length > 0) {
+        return job.watch.map(path => resolve(repoRoot, path))
+      }
+      // Otherwise the spec is manually edited, so watch it
+      return [resolve(repoRoot, job.spec)]
+    }),
   ),
 )
 

@@ -16,7 +16,7 @@ const watcher = spawn(
 )
 
 const devCommand =
-  'DOTENV_PATH=.env.eden tsx watch --clear-screen=false src .env.eden | pino-pretty --colorize'
+  'DOTENV_PATH=.env.eden tsx watch --clear-screen=false --ignore src/plugins/mcpGeneratedTools.ts src .env.eden | pino-pretty --colorize'
 const dev = spawn(devCommand, {
   cwd: apiRoot,
   stdio: 'inherit',
