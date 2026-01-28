@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { cn } from '@/lib/utils'
 import {
   BarChart3Icon,
@@ -1293,6 +1294,11 @@ export const LLMCallButton = ({
   className,
 }: LLMCallButtonProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const { isAllowed } = useGatedResource(GatedResource.LlmCallDetails)
+
+  if (!isAllowed) {
+    return null
+  }
 
   return (
     <>

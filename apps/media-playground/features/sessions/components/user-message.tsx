@@ -1,6 +1,5 @@
 'use client'
 
-import { LLMCallButton } from './llm-call-modal'
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { cn } from '@/lib/utils'
@@ -126,12 +125,6 @@ export const UserMessage = ({
               💡 Tip: @mention an agent to have them respond
             </div>
           )}
-          <div className="flex justify-end mt-1">
-            <LLMCallButton
-              llmCallId={message.llm_call}
-              observability={message.observability || null}
-            />
-          </div>
           <div
             className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
             title={new Date(message.createdAt).toLocaleString()}

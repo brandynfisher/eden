@@ -26,6 +26,7 @@ export enum GatedResource {
   Deployments = 'Deployments',
   ApiKeys = 'ApiKeys',
   GigabrainTools = 'GigabrainTools',
+  LlmCallDetails = 'LlmCallDetails',
 }
 
 type LockedBehavior = 'hide' | 'modal'
@@ -102,6 +103,13 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
     featureName: 'Gigabrain tools',
     minimumSubscriptionTier: SubscriptionTier.Pro,
     lockedBehavior: 'modal',
+  },
+  [GatedResource.LlmCallDetails]: {
+    type: 'subscription',
+    featureName: 'LLM call details',
+    minimumSubscriptionTier: SubscriptionTier.Admin,
+    allowPreviewFlag: FeatureFlag.EdenAdmin,
+    lockedBehavior: 'hide',
   },
 }
 
