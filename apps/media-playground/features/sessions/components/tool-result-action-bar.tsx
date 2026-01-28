@@ -283,7 +283,10 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
             result={toolCall.result}
           />
         ))}
-        {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        <LLMCallButton
+          llmCallId={message.llm_call}
+          observability={message.observability || null}
+        />
         {/* <div
           className="text-xs bg-transparent"
           title={new Date(message.createdAt).toLocaleString()}

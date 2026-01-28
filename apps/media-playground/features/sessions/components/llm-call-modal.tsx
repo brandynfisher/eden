@@ -162,7 +162,16 @@ interface LLMCallData {
 }
 
 interface LLMCallModalProps {
-  llmCallId: string
+  llmCallId?: string | null
+  observability?: {
+    session_run_id?: string
+    session_id?: string
+    trace_id?: string
+    generation_id?: string
+    sentry_trace_id?: string | null
+    langfuse_url?: string | null
+    sentry_url?: string | null
+  } | null
   isOpen: boolean
   onClose: () => void
 }
@@ -190,20 +199,17 @@ const FormattedText = ({ text }: { text: string }) => {
   )
 }
 
-// Meta tab content
-const MetaTab = ({ data }: { data: LLMCallData }) => {
-  const agentName =
-    typeof data.agent === 'object'
-      ? data.agent?.name || data.agent?.username || data.agent?._id
-      : data.agent
-
-  const usage = data.usage || {}
-  const inputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
-  const outputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
-  const totalTokens = usage.total_tokens ?? inputTokens + outputTokens
-  const observability = data.message_observability || null
+const getObservabilityLinks = (
+  observability?: {
+    session_run_id?: string
+    sentry_trace_id?: string | null
+    langfuse_url?: string | null
+    sentry_url?: string | null
+  } | null,
+  fallbackSessionRunId?: string,
+) => {
   const sessionRunId =
-    observability?.session_run_id || data.session_run_id || undefined
+    observability?.session_run_id || fallbackSessionRunId || undefined
   const sentryTraceId = observability?.sentry_trace_id
   const langfuseBase = process.env.NEXT_PUBLIC_LANGFUSE_PROJECT_URL?.replace(
     /\/$/,
@@ -225,6 +231,73 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
       ? observability.sentry_url
       : null) ||
     (sentryTraceId && sentryBase ? `${sentryBase}/${sentryTraceId}` : null)
+
+  return {
+    sessionRunId,
+    sentryTraceId,
+    langfuseUrl,
+    sentryUrl,
+  }
+}
+
+const ObservabilityLinks = ({
+  observability,
+  sessionRunIdFallback,
+}: {
+  observability?: {
+    session_run_id?: string
+    sentry_trace_id?: string | null
+    langfuse_url?: string | null
+    sentry_url?: string | null
+  } | null
+  sessionRunIdFallback?: string
+}) => {
+  const { sessionRunId, sentryTraceId, langfuseUrl, sentryUrl } =
+    getObservabilityLinks(observability, sessionRunIdFallback)
+
+  if (!sessionRunId && !sentryTraceId && !langfuseUrl && !sentryUrl) {
+    return null
+  }
+
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+        <TerminalSquareIcon className="w-3 h-3" />
+        Observability
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {langfuseUrl && (
+          <Button asChild variant="outline" size="sm">
+            <a href={langfuseUrl} target="_blank" rel="noreferrer">
+              Langfuse Trace
+            </a>
+          </Button>
+        )}
+        {sentryUrl && (
+          <Button asChild variant="outline" size="sm">
+            <a href={sentryUrl} target="_blank" rel="noreferrer">
+              Sentry Trace
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Meta tab content
+const MetaTab = ({ data }: { data: LLMCallData }) => {
+  const agentName =
+    typeof data.agent === 'object'
+      ? data.agent?.name || data.agent?.username || data.agent?._id
+      : data.agent
+
+  const usage = data.usage || {}
+  const inputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
+  const outputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
+  const totalTokens = usage.total_tokens ?? inputTokens + outputTokens
+  const observability = data.message_observability || null
+  const sessionRunIdFallback = data.session_run_id || undefined
 
   return (
     <div className="space-y-4">
@@ -278,30 +351,10 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
         </div>
       )}
 
-      {(sessionRunId || sentryTraceId) && (
-        <div className="rounded-lg border p-3">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
-            <TerminalSquareIcon className="w-3 h-3" />
-            Observability
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {langfuseUrl && (
-              <Button asChild variant="outline" size="sm">
-                <a href={langfuseUrl} target="_blank" rel="noreferrer">
-                  Langfuse Trace
-                </a>
-              </Button>
-            )}
-            {sentryUrl && (
-              <Button asChild variant="outline" size="sm">
-                <a href={sentryUrl} target="_blank" rel="noreferrer">
-                  Sentry Trace
-                </a>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      <ObservabilityLinks
+        observability={observability}
+        sessionRunIdFallback={sessionRunIdFallback}
+      />
 
       {totalTokens > 0 && (
         <div className="rounded-lg border p-3">
@@ -1023,6 +1076,7 @@ const ResponseTab = ({ data }: { data: LLMCallData }) => {
 
 export const LLMCallModal = ({
   llmCallId,
+  observability,
   isOpen,
   onClose,
 }: LLMCallModalProps) => {
@@ -1030,10 +1084,11 @@ export const LLMCallModal = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const hasLlmCallId = Boolean(llmCallId)
 
   // Fetch data when modal opens
   useEffect(() => {
-    if (isOpen && !data && !isLoading) {
+    if (isOpen && hasLlmCallId && !data && !isLoading) {
       const fetchData = async () => {
         setIsLoading(true)
         setError(null)
@@ -1053,7 +1108,11 @@ export const LLMCallModal = ({
       }
       fetchData()
     }
-  }, [isOpen, llmCallId, data, isLoading])
+  }, [isOpen, llmCallId, hasLlmCallId, data, isLoading])
+
+  const fallbackSessionRunId = observability?.session_run_id
+  const showFallbackObservability =
+    !data && (observability?.session_run_id || observability?.sentry_trace_id)
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -1086,9 +1145,31 @@ export const LLMCallModal = ({
             </div>
           )}
 
-          {error && (
-            <div className="flex items-center justify-center py-12 text-destructive">
-              {error}
+          {!hasLlmCallId && !data && !isLoading && (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground text-sm gap-3">
+              <div>LLM call not found for this message.</div>
+              {showFallbackObservability && (
+                <div className="w-full max-w-md">
+                  <ObservabilityLinks
+                    observability={observability ?? null}
+                    sessionRunIdFallback={fallbackSessionRunId}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {error && !data && (
+            <div className="flex flex-col items-center justify-center py-8 text-destructive text-sm gap-3">
+              <div>{error}</div>
+              {showFallbackObservability && (
+                <div className="w-full max-w-md text-muted-foreground">
+                  <ObservabilityLinks
+                    observability={observability ?? null}
+                    sessionRunIdFallback={fallbackSessionRunId}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -1190,14 +1271,27 @@ export const LLMCallModal = ({
 }
 
 interface LLMCallButtonProps {
-  llmCallId: string
+  llmCallId?: string | null
+  observability?: {
+    session_run_id?: string
+    session_id?: string
+    trace_id?: string
+    generation_id?: string
+    sentry_trace_id?: string | null
+    langfuse_url?: string | null
+    sentry_url?: string | null
+  } | null
   className?: string
 }
 
 /**
  * Small button that opens the LLM Call modal when clicked
  */
-export const LLMCallButton = ({ llmCallId, className }: LLMCallButtonProps) => {
+export const LLMCallButton = ({
+  llmCallId,
+  observability,
+  className,
+}: LLMCallButtonProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -1215,6 +1309,7 @@ export const LLMCallButton = ({ llmCallId, className }: LLMCallButtonProps) => {
       </button>
       <LLMCallModal
         llmCallId={llmCallId}
+        observability={observability}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       />

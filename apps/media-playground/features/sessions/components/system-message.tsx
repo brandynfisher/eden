@@ -85,7 +85,10 @@ export const SystemMessage = ({ message }: SystemMessageProps) => {
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>

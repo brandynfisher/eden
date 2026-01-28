@@ -87,12 +87,27 @@ export function usePendingAgentResponses({
     const newMessages = messages.filter(msg => msg?._id && !seen.has(msg._id))
 
     if (newMessages.length === 0) return
+
+    const isRenderableAssistantMessage = (msg: Message) => {
+      if (msg.role !== 'assistant') return false
+      if (msg.content && msg.content.trim().length > 0) return true
+      if (msg.attachments && msg.attachments.length > 0) return true
+      if (msg.tool_calls && msg.tool_calls.length > 0) return true
+      if ((msg as Message & { thought?: string }).thought) return true
+      return false
+    }
+
     newMessages.forEach(msg => {
-      if (msg?._id) seen.add(msg._id)
+      if (!msg?._id) return
+      if (msg.role === 'assistant' && !isRenderableAssistantMessage(msg)) {
+        return
+      }
+      seen.add(msg._id)
     })
 
     for (const msg of newMessages) {
       if (msg.role !== 'assistant') continue
+      if (!isRenderableAssistantMessage(msg)) continue
       const senderId =
         typeof msg.sender === 'string' ? msg.sender : msg.sender?._id
       if (!senderId) continue

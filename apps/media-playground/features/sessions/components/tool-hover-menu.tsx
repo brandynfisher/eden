@@ -72,12 +72,15 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-[460px] max-w-[90vw] max-h-[60vh] md:max-h-[80vh]"
+        className="w-[460px] max-w-[90vw] max-h-[calc(100vh-2rem)] overflow-y-auto overscroll-contain"
         align="end"
-        sideOffset={5}
+        side="top"
+        sideOffset={6}
+        collisionPadding={16}
         forceMount
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="p-2 overflow-y-auto overscroll-contain max-h-[calc(60vh-1rem)] md:max-h-[calc(80vh-1rem)] -webkit-overflow-scrolling-touch">
+        <div className="p-2">
           {/* SUBTOOL NAVIGATION */}
           {hasSubtools && (
             <div className="mb-3 p-2 border-b border-border/20">

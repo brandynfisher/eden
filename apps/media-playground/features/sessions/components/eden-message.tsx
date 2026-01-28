@@ -223,7 +223,10 @@ function ConductorFinishMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -323,7 +326,10 @@ function ConductorTurnMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -395,7 +401,10 @@ function ConductorInitMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -518,7 +527,10 @@ function ModeratorVoteMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -570,7 +582,10 @@ function ModeratorPromptMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -649,7 +664,10 @@ function DefaultConductorMessage({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -758,7 +776,10 @@ function PrivateMessageDisplay({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     </div>
@@ -1021,7 +1042,10 @@ export const EdenMessage = ({
           >
             <TimeAgo date={new Date(message.createdAt)} />
           </div>
-          {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+          <LLMCallButton
+            llmCallId={message.llm_call}
+            observability={message.observability || null}
+          />
         </div>
       </div>
     )
@@ -1060,7 +1084,10 @@ export const EdenMessage = ({
         >
           <TimeAgo date={new Date(message.createdAt)} />
         </div>
-        {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        <LLMCallButton
+          llmCallId={message.llm_call}
+          observability={message.observability || null}
+        />
       </div>
     </div>
   )

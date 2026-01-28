@@ -178,6 +178,7 @@ const ChatLaunchpad = () => {
   const [isSessionModeHelpOpen, setIsSessionModeHelpOpen] = useState(false)
   const addAgentGate = useGatedResource(GatedResource.AddAgent)
   const queryClient = useQueryClient()
+  const pendingSessionStoragePrefix = 'eden:pending-session:'
 
   // Session settings state
   const [sessionSettings, setSessionSettings] = useState<SessionSettings>({
@@ -383,6 +384,43 @@ const ChatLaunchpad = () => {
     return () => resetConfig()
   }, [resetConfig, setConfig])
 
+  const getPendingAgentIdsForLaunchpad = useCallback(
+    (content: string): string[] => {
+      if (selectedAgents.length === 0) return []
+
+      const mentions: string[] = []
+      const mentionRegex = /@(\S+)/g
+      let match
+      while ((match = mentionRegex.exec(content)) !== null) {
+        mentions.push(match[1])
+      }
+
+      const mentionSet = new Set(mentions)
+      if (mentionSet.has('agent')) {
+        return selectedAgents.map(agent => agent._id)
+      }
+
+      const mentionedAgents = selectedAgents.filter(agent =>
+        mentionSet.has(agent.username),
+      )
+
+      if (mentionedAgents.length > 0) {
+        return mentionedAgents.map(agent => agent._id)
+      }
+
+      if (selectedAgents.length === 1) {
+        return [selectedAgents[0]._id]
+      }
+
+      if (sessionSettings.type === 'passive') {
+        return []
+      }
+
+      return selectedAgents.map(agent => agent._id)
+    },
+    [selectedAgents, sessionSettings.type],
+  )
+
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[], thinking?: boolean) => {
       if (!user || selectedAgents.length === 0) return
@@ -537,6 +575,22 @@ const ChatLaunchpad = () => {
         }
 
         if (sessionId) {
+          if (!sessionConfig.useStreaming && typeof window !== 'undefined') {
+            const pendingAgentIds = getPendingAgentIdsForLaunchpad(content)
+            if (pendingAgentIds.length > 0) {
+              try {
+                window.sessionStorage.setItem(
+                  `${pendingSessionStoragePrefix}${sessionId}`,
+                  JSON.stringify({
+                    agentIds: pendingAgentIds,
+                    createdAt: Date.now(),
+                  }),
+                )
+              } catch {
+                // Ignore storage failures
+              }
+            }
+          }
           router.push(`/sessions/${sessionId}`)
         } else {
           throw new Error('No session_id received from response')

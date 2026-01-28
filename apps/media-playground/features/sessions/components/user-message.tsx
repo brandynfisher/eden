@@ -126,11 +126,12 @@ export const UserMessage = ({
               💡 Tip: @mention an agent to have them respond
             </div>
           )}
-          {message.llm_call && (
-            <div className="flex justify-end mt-1">
-              <LLMCallButton llmCallId={message.llm_call} />
-            </div>
-          )}
+          <div className="flex justify-end mt-1">
+            <LLMCallButton
+              llmCallId={message.llm_call}
+              observability={message.observability || null}
+            />
+          </div>
           <div
             className="text-xs text-muted-foreground mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
             title={new Date(message.createdAt).toLocaleString()}
