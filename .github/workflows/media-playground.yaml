@@ -87,6 +87,8 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
             "NEXT_PUBLIC_TIKTOK_CLIENT_KEY=aw39gov86tl1sctq"
             "NEXT_PUBLIC_TWITTER_INTEGRATIONS_CLIENT_ID=ckJyejlLdk5VdGZDR2tScHROczI6MTpjaQ"
+            "NEXT_PUBLIC_LANGFUSE_PROJECT_URL=https://us.cloud.langfuse.com/project/cm7wbibzs01nwad07i58uznu9"
+            "NEXT_PUBLIC_SENTRY_TRACE_BASE_URL=https://edenlabs.sentry.io/explore/traces/trace"
 
       - name: Move cache
         run: |

@@ -10,6 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import {
+  BarChart3Icon,
   CheckIcon,
   ClockIcon,
   CodeIcon,
@@ -31,6 +32,20 @@ interface LLMCallData {
   provider?: string
   agent?: string | { _id?: string; name?: string; username?: string }
   session?: string
+  session_run_id?: string
+  message_id?: string
+  message_observability?: {
+    session_run_id?: string
+    session_id?: string
+    trace_id?: string
+    generation_id?: string
+    sentry_trace_id?: string
+    langfuse_url?: string | null
+    sentry_url?: string | null
+    input_tokens?: number | null
+    input_tokens_breakdown?: Record<string, number> | null
+    [key: string]: unknown
+  } | null
   request_payload?: {
     system?: string
     messages?: Array<{
@@ -169,7 +184,7 @@ const FormattedText = ({ text }: { text: string }) => {
   // Replace literal \n with actual newlines
   const formatted = text.replace(/\\n/g, '\n')
   return (
-    <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+    <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed w-full">
       {formatted}
     </pre>
   )
@@ -186,6 +201,30 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
   const inputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0
   const outputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0
   const totalTokens = usage.total_tokens ?? inputTokens + outputTokens
+  const observability = data.message_observability || null
+  const sessionRunId =
+    observability?.session_run_id || data.session_run_id || undefined
+  const sentryTraceId = observability?.sentry_trace_id
+  const langfuseBase = process.env.NEXT_PUBLIC_LANGFUSE_PROJECT_URL?.replace(
+    /\/$/,
+    '',
+  )
+  const sentryBase = process.env.NEXT_PUBLIC_SENTRY_TRACE_BASE_URL?.replace(
+    /\/$/,
+    '',
+  )
+  const langfuseUrl =
+    (typeof observability?.langfuse_url === 'string'
+      ? observability.langfuse_url
+      : null) ||
+    (sessionRunId && langfuseBase
+      ? `${langfuseBase}/traces?peek=${encodeURIComponent(sessionRunId)}`
+      : null)
+  const sentryUrl =
+    (typeof observability?.sentry_url === 'string'
+      ? observability.sentry_url
+      : null) ||
+    (sentryTraceId && sentryBase ? `${sentryBase}/${sentryTraceId}` : null)
 
   return (
     <div className="space-y-4">
@@ -239,6 +278,31 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
         </div>
       )}
 
+      {(sessionRunId || sentryTraceId) && (
+        <div className="rounded-lg border p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
+            <TerminalSquareIcon className="w-3 h-3" />
+            Observability
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {langfuseUrl && (
+              <Button asChild variant="outline" size="sm">
+                <a href={langfuseUrl} target="_blank" rel="noreferrer">
+                  Langfuse Trace
+                </a>
+              </Button>
+            )}
+            {sentryUrl && (
+              <Button asChild variant="outline" size="sm">
+                <a href={sentryUrl} target="_blank" rel="noreferrer">
+                  Sentry Trace
+                </a>
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {totalTokens > 0 && (
         <div className="rounded-lg border p-3">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-2">
@@ -267,6 +331,58 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+const InputTokensTab = ({ data }: { data: LLMCallData }) => {
+  const observability = data.message_observability || null
+  const breakdown = observability?.input_tokens_breakdown || null
+  const entries = breakdown
+    ? Object.entries(breakdown).filter(
+        ([, value]) => typeof value === 'number' && !Number.isNaN(value),
+      )
+    : []
+
+  if (entries.length === 0) {
+    return (
+      <div className="text-muted-foreground text-center py-8">
+        No input token breakdown available
+      </div>
+    )
+  }
+
+  const totalFromBreakdown = entries.reduce((sum, [, value]) => sum + value, 0)
+  const totalTokens =
+    typeof observability?.input_tokens === 'number'
+      ? observability.input_tokens
+      : totalFromBreakdown
+
+  return (
+    <div className="h-full w-full overflow-auto space-y-3">
+      <div className="rounded-lg border p-3">
+        <div className="text-muted-foreground text-xs mb-1">
+          Input Tokens Total
+        </div>
+        <div className="font-medium">{totalTokens.toLocaleString()}</div>
+      </div>
+      <div className="rounded-lg border p-3">
+        <div className="text-muted-foreground text-xs mb-2">Breakdown</div>
+        <div className="space-y-2">
+          {entries
+            .sort((a, b) => b[1] - a[1])
+            .map(([category, value]) => (
+              <div key={category} className="flex items-start gap-3">
+                <div className="flex-1 font-mono text-xs break-all text-muted-foreground">
+                  {category}
+                </div>
+                <div className="font-medium text-sm">
+                  {value.toLocaleString()}
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -302,7 +418,7 @@ const SystemTab = ({ data }: { data: LLMCallData }) => {
   }
 
   return (
-    <div className="rounded-md border bg-muted/30 p-4 overflow-auto max-h-[50vh]">
+    <div className="h-full w-full overflow-auto rounded-md border bg-muted/30 p-4">
       <FormattedText text={content} />
     </div>
   )
@@ -479,7 +595,7 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
   }
 
   return (
-    <div className="space-y-3 overflow-auto max-h-[50vh]">
+    <div className="h-full w-full overflow-auto space-y-3">
       {nonSystemMessages.map((msg, idx) => {
         const contentBlocks = Array.isArray(msg.content)
           ? msg.content
@@ -488,7 +604,7 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
           : []
 
         return (
-          <div key={idx} className="rounded-md border p-3">
+          <div key={idx} className="rounded-md border p-3 w-full">
             <div className="flex items-center gap-2 mb-2">
               <span
                 className={cn(
@@ -503,7 +619,7 @@ const MessagesTab = ({ data }: { data: LLMCallData }) => {
                 {msg.role}
               </span>
             </div>
-            <div className="text-sm space-y-1">
+            <div className="text-sm space-y-1 w-full">
               {contentBlocks.map((block, blockIdx) => (
                 <ContentBlock key={blockIdx} block={block} />
               ))}
@@ -528,7 +644,7 @@ const ToolsTab = ({ data }: { data: LLMCallData }) => {
   }
 
   return (
-    <div className="space-y-3 overflow-auto max-h-[50vh]">
+    <div className="h-full w-full overflow-auto space-y-3">
       {tools.map((tool, idx) => {
         // Handle both Anthropic format (top-level) and OpenAI format (nested under function)
         const name = tool.name || tool.function?.name
@@ -604,7 +720,7 @@ const ResponseTab = ({ data }: { data: LLMCallData }) => {
   const messageToolCalls = data.message_tool_calls || []
 
   return (
-    <div className="space-y-4 overflow-auto max-h-[50vh]">
+    <div className="h-full w-full overflow-auto space-y-4">
       {/* Response text content */}
       {textBlocks.length > 0 && (
         <div className="rounded-lg border p-3">
@@ -955,7 +1071,7 @@ export const LLMCallModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+      <DialogContent className="w-[90vw] max-w-4xl h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <TerminalSquareIcon className="w-5 h-5" />
@@ -983,6 +1099,10 @@ export const LLMCallModal = ({
                   <TabsTrigger value="meta" className="gap-1.5">
                     <CpuIcon className="w-3 h-3" />
                     Meta
+                  </TabsTrigger>
+                  <TabsTrigger value="input-tokens" className="gap-1.5">
+                    <BarChart3Icon className="w-3 h-3" />
+                    Input Tokens
                   </TabsTrigger>
                   <TabsTrigger value="system" className="gap-1.5">
                     <FileTextIcon className="w-3 h-3" />
@@ -1026,28 +1146,36 @@ export const LLMCallModal = ({
                 </Button>
               </div>
 
-              <TabsContent value="meta" className="flex-1 overflow-auto">
-                <MetaTab data={data} />
+              <TabsContent value="meta" className="flex-1 min-h-0">
+                <div className="h-full w-full overflow-auto">
+                  <MetaTab data={data} />
+                </div>
               </TabsContent>
 
-              <TabsContent value="system" className="flex-1 overflow-auto">
+              <TabsContent value="input-tokens" className="flex-1 min-h-0">
+                <div className="h-full w-full overflow-auto">
+                  <InputTokensTab data={data} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="system" className="flex-1 min-h-0">
                 <SystemTab data={data} />
               </TabsContent>
 
-              <TabsContent value="messages" className="flex-1 overflow-auto">
+              <TabsContent value="messages" className="flex-1 min-h-0">
                 <MessagesTab data={data} />
               </TabsContent>
 
-              <TabsContent value="tools" className="flex-1 overflow-auto">
+              <TabsContent value="tools" className="flex-1 min-h-0">
                 <ToolsTab data={data} />
               </TabsContent>
 
-              <TabsContent value="response" className="flex-1 overflow-auto">
+              <TabsContent value="response" className="flex-1 min-h-0">
                 <ResponseTab data={data} />
               </TabsContent>
 
-              <TabsContent value="raw" className="flex-1 overflow-auto">
-                <div className="rounded-md border bg-muted/30 p-4 overflow-auto max-h-[50vh]">
+              <TabsContent value="raw" className="flex-1 min-h-0">
+                <div className="h-full w-full overflow-auto rounded-md border bg-muted/30 p-4">
                   <pre className="text-xs font-mono whitespace-pre-wrap break-all">
                     {JSON.stringify(data, null, 2)}
                   </pre>

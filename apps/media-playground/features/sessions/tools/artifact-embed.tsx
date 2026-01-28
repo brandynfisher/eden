@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArtifactV3, TaskV2Result } from '@edenlabs/eden-sdk'
+import type { ArtifactV3 } from '@/types/artifacts-v3'
+import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ExternalLinkIcon, FileTextIcon } from 'lucide-react'
 import React, { useMemo } from 'react'
 

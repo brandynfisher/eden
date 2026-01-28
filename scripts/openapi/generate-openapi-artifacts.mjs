@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { openapiJobs, repoRoot, workspaces } from './config.mjs'
 
 const eslintBanner = '/* eslint-disable @typescript-eslint/naming-convention */\n'
+const prettierTargets = new Set()
 
 const runCommand = (cmd, args) => {
   const result = spawnSync(cmd, args, {
@@ -22,6 +23,17 @@ const ensureBanner = filePath => {
   const contents = readFileSync(filePath, 'utf-8')
   if (contents.startsWith(eslintBanner)) return
   writeFileSync(filePath, eslintBanner + contents)
+}
+
+const domainStatus = runCommand('yarn', [
+  'workspace',
+  'api',
+  'run',
+  'generate:openapi-v3-domain',
+])
+if (domainStatus !== 0) {
+  console.error('\n[openapi] Failed: generate openapi from domain')
+  process.exit(domainStatus)
 }
 
 for (const job of openapiJobs) {
@@ -54,6 +66,8 @@ for (const job of openapiJobs) {
     if (output.eslintDisable) {
       ensureBanner(outputPath)
     }
+
+    prettierTargets.add(outputPath)
   }
 }
 
@@ -64,6 +78,28 @@ if (mcpJobs.length > 0) {
     console.error('\n[openapi] Failed: mcp-tools')
     process.exit(status)
   }
+
+  prettierTargets.add('apps/api/src/plugins/mcpGeneratedTools.ts')
+}
+
+if (prettierTargets.size > 0) {
+  const status = runCommand('yarn', [
+    'prettier',
+    '--write',
+    ...prettierTargets,
+  ])
+  if (status !== 0) {
+    console.error('\n[openapi] Failed: prettier')
+    process.exit(status)
+  }
+}
+
+const docsStatus = runCommand('node', [
+  'scripts/openapi/copy-openapi-to-mintlify.mjs',
+])
+if (docsStatus !== 0) {
+  console.error('\n[openapi] Failed: mintlify-docs copy')
+  process.exit(docsStatus)
 }
 
 console.log('\n[openapi] OpenAPI artifacts generated.')

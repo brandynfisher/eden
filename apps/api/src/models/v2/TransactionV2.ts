@@ -1,5 +1,5 @@
+import { MannaVoucherDocument } from '../v3/MannaVoucher'
 import { MannaDocument } from './../Manna'
-import { MannaVoucherDocument } from './../MannaVoucher'
 import { RealtimeSessionDocument } from './RealtimeSessionV2'
 import { TaskV2Document } from './TaskV2'
 import { TransactionType } from '@edenlabs/eden-sdk'

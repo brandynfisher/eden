@@ -12,7 +12,8 @@
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "generate:openapi": "DOTENV_PATH=.env.eden tsx scripts/generate-openapi.ts"
+    "generate:openapi": "DOTENV_PATH=.env.eden tsx scripts/generate-openapi.ts",
+    "generate:openapi-v3-domain": "tsx scripts/generate-openapi-v3-domain.ts"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -29,6 +30,7 @@
     "@clerk/fastify": "^1.0.0",
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
+    "@edenlabs/eden-sdk-v3": "*",
     "@edenlabs/tsconfig": "*",
     "@farcaster/hub-nodejs": "^0.15.9",
     "@fastify/cors": "^9.0.1",

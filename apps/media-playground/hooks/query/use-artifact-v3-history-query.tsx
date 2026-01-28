@@ -1,9 +1,12 @@
+import { env } from '@/lib/config'
 import {
-  ArtifactVersionV3,
-  ArtifactsV3HistoryResponse,
-} from '@edenlabs/eden-sdk'
+  type ArtifactHistoryEntryUI,
+  toArtifactHistoryUI,
+} from '@/types/artifacts-v3'
+import { useAuth } from '@clerk/nextjs'
+import { createEdenClient } from '@edenlabs/eden-sdk-v3'
+import type { PaginatedArtifactsHistoryResponse } from '@edenlabs/eden-sdk-v3'
 import { useQuery } from '@tanstack/react-query'
-import axios, { AxiosResponse } from 'axios'
 
 export function useArtifactV3HistoryQuery({
   artifactId,
@@ -16,24 +19,36 @@ export function useArtifactV3HistoryQuery({
   page?: number
   limit?: number
 }) {
+  const { getToken } = useAuth()
+
   const query = useQuery({
     queryKey: ['artifacts-v3', 'history', artifactId, page, limit],
     queryFn: async () => {
-      const params = new URLSearchParams()
-      params.set('page', String(page))
-      params.set('limit', String(limit))
-      const response: AxiosResponse<ArtifactsV3HistoryResponse> =
-        await axios.get(
-          `/api/artifacts-v3/${artifactId}/history?${params.toString()}`,
-        )
-      return response.data
+      const token = await getToken()
+      const eden = createEdenClient({
+        baseUrl: env.NEXT_PUBLIC_EDEN_API_URL,
+        token: token || undefined,
+      })
+
+      if (!artifactId) {
+        throw new Error('Artifact ID is required')
+      }
+
+      return eden.artifacts.history(artifactId, {
+        page,
+        limit,
+      }) as Promise<PaginatedArtifactsHistoryResponse>
     },
     enabled: enabled && !!artifactId,
     staleTime: 2000,
   })
 
+  const history: ArtifactHistoryEntryUI[] = (query.data?.docs ?? []).map(
+    toArtifactHistoryUI,
+  )
+
   return {
     ...query,
-    history: query.data?.docs ?? ([] as ArtifactVersionV3[]),
+    history,
   }
 }

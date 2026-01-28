@@ -1,0 +1,13 @@
+meta {
+  name: Artifacts V3 - List
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/v3/artifacts?sessionId={{SESSION_ID}}&limit=20&page=1
+}
+
+headers {
+  X-Api-Key: {{USER_API_KEY}}
+}

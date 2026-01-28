@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Eden Manna V3 API
+  version: 0.1.0
+  description: v3 manna endpoints
+servers:
+  - url: /
+tags:
+  - name: Manna
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    MannaVoucherRedeemRequest:
+      type: object
+      properties:
+        code:
+          type: string
+      required:
+        - code
+    MannaVoucherRedeemResponse:
+      type: object
+      properties:
+        action:
+          type: string
+        success:
+          type: boolean
+        manna:
+          type: number
+        subscriptionBalance:
+          type: number
+        topupAmount:
+          type: number
+        transactionId:
+          type: string
+      required:
+        - action
+  responses:
+    ErrorResponse:
+      description: Error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /v3/manna/vouchers/redeem:
+    post:
+      tags:
+        - Manna
+      summary: Redeem manna voucher
+      description: Redeem a manna voucher code to add manna to the authenticated
+        user's account.
+      operationId: manna.redeemVoucher
+      x-eden:
+        method: manna.redeemVoucher
+      security:
+        - apiKey: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MannaVoucherRedeemRequest"
+      responses:
+        "200":
+          description: Voucher redeemed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MannaVoucherRedeemResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"

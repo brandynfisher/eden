@@ -180,53 +180,45 @@ async function generateOpenAPISpec() {
     writeFileSync(outputPath, JSON.stringify(filteredOpenapi, null, 2))
     console.log(`✅ OpenAPI spec (API Keys only) written to: ${outputPath}`)
 
-    // Also write to sister docs directory (assuming mintlify-docs or similar)
-    const docsPath = resolve(
-      process.cwd(),
-      '../../../mintlify-docs/openapi.json',
-    )
-    try {
-      writeFileSync(docsPath, JSON.stringify(filteredOpenapi, null, 2))
-      console.log(`✅ OpenAPI spec copied to docs: ${docsPath}`)
-    } catch (error) {
-      console.log(`⚠️ Could not write to docs directory: ${docsPath}`)
-      console.log(
-        `   You may need to manually copy openapi.json to your docs directory`,
-      )
-    }
+    // Copy v3 OpenAPI specs to docs (JSON) for Mintlify
+    const v3Specs = [
+      {
+        name: 'sessions-v3',
+        src: resolve(process.cwd(), 'openapi', 'sessions-v3.yaml'),
+        dest: resolve(
+          process.cwd(),
+          '../../../mintlify-docs/openapi-sessions-v3.json',
+        ),
+      },
+      {
+        name: 'artifacts-v3',
+        src: resolve(process.cwd(), 'openapi', 'artifacts-v3.yaml'),
+        dest: resolve(
+          process.cwd(),
+          '../../../mintlify-docs/openapi-artifacts-v3.json',
+        ),
+      },
+      {
+        name: 'manna-v3',
+        src: resolve(process.cwd(), 'openapi', 'manna-v3.yaml'),
+        dest: resolve(
+          process.cwd(),
+          '../../../mintlify-docs/openapi-manna-v3.json',
+        ),
+      },
+    ]
 
-    // Copy sessions v3 OpenAPI to docs (JSON) for Mintlify
-    const sessionsV3Path = resolve(process.cwd(), 'openapi', 'sessions-v3.yaml')
-    const sessionsV3DocsPath = resolve(
-      process.cwd(),
-      '../../../mintlify-docs/openapi-sessions-v3.json',
-    )
-    try {
-      const rawSessionsV3 = readFileSync(sessionsV3Path, 'utf-8')
-      const sessionsV3Spec = yaml.parse(rawSessionsV3)
-      writeFileSync(sessionsV3DocsPath, JSON.stringify(sessionsV3Spec, null, 2))
-      console.log(
-        `✅ Sessions v3 OpenAPI copied to docs: ${sessionsV3DocsPath}`,
-      )
-    } catch (error) {
-      console.log(
-        `⚠️ Could not write Sessions v3 OpenAPI to docs: ${sessionsV3DocsPath}`,
-      )
-    }
-
-    // Copy to eve/mcp directory for MCP server
-    const eveMcpPath = resolve(
-      process.cwd(),
-      '../../../eve/eve/mcp/openapi.json',
-    )
-    try {
-      writeFileSync(eveMcpPath, JSON.stringify(filteredOpenapi, null, 2))
-      console.log(`✅ OpenAPI spec copied to eve/mcp: ${eveMcpPath}`)
-    } catch (error) {
-      console.log(`⚠️ Could not write to eve/mcp directory: ${eveMcpPath}`)
-      console.log(
-        `   You may need to manually copy openapi.json to eve/mcp directory`,
-      )
+    for (const spec of v3Specs) {
+      try {
+        const raw = readFileSync(spec.src, 'utf-8')
+        const parsed = yaml.parse(raw)
+        writeFileSync(spec.dest, JSON.stringify(parsed, null, 2))
+        console.log(`✅ ${spec.name} OpenAPI copied to docs: ${spec.dest}`)
+      } catch (error) {
+        console.log(
+          `⚠️ Could not write ${spec.name} OpenAPI to docs: ${spec.dest}`,
+        )
+      }
     }
 
     // Close the server

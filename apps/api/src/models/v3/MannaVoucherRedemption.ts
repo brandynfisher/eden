@@ -1,5 +1,5 @@
-import { MannaVoucherDocument } from '../MannaVoucher'
 import { UserDocument } from '../User'
+import { MannaVoucherDocument } from './MannaVoucher'
 import { Document, Schema, model } from 'mongoose'
 
 export interface MannaVoucherRedemptionSchema {
