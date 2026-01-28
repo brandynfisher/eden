@@ -200,7 +200,10 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
         >
           <TimeAgo date={new Date(message.createdAt)} />
         </div>
-        {message.llm_call && <LLMCallButton llmCallId={message.llm_call} />}
+        <LLMCallButton
+          llmCallId={message.llm_call}
+          observability={message.observability || null}
+        />
       </div>
     </div>
   )

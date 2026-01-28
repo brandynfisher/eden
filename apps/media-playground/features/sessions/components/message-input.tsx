@@ -40,6 +40,7 @@ import {
   AlertTriangleIcon,
   CrownIcon,
   LoaderIcon,
+  Maximize2Icon,
   MessageSquareIcon,
   MicIcon,
   PaperclipIcon,
@@ -178,8 +179,32 @@ export const MessageInput = ({
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
   const [showCharacterLimitModal, setShowCharacterLimitModal] = useState(false)
+  const [isComposerExpanded, setIsComposerExpanded] = useState(false)
+  const [showExpandButton, setShowExpandButton] = useState(false)
   const textareaRef = useRef<AutosizeTextAreaRef | null>(null)
   const mentionInputRef = useRef<MentionInputRef>(null)
+
+  const renderAttachmentButton = () => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            onClick={handleAttachmentTrigger}
+            disabled={isSubmitting}
+          >
+            <PaperclipIcon className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Add attachments</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
 
   // Character limit based on subscription tier
   const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
@@ -266,6 +291,25 @@ export const MessageInput = ({
   const isOverLimit = characterCount > characterLimit
   const isNearLimit = characterCount > characterLimit * 0.9 // Warning at 90%
   const shouldShowCharacterCount = characterCount > characterLimit * 0.5 // Only show after 50%
+
+  const updateExpandButtonVisibility = useCallback(() => {
+    const el = textareaRef.current?.textArea
+    if (!el) return
+    const styles = window.getComputedStyle(el)
+    const lineHeight = parseFloat(styles.lineHeight || '0') || 20
+    const paddingTop = parseFloat(styles.paddingTop || '0') || 0
+    const paddingBottom = parseFloat(styles.paddingBottom || '0') || 0
+    const contentHeight = Math.max(
+      0,
+      el.scrollHeight - paddingTop - paddingBottom,
+    )
+    const lineCount = Math.round(contentHeight / lineHeight)
+    setShowExpandButton(lineCount > 3)
+  }, [])
+
+  useEffect(() => {
+    updateExpandButtonVisibility()
+  }, [updateExpandButtonVisibility, watchedContent])
 
   const handleFilesDropped = useCallback(async (files: File[]) => {
     const newAttachments: FileUploadProgress[] = files.map(file => ({
@@ -484,6 +528,9 @@ export const MessageInput = ({
     }
 
     setIsSubmitting(true)
+    if (isComposerExpanded) {
+      setIsComposerExpanded(false)
+    }
 
     // Get completed attachments
     const completedAttachments = attachments
@@ -831,6 +878,71 @@ export const MessageInput = ({
         </DialogContent>
       </Dialog>
 
+      <Dialog open={isComposerExpanded} onOpenChange={setIsComposerExpanded}>
+        <DialogContent className="max-w-3xl w-[min(960px,95vw)] h-[80vh] sm:h-[85vh] flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle>Compose message</DialogTitle>
+            <DialogDescription>
+              Keep writing — send when you&apos;re ready.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <AutosizeTextarea
+              value={watchedContent ?? ''}
+              placeholder={placeholder}
+              variant="xl"
+              className="h-full min-h-[50vh] max-h-none"
+              onChange={e => {
+                form.setValue('content', e.target.value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              {renderAttachmentButton()}
+            </div>
+            <div className="flex items-center gap-2">
+              {enableVoiceInput && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className={cn('h-8 w-8', isTranscribing && 'text-blue-500')}
+                  onClick={toggleRecording}
+                  disabled={isSubmitting || isTranscribing}
+                >
+                  <MicIcon
+                    className={cn('w-4 h-4', isTranscribing && 'animate-pulse')}
+                  />
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsComposerExpanded(false)}
+              >
+                Close
+              </Button>
+              <Button
+                type="button"
+                onClick={() => form.handleSubmit(onSubmit)()}
+                disabled={
+                  !form.formState.isValid ||
+                  hasUploadingAttachments ||
+                  isSubmitting ||
+                  isOverLimit
+                }
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {isDragging && (
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
@@ -869,6 +981,16 @@ export const MessageInput = ({
                   <>
                     {/* Full-width textarea above */}
                     <div className="relative mb-2">
+                      {showExpandButton && (
+                        <button
+                          type="button"
+                          onClick={() => setIsComposerExpanded(true)}
+                          className="absolute top-1 right-1 z-10 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                          aria-label="Expand composer"
+                        >
+                          <Maximize2Icon className="h-4 w-4" />
+                        </button>
+                      )}
                       <FormField
                         control={form.control}
                         name="content"
@@ -881,6 +1003,7 @@ export const MessageInput = ({
                                 placeholder={placeholder}
                                 className={cn(
                                   'focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-0 resize-none max-h-[200px] w-full',
+                                  showExpandButton && 'pr-8',
                                   expanded && !field.value
                                     ? 'min-h-[4.5rem]'
                                     : 'min-h-[2rem]',
@@ -932,25 +1055,7 @@ export const MessageInput = ({
                           className="hidden"
                           multiple
                         />
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                type="button"
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
-                                onClick={handleAttachmentTrigger}
-                                disabled={isSubmitting}
-                              >
-                                <PaperclipIcon className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Add attachments</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        {renderAttachmentButton()}
                       </div>
 
                       {/* Right side buttons */}
@@ -1092,29 +1197,21 @@ export const MessageInput = ({
                         className="hidden"
                         multiple
                       />
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8"
-                              onClick={handleAttachmentTrigger}
-                              disabled={isSubmitting}
-                            >
-                              <PaperclipIcon className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Add attachments</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {renderAttachmentButton()}
                     </div>
 
                     {/* Inline textarea */}
                     <div className="relative flex-1 min-w-0">
+                      {showExpandButton && (
+                        <button
+                          type="button"
+                          onClick={() => setIsComposerExpanded(true)}
+                          className="absolute top-0 right-0 z-10 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                          aria-label="Expand composer"
+                        >
+                          <Maximize2Icon className="h-4 w-4" />
+                        </button>
+                      )}
                       <FormField
                         control={form.control}
                         name="content"
@@ -1125,7 +1222,10 @@ export const MessageInput = ({
                                 {...field}
                                 ref={textareaRef}
                                 placeholder={placeholder}
-                                className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-2 resize-none min-h-[2rem] max-h-[2rem]"
+                                className={cn(
+                                  'focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-2 resize-none min-h-[2rem] max-h-[2rem]',
+                                  showExpandButton && 'pr-8',
+                                )}
                                 disabled={isSubmitting}
                                 onKeyDown={e => {
                                   const mentionHandled = handleKeyDown(e)

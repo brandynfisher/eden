@@ -93,6 +93,7 @@ const Session = ({
   )
   const clearAnchorTimeoutRef = useRef<number | null>(null)
   const paginationRestoreActiveRef = useRef(false)
+  const launchpadPendingHandledRef = useRef(false)
   const { user, isSignedIn } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
   const isPendingTransition = searchParams?.get('pending') === 'true'
@@ -482,6 +483,67 @@ const Session = ({
     }
     return pendingAgentIds.filter(id => !streamingAgentsWithOutput.includes(id))
   }, [pendingAgentIds, streamingAgentsWithOutput, useStreaming])
+
+  useEffect(() => {
+    if (useStreaming) return
+    if (!sessionId || sessionId === 'new') return
+    if (launchpadPendingHandledRef.current) return
+    if (!session?.messages || session.messages.length === 0) return
+    if (typeof window === 'undefined') return
+
+    const storageKey = `eden:pending-session:${sessionId}`
+    let pendingData: { agentIds?: string[] } | null = null
+    try {
+      const raw = window.sessionStorage.getItem(storageKey)
+      if (!raw) return
+      pendingData = JSON.parse(raw)
+    } catch {
+      return
+    }
+
+    if (!pendingData?.agentIds || pendingData.agentIds.length === 0) {
+      window.sessionStorage.removeItem(storageKey)
+      launchpadPendingHandledRef.current = true
+      return
+    }
+
+    const lastUserMessage = [...session.messages]
+      .reverse()
+      .find(msg => msg.role === 'user')
+    if (!lastUserMessage) {
+      window.sessionStorage.removeItem(storageKey)
+      launchpadPendingHandledRef.current = true
+      return
+    }
+
+    const lastUserTimestamp = lastUserMessage.createdAt
+      ? new Date(lastUserMessage.createdAt).getTime()
+      : null
+
+    const hasAssistantAfterLastUser =
+      lastUserTimestamp !== null &&
+      session.messages.some(
+        msg =>
+          msg.role === 'assistant' &&
+          msg.createdAt &&
+          new Date(msg.createdAt).getTime() > lastUserTimestamp,
+      )
+
+    if (!hasAssistantAfterLastUser) {
+      const runId = `launchpad-${Date.now()}`
+      registerPendingAgents(runId, pendingData.agentIds)
+      nonStreamingState.setWaitingForResponse(true)
+    }
+
+    window.sessionStorage.removeItem(storageKey)
+    launchpadPendingHandledRef.current = true
+  }, [
+    registerPendingAgents,
+    nonStreamingState,
+    session?.messages,
+    sessionId,
+    useStreaming,
+  ])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })

@@ -53,7 +53,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 // Helper to check if trigger status is 'running'
@@ -146,10 +146,11 @@ const TaskItem: FC<{
   onDelete: (triggerId: string) => void
   onRunComplete?: (triggerId: string) => void
   onNavigateToMessage?: (messageId: string, sessionId?: string) => void
-  onNavigateToLatest?: () => void
+  onNavigateToLatest?: (trigger?: Trigger) => boolean
   isFinished?: boolean
   timezone: string
   showSessionInfo?: boolean
+  isPendingRun?: boolean
 }> = ({
   trigger,
   onEdit,
@@ -164,6 +165,7 @@ const TaskItem: FC<{
   isFinished = false,
   timezone,
   showSessionInfo = false,
+  isPendingRun = false,
 }) => {
   const router = useRouter()
   const [isExecuting, setIsExecuting] = useState(false)
@@ -182,9 +184,11 @@ const TaskItem: FC<{
   const [showSubscribers, setShowSubscribers] = useState(false)
 
   const sessionInfo = useMemo(() => getSessionInfo(trigger), [trigger])
+  const isRunActive = isRunning(trigger.status) || isExecuting || isPendingRun
 
   // Check if this is a subscription (has parent_trigger)
   const isSubscription = !!trigger.parent_trigger
+  const canNavigateFromToast = !!sessionInfo.id
 
   const scheduleDisplay = useMemo(() => {
     if (!trigger.schedule) return null
@@ -302,15 +306,14 @@ const TaskItem: FC<{
       if (response.data.executed) {
         toast.success('Task started', {
           description: 'Running now',
-          action: onNavigateToLatest
+          action: canNavigateFromToast
             ? {
                 label: 'View',
-                onClick: onNavigateToLatest,
-              }
-            : showSessionInfo && sessionInfo.id
-            ? {
-                label: 'View Session',
-                onClick: () => router.push(`/sessions/${sessionInfo.id}`),
+                onClick: () => {
+                  if (!onNavigateToLatest?.(trigger)) {
+                    router.push(`/sessions/${sessionInfo.id}`)
+                  }
+                },
               }
             : undefined,
         })
@@ -470,48 +473,45 @@ const TaskItem: FC<{
 
   return (
     <div className="group">
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-3 px-4 py-3 text-base">
         {/* Play Button / Running Indicator / Subscription Icon */}
         {!isFinished && (
-          <div
-            className={cn(
-              'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              isSubscription
-                ? 'bg-muted/50 cursor-default'
-                : isRunning(trigger.status) || isExecuting
-                ? 'bg-primary/10 cursor-default'
-                : 'bg-primary/10 hover:bg-primary/20 active:scale-95 cursor-pointer',
-            )}
-            title={
-              isSubscription
-                ? 'Subscribed task'
-                : isRunning(trigger.status) || isExecuting
-                ? 'Running...'
-                : 'Run now'
-            }
-          >
+          <>
             {isSubscription ? (
-              <LinkIcon className="h-4 w-4 text-muted-foreground" />
-            ) : isRunning(trigger.status) || isExecuting ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-muted/50 cursor-default"
+                title="Subscribed task"
+              >
+                <LinkIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            ) : isRunActive ? (
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-primary/10 cursor-default"
+                title="Running..."
+              >
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              </div>
             ) : (
               <button
                 onClick={handleExecuteNow}
-                disabled={isExecuting || isRunning(trigger.status)}
-                className="w-full h-full flex items-center justify-center"
+                disabled={isRunActive}
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-primary/10 hover:bg-primary/20 active:scale-95 touch-manipulation"
+                title="Run now"
+                aria-label="Run task now"
+                type="button"
               >
                 <PlayIcon className="h-4 w-4 text-primary fill-primary" />
               </button>
             )}
-          </div>
+          </>
         )}
 
         {/* Task Info */}
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate">
+          <div className="font-semibold text-lg truncate">
             {trigger.name || trigger.prompt}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             {/* Session info (for global/agent modes) */}
             {showSessionInfo && (
               <>
@@ -527,7 +527,7 @@ const TaskItem: FC<{
                         className="scale-75 origin-left -ml-1"
                       />
                     )}
-                    <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    <span className="text-base text-muted-foreground truncate max-w-[280px]">
                       {sessionInfo.title}
                     </span>
                   </Link>
@@ -549,7 +549,7 @@ const TaskItem: FC<{
                           className="scale-75 origin-left -ml-1"
                         />
                       )}
-                    <span className="text-xs text-muted-foreground italic">
+                    <span className="text-base text-muted-foreground italic">
                       {sessionInfo.title}
                     </span>
                   </div>
@@ -562,7 +562,7 @@ const TaskItem: FC<{
             {scheduleDisplay && (
               <div className="flex items-center gap-1">
                 <ClockIcon className="h-3 w-3 text-muted-foreground/60" />
-                <span className="text-xs text-muted-foreground">
+                <span className="text-base text-muted-foreground">
                   {scheduleDisplay}
                 </span>
               </div>
@@ -573,7 +573,7 @@ const TaskItem: FC<{
                 {scheduleDisplay && (
                   <span className="text-muted-foreground/30">·</span>
                 )}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-base text-muted-foreground">
                   <LinkIcon className="h-3 w-3" />
                   <span>Subscribed</span>
                 </div>
@@ -585,7 +585,7 @@ const TaskItem: FC<{
                 {(scheduleDisplay || isSubscription) && (
                   <span className="text-muted-foreground/30">·</span>
                 )}
-                <div className="flex items-center gap-1 text-xs text-yellow-500">
+                <div className="flex items-center gap-1 text-base text-yellow-500">
                   <Share2Icon className="h-3 w-3" />
                   <span>Shared</span>
                 </div>
@@ -663,7 +663,7 @@ const TaskItem: FC<{
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+              className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:pointer-events-none md:group-hover:opacity-100 md:group-hover:pointer-events-auto"
             >
               <MoreVerticalIcon className="h-4 w-4" />
             </Button>
@@ -923,6 +923,9 @@ export const TasksView: FC<TasksViewProps> = ({
   const [scheduledTasksPage, setScheduledTasksPage] = useState(0)
   const [subscribedTasksPage, setSubscribedTasksPage] = useState(0)
   const [archivedTasksPage, setArchivedTasksPage] = useState(0)
+  const [pendingExecutions, setPendingExecutions] = useState<
+    Record<string, number>
+  >({})
 
   const tasksGate = useGatedResource(GatedResource.Tasks, {
     lockedBehavior: 'modal',
@@ -1120,6 +1123,31 @@ export const TasksView: FC<TasksViewProps> = ({
     return [...uniquePendingRuns, ...allRecentRuns]
   }, [allRecentRuns, pendingRuns])
 
+  const hasRunningTriggers = useMemo(
+    () => filteredTriggers.some(trigger => isRunning(trigger.status)),
+    [filteredTriggers],
+  )
+
+  React.useEffect(() => {
+    if (!hasRunningTriggers && pendingRuns.length === 0) {
+      return
+    }
+
+    let cancelled = false
+    const poll = () => {
+      if (cancelled) return
+      void triggersQuery.fetch()
+    }
+
+    poll()
+    const interval = window.setInterval(poll, 5000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [hasRunningTriggers, pendingRuns.length, triggersQuery])
+
   // Paginated recent runs
   const paginatedRecentRuns = useMemo(() => {
     const start = recentRunsPage * RECENT_RUNS_PER_PAGE
@@ -1198,6 +1226,10 @@ export const TasksView: FC<TasksViewProps> = ({
 
   const handleRunComplete = useCallback(
     (triggerId: string) => {
+      setPendingExecutions(prev => ({
+        ...prev,
+        [triggerId]: Date.now(),
+      }))
       const allActive = [
         ...manualTriggers,
         ...scheduledTriggers,
@@ -1230,16 +1262,66 @@ export const TasksView: FC<TasksViewProps> = ({
     ],
   )
 
-  const handleNavigateToLatest = useCallback(() => {
-    if (
-      combinedRecentRuns.length > 0 &&
-      !combinedRecentRuns[0].run.message_id.startsWith('pending-')
-    ) {
-      if (onNavigateToMessage) {
-        onNavigateToMessage(combinedRecentRuns[0].run.message_id)
+  useEffect(() => {
+    if (Object.keys(pendingExecutions).length === 0) return
+
+    setPendingExecutions(prev => {
+      let changed = false
+      const next = { ...prev }
+
+      Object.entries(prev).forEach(([triggerId, startedAt]) => {
+        const trigger = filteredTriggers.find(t => t._id === triggerId)
+        if (!trigger) {
+          delete next[triggerId]
+          changed = true
+          return
+        }
+
+        const hasRunAfterStart = (trigger.runs || []).some(run => {
+          const runTime = new Date(run.ran_at).getTime()
+          return !Number.isNaN(runTime) && runTime >= startedAt
+        })
+
+        if (!isRunning(trigger.status) && hasRunAfterStart) {
+          delete next[triggerId]
+          changed = true
+        }
+      })
+
+      return changed ? next : prev
+    })
+  }, [filteredTriggers, pendingExecutions])
+
+  const handleNavigateToLatest = useCallback(
+    (trigger?: Trigger) => {
+      const latestRun = combinedRecentRuns.find(
+        item =>
+          !item.run.message_id.startsWith('pending-') &&
+          (!trigger || item.trigger._id === trigger._id),
+      )
+
+      if (latestRun && onNavigateToMessage) {
+        const sessionInfo = getSessionInfo(latestRun.trigger)
+        onNavigateToMessage(
+          latestRun.run.message_id,
+          sessionInfo.id || undefined,
+        )
+        return true
       }
-    }
-  }, [combinedRecentRuns, onNavigateToMessage])
+
+      const fallbackTrigger = trigger ?? latestRun?.trigger
+      if (fallbackTrigger) {
+        const sessionInfo = getSessionInfo(fallbackTrigger)
+        if (sessionInfo.id) {
+          router.push(`/sessions/${sessionInfo.id}`)
+          return true
+        }
+      }
+
+      return false
+    },
+    [combinedRecentRuns, onNavigateToMessage, router],
+  )
 
   const handleCreateNew = useCallback(() => {
     if (!tasksGate.isAllowed) {
@@ -1436,6 +1518,7 @@ export const TasksView: FC<TasksViewProps> = ({
                         isFinished={false}
                         timezone={userTimezone}
                         showSessionInfo={showSessionInfo}
+                        isPendingRun={!!pendingExecutions[trigger._id]}
                       />
                     ))}
                   </div>
@@ -1475,6 +1558,7 @@ export const TasksView: FC<TasksViewProps> = ({
                         isFinished={false}
                         timezone={userTimezone}
                         showSessionInfo={showSessionInfo}
+                        isPendingRun={!!pendingExecutions[trigger._id]}
                       />
                     ))}
                   </div>
@@ -1514,6 +1598,7 @@ export const TasksView: FC<TasksViewProps> = ({
                         isFinished={false}
                         timezone={userTimezone}
                         showSessionInfo={showSessionInfo}
+                        isPendingRun={!!pendingExecutions[trigger._id]}
                       />
                     ))}
                   </div>
@@ -1573,13 +1658,13 @@ export const TasksView: FC<TasksViewProps> = ({
                             className="scale-[0.6] origin-left -ml-1 -mr-2"
                           />
                         )}
-                        <span className="text-[13px] truncate text-foreground/80">
+                        <span className="text-sm truncate text-foreground/80">
                           {item.trigger.name || item.trigger.prompt}
                         </span>
                       </div>
                       <span
                         className={cn(
-                          'text-[11px] tabular-nums',
+                          'text-xs tabular-nums',
                           isPending
                             ? 'text-primary/70'
                             : 'text-muted-foreground/50',
@@ -1636,6 +1721,7 @@ export const TasksView: FC<TasksViewProps> = ({
                 isFinished={true}
                 timezone={userTimezone}
                 showSessionInfo={showSessionInfo}
+                isPendingRun={!!pendingExecutions[trigger._id]}
               />
             ))}
           </div>
