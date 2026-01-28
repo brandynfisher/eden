@@ -87,6 +87,8 @@ jobs:
             "NEXT_PUBLIC_TIKTOK_CLIENT_KEY=sbawwrport54ck7qyi"
             "NEXT_PUBLIC_TWITTER_INTEGRATIONS_CLIENT_ID=S3FtMmFvMVBPdVlfbWdNbWFGbk06MTpjaQ"
             "NEXT_PUBLIC_INSTAGRAM_CLIENT_ID=1891722928056828"
+            "NEXT_PUBLIC_LANGFUSE_PROJECT_URL=https://us.cloud.langfuse.com/project/cm7wbibzs01nwad07i58uznu9"
+            "NEXT_PUBLIC_SENTRY_TRACE_BASE_URL=https://edenlabs.sentry.io/explore/traces/trace"
 
       - name: Move cache
         run: |

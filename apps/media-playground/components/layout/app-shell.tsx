@@ -43,10 +43,28 @@ type AppShellContextValue = {
 
 const AppShellContext = createContext<AppShellContextValue | null>(null)
 
+const NOOP = () => {}
+const FALLBACK_APP_SHELL: AppShellContextValue = {
+  openMobileSidebar: NOOP,
+  closeMobileSidebar: NOOP,
+  setConfig: NOOP,
+  resetConfig: NOOP,
+  config: {
+    showShell: false,
+    sidebarVariant: 'sessions',
+  },
+}
+let hasWarnedMissingProvider = false
+
 export const useAppShell = () => {
   const context = useContext(AppShellContext)
   if (!context) {
-    throw new Error('useAppShell must be used within AppShellProvider')
+    if (process.env.NODE_ENV !== 'production' && !hasWarnedMissingProvider) {
+      hasWarnedMissingProvider = true
+      // eslint-disable-next-line no-console
+      console.warn('useAppShell used without AppShellProvider')
+    }
+    return FALLBACK_APP_SHELL
   }
   return context
 }

@@ -66,6 +66,8 @@ const llmCallRoutes: FastifyPluginAsync = async server => {
           message_tool_calls: relatedMessage?.tool_calls || null,
           message_content: relatedMessage?.content || null,
           finish_reason: relatedMessage?.finish_reason || null,
+          message_observability: relatedMessage?.observability || null,
+          message_id: relatedMessage?._id || null,
         }
 
         return reply.status(200).send(response)

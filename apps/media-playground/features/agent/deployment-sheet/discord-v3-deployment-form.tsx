@@ -472,7 +472,11 @@ export const DiscordV3DeploymentForm = ({
 
   const toggleChannel = (channel: DiscordChannel) => {
     const hasErrors = (channel.validation?.errors || []).length > 0
-    if (hasErrors) {
+    const currentChannels = form.getValues('channels')
+    const existingIndex = currentChannels.findIndex(
+      ch => ch.channelId === channel.id,
+    )
+    if (hasErrors && existingIndex === -1) {
       toast.error('Cannot select channel', {
         description:
           channel.validation?.errors
@@ -481,10 +485,6 @@ export const DiscordV3DeploymentForm = ({
       })
       return
     }
-    const currentChannels = form.getValues('channels')
-    const existingIndex = currentChannels.findIndex(
-      ch => ch.channelId === channel.id,
-    )
 
     if (existingIndex >= 0) {
       // Remove channel
@@ -688,24 +688,25 @@ export const DiscordV3DeploymentForm = ({
     const warnings = channel.validation?.warnings ?? []
     const hasErrors = errors.length > 0
     const hasWarnings = warnings.length > 0
+    const isDisabled = hasErrors && !isSelected
 
     return (
       <div
         key={channel.id}
         className={cn(
           'flex items-center justify-between p-2 rounded',
-          hasErrors ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-          !hasErrors && 'hover:bg-muted/50',
+          isDisabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+          !isDisabled && 'hover:bg-muted/50',
         )}
         onClick={() => {
-          if (!hasErrors) toggleChannel(channel)
+          if (!isDisabled) toggleChannel(channel)
         }}
         role="button"
         tabIndex={0}
         onKeyDown={event => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            if (!hasErrors) toggleChannel(channel)
+            if (!isDisabled) toggleChannel(channel)
           }
         }}
       >
@@ -714,7 +715,7 @@ export const DiscordV3DeploymentForm = ({
             checked={isSelected}
             onCheckedChange={() => toggleChannel(channel)}
             onClick={event => event.stopPropagation()}
-            disabled={hasErrors}
+            disabled={isDisabled}
           />
           <div className="flex flex-col">
             <span className="text-sm">#{channel.name}</span>
