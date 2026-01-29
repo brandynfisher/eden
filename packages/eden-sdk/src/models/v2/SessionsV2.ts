@@ -6,6 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
+import { SessionPlatformFilter } from '../UserPreferences'
 import { Agent } from './Agents'
 import { Message } from './Messages'
 import { AxiosRequestConfig } from 'axios'
@@ -73,6 +74,7 @@ export interface SessionsV2ListArguments
     ListQueryParams {
   user_id?: string
   agent_id?: string
+  platforms?: SessionPlatformFilter[]
 }
 
 export interface SessionsV2GetArguments extends WebAPICallOptions {

@@ -340,6 +340,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         properties: {
           ...paginationProperties(),
           agent_id: Type.Optional(Type.String()),
+          platforms: Type.Optional(Type.Array(Type.String())),
         },
         required: [],
       },

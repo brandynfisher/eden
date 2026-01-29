@@ -1,7 +1,10 @@
 'use client'
 
 import { fetcher } from '@/lib/fetcher'
-import { SessionsV2ListResponse } from '@edenlabs/eden-sdk'
+import {
+  SessionPlatformFilter,
+  SessionsV2ListResponse,
+} from '@edenlabs/eden-sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -14,13 +17,21 @@ type Props = {
   page?: number
   limit?: number
   agent_id?: string
+  platforms?: SessionPlatformFilter[]
   disableInterval?: boolean
 }
 
 export const useSessionListQuery = (props?: Props) => {
-  const queryKey = ['sessions', 'list', props?.agent_id]
+  const platformsKey = props?.platforms?.slice().sort().join(',') || 'all'
+  const queryKey = ['sessions', 'list', props?.agent_id, platformsKey]
 
-  const { enabled, limit = 25, agent_id, disableInterval = false } = props || {}
+  const {
+    enabled,
+    limit = 25,
+    agent_id,
+    platforms,
+    disableInterval = false,
+  } = props || {}
 
   const queryClient = useQueryClient()
 
@@ -52,6 +63,9 @@ export const useSessionListQuery = (props?: Props) => {
 
       if (agent_id) {
         params.append('agent_id', agent_id)
+      }
+      if (platforms?.length) {
+        platforms.forEach(platform => params.append('platforms', platform))
       }
 
       const response = await fetcher<SessionsV2ListResponse>(
