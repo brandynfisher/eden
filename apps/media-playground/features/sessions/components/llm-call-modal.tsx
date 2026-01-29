@@ -20,12 +20,13 @@ import {
   FileTextIcon,
   Loader2Icon,
   MessageSquareIcon,
+  PieChartIcon,
   ReplyIcon,
   TerminalSquareIcon,
   UserIcon,
   WrenchIcon,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 interface LLMCallData {
   _id?: string
@@ -197,6 +198,255 @@ const FormattedText = ({ text }: { text: string }) => {
     <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed w-full">
       {formatted}
     </pre>
+  )
+}
+
+// Color palette for pie chart segments - carefully curated for distinction
+const PIE_COLORS = [
+  '#6366f1', // indigo (primary)
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#ec4899', // pink
+  '#8b5cf6', // violet
+  '#14b8a6', // teal
+  '#f97316', // orange
+  '#06b6d4', // cyan
+  '#84cc16', // lime
+  '#ef4444', // red
+  '#a78bfa', // light violet
+  '#34d399', // light emerald
+  '#fbbf24', // light amber
+  '#f472b6', // light pink
+  '#22d3ee', // light cyan
+  '#a3e635', // light lime
+  '#fb923c', // light orange
+  '#2dd4bf', // light teal
+]
+
+interface PieChartData {
+  label: string
+  value: number
+  percentage: number
+  color: string
+}
+
+// Process breakdown data: sort by value, group <2% into "other"
+const processBreakdownForPieChart = (
+  breakdown: Record<string, number>,
+): PieChartData[] => {
+  const entries = Object.entries(breakdown).filter(
+    ([, value]) =>
+      typeof value === 'number' && !Number.isNaN(value) && value > 0,
+  )
+
+  if (entries.length === 0) return []
+
+  const total = entries.reduce((sum, [, value]) => sum + value, 0)
+  if (total === 0) return []
+
+  // Calculate percentages and sort by value descending
+  const withPercentages = entries
+    .map(([label, value]) => ({
+      label,
+      value,
+      percentage: (value / total) * 100,
+    }))
+    .sort((a, b) => b.value - a.value)
+
+  // Separate items >= 2% and < 2%
+  const significant: PieChartData[] = []
+  let otherValue = 0
+  let otherPercentage = 0
+
+  withPercentages.forEach(item => {
+    if (item.percentage >= 2) {
+      significant.push({
+        ...item,
+        color: PIE_COLORS[significant.length % PIE_COLORS.length],
+      })
+    } else {
+      otherValue += item.value
+      otherPercentage += item.percentage
+    }
+  })
+
+  // Add "other" category if there are items < 2%
+  if (otherValue > 0) {
+    significant.push({
+      label: 'other',
+      value: otherValue,
+      percentage: otherPercentage,
+      color: '#6b7280', // gray for "other"
+    })
+  }
+
+  return significant
+}
+
+// SVG Pie Chart component
+const TokensPieChart = ({
+  breakdown,
+}: {
+  breakdown: Record<string, number>
+}) => {
+  const data = useMemo(
+    () => processBreakdownForPieChart(breakdown),
+    [breakdown],
+  )
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(
+    null,
+  )
+
+  if (data.length === 0) return null
+
+  const size = 140
+  const radius = size / 2 - 8
+  const centerX = size / 2
+  const centerY = size / 2
+
+  // Generate pie slices
+  let currentAngle = -90 // Start from top
+  const slices = data.map(item => {
+    const angle = (item.percentage / 100) * 360
+    const startAngle = currentAngle
+    const endAngle = currentAngle + angle
+    currentAngle = endAngle
+
+    // Convert to radians
+    const startRad = (startAngle * Math.PI) / 180
+    const endRad = (endAngle * Math.PI) / 180
+
+    // Calculate arc path
+    const x1 = centerX + radius * Math.cos(startRad)
+    const y1 = centerY + radius * Math.sin(startRad)
+    const x2 = centerX + radius * Math.cos(endRad)
+    const y2 = centerY + radius * Math.sin(endRad)
+
+    const largeArcFlag = angle > 180 ? 1 : 0
+
+    // Handle full circle case (single item at 100%)
+    if (item.percentage >= 99.9) {
+      return {
+        ...item,
+        path: `M ${centerX} ${centerY - radius} A ${radius} ${radius} 0 1 1 ${
+          centerX - 0.01
+        } ${centerY - radius} Z`,
+      }
+    }
+
+    return {
+      ...item,
+      path: `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`,
+    }
+  })
+
+  const handleMouseMove = (
+    e: React.MouseEvent<SVGPathElement>,
+    idx: number,
+  ) => {
+    const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect()
+    if (rect) {
+      setTooltipPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+    setHoveredIndex(idx)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null)
+    setTooltipPos(null)
+  }
+
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="flex items-center gap-2 text-muted-foreground text-xs mb-3">
+        <PieChartIcon className="w-3 h-3" />
+        Input Tokens Distribution
+      </div>
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        {/* Pie chart */}
+        <div className="relative flex-shrink-0">
+          <svg
+            width={size}
+            height={size}
+            viewBox={`0 0 ${size} ${size}`}
+            className="overflow-visible"
+          >
+            {slices.map((slice, idx) => (
+              <path
+                key={idx}
+                d={slice.path}
+                fill={slice.color}
+                stroke="hsl(var(--background))"
+                strokeWidth="1.5"
+                className="transition-all duration-150 cursor-pointer"
+                style={{
+                  opacity:
+                    hoveredIndex === null || hoveredIndex === idx ? 1 : 0.4,
+                  transform: hoveredIndex === idx ? `scale(1.03)` : 'scale(1)',
+                  transformOrigin: `${centerX}px ${centerY}px`,
+                }}
+                onMouseMove={e => handleMouseMove(e, idx)}
+                onMouseLeave={handleMouseLeave}
+              />
+            ))}
+          </svg>
+          {/* Tooltip */}
+          {hoveredIndex !== null && tooltipPos && (
+            <div
+              className="absolute pointer-events-none z-10 px-2 py-1.5 rounded bg-popover border shadow-md text-xs whitespace-nowrap"
+              style={{
+                left: tooltipPos.x,
+                top: tooltipPos.y - 40,
+                transform: 'translateX(-50%)',
+              }}
+            >
+              <div className="font-medium">{slices[hoveredIndex].label}</div>
+              <div className="text-muted-foreground">
+                {slices[hoveredIndex].percentage.toFixed(1)}% (
+                {slices[hoveredIndex].value.toLocaleString()} tokens)
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="flex-1 grid grid-cols-1 gap-1.5 text-xs min-w-0">
+          {data.map((item, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'flex items-center gap-2 min-w-0 rounded px-1 -mx-1 transition-colors cursor-default',
+                hoveredIndex === idx && 'bg-muted',
+              )}
+              onMouseEnter={() => setHoveredIndex(idx)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: item.color }}
+              />
+              <span
+                className={cn(
+                  'truncate flex-1 min-w-0 transition-colors',
+                  hoveredIndex === idx
+                    ? 'text-foreground'
+                    : 'text-muted-foreground',
+                )}
+              >
+                {item.label}
+              </span>
+              <span className="font-medium flex-shrink-0">
+                {item.percentage.toFixed(1)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -385,6 +635,12 @@ const MetaTab = ({ data }: { data: LLMCallData }) => {
           </div>
         </div>
       )}
+
+      {/* Input tokens pie chart (only shown when breakdown is available) */}
+      {observability?.input_tokens_breakdown &&
+        Object.keys(observability.input_tokens_breakdown).length > 0 && (
+          <TokensPieChart breakdown={observability.input_tokens_breakdown} />
+        )}
     </div>
   )
 }
