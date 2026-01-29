@@ -5,6 +5,7 @@ import DiscordIcon from '@/components/icons/discord'
 import { FarcasterIcon } from '@/components/icons/farcaster'
 import TwitterIcon from '@/components/icons/twitter'
 import { useAppShell } from '@/components/layout/app-shell'
+import SessionsList from '@/components/session/sessions-list'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -71,7 +72,7 @@ type Props = {
 }
 
 // Define filter types within AgentDetail
-type FilterMode = 'all' | 'mine'
+type FilterMode = 'all' | 'mine' | 'chats'
 
 const MAX_PINNED_AGENTS = 5
 
@@ -107,7 +108,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   const [filterMode, setFilterMode] = useState<FilterMode>(() => {
     // Initialize state from URL search param on mount
     const initialTab = searchParams?.get('tab')
-    return initialTab === 'mine' ? 'mine' : 'all' // Default to 'all'
+    return initialTab === 'mine' || initialTab === 'chats' ? initialTab : 'all' // Default to 'all'
   })
 
   // State to hold the scroll INDEX target read from history state
@@ -159,7 +160,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   // Effect to update URL when filterMode changes
   useEffect(() => {
     const currentTab = searchParams?.get('tab')
-    const newTabValue = filterMode === 'mine' ? 'mine' : null // null removes the param
+    const newTabValue = filterMode === 'all' ? null : filterMode // null removes the param
 
     // Avoid pushing the same state
     if (currentTab === newTabValue || (!currentTab && !newTabValue)) {
@@ -388,8 +389,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   return (
     <div className="flex flex-col min-h-0">
-      {/* Mobile navbar - sticky */}
-      <div className="md:hidden sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background px-2 shrink-0">
+      {/* Mobile navbar - fixed */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex h-12 items-center gap-2 border-b bg-background px-2 shrink-0">
         <button
           onClick={openMobileSidebar}
           className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
@@ -398,6 +399,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
           <MenuIcon className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
+      <div className="md:hidden h-12" />
 
       {/* Hero Header Section */}
       <header className="relative px-4 sm:px-6 md:px-10 pt-4 sm:pt-6 pb-6 sm:pb-8">
@@ -778,22 +780,33 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               <TabsList>
                 <TabsTrigger value="all">All Creations</TabsTrigger>
                 <TabsTrigger value="mine">My Creations</TabsTrigger>
+                <TabsTrigger value="chats">Chats with {agent.name}</TabsTrigger>
               </TabsList>
             </Tabs>
           ) : (
             <h2 className="text-sm text-muted-foreground">
-              Creations with {agent.name}
+              {filterMode === 'chats'
+                ? `Chats with ${agent.name}`
+                : `Creations with ${agent.name}`}
             </h2>
           )}
         </div>
 
         {/* Full-Width Creations Feed */}
         <div className="w-full">
-          <RecentCreationsFeed
-            query={recentCreationsQuery}
-            initialScrollIndex={initialScrollIndex}
-            onScrollRestored={clearScrollIndexState}
-          />
+          {filterMode === 'chats' ? (
+            <SessionsList
+              agentId={agent._id}
+              agentName={agent.name}
+              agentUsername={agent.username}
+            />
+          ) : (
+            <RecentCreationsFeed
+              query={recentCreationsQuery}
+              initialScrollIndex={initialScrollIndex}
+              onScrollRestored={clearScrollIndexState}
+            />
+          )}
         </div>
       </section>
 

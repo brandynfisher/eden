@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import SessionCard from '@/components/session/session-card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -7,25 +8,88 @@ import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { FolderIcon, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-export default function SessionsList() {
+type SessionsListProps = {
+  agentId?: string
+  agentName?: string
+  agentUsername?: string
+  showHeader?: boolean
+  className?: string
+}
+
+export default function SessionsList({
+  agentId,
+  agentName,
+  agentUsername,
+  showHeader = true,
+  className,
+}: SessionsListProps) {
   const { isSignedIn, verifyAuth } = useAuthState()
-  const { isLoading, sessions } = useSessionListQuery({
-    enabled: !!isSignedIn,
-  })
+  const { isLoading, sessions, hasMore, fetchNextPage, isFetchingNextPage } =
+    useSessionListQuery({
+      enabled: !!isSignedIn,
+      agent_id: agentId,
+    })
+
+  const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(null)
+  const isFetchingRef = useRef(isFetchingNextPage)
+  const hasMoreRef = useRef(hasMore)
+
+  useEffect(() => {
+    isFetchingRef.current = isFetchingNextPage
+    hasMoreRef.current = hasMore
+  }, [isFetchingNextPage, hasMore])
+
+  useEffect(() => {
+    const sentinel = loadMoreNode
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(entries => {
+      const entry = entries[0]
+      if (!entry?.isIntersecting) return
+      if (hasMoreRef.current && !isFetchingRef.current) {
+        fetchNextPage()
+      }
+    })
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [fetchNextPage, loadMoreNode])
+
+  const copy = agentName
+    ? {
+        title: `Chats with ${agentName}`,
+        signInTitle: `Sign in to view your chats with ${agentName}`,
+        signInDescription: `Create and manage conversations with ${agentName}`,
+        emptyTitle: `No chats with ${agentName} yet`,
+        emptyDescription: `Start your first conversation with ${agentName}`,
+        newSessionLabel: `Chat with ${agentName}`,
+        newSessionHref: agentUsername
+          ? `/chat?agent=${agentUsername}`
+          : '/chat',
+      }
+    : {
+        title: 'My Sessions',
+        description: 'Manage your conversations and collaborative sessions',
+        signInTitle: 'Sign in to view your sessions',
+        signInDescription: 'Create and manage conversations with AI agents',
+        emptyTitle: 'No sessions yet',
+        emptyDescription:
+          'Start your first conversation or collaborative session',
+        newSessionLabel: 'New Session',
+        newSessionHref: '/chat',
+      }
 
   // Filter and sort sessions for display
   const displaySessions = useMemo(() => {
     const filtered = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
-
-        // Only include automatic and natural sessions
-        return (
-          session.session_type === 'automatic' ||
-          session.session_type === 'natural'
-        )
+        if (session.visible === false) return false
+        if (session.visible === true) return true
+        if (session.parent_session) return false
+        return true
       },
     )
 
@@ -39,15 +103,13 @@ export default function SessionsList() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div
+        className={`container mx-auto px-4 py-8 max-w-6xl ${className || ''}`}
+      >
         <div className="text-center py-12">
           <FolderIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">
-            Sign in to view your sessions
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Create and manage conversations with AI agents
-          </p>
+          <h2 className="text-2xl font-semibold mb-2">{copy.signInTitle}</h2>
+          <p className="text-muted-foreground mb-6">{copy.signInDescription}</p>
           <Button onClick={verifyAuth}>Sign In</Button>
         </div>
       </div>
@@ -55,22 +117,21 @@ export default function SessionsList() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">My Sessions</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your conversations and collaborative sessions
-          </p>
+    <div className={`container mx-auto px-4 py-8 max-w-6xl ${className || ''}`}>
+      {showHeader && (
+        <div className="hidden md:flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">{copy.title}</h1>
+            <p className="text-muted-foreground mt-1">{copy.description}</p>
+          </div>
+          <Link href={copy.newSessionHref}>
+            <Button className="flex items-center gap-2">
+              <PlusIcon className="w-4 h-4" />
+              {copy.newSessionLabel}
+            </Button>
+          </Link>
         </div>
-        <Link href="/chat">
-          <Button className="flex items-center gap-2">
-            <PlusIcon className="w-4 h-4" />
-            New Session
-          </Button>
-        </Link>
-      </div>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -82,31 +143,36 @@ export default function SessionsList() {
           ))}
         </div>
       ) : displaySessions.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {displaySessions.map(session => (
-            <SessionCard key={session._id} session={session} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {displaySessions.map(session => (
+              <SessionCard key={session._id} session={session} />
+            ))}
+          </div>
+          <div ref={setLoadMoreNode} className="h-10" />
+          {isFetchingNextPage && (
+            <div className="mt-6 flex justify-center">
+              <LoadingIndicator className="h-5 w-5 text-primary" />
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center py-12">
           <FolderIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">No sessions yet</h2>
-          <p className="text-muted-foreground mb-6">
-            Start your first conversation or collaborative session
-          </p>
-          <Link href="/chat">
+          <h2 className="text-xl font-semibold mb-2">{copy.emptyTitle}</h2>
+          <p className="text-muted-foreground mb-6">{copy.emptyDescription}</p>
+          <Link href={copy.newSessionHref}>
             <Button className="flex items-center gap-2">
               <PlusIcon className="w-4 h-4" />
-              Create New Session
+              {copy.newSessionLabel}
             </Button>
           </Link>
         </div>
       )}
 
-      {/* Show total count if we have sessions */}
-      {displaySessions.length > 0 && (
+      {displaySessions.length > 0 && hasMore === false && (
         <div className="text-center mt-8 text-sm text-muted-foreground">
-          Showing {displaySessions.length} session
+          Showing all {displaySessions.length} session
           {displaySessions.length !== 1 ? 's' : ''}
         </div>
       )}

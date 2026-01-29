@@ -681,7 +681,7 @@ const MainLeft = ({
   // Track fetching state with refs
   const isFetchingRef = useRef(isFetchingNextPage)
   const hasMoreRef = useRef(hasMore)
-  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
     isFetchingRef.current = isFetchingNextPage
@@ -695,7 +695,7 @@ const MainLeft = ({
     }
 
     const container = scrollContainerRef?.current
-    const sentinel = loadMoreRef.current
+    const sentinel = loadMoreNode
     if (!container || !sentinel) {
       return
     }
@@ -716,7 +716,7 @@ const MainLeft = ({
     return () => {
       observer.disconnect()
     }
-  }, [fetchNextPage, scrollContainerRef, isSessionsCollapsed])
+  }, [fetchNextPage, scrollContainerRef, isSessionsCollapsed, loadMoreNode])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
@@ -834,7 +834,12 @@ const MainLeft = ({
                       }}
                     />
                   ))}
-                  <div ref={loadMoreRef} className="h-px w-full" />
+                  {isFetchingNextPage && (
+                    <div className="flex items-center justify-center py-2">
+                      <LoadingIndicator className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  )}
+                  <div ref={setLoadMoreNode} className="h-px w-full" />
                 </nav>
               )}
             </>

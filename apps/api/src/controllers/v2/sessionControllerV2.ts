@@ -1079,9 +1079,12 @@ export const listSessions = async (
       (platform: string) => platform && validPlatforms.has(platform),
     )
 
-    // Add agent filter if provided - look up agent by username first
+    // Add agent filter if provided - accept username or ObjectId
     if (agent_id) {
-      const agent = await Agent.findOne({ username: agent_id })
+      let agent = await Agent.findOne({ username: agent_id })
+      if (!agent && ObjectId.isValid(agent_id)) {
+        agent = await Agent.findById(agent_id)
+      }
       if (!agent) {
         return reply.status(404).send({
           message: 'Agent not found',
