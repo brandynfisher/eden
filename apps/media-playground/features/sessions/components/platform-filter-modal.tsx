@@ -126,6 +126,14 @@ export const PlatformFilterModal: FC<PlatformFilterModalProps> = ({
     [selectedPlatforms, updateFilters],
   )
 
+  const handleOnly = useCallback(
+    (platformId: SessionPlatformFilter) => {
+      updateFilters([platformId])
+    },
+    [updateFilters],
+  )
+
+  const allPlatformIds = PLATFORMS.map(platform => platform.id)
   const isAllSelected = selectedPlatforms.length === PLATFORMS.length
 
   return (
@@ -138,6 +146,15 @@ export const PlatformFilterModal: FC<PlatformFilterModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 pt-2">
+          {!isAllSelected && (
+            <button
+              type="button"
+              onClick={() => updateFilters(allPlatformIds)}
+              className="self-start text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Reset to all
+            </button>
+          )}
           {PLATFORMS.map(platform => (
             <label
               key={platform.id}
@@ -156,6 +173,17 @@ export const PlatformFilterModal: FC<PlatformFilterModalProps> = ({
               />
               {platform.icon}
               <span className="text-sm">{platform.label}</span>
+              <button
+                type="button"
+                onClick={event => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  handleOnly(platform.id)
+                }}
+                className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Only
+              </button>
             </label>
           ))}
         </div>

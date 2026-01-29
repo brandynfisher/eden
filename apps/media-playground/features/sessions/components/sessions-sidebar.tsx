@@ -42,7 +42,12 @@ import { cn } from '@/lib/utils'
 import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { Agent, FeatureFlag, SessionPermissionLevel } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  FeatureFlag,
+  SessionPermissionLevel,
+  SessionPlatformFilter,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   CheckIcon,
@@ -90,6 +95,7 @@ interface SessionListItemProps {
   ownerId?: string
   permissionLevel?: SessionPermissionLevel
   platform?: 'discord' | 'telegram' | 'twitter' | 'farcaster'
+  platformFilters?: SessionPlatformFilter[]
 }
 
 const PlatformIcon = ({
@@ -160,6 +166,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   ownerId,
   permissionLevel,
   platform,
+  platformFilters,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -169,6 +176,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   } = useSessionListQuery({
     enabled: false,
     agent_id: agentId,
+    platforms: platformFilters,
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -649,6 +657,7 @@ const MainLeft = ({
     updatePinStatus,
   } = useSessionListQuery({
     enabled: !!isSignedIn,
+    platforms: platformFilters,
     // Don't filter by agent - show all chats
   })
 
@@ -672,47 +681,42 @@ const MainLeft = ({
   // Track fetching state with refs
   const isFetchingRef = useRef(isFetchingNextPage)
   const hasMoreRef = useRef(hasMore)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     isFetchingRef.current = isFetchingNextPage
     hasMoreRef.current = hasMore
   }, [isFetchingNextPage, hasMore])
 
-  // Scroll-based pagination
+  // IntersectionObserver-based pagination
   useEffect(() => {
     if (isSessionsCollapsed) {
       return
     }
 
     const container = scrollContainerRef?.current
-    if (!container) {
+    const sentinel = loadMoreRef.current
+    if (!container || !sentinel) {
       return
     }
 
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+    const observer = new IntersectionObserver(
+      entries => {
+        const entry = entries[0]
+        if (!entry?.isIntersecting) return
+        if (hasMoreRef.current && !isFetchingRef.current) {
+          fetchNextPage()
+        }
+      },
+      { root: container, rootMargin: '200px' },
+    )
 
-      // Fetch when within 200px of bottom
-      if (
-        distanceFromBottom <= 200 &&
-        hasMoreRef.current &&
-        !isFetchingRef.current
-      ) {
-        fetchNextPage()
-      }
-    }
-
-    container.addEventListener('scroll', handleScroll)
-    // Run once in case we're already near the bottom on mount
-    handleScroll()
+    observer.observe(sentinel)
 
     return () => {
-      container.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
     }
-  }, [fetchNextPage, scrollContainerRef, isLoading, isSessionsCollapsed])
+  }, [fetchNextPage, scrollContainerRef, isSessionsCollapsed])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
@@ -724,10 +728,6 @@ const MainLeft = ({
     const filteredSessions = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
-
-        // Platform filter (whitelist mode)
-        const sessionPlatform = session.platform || 'web'
-        if (!platformFilters.includes(sessionPlatform)) return false
 
         if (session.visible === false) return false
         if (session.visible === true) return true
@@ -752,7 +752,7 @@ const MainLeft = ({
 
     // Combine pinned and unpinned sessions with pinned first
     return [...pinnedSessions, ...unpinnedSessions]
-  }, [sessions, platformFilters])
+  }, [sessions])
 
   // Show loading state until mounted and data is loaded
   const showLoading = !hasMounted || isLoading
@@ -823,6 +823,7 @@ const MainLeft = ({
                       ownerId={session.owner?._id}
                       permissionLevel={session.permission_level_for_user}
                       platform={session.platform}
+                      platformFilters={platformFilters}
                       hideAvatars={false}
                       onItemClick={() => {
                         onItemClick?.()
@@ -833,6 +834,7 @@ const MainLeft = ({
                       }}
                     />
                   ))}
+                  <div ref={loadMoreRef} className="h-px w-full" />
                 </nav>
               )}
             </>

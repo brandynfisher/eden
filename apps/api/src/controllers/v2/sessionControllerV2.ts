@@ -1061,6 +1061,24 @@ export const listSessions = async (
       sessionQuery.$or.push({ _id: { $in: sharedSessionIds } })
     }
 
+    const platformsParam = (request.query as { platforms?: string | string[] })
+      .platforms
+    const normalizedPlatforms = Array.isArray(platformsParam)
+      ? platformsParam
+      : typeof platformsParam === 'string'
+      ? platformsParam.split(',').map((platform: string) => platform.trim())
+      : []
+    const validPlatforms = new Set([
+      'web',
+      'discord',
+      'telegram',
+      'twitter',
+      'farcaster',
+    ])
+    const requestedPlatforms = normalizedPlatforms.filter(
+      (platform: string) => platform && validPlatforms.has(platform),
+    )
+
     // Add agent filter if provided - look up agent by username first
     if (agent_id) {
       const agent = await Agent.findOne({ username: agent_id })
@@ -1070,6 +1088,24 @@ export const listSessions = async (
         })
       }
       sessionQuery.agents = agent._id
+    }
+
+    if (requestedPlatforms.length > 0) {
+      const wantsWeb = requestedPlatforms.includes('web')
+      if (wantsWeb) {
+        sessionQuery.$and = [
+          ...(sessionQuery.$and || []),
+          {
+            $or: [
+              { platform: { $in: requestedPlatforms } },
+              { platform: { $exists: false } },
+              { platform: null },
+            ],
+          },
+        ]
+      } else {
+        sessionQuery.platform = { $in: requestedPlatforms }
+      }
     }
 
     const paginatedResponse = await sessionsRepository.query(
