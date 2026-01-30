@@ -258,6 +258,8 @@ export const TaskFormWithSelectors: FC<TaskFormWithSelectorsProps> = ({
           open={showAgentModal}
           onOpenChange={setShowAgentModal}
           onSelect={handleAgentSelect}
+          allowedTabs={['user', 'shared']}
+          description="Choose an agent to create a task for"
         />
       </div>
     )

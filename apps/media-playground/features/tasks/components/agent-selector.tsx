@@ -127,6 +127,8 @@ export const AgentSelector: FC<AgentSelectorProps> = ({
         open={showAgentModal}
         onOpenChange={setShowAgentModal}
         onSelect={handleAgentSelect}
+        allowedTabs={['user', 'shared']}
+        description="Choose an agent to create a task for"
       />
     </div>
   )
