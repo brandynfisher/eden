@@ -206,6 +206,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
   const {
+    isOriginalOwner,
     hasOwnerAccess,
     hasEditAccess,
     isLoading: isPermissionsLoading,
@@ -597,6 +598,10 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                             </>
                           )}
                         </DropdownMenuItem>
+                      </>
+                    )}
+                    {isOriginalOwner && !isPermissionsLoading && (
+                      <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={handleDeleteAgent}
@@ -677,6 +682,10 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                         </>
                       )}
                     </DropdownMenuItem>
+                  </>
+                )}
+                {isOriginalOwner && !isPermissionsLoading && (
+                  <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleDeleteAgent}
