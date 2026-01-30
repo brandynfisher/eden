@@ -11967,6 +11967,7 @@ __metadata:
     "@clerk/fastify": "npm:^1.0.0"
     "@edenlabs/config": "npm:*"
     "@edenlabs/eden-sdk": "npm:*"
+    "@edenlabs/eden-sdk-v3": "npm:*"
     "@edenlabs/tsconfig": "npm:*"
     "@farcaster/hub-nodejs": "npm:^0.15.9"
     "@fastify/cors": "npm:^9.0.1"

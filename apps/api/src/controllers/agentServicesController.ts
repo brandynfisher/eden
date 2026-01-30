@@ -50,6 +50,29 @@ const hasOwnerPermissions = async (
   return !!permission
 }
 
+// Helper function to check if user has edit-level permissions (owner or editor)
+const hasAgentEditPermissions = async (
+  agentId: string,
+  userId: string,
+): Promise<boolean> => {
+  // Check if user is the original owner
+  const agent = await Agent.findById(agentId)
+  if (!agent) return false
+
+  if (agent.owner.toString() === userId) {
+    return true
+  }
+
+  // Check if user has owner or editor permission
+  const permission = await AgentPermission.findOne({
+    agent: agentId,
+    user: userId,
+    level: { $in: [AgentPermissionLevel.Owner, AgentPermissionLevel.Editor] },
+  })
+
+  return !!permission
+}
+
 const validateAgentAccess = async (agentId: string) => {
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
@@ -102,16 +125,19 @@ export const executeTrigger = async (
       })
     }
   } else if (trigger.agent) {
-    // Agent-based trigger (null session) - check agent ownership
-    const agentDoc =
-      typeof trigger.agent === 'string'
-        ? await Agent.findById(trigger.agent)
-        : trigger.agent
-    if (
-      !agentDoc ||
-      !('owner' in agentDoc) ||
-      agentDoc.owner.toString() !== currentUserId.toString()
-    ) {
+    // Agent-based trigger (null session) - check agent ownership or co-owner/editor permissions
+    const agentId = trigger.agent.toString()
+    const agentDoc = await Agent.findById(agentId)
+    if (!agentDoc) {
+      return reply.status(403).send({
+        message: 'User not authorized to execute this trigger',
+      })
+    }
+    const hasEditPermission = await hasAgentEditPermissions(
+      agentId,
+      currentUserId.toString(),
+    )
+    if (!hasEditPermission) {
       return reply.status(403).send({
         message: 'User not authorized to execute this trigger',
       })
@@ -1252,8 +1278,12 @@ export const createTrigger = async (
     }
     agentId = agentDoc._id.toString()
 
-    // Check if user owns the agent
-    if (agentDoc.owner.toString() !== currentUserId.toString()) {
+    // Check if user owns the agent or has co-owner/editor permissions
+    const hasEditPermission = await hasAgentEditPermissions(
+      agentDoc._id.toString(),
+      currentUserId.toString(),
+    )
+    if (!hasEditPermission) {
       return reply
         .status(401)
         .send({ error: 'Not authorized to create triggers for this agent' })

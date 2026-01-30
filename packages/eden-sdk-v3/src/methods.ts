@@ -1,11 +1,11 @@
-import type { components as ArtifactsComponents } from './generated/artifacts-v3'
-import type { components as MannaComponents } from './generated/manna-v3'
-import type { components as SessionsComponents } from './generated/sessions-v3'
 import {
   createArtifactsV3Client,
   createMannaV3Client,
   createSessionsV3Client,
-} from './index'
+} from './clients'
+import type { components as ArtifactsComponents } from './generated/artifacts-v3'
+import type { components as MannaComponents } from './generated/manna-v3'
+import type { components as SessionsComponents } from './generated/sessions-v3'
 import type { ClientOptions } from 'openapi-fetch'
 
 export type SessionPromptRequest =
