@@ -102,16 +102,18 @@ export const executeTrigger = async (
       })
     }
   } else if (trigger.agent) {
-    // Agent-based trigger (null session) - check agent ownership
+    // Agent-based trigger (null session) - check agent ownership or if agent is public
     const agentDoc =
       typeof trigger.agent === 'string'
         ? await Agent.findById(trigger.agent)
         : trigger.agent
-    if (
-      !agentDoc ||
-      !('owner' in agentDoc) ||
-      agentDoc.owner.toString() !== currentUserId.toString()
-    ) {
+    if (!agentDoc || !('owner' in agentDoc)) {
+      return reply.status(403).send({
+        message: 'User not authorized to execute this trigger',
+      })
+    }
+    const isAgentOwner = agentDoc.owner.toString() === currentUserId.toString()
+    if (!isAgentOwner && !agentDoc.public) {
       return reply.status(403).send({
         message: 'User not authorized to execute this trigger',
       })
@@ -1252,8 +1254,9 @@ export const createTrigger = async (
     }
     agentId = agentDoc._id.toString()
 
-    // Check if user owns the agent
-    if (agentDoc.owner.toString() !== currentUserId.toString()) {
+    // Check if user owns the agent OR agent is public
+    const isAgentOwner = agentDoc.owner.toString() === currentUserId.toString()
+    if (!isAgentOwner && !agentDoc.public) {
       return reply
         .status(401)
         .send({ error: 'Not authorized to create triggers for this agent' })

@@ -113,12 +113,6 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
                         'Profile matching and collective kickstart tools',
                       requiresProSubscription: true,
                     },
-                    {
-                      key: 'all_tools',
-                      label: 'All individual tools',
-                      description:
-                        'Make available individual tools inside the image, video, and audio multi-tools (50+ individual tools)',
-                    },
                   ].map(tool => {
                     const isGated =
                       tool.requiresProSubscription && !isGigabrainAllowed
