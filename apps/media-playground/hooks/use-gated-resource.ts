@@ -36,6 +36,7 @@ type PreviewGateConfig = {
   featureFlag: FeatureFlag
   additionalFeatureFlags?: FeatureFlag[]
   lockedBehavior?: LockedBehavior
+  allowGlobalPreview?: boolean
 }
 
 type SubscriptionGateConfig = {
@@ -44,6 +45,7 @@ type SubscriptionGateConfig = {
   minimumSubscriptionTier: SubscriptionTier
   allowPreviewFlag?: FeatureFlag
   lockedBehavior?: LockedBehavior
+  allowGlobalPreview?: boolean
 }
 
 type GateConfig = PreviewGateConfig | SubscriptionGateConfig
@@ -109,6 +111,7 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
     featureName: 'LLM call details',
     minimumSubscriptionTier: SubscriptionTier.Admin,
     allowPreviewFlag: FeatureFlag.EdenAdmin,
+    allowGlobalPreview: false,
     lockedBehavior: 'hide',
   },
 }
@@ -118,6 +121,7 @@ type UseGatedResourceOptions = {
   featureName?: string
   minimumSubscriptionTier?: SubscriptionTier
   allowPreviewFlag?: FeatureFlag
+  allowGlobalPreview?: boolean
 }
 
 export const useGatedResource = (
@@ -137,9 +141,13 @@ export const useGatedResource = (
     baseConfig.type === 'subscription'
       ? baseConfig.allowPreviewFlag
       : baseConfig.featureFlag
-  const hasGlobalPreviewFlag = !!user?.featureFlags?.some(flag =>
-    PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
-  )
+  const allowGlobalPreview =
+    options?.allowGlobalPreview ?? baseConfig.allowGlobalPreview ?? true
+  const hasGlobalPreviewFlag =
+    allowGlobalPreview &&
+    !!user?.featureFlags?.some(flag =>
+      PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
+    )
   const isPreviewUser =
     hasGlobalPreviewFlag ||
     (previewFlag ? !!user?.featureFlags?.includes(previewFlag) : false)
