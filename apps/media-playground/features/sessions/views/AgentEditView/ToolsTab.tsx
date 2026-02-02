@@ -92,6 +92,11 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
                       key: 'manage_collections',
                       label: 'Manage collections',
                     },
+                    {
+                      key: 'artifact_tools',
+                      label: 'Artifacts',
+                      description: 'Create and manage structured documents',
+                    },
                     ...(hasDeployments
                       ? [
                           {

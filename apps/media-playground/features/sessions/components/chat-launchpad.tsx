@@ -736,10 +736,11 @@ const ChatLaunchpad = () => {
             {/* Session Settings / Mode Selector - different for single vs multi-agent */}
             <>
               {/* Single agent: Show "Add context" button */}
+              {/* TODO: Unhide this button when context feature is ready to be re-enabled */}
               <button
                 className="session-settings-btn"
                 style={{
-                  display: selectedAgents.length === 1 ? 'flex' : 'none',
+                  display: 'none', // Hidden for now - was: selectedAgents.length === 1 ? 'flex' : 'none'
                 }}
                 onClick={() => setIsSessionSettingsOpen(true)}
               >
