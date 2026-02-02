@@ -31,6 +31,7 @@ import { openUserSettingsModal } from '@/lib/user-settings'
 import { cn } from '@/lib/utils'
 import {
   Agent,
+  FeatureFlag,
   SessionPermissionLevel,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
@@ -45,10 +46,12 @@ import {
   MicIcon,
   PaperclipIcon,
   PencilOffIcon,
+  RadioIcon,
   SendIcon,
   XIcon,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -151,11 +154,13 @@ export const MessageInput = ({
   sessionId,
   onStreamingMessage,
   enableVoiceInput = false,
+  agent,
   placeholder = 'Write a message...',
   expanded = false,
   onTranscribingChange,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
+  const router = useRouter()
   const [isMultiline, setIsMultiline] = useState(expanded)
   const {
     addOptimisticMessage,
@@ -196,7 +201,7 @@ export const MessageInput = ({
             onClick={handleAttachmentTrigger}
             disabled={isSubmitting}
           >
-            <PaperclipIcon className="w-4 h-4" />
+            <PaperclipIcon className="w-5 h-5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -209,6 +214,9 @@ export const MessageInput = ({
   // Character limit based on subscription tier
   const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
   const characterLimit = getCharacterLimit(subscriptionTier)
+
+  // Check if user has access to realtime features (requires Preview flag)
+  const hasRealtimeAccess = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   // Tap-to-record for voice input
   const handleVoiceTranscription = useCallback(
@@ -915,7 +923,7 @@ export const MessageInput = ({
                   disabled={isSubmitting || isTranscribing}
                 >
                   <MicIcon
-                    className={cn('w-4 h-4', isTranscribing && 'animate-pulse')}
+                    className={cn('w-5 h-5', isTranscribing && 'animate-pulse')}
                   />
                 </Button>
               )}
@@ -1129,7 +1137,7 @@ export const MessageInput = ({
                                 >
                                   <MicIcon
                                     className={cn(
-                                      'w-4 h-4',
+                                      'w-5 h-5',
                                       isTranscribing && 'animate-pulse',
                                     )}
                                   />
@@ -1145,42 +1153,69 @@ export const MessageInput = ({
                             </Tooltip>
                           </TooltipProvider>
                         )}
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                type="submit"
-                                size="icon"
-                                variant="outline"
-                                className={cn(
-                                  'h-8 w-8',
-                                  isOverLimit &&
-                                    'border-red-500/50 text-red-500',
-                                )}
-                                disabled={
-                                  !form.formState.isValid ||
-                                  hasUploadingAttachments ||
-                                  isSubmitting ||
-                                  isOverLimit
-                                }
-                              >
-                                <SendIcon
-                                  className={cn(
-                                    'w-4 h-4',
-                                    isSubmitting && 'animate-pulse',
-                                  )}
-                                />
-                              </Button>
-                            </TooltipTrigger>
-                            {isOverLimit && (
+                        {/* Show realtime button when text is empty and user has realtime access, otherwise show send button */}
+                        {!form.formState.isValid &&
+                        agent?.username &&
+                        hasRealtimeAccess ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-8 w-8 border-purple-500/50 text-purple-500 hover:bg-purple-500/10 hover:text-purple-400"
+                                  onClick={() =>
+                                    router.push(`/realtime/${agent.username}`)
+                                  }
+                                  disabled={isSubmitting}
+                                >
+                                  <RadioIcon className="w-5 h-5" />
+                                </Button>
+                              </TooltipTrigger>
                               <TooltipContent>
-                                <p className="text-red-400">
-                                  Message exceeds character limit
-                                </p>
+                                <p>Start realtime conversation</p>
                               </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="submit"
+                                  size="icon"
+                                  variant="outline"
+                                  className={cn(
+                                    'h-8 w-8',
+                                    isOverLimit &&
+                                      'border-red-500/50 text-red-500',
+                                  )}
+                                  disabled={
+                                    !form.formState.isValid ||
+                                    hasUploadingAttachments ||
+                                    isSubmitting ||
+                                    isOverLimit
+                                  }
+                                >
+                                  <SendIcon
+                                    className={cn(
+                                      'w-5 h-5',
+                                      isSubmitting && 'animate-pulse',
+                                    )}
+                                  />
+                                </Button>
+                              </TooltipTrigger>
+                              {isOverLimit && (
+                                <TooltipContent>
+                                  <p className="text-red-400">
+                                    Message exceeds character limit
+                                  </p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </div>
                     </div>
                   </>
@@ -1332,7 +1367,7 @@ export const MessageInput = ({
                               >
                                 <MicIcon
                                   className={cn(
-                                    'w-4 h-4',
+                                    'w-5 h-5',
                                     isTranscribing && 'animate-pulse',
                                   )}
                                 />
@@ -1348,41 +1383,69 @@ export const MessageInput = ({
                           </Tooltip>
                         </TooltipProvider>
                       )}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="submit"
-                              size="icon"
-                              variant="outline"
-                              className={cn(
-                                'h-8 w-8',
-                                isOverLimit && 'border-red-500/50 text-red-500',
-                              )}
-                              disabled={
-                                !form.formState.isValid ||
-                                hasUploadingAttachments ||
-                                isSubmitting ||
-                                isOverLimit
-                              }
-                            >
-                              <SendIcon
-                                className={cn(
-                                  'w-4 h-4',
-                                  isSubmitting && 'animate-pulse',
-                                )}
-                              />
-                            </Button>
-                          </TooltipTrigger>
-                          {isOverLimit && (
+                      {/* Show realtime button when text is empty and user has realtime access, otherwise show send button */}
+                      {!form.formState.isValid &&
+                      agent?.username &&
+                      hasRealtimeAccess ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                className="h-8 w-8 border-purple-500/50 text-purple-500 hover:bg-purple-500/10 hover:text-purple-400"
+                                onClick={() =>
+                                  router.push(`/realtime/${agent.username}`)
+                                }
+                                disabled={isSubmitting}
+                              >
+                                <RadioIcon className="w-5 h-5" />
+                              </Button>
+                            </TooltipTrigger>
                             <TooltipContent>
-                              <p className="text-red-400">
-                                Message exceeds character limit
-                              </p>
+                              <p>Start realtime conversation</p>
                             </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </TooltipProvider>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="submit"
+                                size="icon"
+                                variant="outline"
+                                className={cn(
+                                  'h-8 w-8',
+                                  isOverLimit &&
+                                    'border-red-500/50 text-red-500',
+                                )}
+                                disabled={
+                                  !form.formState.isValid ||
+                                  hasUploadingAttachments ||
+                                  isSubmitting ||
+                                  isOverLimit
+                                }
+                              >
+                                <SendIcon
+                                  className={cn(
+                                    'w-5 h-5',
+                                    isSubmitting && 'animate-pulse',
+                                  )}
+                                />
+                              </Button>
+                            </TooltipTrigger>
+                            {isOverLimit && (
+                              <TooltipContent>
+                                <p className="text-red-400">
+                                  Message exceeds character limit
+                                </p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1395,7 +1458,7 @@ export const MessageInput = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <MicIcon className="w-5 h-5 text-orange-400" />
+                      <MicIcon className="w-6 h-6 text-orange-400" />
                       <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-400 rounded-full animate-pulse" />
                     </div>
                     <span className="text-sm font-medium text-orange-300">

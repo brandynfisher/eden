@@ -1,10 +1,4 @@
-import type {
-  components as ArtifactsComponents,
-  paths as ArtifactsPaths,
-} from './generated/artifacts-v3'
-import type { paths as MannaPaths } from './generated/manna-v3'
-import type { paths as SessionsPaths } from './generated/sessions-v3'
-import createClient, { type ClientOptions } from 'openapi-fetch'
+import type { components as ArtifactsComponents } from './generated/artifacts-v3'
 
 export type {
   components as SessionsComponents,
@@ -19,9 +13,11 @@ export type {
   paths as MannaPaths,
 } from './generated/manna-v3'
 
-export type SessionsV3Client = ReturnType<typeof createClient<SessionsPaths>>
-export type ArtifactsV3Client = ReturnType<typeof createClient<ArtifactsPaths>>
-export type MannaV3Client = ReturnType<typeof createClient<MannaPaths>>
+export type {
+  SessionsV3Client,
+  ArtifactsV3Client,
+  MannaV3Client,
+} from './clients'
 
 export type {
   SessionPromptRequest,
@@ -44,13 +40,10 @@ export type Artifact = ArtifactsComponents['schemas']['Artifact']
 export type ArtifactHistoryEntry =
   ArtifactsComponents['schemas']['ArtifactHistoryEntry']
 
-export const createSessionsV3Client = (options: ClientOptions = {}) =>
-  createClient<SessionsPaths>(options)
-
-export const createArtifactsV3Client = (options: ClientOptions = {}) =>
-  createClient<ArtifactsPaths>(options)
-
-export const createMannaV3Client = (options: ClientOptions = {}) =>
-  createClient<MannaPaths>(options)
+export {
+  createSessionsV3Client,
+  createArtifactsV3Client,
+  createMannaV3Client,
+} from './clients'
 
 export { createEdenClient, createSessionsV3Api } from './methods'

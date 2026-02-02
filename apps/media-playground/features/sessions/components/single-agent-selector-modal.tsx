@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import AgentsFeed from '@/features/feed/agents-feed'
+import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
@@ -21,13 +22,13 @@ import {
   sortAllAgentsByPreference,
   sortMyAgentsByPreference,
 } from '@/lib/sort-agents-by-preference'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, AgentPermissionLevel } from '@edenlabs/eden-sdk'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
-type TabType = 'user' | 'public'
+type TabType = 'user' | 'public' | 'shared'
 
 const SingleAgentSelectorModal: FC<{
   open: boolean
@@ -53,9 +54,14 @@ const SingleAgentSelectorModal: FC<{
   const [isNavigating, setIsNavigating] = useState(false)
   const { user } = useAuthState()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const allowsShared = allowedTabs.includes('shared')
+  const allowsPublic = allowedTabs.includes('public')
 
   // Get user preferences for agent sorting
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
+  const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
+    enabled: open && allowsShared,
+  })
 
   const normalizedAllowedAgentIds = React.useMemo(() => {
     if (!allowedAgentIds) return null
@@ -66,6 +72,37 @@ const SingleAgentSelectorModal: FC<{
 
   const shouldFilterByAllowedAgents =
     normalizedAllowedAgentIds !== null && normalizedAllowedAgentIds.length > 0
+
+  const filteredSharedAgents = React.useMemo(() => {
+    if (!allowsShared) return []
+    const withAccess = sharedAgents.filter(
+      sharedAgent =>
+        sharedAgent.permissionLevel === AgentPermissionLevel.Owner ||
+        sharedAgent.permissionLevel === AgentPermissionLevel.Editor,
+    )
+
+    const withAllowedIds = shouldFilterByAllowedAgents
+      ? withAccess.filter(sharedAgent =>
+          normalizedAllowedAgentIds?.includes(sharedAgent.agent._id),
+        )
+      : withAccess
+
+    if (!searchQuery) return withAllowedIds
+
+    const searchLower = searchQuery.toLowerCase()
+    return withAllowedIds.filter(
+      ({ agent }) =>
+        agent.name?.toLowerCase().includes(searchLower) ||
+        agent.description?.toLowerCase().includes(searchLower) ||
+        agent.username?.toLowerCase().includes(searchLower),
+    )
+  }, [
+    allowsShared,
+    normalizedAllowedAgentIds,
+    searchQuery,
+    sharedAgents,
+    shouldFilterByAllowedAgents,
+  ])
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -82,14 +119,18 @@ const SingleAgentSelectorModal: FC<{
   // When not searching:
   //   - My Agents: show agents owned by current user
   //   - All Agents: show public agents by OTHER users (exclude current user)
+  const allowUniversalSearch = Boolean(
+    searchQuery && allowsPublic && !allowsShared,
+  )
   const currentQuery = {
     limit: 35,
-    ...(searchQuery
+    ...(allowUniversalSearch
       ? {
           // Universal search - no tab filtering, search everything
           search: searchQuery,
         }
       : {
+          ...(searchQuery ? { search: searchQuery } : {}),
           // No search - apply tab-specific filters
           ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
           ...(currentTab === 'public' && user?._id
@@ -109,7 +150,7 @@ const SingleAgentSelectorModal: FC<{
       const agents = items as Agent[]
 
       // When searching, don't filter - just sort by preference across all results
-      if (searchQuery) {
+      if (searchQuery && allowUniversalSearch) {
         return sortAllAgentsByPreference(agents, lastAgents) as RowItem[]
       }
 
@@ -172,6 +213,14 @@ const SingleAgentSelectorModal: FC<{
                       onClick={() => setCurrentTab('user')}
                     />
                   )}
+                  {allowedTabs.includes('shared') && (
+                    <ToggleButton
+                      className="w-full sm:w-32 h-8"
+                      value={'shared'}
+                      label={'Shared'}
+                      onClick={() => setCurrentTab('shared')}
+                    />
+                  )}
                   {allowedTabs.includes('public') && (
                     <ToggleButton
                       className="w-full sm:w-32 h-8"
@@ -209,6 +258,27 @@ const SingleAgentSelectorModal: FC<{
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 {emptyStateText ?? 'No agents available.'}
               </div>
+            ) : currentTab === 'shared' ? (
+              isSharedLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-40 rounded-lg bg-muted animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : filteredSharedAgents.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {filteredSharedAgents.map(({ agent }) =>
+                    renderCompactCard(agent),
+                  )}
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  {emptyStateText ?? 'No shared agents available.'}
+                </div>
+              )
             ) : (
               <AgentsFeed
                 query={currentQuery}

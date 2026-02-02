@@ -10,6 +10,15 @@ type Props = {
   className?: string
 }
 const UserAvatar = ({ image, name, className }: Props) => {
+  // Check if the URL is from CloudFront, S3, or Clerk (external URLs that shouldn't use custom loader)
+  const isExternalUrl = Boolean(
+    image &&
+      (image.includes('cloudfront.net') ||
+        image.includes('s3.amazonaws.com') ||
+        image.includes('clerk.') ||
+        image.includes('img.clerk.com')),
+  )
+
   return (
     <Avatar
       className={cn(
@@ -19,15 +28,13 @@ const UserAvatar = ({ image, name, className }: Props) => {
     >
       {image ? (
         <Image
-          loader={customImageLoader}
+          loader={isExternalUrl ? undefined : customImageLoader}
           src={image}
           alt="logo"
           quality={100}
           width={64}
           height={64}
-          unoptimized={
-            image.includes('clerk.') || image.includes('img.clerk.com')
-          }
+          unoptimized={isExternalUrl}
           className="group-hover:brightness-105"
         />
       ) : null}
