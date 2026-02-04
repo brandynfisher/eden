@@ -14,8 +14,9 @@ import { ProfileModelsFilter } from '@/features/profile/profile-models-filter'
 import { SharedAgentsSection } from '@/features/profile/shared-agents-section'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
-import { Creator, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Creator } from '@edenlabs/eden-sdk'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -40,7 +41,7 @@ const ProfileTabs = ({ header }: ProfileTabsProps) => {
   // any conditional returns to avoid changing the number/order of hooks between renders.
 
   const isOwnProfile = creator ? user?._id === creator._id : false
-  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(meUser?.featureFlags)
 
   // Determine default sort: show "Latest" if profile has fewer than 20 liked creations
   const likedCreationsCount =

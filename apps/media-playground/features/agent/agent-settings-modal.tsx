@@ -39,9 +39,10 @@ import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-qu
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -135,6 +136,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   const router = useRouter()
   const pathname = usePathname()
   const { user } = useAuthState()
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
   const {
     agent,
     isLoading: isAgentLoading,
@@ -401,7 +403,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
         label: 'Integrations',
         icon: PlugIcon,
       })
-      if (user?.featureFlags?.includes(FeatureFlag.Preview)) {
+      if (isPreviewUser) {
         tabs.push({
           key: 'realtime',
           label: 'Realtime',
@@ -710,7 +712,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
                       {activeTab === 'realtime' &&
                         hasOwnerAccess &&
-                        user?.featureFlags?.includes(FeatureFlag.Preview) && (
+                        isPreviewUser && (
                           <RealtimeTab
                             ref={realtimeTabRef}
                             agent={agent}

@@ -35,6 +35,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
 import { useNativeWebview } from '@/hooks/use-native-webview'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
@@ -44,7 +45,6 @@ import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import {
   Agent,
-  FeatureFlag,
   SessionPermissionLevel,
   SessionPlatformFilter,
 } from '@edenlabs/eden-sdk'
@@ -897,7 +897,7 @@ const SidebarUserProfile = ({
     return false
   }, [isSignedIn, openSignIn, pathname])
 
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   const logout = async () => {
     if (isSignedIn) {
@@ -1088,8 +1088,7 @@ export const SessionsSidebarContent = ({
     setHasMounted(true)
   }, [])
 
-  const isPreviewUser =
-    user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
   const sessionsScrollContainerRef = React.useRef<HTMLDivElement | null>(null)
   const profileHref = user?.username ? `/creators/${user.username}` : null
   const isProfileActive = profileHref ? pathname === profileHref : false

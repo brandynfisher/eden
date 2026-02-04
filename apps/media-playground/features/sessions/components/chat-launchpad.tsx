@@ -33,7 +33,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
@@ -707,30 +707,29 @@ const ChatLaunchpad = () => {
               ))}
 
               {/* Add Agent Button - opens modal (only for preview users with gate check) */}
-              {user?.featureFlags?.includes(FeatureFlag.Preview) &&
-                addAgentGate.shouldRender && (
-                  <AgentSelectorModal
-                    trigger={
-                      <button
-                        className="add-agent-card"
-                        onClick={event => {
-                          if (!addAgentGate.isAllowed) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                            addAgentGate.openGate()
-                          }
-                        }}
-                      >
-                        <div className="add-agent-icon">
-                          <Plus className="w-4 h-4" />
-                        </div>
-                        <p className="add-agent-text">Add agents</p>
-                      </button>
-                    }
-                    selectedAgents={selectedAgents}
-                    onChange={handleAgentsChange}
-                  />
-                )}
+              {addAgentGate.shouldRender && (
+                <AgentSelectorModal
+                  trigger={
+                    <button
+                      className="add-agent-card"
+                      onClick={event => {
+                        if (!addAgentGate.isAllowed) {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          addAgentGate.openGate()
+                        }
+                      }}
+                    >
+                      <div className="add-agent-icon">
+                        <Plus className="w-4 h-4" />
+                      </div>
+                      <p className="add-agent-text">Add agents</p>
+                    </button>
+                  }
+                  selectedAgents={selectedAgents}
+                  onChange={handleAgentsChange}
+                />
+              )}
             </div>
 
             {/* Session Settings / Mode Selector - different for single vs multi-agent */}

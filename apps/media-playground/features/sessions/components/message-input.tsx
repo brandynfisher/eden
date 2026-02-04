@@ -26,12 +26,12 @@ import {
 } from '@/components/ui/tooltip'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { uploadFileToS3 } from '@/lib/files'
 import { openUserSettingsModal } from '@/lib/user-settings'
 import { cn } from '@/lib/utils'
 import {
   Agent,
-  FeatureFlag,
   SessionPermissionLevel,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
@@ -216,7 +216,7 @@ export const MessageInput = ({
   const characterLimit = getCharacterLimit(subscriptionTier)
 
   // Check if user has access to realtime features (requires Preview flag)
-  const hasRealtimeAccess = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const hasRealtimeAccess = hasPreviewAccess(user?.featureFlags)
 
   // Tap-to-record for voice input
   const handleVoiceTranscription = useCallback(

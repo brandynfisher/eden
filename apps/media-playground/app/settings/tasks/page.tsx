@@ -2,9 +2,9 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { TasksView } from '@/features/tasks/components/tasks-view'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
 import { useAuth } from '@clerk/nextjs'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -15,7 +15,7 @@ const TasksPage = () => {
     isAuthenticated: !!isSignedIn,
   })
 
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   // If user doesn't have preview flag, show access denied
   if (!isPreviewUser) {

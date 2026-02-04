@@ -8,11 +8,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import UserAvatar from '@/components/user/user-avatar'
 import { UserSettingsModal } from '@/features/account/user-settings-modal'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
 import { useNativeWebview } from '@/hooks/use-native-webview'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { usePathname } from 'next/navigation'
 import { useRef, useState } from 'react'
 
@@ -25,7 +25,7 @@ const AccountDropdown = () => {
 
   const isNativeWebview = useNativeWebview()
 
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   const logout = async () => {
     if (isSignedIn) {

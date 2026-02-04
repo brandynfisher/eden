@@ -22,9 +22,10 @@ import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -56,7 +57,7 @@ const AgentEditView: FC<{
 }> = ({ agent }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   // Get initial active tab from URL parameter or default to 'profile'
   const getInitialActiveTab = () => {

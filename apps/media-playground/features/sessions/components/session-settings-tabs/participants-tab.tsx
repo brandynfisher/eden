@@ -14,12 +14,10 @@ import {
 } from '@/components/ui/select'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { MAX_AGENTS } from '@/features/sessions/session-config'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   Agent,
-  FeatureFlag,
   SessionPermission,
   SessionPermissionLevel,
 } from '@edenlabs/eden-sdk'
@@ -120,7 +118,6 @@ export const ParticipantsTab = ({
   isPermissionsLoading,
   isSavingPermissions,
 }: ParticipantsTabProps) => {
-  const { user } = useAuthState()
   const [agentToChange, setAgentToChange] = useState<Agent | null>(null)
   const [newUsername, setNewUsername] = useState('')
   const [permissionLevel, setPermissionLevel] =
@@ -203,29 +200,27 @@ export const ParticipantsTab = ({
           ))}
 
           {/* Add Agent Button - only for preview users */}
-          {user?.featureFlags?.includes(FeatureFlag.Preview) &&
-            addAgentGate.shouldRender &&
-            agents.length < MAX_AGENTS && (
-              <AgentSelectorModal
-                trigger={
-                  <button
-                    className="flex items-center justify-center gap-2 p-3 border border-dashed rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-                    onClick={event => {
-                      if (!addAgentGate.isAllowed) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        addAgentGate.openGate()
-                      }
-                    }}
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="text-sm">Add agents</span>
-                  </button>
-                }
-                selectedAgents={agents}
-                onChange={onAgentsChange}
-              />
-            )}
+          {addAgentGate.shouldRender && agents.length < MAX_AGENTS && (
+            <AgentSelectorModal
+              trigger={
+                <button
+                  className="flex items-center justify-center gap-2 p-3 border border-dashed rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
+                  onClick={event => {
+                    if (!addAgentGate.isAllowed) {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      addAgentGate.openGate()
+                    }
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-sm">Add agents</span>
+                </button>
+              }
+              selectedAgents={agents}
+              onChange={onAgentsChange}
+            />
+          )}
         </div>
 
         {agents.length >= MAX_AGENTS && (
