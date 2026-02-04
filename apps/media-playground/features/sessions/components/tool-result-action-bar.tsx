@@ -108,7 +108,7 @@ export const ToolActionButton = ({ creationId }: { creationId: string }) => {
 
   return (
     <TooltipProvider>
-      <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity inline-flex items-center gap-2">
+      <div className="inline-flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
             <Link

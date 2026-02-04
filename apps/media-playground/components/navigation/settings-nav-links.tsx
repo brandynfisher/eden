@@ -1,10 +1,10 @@
 'use client'
 
 import { Separator } from '@/components/ui/separator'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@clerk/nextjs'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -15,7 +15,7 @@ const SettingsNavLinks = () => {
     isAuthenticated: !!isSignedIn,
   })
 
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   const isActive = (path: string) => pathname === path
 

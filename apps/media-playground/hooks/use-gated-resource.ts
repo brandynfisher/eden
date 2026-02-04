@@ -10,6 +10,11 @@ export const PREVIEW_ACCESS_FEATURE_FLAGS = new Set<FeatureFlag>([
   FeatureFlag.MarsCollege26,
 ])
 
+export const hasPreviewAccess = (featureFlags?: Array<FeatureFlag | string>) =>
+  !!featureFlags?.some(flag =>
+    PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
+  )
+
 // Preview-only deployment platforms (anything not explicitly stable)
 export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
   'tiktok',
@@ -144,10 +149,7 @@ export const useGatedResource = (
   const allowGlobalPreview =
     options?.allowGlobalPreview ?? baseConfig.allowGlobalPreview ?? true
   const hasGlobalPreviewFlag =
-    allowGlobalPreview &&
-    !!user?.featureFlags?.some(flag =>
-      PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
-    )
+    allowGlobalPreview && hasPreviewAccess(user?.featureFlags)
   const isPreviewUser =
     hasGlobalPreviewFlag ||
     (previewFlag ? !!user?.featureFlags?.includes(previewFlag) : false)

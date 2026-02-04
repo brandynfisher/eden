@@ -10,10 +10,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
+import { hasPreviewAccess } from '@/hooks/use-gated-resource'
 import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@clerk/nextjs'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   ChevronDownIcon,
   CircleUserIcon,
@@ -34,7 +34,7 @@ const SettingsNav = () => {
     isAuthenticated: !!isSignedIn,
   })
 
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isPreviewUser = hasPreviewAccess(user?.featureFlags)
 
   // Get the current page name for the dropdown button
   const getCurrentPageName = () => {
