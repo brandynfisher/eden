@@ -15,6 +15,21 @@ export const hasPreviewAccess = (featureFlags?: Array<FeatureFlag | string>) =>
     PREVIEW_ACCESS_FEATURE_FLAGS.has(flag as FeatureFlag),
   )
 
+const hasFeatureFlag = (
+  featureFlags?: Array<FeatureFlag | string>,
+  flag?: FeatureFlag,
+) => {
+  if (!flag) {
+    return false
+  }
+
+  if (flag === FeatureFlag.Preview) {
+    return hasPreviewAccess(featureFlags)
+  }
+
+  return !!featureFlags?.includes(flag)
+}
+
 // Preview-only deployment platforms (anything not explicitly stable)
 export const PREVIEW_ONLY_DEPLOYMENT_PLATFORMS = new Set<string>([
   'tiktok',
@@ -151,8 +166,7 @@ export const useGatedResource = (
   const hasGlobalPreviewFlag =
     allowGlobalPreview && hasPreviewAccess(user?.featureFlags)
   const isPreviewUser =
-    hasGlobalPreviewFlag ||
-    (previewFlag ? !!user?.featureFlags?.includes(previewFlag) : false)
+    hasGlobalPreviewFlag || hasFeatureFlag(user?.featureFlags, previewFlag)
 
   let isAllowed = false
   let minimumSubscriptionTier: SubscriptionTier | undefined
@@ -161,10 +175,10 @@ export const useGatedResource = (
   if (baseConfig.type === 'preview') {
     const hasFlag =
       hasGlobalPreviewFlag ||
-      !!user?.featureFlags?.includes(baseConfig.featureFlag)
+      hasFeatureFlag(user?.featureFlags, baseConfig.featureFlag)
     const hasAdditionalFlag = baseConfig.additionalFeatureFlags
       ? baseConfig.additionalFeatureFlags.some(flag =>
-          user?.featureFlags?.includes(flag),
+          hasFeatureFlag(user?.featureFlags, flag),
         )
       : false
     isAllowed = hasFlag
@@ -180,7 +194,7 @@ export const useGatedResource = (
       options?.allowPreviewFlag || baseConfig.allowPreviewFlag
     const hasRequiredTier = hasMinimumSubscriptionTier(resolvedMinimumTier)
     const hasAllowedPreview = allowPreviewFlag
-      ? !!user?.featureFlags?.includes(allowPreviewFlag)
+      ? hasFeatureFlag(user?.featureFlags, allowPreviewFlag)
       : false
     isAllowed = hasRequiredTier || hasAllowedPreview || hasGlobalPreviewFlag
   }

@@ -3,6 +3,7 @@ import {
   hasFeatureFlag,
   hasMinimumSubscriptionTier,
 } from '../middleware/authMiddleware'
+import { hasPreviewAccess } from './featureFlags'
 import {
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
@@ -158,5 +159,5 @@ export const canUserCreatePrivateObject = (
     return true
   }
 
-  return (user.featureFlags || []).includes(FeatureFlag.Preview)
+  return hasPreviewAccess(user.featureFlags)
 }

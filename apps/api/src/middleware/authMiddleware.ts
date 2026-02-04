@@ -1,5 +1,6 @@
 import { isAllowedAccess } from '../lib/authorization'
 import { checkUserFlags } from '../lib/data'
+import { hasPreviewAccess } from '../lib/featureFlags'
 import { ApiKey, ApiKeyDocument } from '../models/ApiKey'
 import { User, UserDocument } from '../models/User'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
@@ -179,7 +180,7 @@ export const hasMinimumSubscriptionTier = (
     request.user.subscriptionTier >= minimumTier ||
     // Admin user and preview user are equivalent to having the highest tier
     request.user.isAdmin ||
-    checkUserFlags(request.user.featureFlags, FeatureFlag.Preview)
+    hasPreviewAccess(request.user.featureFlags)
   )
 }
 
@@ -189,7 +190,13 @@ export const hasFeatureFlag = (
   featureFlag: FeatureFlag,
 ) => {
   try {
-    checkUserFlags(request.user.featureFlags, featureFlag)
+    if (featureFlag === FeatureFlag.Preview) {
+      if (!hasPreviewAccess(request.user.featureFlags)) {
+        throw new Error('Feature flag not found')
+      }
+    } else {
+      checkUserFlags(request.user.featureFlags, featureFlag)
+    }
     return true
   } catch (error) {
     return reply.status(403).send({
