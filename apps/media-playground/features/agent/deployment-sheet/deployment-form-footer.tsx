@@ -262,6 +262,12 @@ export const DeploymentFormFooter = ({
         }
       }
 
+      if (platform === 'moltbook') {
+        config = {
+          moltbook: {},
+        }
+      }
+
       if (isDeployed) {
         const payload: any = {
           agentId,
@@ -321,6 +327,12 @@ export const DeploymentFormFooter = ({
         } else if (platform === 'captions' && data.api_key) {
           payload.secrets = {
             captions: {
+              api_key: data.api_key,
+            },
+          }
+        } else if (platform === 'moltbook' && data.api_key) {
+          payload.secrets = {
+            moltbook: {
               api_key: data.api_key,
             },
           }
@@ -412,6 +424,12 @@ export const DeploymentFormFooter = ({
         } else if (platform === 'captions') {
           payload.secrets = {
             captions: {
+              api_key: data.api_key,
+            },
+          }
+        } else if (platform === 'moltbook') {
+          payload.secrets = {
+            moltbook: {
               api_key: data.api_key,
             },
           }

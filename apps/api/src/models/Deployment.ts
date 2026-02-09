@@ -13,6 +13,7 @@ export enum ClientType {
   GMAIL = 'gmail',
   EMAIL = 'email',
   GOOGLE_CALENDAR = 'google_calendar',
+  MOLTBOOK = 'moltbook',
 }
 
 // Allowlist item base interface
@@ -189,6 +190,15 @@ export interface DeploymentSecretsGoogleCalendar {
   google_email: string
 }
 
+// Moltbook Types
+export interface DeploymentSettingsMoltbook {
+  username?: string
+}
+
+export interface DeploymentSecretsMoltbook {
+  api_key: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
@@ -203,6 +213,7 @@ export interface DeploymentSecrets {
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
   google_calendar?: DeploymentSecretsGoogleCalendar
+  moltbook?: DeploymentSecretsMoltbook
 }
 
 export interface DeploymentConfig {
@@ -218,6 +229,7 @@ export interface DeploymentConfig {
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
   google_calendar?: DeploymentSettingsGoogleCalendar
+  moltbook?: DeploymentSettingsMoltbook
 }
 
 export interface DeploymentSchema {
