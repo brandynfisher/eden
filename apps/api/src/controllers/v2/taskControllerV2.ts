@@ -1058,14 +1058,35 @@ export const subscribeWebSocketUpdates = function wsHandler(
           )
           return
         }
-      } catch (e) {
-        console.error('Caught error in websocket onMessage handler', e)
-        socket.send(
-          JSON.stringify({
-            event: ServerEventName.MessageError,
-            data: { message: `onMessage::error - caught ${e}` },
-          }),
-        )
+      } catch (e: any) {
+        const isTokenExpired = e?.reason === 'token-expired'
+        if (isTokenExpired) {
+          console.warn(
+            `WebSocket token expired for connection ${metaData.connectionId} (userId: ${metaData.userId})`,
+          )
+          metaData.isAuthenticated = false
+          metaData.userId = null
+          socket.send(
+            JSON.stringify({
+              event: ServerEventName.AuthInfo,
+              data: {
+                message: 'Token expired, please re-authenticate',
+                reason: 'token-expired',
+              },
+            }),
+          )
+        } else {
+          console.error(
+            `WebSocket onMessage error for connection ${metaData.connectionId} (userId: ${metaData.userId}):`,
+            e?.message || e,
+          )
+          socket.send(
+            JSON.stringify({
+              event: ServerEventName.MessageError,
+              data: { message: `onMessage::error - ${e?.message || e}` },
+            }),
+          )
+        }
       }
     })
 
