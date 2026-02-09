@@ -4,6 +4,7 @@ import {
   GmailBrandIcon,
   GoogleBrandIcon,
   InstagramBrandIcon,
+  MoltbookBrandIcon,
   ShopifyBrandIcon,
   TelegramBrandIcon,
   TikTokBrandIcon,
@@ -16,6 +17,7 @@ import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farca
 import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
 import { GoogleCalendarDeploymentForm } from '@/features/agent/deployment-sheet/google-calendar-deployment-form'
 import { InstagramDeploymentForm } from '@/features/agent/deployment-sheet/instagram-deployment-form'
+import { MoltbookDeploymentForm } from '@/features/agent/deployment-sheet/moltbook-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
@@ -79,6 +81,13 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     description: 'Deploy your agent to the Farcaster network.',
     category: 'social',
     icon: FarcasterBrandIcon,
+  },
+  {
+    platform: 'moltbook',
+    label: 'Moltbook',
+    description: 'Connect your Moltbook account for social publishing.',
+    category: 'social',
+    icon: MoltbookBrandIcon,
   },
   {
     platform: 'instagram',
@@ -188,4 +197,5 @@ export const INTEGRATION_FORMS: Record<
   google_calendar: GoogleCalendarDeploymentForm,
   email: EmailDeploymentForm,
   gmail: GmailDeploymentForm,
+  moltbook: MoltbookDeploymentForm,
 }

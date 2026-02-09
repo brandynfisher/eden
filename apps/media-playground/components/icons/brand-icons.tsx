@@ -106,6 +106,19 @@ export const GoogleBrandIcon = (props: IconProps) => (
   </svg>
 )
 
+// Moltbook icon (brand color: #FF6B35)
+export const MoltbookBrandIcon = (props: IconProps) => (
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    {...props}
+  >
+    <path d="M21 4.5v15a1.5 1.5 0 0 1-1.5 1.5H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h13.5A1.5 1.5 0 0 1 21 4.5zM6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h13V5H6zm2 3h8v2H8V8zm0 4h8v2H8v-2z" />
+  </svg>
+)
+
 // Gmail icon (brand color: #EA4335)
 export const GmailBrandIcon = (props: IconProps) => (
   <svg

@@ -3,6 +3,7 @@ import { LikeV2 } from '../../models/v2/LikeV2'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { s3Url } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
+import { isValidObjectId } from '../../utils/mongoUtils'
 import {
   ModelsV2GetArguments,
   ModelsV2ListArguments,
@@ -21,7 +22,6 @@ export const listModels = async (
       message: 'User missing from request',
     })
   }
-  
 
   const { modelId, limit, page, sort } = request.query as ModelsV2ListArguments
 
@@ -66,6 +66,12 @@ export const getModel = async (
 ) => {
   const { modelId } = request.params as ModelsV2GetArguments
   const { userId } = request.user || {}
+
+  if (!modelId || !isValidObjectId(modelId)) {
+    return reply.status(400).send({
+      message: `Invalid model ID: "${modelId}"`,
+    })
+  }
 
   const model = await ModelV2.findOneWithDeleted({
     _id: modelId,

@@ -58,8 +58,8 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
             })
 
             if (!session) {
-              fastify.log.error(
-                `insert: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]})`,
+              fastify.log.warn(
+                `insert: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]}) - may be a race condition with session creation`,
               )
               return
             }
@@ -102,8 +102,8 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
             })
 
             if (!session) {
-              fastify.log.error(
-                `update: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]})`,
+              fastify.log.warn(
+                `update: Session not found for message ${messageDoc._id} (session_id: ${sessionIds[0]}) - may be a race condition with session creation`,
               )
               return
             }

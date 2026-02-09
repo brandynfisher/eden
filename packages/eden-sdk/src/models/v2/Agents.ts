@@ -119,6 +119,7 @@ export type AgentClientType =
   | 'gmail'
   | 'email'
   | 'google_calendar'
+  | 'moltbook'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -273,6 +274,14 @@ interface CaptionsDeploymentSecrets {
   api_key: string
 }
 
+interface MoltbookDeploymentConfig {
+  username?: string
+}
+
+interface MoltbookDeploymentSecrets {
+  api_key: string
+}
+
 interface EmailDeploymentConfig {
   domain_id?: string
   sender_email?: string
@@ -328,6 +337,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     captions?: CaptionsDeploymentConfig
     email?: EmailDeploymentConfig
     google_calendar?: GoogleCalendarDeploymentConfig
+    moltbook?: MoltbookDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -340,6 +350,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
     google_calendar?: GoogleCalendarDeploymentSecrets
+    moltbook?: MoltbookDeploymentSecrets
   }
 }
 
@@ -355,6 +366,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     shopify?: ShopifyDeploymentConfig
     email?: EmailDeploymentConfig
     google_calendar?: GoogleCalendarDeploymentConfig
+    moltbook?: MoltbookDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -367,6 +379,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     captions?: CaptionsDeploymentSecrets
     email?: EmailDeploymentSecrets
     google_calendar?: GoogleCalendarDeploymentSecrets
+    moltbook?: MoltbookDeploymentSecrets
   }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {

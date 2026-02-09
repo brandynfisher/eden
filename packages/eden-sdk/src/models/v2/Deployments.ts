@@ -219,6 +219,15 @@ export type GoogleCalendarInfo = {
   timeZone?: string
 }
 
+// Moltbook Types
+export type DeploymentSettingsMoltbook = {
+  username?: string
+}
+
+export type DeploymentSecretsMoltbook = {
+  api_key: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
@@ -233,6 +242,7 @@ export type DeploymentSecrets = {
   email?: DeploymentSecretsEmail
   gmail?: DeploymentSecretsGmail
   google_calendar?: DeploymentSecretsGoogleCalendar
+  moltbook?: DeploymentSecretsMoltbook
 }
 
 export type DeploymentConfig = {
@@ -248,6 +258,7 @@ export type DeploymentConfig = {
   email?: DeploymentSettingsEmail
   gmail?: DeploymentSettingsGmail
   google_calendar?: DeploymentSettingsGoogleCalendar
+  moltbook?: DeploymentSettingsMoltbook
 }
 
 export type Deployment = {
