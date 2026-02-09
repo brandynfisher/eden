@@ -126,7 +126,7 @@ export const executeTrigger = async (
     }
   } else if (trigger.agent) {
     // Agent-based trigger (null session) - check agent ownership or co-owner/editor permissions
-    const agentId = trigger.agent.toString()
+    const agentId = ((trigger.agent as any)._id || trigger.agent).toString()
     const agentDoc = await Agent.findById(agentId)
     if (!agentDoc) {
       return reply.status(403).send({
