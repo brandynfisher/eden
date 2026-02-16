@@ -5,6 +5,7 @@ import {
 } from '../models/AgentPermission'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import crypto from 'crypto'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 /**
@@ -511,7 +512,6 @@ export const updateMemory2Fact = async (
 
     // Update the content and compute new hash
     // Authorization is handled by visibility - if user can see the fact, they can edit it
-    const crypto = require('crypto')
     const newHash = crypto
       .createHash('md5')
       .update(content || '')
