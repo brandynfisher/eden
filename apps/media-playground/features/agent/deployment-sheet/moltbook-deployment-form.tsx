@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Form } from '@/components/ui/form'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
@@ -8,6 +9,7 @@ import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ExternalLink } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -81,13 +83,32 @@ export const MoltbookDeploymentForm = ({
       >
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
+            {!isDeployed && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">
+                  Register your agent on Moltbook, then verify your email and
+                  Twitter to claim it. Once claimed, copy your API key from the
+                  dashboard below.
+                </p>
+                <Button variant="outline" className="w-full" asChild>
+                  <a
+                    href="https://www.moltbook.com/login"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Open Moltbook Dashboard
+                  </a>
+                </Button>
+              </div>
+            )}
             <TokenField
               form={form}
               name="api_key"
               isDeployed={isDeployed}
               isSubmitting={form.formState.isSubmitting}
               label="Moltbook API Key"
-              description="Your Moltbook API key. You can find this in your Moltbook account settings."
+              description="Paste the API key from your Moltbook dashboard."
             />
             <DeploymentFormFooter
               agentId={agentId}

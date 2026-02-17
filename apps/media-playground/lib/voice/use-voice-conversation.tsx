@@ -928,10 +928,26 @@ export function useVoiceConversation(
           'background: #4CAF50; color: white; padding: 2px 6px;',
         )
       } catch (elevenLabsError) {
-        const elevenLabsErrorMessage =
-          elevenLabsError instanceof Error
-            ? elevenLabsError.message
-            : 'Unknown error'
+        let elevenLabsErrorMessage: string
+        if (elevenLabsError instanceof Error) {
+          elevenLabsErrorMessage = elevenLabsError.message
+        } else if (typeof elevenLabsError === 'string') {
+          elevenLabsErrorMessage = elevenLabsError
+        } else if (
+          elevenLabsError &&
+          typeof elevenLabsError === 'object' &&
+          'message' in elevenLabsError
+        ) {
+          elevenLabsErrorMessage = String(
+            (elevenLabsError as { message: unknown }).message,
+          )
+        } else {
+          try {
+            elevenLabsErrorMessage = JSON.stringify(elevenLabsError)
+          } catch {
+            elevenLabsErrorMessage = String(elevenLabsError)
+          }
+        }
         addDebugLog(
           `Failed to start ElevenLabs conversation: ${elevenLabsErrorMessage}`,
           'error',
@@ -941,8 +957,20 @@ export function useVoiceConversation(
 
       addDebugLog('Connected', 'success')
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error'
+      let errorMessage: string
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String((error as { message: unknown }).message)
+      } else {
+        try {
+          errorMessage = JSON.stringify(error)
+        } catch {
+          errorMessage = String(error)
+        }
+      }
       addDebugLog(`Failed to start conversation: ${errorMessage}`, 'error')
 
       // Cleanup: Stop all tracks on the stream if it was obtained

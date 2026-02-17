@@ -76,13 +76,30 @@ export const updateAgentRealtimeSettings = async (
 
   // Route schema validates the body - just pass through defined fields
   const body = request.body as Record<string, unknown>
-  const updateData = Object.fromEntries(
-    Object.entries(body).filter(([_, v]) => v !== undefined),
+  const definedEntries = Object.entries(body).filter(
+    ([_, v]) => v !== undefined,
   )
+
+  // Split into fields to set and fields to unset (null means remove)
+  const setData: Record<string, unknown> = { agent: agentId }
+  const unsetData: Record<string, 1> = {}
+
+  for (const [key, value] of definedEntries) {
+    if (value === null) {
+      unsetData[key] = 1
+    } else {
+      setData[key] = value
+    }
+  }
+
+  const updateOps: Record<string, unknown> = { $set: setData }
+  if (Object.keys(unsetData).length > 0) {
+    updateOps.$unset = unsetData
+  }
 
   const settings = await AgentRealtime.findOneAndUpdate(
     { agent: agentId },
-    { $set: { ...updateData, agent: agentId } },
+    updateOps,
     { upsert: true, new: true },
   )
 
