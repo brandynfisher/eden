@@ -178,7 +178,7 @@ export const RealtimeTab = forwardRef<RealtimeTabHandle, RealtimeTabProps>(
       setIsSubmitting(true)
       try {
         await axios.patch(`/api/agents/${agent._id}/realtime`, {
-          elevenlabs_agent_id: settings.elevenlabs_agent_id || undefined,
+          elevenlabs_agent_id: settings.elevenlabs_agent_id || null,
           voice_id: settings.voice_id || undefined,
           language: settings.language,
           first_message: settings.first_message || undefined,

@@ -1335,7 +1335,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({
-        elevenlabs_agent_id: Type.Optional(Type.String()),
+        elevenlabs_agent_id: Type.Optional(
+          Type.Union([Type.String(), Type.Null()]),
+        ),
         voice_id: Type.Optional(Type.String()),
         language: Type.Optional(Type.String()),
         first_message: Type.Optional(Type.String()),
