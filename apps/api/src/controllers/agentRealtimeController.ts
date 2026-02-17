@@ -85,7 +85,7 @@ export const updateAgentRealtimeSettings = async (
   const unsetData: Record<string, 1> = {}
 
   for (const [key, value] of definedEntries) {
-    if (value === null) {
+    if (value === null || value === '') {
       unsetData[key] = 1
     } else {
       setData[key] = value
