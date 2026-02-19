@@ -31,6 +31,7 @@ import {
   updateMemory2Fact,
   updateMemory2Reflection,
 } from '../../controllers/agentMemory2Controller'
+import { getAgentMemoryContext } from '../../controllers/agentMemoryContextController'
 import {
   getAgentRealtimeSettings,
   updateAgentRealtimeSettings,
@@ -1116,6 +1117,26 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteMemory2Fact(server, request, reply),
+  })
+
+  // Get assembled memory context for realtime voice
+  server.get('/v2/agents/:agentId/memory-context', {
+    schema: {
+      tags: ['Agents - Memory2'],
+      summary: 'Get Assembled Memory Context',
+      description:
+        'Retrieve fully assembled memory context (Memory2) including agent_system_prompt for realtime voice conversations.',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: Type.Object({
+          agent_system_prompt: Type.String(),
+          first_message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentMemoryContext(server, request, reply),
   })
 
   // Dashboard route

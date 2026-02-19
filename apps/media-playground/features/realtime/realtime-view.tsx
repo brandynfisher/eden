@@ -40,46 +40,26 @@ const RealtimeView: FC = () => {
   const [connectionStatus, setConnectionStatus] =
     useState<string>('disconnected')
 
-  // Fetch agent context function
+  // Fetch agent context function - backend now returns the complete system prompt
   const fetch_agent_context = useCallback(async (): Promise<AgentContext> => {
     if (!agent) {
-      return {
-        description: '',
-        persona: '',
-        memory: {
-          userMemory: '',
-          collectiveMemory: [],
-        },
-      }
+      return { agentSystemPrompt: '' }
     }
-
-    // Fetch description and persona from agent object
-    const description = agent.description || ''
-    const persona = agent.persona || ''
-
-    // Fetch memory context from API
-    let memory = {
-      userMemory: '',
-      collectiveMemory: [] as Array<{ shard_name: string; content: string }>,
-    }
-
     try {
       const response = await axios.get(
         `/api/agents/${agent._id}/memory-context`,
       )
-      memory = {
-        userMemory: response.data.userMemory || '',
-        collectiveMemory: response.data.collectiveMemory || [],
+      return {
+        agentSystemPrompt: response.data.agent_system_prompt || '',
       }
     } catch (error) {
       console.error('Failed to fetch agent memory context:', error)
-      // Return empty memory on error
-    }
-
-    return {
-      description,
-      persona,
-      memory,
+      // Graceful fallback: build a minimal prompt without memory
+      return {
+        agentSystemPrompt: `You are ${agent.name || ''}.\n\n## Description\n${
+          agent.description || ''
+        }\n\n## Persona\n${agent.persona || ''}`.trim(),
+      }
     }
   }, [agent])
 
@@ -182,7 +162,6 @@ const RealtimeView: FC = () => {
           {/* Conversation Interface */}
           {agentContext && agent && (
             <ConversationInterface
-              agentName={agent.name}
               agentContext={agentContext}
               edenAgentId={agent._id}
               realtimeSettings={realtimeSettings}
@@ -219,9 +198,9 @@ const RealtimeView: FC = () => {
             <div className="text-xl font-semibold text-foreground mb-2">
               {agent?.name}
             </div>
-            {agentContext && (
+            {agent?.description && (
               <div className="text-sm text-muted-foreground text-center max-w-md">
-                {agentContext.description}
+                {agent.description}
               </div>
             )}
           </div>
@@ -230,7 +209,6 @@ const RealtimeView: FC = () => {
         {/* Conversation Interface */}
         {agentContext && agent && (
           <ConversationInterface
-            agentName={agent.name}
             agentContext={agentContext}
             edenAgentId={agent._id}
             realtimeSettings={realtimeSettings}

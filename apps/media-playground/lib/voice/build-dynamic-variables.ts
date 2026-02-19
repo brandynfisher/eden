@@ -2,28 +2,15 @@
  * Dynamic Variables Builder for ElevenLabs Agents
  *
  * This module prepares dynamic variables to be injected into ElevenLabs conversations.
- * Dynamic variables allow runtime personalization without using the override system.
- *
- * Key benefits over overrides:
- * - More reliable and officially recommended by ElevenLabs
- * - Variables are properly injected into system prompts at runtime
- * - Cleaner separation between static config and dynamic data
- * - Better debugging and auditability
+ * The system prompt (agent_system_prompt) is now assembled server-side by the
+ * /v2/agents/:agentId/memory-context endpoint. The frontend only handles
+ * first_message personalization.
  *
  * @see https://elevenlabs.io/docs/agents-platform/customization/dynamic-variables
  */
 
 export interface AgentContext {
-  description: string
-  persona: string
-  memory: {
-    userMemory: string
-    collectiveMemory: Array<{ shard_name: string; content: string }>
-  }
-}
-
-export interface AgentData {
-  name: string
+  agentSystemPrompt: string // Pre-assembled system prompt from backend
 }
 
 /**
@@ -41,46 +28,37 @@ export interface DynamicVariables {
 /**
  * Prepares dynamic variables from agent context and user information
  *
- * @param agentContext - Agent's description, persona, and memory data
- * @param agentData - Agent's basic data like name
+ * @param agentContext - Pre-assembled agent system prompt from backend
  * @param userInfo - Optional user-provided information for personalization
  * @param baseFirstMessage - Base first message template
  * @returns Object containing all dynamic variables ready for ElevenLabs
  */
 export function buildDynamicVariables(
   agentContext: AgentContext,
-  agentData: AgentData,
   userInfo?: Record<string, string>,
   baseFirstMessage?: string,
 ): DynamicVariables {
-  // Build collective memory as a formatted string
-  const collectiveMemoryFormatted = agentContext.memory.collectiveMemory
-    .map(shard => `[${shard.shard_name}]: ${shard.content}`)
-    .join('\n\n')
-
-  // Build the complete system prompt from template
-  const systemPrompt = `You are ${agentData.name}.
-
-## Description
-${agentContext.description || ''}
-
-## Persona
-${agentContext.persona || ''}
-
-## User Memory
-The following is what you remember about this specific user from previous interactions:
-
-${agentContext.memory.userMemory || ''}
-
-## Collective Knowledge
-The following is collective knowledge gathered from all users and conversations:
-
-${collectiveMemoryFormatted || ''}`.trim()
+  // System prompt comes pre-built from backend
+  const systemPrompt = agentContext.agentSystemPrompt || ''
 
   // Build first message with personalization
   let firstMessage = baseFirstMessage || ''
+  const userName = extractUserName(userInfo)
+  if (userName && firstMessage) {
+    firstMessage = `Hey ${userName}! ${firstMessage}`
+  }
 
-  // Extract user name if provided - check common username field variations
+  return {
+    agent_system_prompt: systemPrompt,
+    first_message: firstMessage,
+  }
+}
+
+/**
+ * Extract user name from user info, checking common field variations
+ */
+function extractUserName(userInfo?: Record<string, string>): string {
+  if (!userInfo) return ''
   const usernameFields = [
     'name',
     'Name',
@@ -103,21 +81,8 @@ ${collectiveMemoryFormatted || ''}`.trim()
     'nickname',
     'Nickname',
   ]
-  const matchedField = userInfo
-    ? usernameFields.find(field => userInfo[field]?.trim())
-    : undefined
-  const userName = matchedField ? userInfo![matchedField] : ''
-
-  if (userName && userName.trim() !== '' && firstMessage) {
-    firstMessage = `Hey ${userName}! ${firstMessage}`
-  }
-
-  const variables: DynamicVariables = {
-    agent_system_prompt: systemPrompt,
-    first_message: firstMessage,
-  }
-
-  return variables
+  const matchedField = usernameFields.find(field => userInfo[field]?.trim())
+  return matchedField ? userInfo[matchedField] : ''
 }
 
 /**
