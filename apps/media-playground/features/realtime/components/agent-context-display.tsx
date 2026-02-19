@@ -54,59 +54,13 @@ export const AgentContextDisplay: FC<AgentContextDisplayProps> = ({
         </div>
       </div>
 
-      {/* Description */}
+      {/* System Prompt */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-primary">Description</h3>
-        <div className="bg-muted rounded-md p-3 max-h-48 overflow-y-auto">
+        <h3 className="text-sm font-semibold text-primary">System Prompt</h3>
+        <div className="bg-muted rounded-md p-3 max-h-96 overflow-y-auto">
           <pre className="text-xs whitespace-pre-wrap break-words">
-            {agentContext.description || '(empty)'}
+            {agentContext.agentSystemPrompt || '(empty)'}
           </pre>
-        </div>
-      </div>
-
-      {/* Persona */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-primary">Persona</h3>
-        <div className="bg-muted rounded-md p-3 max-h-48 overflow-y-auto">
-          <pre className="text-xs whitespace-pre-wrap break-words">
-            {agentContext.persona || '(empty)'}
-          </pre>
-        </div>
-      </div>
-
-      {/* User Memory */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-primary">User Memory</h3>
-        <div className="bg-muted rounded-md p-3 max-h-48 overflow-y-auto">
-          <pre className="text-xs whitespace-pre-wrap break-words">
-            {agentContext.memory.userMemory || '(empty)'}
-          </pre>
-        </div>
-      </div>
-
-      {/* Collective Memory */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold text-primary">
-          Collective Memory ({agentContext.memory.collectiveMemory.length}{' '}
-          shards)
-        </h3>
-        <div className="bg-muted rounded-md p-3 max-h-48 overflow-y-auto">
-          {agentContext.memory.collectiveMemory.length === 0 ? (
-            <div className="text-xs text-muted-foreground">(empty)</div>
-          ) : (
-            <div className="space-y-2">
-              {agentContext.memory.collectiveMemory.map((shard, index) => (
-                <div key={index} className="border-l-2 border-primary pl-3">
-                  <div className="text-xs font-semibold text-primary mb-1">
-                    {shard.shard_name}
-                  </div>
-                  <pre className="text-xs whitespace-pre-wrap break-words">
-                    {shard.content}
-                  </pre>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </>

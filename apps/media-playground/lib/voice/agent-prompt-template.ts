@@ -1,44 +1,31 @@
 /**
- * Agent System Prompt Template with Dynamic Variables
+ * Agent System Prompt Template — Documentation Only
  *
- * This template defines the structure of the agent's system prompt using
- * ElevenLabs dynamic variable syntax {{variable_name}}.
+ * The system prompt is now assembled server-side by the
+ * /v2/agents/:agentId/memory-context endpoint and returned
+ * as agent_system_prompt. The template below documents the structure.
  *
- * Dynamic variables are replaced at runtime with actual values when the
- * conversation starts, providing:
- * - Better reliability than overrides
- * - Official ElevenLabs recommended approach
- * - Easier debugging and testing
- * - Clear separation of template vs data
+ * ElevenLabs dynamic variables:
+ * - {{agent_system_prompt}} - Complete system prompt (built server-side)
+ * - {{first_message}} - Personalized greeting (built client-side)
  *
  * @see https://elevenlabs.io/docs/agents-platform/customization/dynamic-variables
  */
 
-/**
- * System prompt template for ElevenLabs agents
- *
- * This template uses dynamic variable placeholders that will be replaced
- * at runtime with actual agent context and user information.
- *
- * Available dynamic variables:
- * - {{agent_name}} - Agent's display name
- * - {{agent_description}} - Agent's description/background
- * - {{agent_persona}} - Agent's personality and behavior guidelines
- * - {{user_memory}} - Personalized memory for the specific user
- * - {{collective_memory}} - Shared knowledge from all user interactions
- * - {{user_name}} - User's name (if provided)
- * - {{user_email}} - User's email (if provided)
- */
-export const AGENT_SYSTEM_PROMPT_TEMPLATE = `You are {{agent_name}}.
+export const AGENT_SYSTEM_PROMPT_TEMPLATE = `You are {agent_name}.
 
 ## Description
-{{agent_description}}
+{agent_description}
 
 ## Persona
-{{agent_persona}}
+{agent_persona}
 
 ## Memory
-{{collective_memory}}
+<MemoryContext>
+  <AgentMemory>...</AgentMemory>
+  <UserMemory>...</UserMemory>
+  <Facts>...</Facts>
+</MemoryContext>
 `.trim()
 
 /**

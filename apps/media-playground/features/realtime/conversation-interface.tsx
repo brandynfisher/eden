@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   AgentContext,
-  AgentData,
   buildDynamicVariables,
 } from '@/lib/voice/build-dynamic-variables'
 import {
@@ -21,7 +20,6 @@ import { useRouter } from 'next/navigation'
 import { FC, useEffect, useMemo, useState } from 'react'
 
 interface ConversationInterfaceProps {
-  agentName: string
   agentContext: AgentContext
   edenAgentId: string
   realtimeSettings: RealtimeSettings
@@ -31,7 +29,6 @@ interface ConversationInterfaceProps {
 }
 
 const ConversationInterface: FC<ConversationInterfaceProps> = ({
-  agentName,
   agentContext,
   edenAgentId,
   realtimeSettings,
@@ -68,21 +65,15 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   }
 
   // Build dynamic variables from agent context and user info
-  // This constructs the complete system prompt and first message
+  // System prompt comes pre-built from backend, frontend only handles first_message
   const dynamicVariables = useMemo(() => {
-    const agentData: AgentData = { name: agentName }
     // Use first_message from realtime settings, fall back to default
     const baseFirstMessage =
       realtimeSettings.first_message ||
       DEFAULT_REALTIME_SETTINGS.first_message ||
       ''
-    return buildDynamicVariables(
-      agentContext,
-      agentData,
-      userInfo,
-      baseFirstMessage,
-    )
-  }, [agentContext, agentName, userInfo, realtimeSettings.first_message])
+    return buildDynamicVariables(agentContext, userInfo, baseFirstMessage)
+  }, [agentContext, userInfo, realtimeSettings.first_message])
 
   // Initialize voice conversation with ElevenLabs provider
   // Built-in client tools (create, display, create_async) are provided by the hook
