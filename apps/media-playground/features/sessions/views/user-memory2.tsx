@@ -420,15 +420,13 @@ const UserMemory2: FC<UserMemory2Props> = ({
                 </span>
               )}
             </div>
-            {hasEditAccess && (
-              <Button
-                onClick={handleEditClick}
-                size="sm"
-                className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
-            )}
+            <Button
+              onClick={handleEditClick}
+              size="sm"
+              className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       )}
@@ -467,28 +465,24 @@ const UserMemory2: FC<UserMemory2Props> = ({
                           {reflection.content}
                         </div>
                       </div>
-                      {hasEditAccess && (
-                        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <Button
-                            onClick={() => handleReflectionEdit(reflection)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              handleReflectionDelete(reflection._id)
-                            }
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <Button
+                          onClick={() => handleReflectionEdit(reflection)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          onClick={() => handleReflectionDelete(reflection._id)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </TooltipTrigger>
@@ -534,33 +528,31 @@ const UserMemory2: FC<UserMemory2Props> = ({
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">{fact.content}</div>
                       </div>
-                      {hasEditAccess && (
-                        <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          {fact.access_count > 0 && (
-                            <span className="text-xs text-muted-foreground font-medium">
-                              accessed {fact.access_count}x
-                            </span>
-                          )}
-                          <div className="flex gap-1">
-                            <Button
-                              onClick={() => handleFactEdit(fact)}
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              onClick={() => handleFactDelete(fact._id)}
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
+                      <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {fact.access_count > 0 && (
+                          <span className="text-xs text-muted-foreground font-medium">
+                            accessed {fact.access_count}x
+                          </span>
+                        )}
+                        <div className="flex gap-1">
+                          <Button
+                            onClick={() => handleFactEdit(fact)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-muted text-muted-foreground hover:text-foreground rounded-full"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            onClick={() => handleFactDelete(fact._id)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </TooltipTrigger>

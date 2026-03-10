@@ -37,6 +37,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
+  BrainIcon,
   EditIcon,
   ExternalLink,
   HelpCircle,
@@ -57,6 +58,7 @@ type AgentCardProps = {
   currentUserId?: string
   onRemove: (agentId: string) => void
   onOpenSettings: (agentKey: string) => void
+  onOpenMemories: (agentKey: string) => void
   onSelect: (agent: Agent) => void
 }
 
@@ -67,11 +69,13 @@ const SelectedAgentCard = ({
   currentUserId,
   onRemove,
   onOpenSettings,
+  onOpenMemories,
   onSelect,
 }: AgentCardProps) => {
   const { hasEditAccess, isLoading: isPermissionsLoading } =
     useAgentPermissions(agent, currentUserId)
   const showSettings = hasEditAccess && !isPermissionsLoading
+  const showMemories = !hasEditAccess && !isPermissionsLoading
 
   return (
     <div className="agent-card">
@@ -117,6 +121,20 @@ const SelectedAgentCard = ({
               title="Agent Settings"
             >
               <Settings className="w-3 h-3" />
+            </button>
+          )}
+
+          {/* View Memories button - show for non-editors */}
+          {showMemories && (
+            <button
+              onClick={e => {
+                e.stopPropagation()
+                onOpenMemories(agent.username || agent._id)
+              }}
+              className="agent-action-btn"
+              title="View Memories"
+            >
+              <BrainIcon className="w-3 h-3" />
             </button>
           )}
         </div>
@@ -173,6 +191,7 @@ const ChatLaunchpad = () => {
   const [isCreatingSession, setIsCreatingSession] = useState(false)
   const [agentToChange, setAgentToChange] = useState<Agent | null>(null)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
+  const [isMemoriesOnly, setIsMemoriesOnly] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSessionSettingsOpen, setIsSessionSettingsOpen] = useState(false)
   const [isSessionModeHelpOpen, setIsSessionModeHelpOpen] = useState(false)
@@ -701,7 +720,14 @@ const ChatLaunchpad = () => {
                   canRemove={selectedAgents.length > 1}
                   currentUserId={user?._id}
                   onRemove={removeAgent}
-                  onOpenSettings={agentKey => setSettingsAgentId(agentKey)}
+                  onOpenSettings={agentKey => {
+                    setIsMemoriesOnly(false)
+                    setSettingsAgentId(agentKey)
+                  }}
+                  onOpenMemories={agentKey => {
+                    setIsMemoriesOnly(true)
+                    setSettingsAgentId(agentKey)
+                  }}
                   onSelect={setAgentToChange}
                 />
               ))}
@@ -916,7 +942,14 @@ const ChatLaunchpad = () => {
           <AgentSettingsModal
             agentId={settingsAgentId}
             open={!!settingsAgentId}
-            onOpenChange={open => !open && setSettingsAgentId(null)}
+            onOpenChange={open => {
+              if (!open) {
+                setSettingsAgentId(null)
+                setIsMemoriesOnly(false)
+              }
+            }}
+            initialTab={isMemoriesOnly ? 'memories' : 'profile'}
+            memoriesOnly={isMemoriesOnly}
           />
         )}
 
