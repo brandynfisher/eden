@@ -893,6 +893,41 @@ const ChatLaunchpad = () => {
             </>
           </div>
 
+          {/* Abraham caution banner */}
+          {selectedAgents.some(a => a.username === 'abraham') && (
+            <div className="w-full max-w-2xl mx-auto px-4 mb-2">
+              <div className="flex items-start gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-muted-foreground">
+                <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
+                <p>
+                  <a
+                    href="https://abraham.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-yellow-500 font-medium hover:underline"
+                  >
+                    Abraham
+                  </a>{' '}
+                  is an autonomous artist who mints NFTs every day based on his
+                  dialogue with people who chat with him. If you do not wish to
+                  be part of this experiment, please{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const abrahamAgent = selectedAgents.find(
+                        a => a.username === 'abraham',
+                      )
+                      if (abrahamAgent) setAgentToChange(abrahamAgent)
+                    }}
+                    className="text-yellow-500 font-medium hover:underline cursor-pointer"
+                  >
+                    select another agent
+                  </button>
+                  .
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Message Input below agents */}
           <div className="message-input-section">
             <div className="message-input-container">
