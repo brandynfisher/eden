@@ -357,7 +357,12 @@ export const createAgent = async (
   // Verify access to all models if provided
   if (models && models.length > 0) {
     for (const model of models) {
-      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+      const hasAccess = await verifyModelAccess(
+        reply,
+        model.lora,
+        currentUserId.toString(),
+      )
+      if (!hasAccess) return
     }
   }
 
@@ -467,15 +472,19 @@ export const updateAgent = async (
     llm_settings: llm_settings,
   }
 
-  // Handle models array
+  // Handle models array — filter out deleted or inaccessible models
   if (!models || models.length === 0) {
     updateData.$unset = { models: 1 }
   } else {
-    // Verify access to all models
-    for (const model of models) {
-      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+    const validModels = await filterValidModels(
+      models,
+      currentUserId.toString(),
+    )
+    if (validModels.length === 0) {
+      updateData.$unset = { models: 1 }
+    } else {
+      updateData.models = validModels
     }
-    updateData.models = models
   }
 
   // Only update image fields if image is explicitly provided in the request
@@ -597,21 +606,40 @@ const verifyModelAccess = async (
   reply: FastifyReply,
   modelId: string,
   currentUserId: string,
-) => {
+): Promise<boolean> => {
   const model = await ModelV2.findById(modelId)
 
   if (!model || model.deleted) {
-    return reply.status(404).send({
+    reply.status(404).send({
       error: 'Model not found',
     })
+    return false
   }
 
   const isOwnModel = model.user.toString() === currentUserId.toString()
   if (!isOwnModel && !model.public) {
-    return reply.status(401).send({
+    reply.status(401).send({
       error: 'You are not authorized to use this model',
     })
+    return false
   }
+
+  return true
+}
+
+const filterValidModels = async (
+  models: Array<{ lora: string; use_when?: string }>,
+  currentUserId: string,
+): Promise<Array<{ lora: string; use_when?: string }>> => {
+  const validModels: Array<{ lora: string; use_when?: string }> = []
+  for (const model of models) {
+    const doc = await ModelV2.findById(model.lora)
+    if (!doc || doc.deleted) continue
+    const isOwnModel = doc.user.toString() === currentUserId.toString()
+    if (!isOwnModel && !doc.public) continue
+    validModels.push(model)
+  }
+  return validModels
 }
 
 export const likeAgent = async (
