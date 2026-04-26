@@ -884,7 +884,13 @@ export const getCreationsFeedCursorV2 = async (
     ...(authUserId ? likesLookup(new ObjectId(authUserId), 'creation') : []),
   ]
 
-  if (search) {
+  // VECTOR_SEARCH_DISABLED: feed-side text-to-image vector search uses
+  // creations3.img_vec_idx (4.92 GB) — disabled to drop cluster to M20.
+  // When disabled, the search query falls through to the non-search code
+  // paths below (collections / artifacts / tasks / reactions / default feed).
+  // Re-enable by setting env VECTOR_SEARCH_ENABLED=true and rebuilding the
+  // Atlas Vector Search index.
+  if (search && process.env.VECTOR_SEARCH_ENABLED === 'true') {
     try {
       const axios = await import('axios')
       const embedResponse = await axios.default.post(

@@ -483,6 +483,27 @@ export async function searchCreationsCore(
     throw new Error('Query parameter is required')
   }
 
+  // VECTOR_SEARCH_DISABLED: text-to-image vector search uses
+  // creations3.img_vec_idx (4.92 GB Atlas Search index) which forced the
+  // Mongo cluster to stay on M30. Disabled to drop to M20.
+  // Re-enable by setting env VECTOR_SEARCH_ENABLED=true and ensuring the
+  // Atlas Vector Search index `img_vec_idx` on creations3 still exists
+  // (was dropped during the cost-reduction work — would need rebuild).
+  if (process.env.VECTOR_SEARCH_ENABLED !== 'true') {
+    return {
+      docs: [],
+      total: 0,
+      limit,
+      pages: 0,
+      page,
+      pagingCounter: 0,
+      hasPrevPage: false,
+      hasNextPage: false,
+      nextPage: null,
+      prevPage: null,
+    }
+  }
+
   // Call Python API to get embedding for the query
   const embedResponse = await axios.post(
     `${server.config.EDEN_COMPUTE_API_URL}/embed`,
