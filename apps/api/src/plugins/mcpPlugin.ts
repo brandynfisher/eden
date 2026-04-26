@@ -261,30 +261,36 @@ const createMcpServer = (server: FastifyInstance) => {
     limit: z.number().int().positive().optional(),
   } as Record<string, z.ZodTypeAny>
 
-  tool(
-    'eden_search_creations',
-    'Search Eden creations with semantic embeddings.',
-    searchSchema,
-    async (args: SearchArgs, extra: ToolExtra) => {
-      const authUserId =
-        typeof extra?.authInfo?.extra?.userId === 'string'
-          ? extra.authInfo.extra.userId
-          : undefined
-      const result = await searchCreationsCore(server, {
-        ...args,
-        authUserId,
-      })
+  // VECTOR_SEARCH_DISABLED: tool registration gated behind env flag because
+  // the underlying $vectorSearch index was dropped to free cluster RAM.
+  // Re-enable by setting VECTOR_SEARCH_ENABLED=true and rebuilding the
+  // creations3.img_vec_idx Atlas Vector Search index.
+  if (process.env.VECTOR_SEARCH_ENABLED === 'true') {
+    tool(
+      'eden_search_creations',
+      'Search Eden creations with semantic embeddings.',
+      searchSchema,
+      async (args: SearchArgs, extra: ToolExtra) => {
+        const authUserId =
+          typeof extra?.authInfo?.extra?.userId === 'string'
+            ? extra.authInfo.extra.userId
+            : undefined
+        const result = await searchCreationsCore(server, {
+          ...args,
+          authUserId,
+        })
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result),
-          },
-        ],
-      }
-    },
-  )
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result),
+            },
+          ],
+        }
+      },
+    )
+  }
 
   for (const generatedTool of generatedMcpTools) {
     const schema = buildGeneratedToolSchema(generatedTool.params)

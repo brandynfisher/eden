@@ -4,7 +4,60 @@ import { hasPreviewAccess } from '../lib/featureFlags'
 import { ApiKey, ApiKeyDocument } from '../models/ApiKey'
 import { User, UserDocument } from '../models/User'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import crypto from 'crypto'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+
+const AUTH_CACHE_TTL_SEC = 60
+const AUTH_NEG_CACHE_TTL_SEC = 30
+const AUTH_CACHE_NEG_VALUE = '__null__'
+
+const hashKey = (value: string) =>
+  crypto.createHash('sha256').update(value).digest('hex').slice(0, 32)
+
+// Returns:
+//   T   — cache hit, value present
+//   null — cache hit, negative-cached (DB returned null, don't re-query)
+//   undefined — cache miss or Redis unavailable; caller should query DB
+const authCacheGet = async <T>(
+  server: FastifyInstance,
+  cacheKey: string,
+): Promise<T | null | undefined> => {
+  if (!server.redis) return undefined
+  try {
+    const v = await server.redis.get(cacheKey)
+    if (v === null) return undefined
+    if (v === AUTH_CACHE_NEG_VALUE) return null
+    return JSON.parse(v) as T
+  } catch (err) {
+    server.log.warn({ err, cacheKey }, 'auth cache read failed')
+    return undefined
+  }
+}
+
+const authCacheSet = async (
+  server: FastifyInstance,
+  cacheKey: string,
+  value: unknown | null,
+): Promise<void> => {
+  if (!server.redis) return
+  try {
+    if (value === null) {
+      await server.redis.setex(
+        cacheKey,
+        AUTH_NEG_CACHE_TTL_SEC,
+        AUTH_CACHE_NEG_VALUE,
+      )
+    } else {
+      await server.redis.setex(
+        cacheKey,
+        AUTH_CACHE_TTL_SEC,
+        JSON.stringify(value),
+      )
+    }
+  } catch (err) {
+    server.log.warn({ err, cacheKey }, 'auth cache write failed')
+  }
+}
 
 export interface ApiKeyAuthResult {
   apiKey: ApiKeyDocument
@@ -40,15 +93,29 @@ export const verifyApiKey = async (
     throw new Error('Missing API key')
   }
 
-  const apiKey = await ApiKey.findOne({
-    apiKey: apiKeyValue,
-  })
+  // Cache the apiKey lookup keyed on a hash of the secret so the secret never
+  // appears in Redis keys. Negative results (invalid keys) get a shorter TTL.
+  const apiKeyCacheKey = `${server.redisEnvPrefix}:auth:apikey:${hashKey(
+    apiKeyValue,
+  )}`
+  let apiKey = await authCacheGet<ApiKeyDocument>(server, apiKeyCacheKey)
+  if (apiKey === undefined) {
+    apiKey = (await ApiKey.findOne({
+      apiKey: apiKeyValue,
+    }).lean()) as ApiKeyDocument | null
+    await authCacheSet(server, apiKeyCacheKey, apiKey)
+  }
 
   if (!apiKey) {
     throw new Error('Invalid API key provided')
   }
 
-  const user = await User.findById(apiKey.user)
+  const userCacheKey = `${server.redisEnvPrefix}:auth:user:${apiKey.user}`
+  let user = await authCacheGet<UserDocument>(server, userCacheKey)
+  if (user === undefined) {
+    user = (await User.findById(apiKey.user).lean()) as UserDocument | null
+    await authCacheSet(server, userCacheKey, user)
+  }
   if (!user) {
     throw new Error('User not found')
   }
