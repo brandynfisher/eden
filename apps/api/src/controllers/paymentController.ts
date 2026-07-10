@@ -808,11 +808,23 @@ export const handlePaymentEvent = async (
 
   const sig = request.headers['stripe-signature'] as string
 
-  const event = server.stripe.webhooks.constructEvent(
-    request.rawBody,
-    sig,
-    server.config.STRIPE_WEBHOOK_SECRET || '',
-  )
+  let event
+  try {
+    event = server.stripe.webhooks.constructEvent(
+      request.rawBody,
+      sig,
+      server.config.STRIPE_WEBHOOK_SECRET || '',
+    )
+  } catch (err: any) {
+    // Invalid signature (or missing secret) should be a 400, not a 500.
+    request.log.warn(
+      { err: err?.message },
+      'Stripe webhook signature verification failed',
+    )
+    return reply
+      .status(400)
+      .send({ message: `Webhook signature verification failed` })
+  }
 
   const dataObject = event.data.object
   const previousAttributes = event.data.previous_attributes

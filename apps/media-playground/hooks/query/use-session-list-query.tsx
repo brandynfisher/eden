@@ -74,7 +74,10 @@ export const useSessionListQuery = (props?: Props) => {
       return response
     },
     refetchOnWindowFocus: true,
-    refetchInterval: disableInterval ? false : 5000, // Refetch every 5 seconds to pick up newly titled sessions, unless disabled
+    // 30s (was 5s): this poll is mounted app-wide via the sidebar and refetches
+    // every loaded infinite-query page each tick; the websocket session-update
+    // events already push real-time changes, so 30s is a fallback, not the path.
+    refetchInterval: disableInterval ? false : 30000,
   })
 
   const sessions = useMemo(
