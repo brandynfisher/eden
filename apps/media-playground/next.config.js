@@ -140,8 +140,10 @@ let nextConfig = {
   output: 'standalone',
   reactStrictMode: false,
   images: {
-    // loader: 'custom',
-    // loaderFile: './image-loader.ts',
+    // Route image optimization through CloudFront instead of running sharp on
+    // the single EC2 box (offloads CPU/RAM/egress). VERIFY rendering after deploy.
+    loader: 'custom',
+    loaderFile: './image-loader.ts',
     minimumCacheTTL: 2433600,
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
     remotePatterns: imageRemotePatterns,

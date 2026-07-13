@@ -5,6 +5,7 @@ import {
   s3ThumbnailUrl,
   s3Url,
 } from '../../plugins/s3Plugin'
+import { isValidObjectId } from '../../utils/mongoUtils'
 import {
   CreationsV2BulkPatchArguments,
   CreationsV2GetArguments,
@@ -22,6 +23,11 @@ export const getCreation = async (
 ) => {
   const { creationId } = request.params as CreationsV2GetArguments
   const { userId } = request.user || {}
+
+  // Guard bad ids (e.g. literal "bulk" from GET /v2/creations/bulk) -> 400 not 500.
+  if (!creationId || !isValidObjectId(creationId)) {
+    return reply.status(400).send({ message: 'Invalid creation id' })
+  }
 
   const creation = (await CreationV2.findOneWithDeleted({
     _id: creationId,
