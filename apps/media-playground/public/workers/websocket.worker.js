@@ -208,6 +208,7 @@ class WebSocketManager {
           this.broadcast({ type: 'status', readyState: WebSocket.OPEN })
           this.lastPongTime = Date.now() // Reset pong timer on successful connection
           this.isReconnecting = false
+          this._reconnectAttempts = 0 // reset backoff on a good connection
 
           // Setup ping interval
           if (this.pingInterval) {
@@ -327,13 +328,18 @@ class WebSocketManager {
       return
     }
 
-    debug('Scheduling reconnection')
+    // Exponential backoff with jitter (was a fixed 1000ms hammer — if the
+    // server is down, every client retried once/sec forever = self-DDoS).
+    this._reconnectAttempts = (this._reconnectAttempts || 0) + 1
+    const base = Math.min(1000 * 2 ** (this._reconnectAttempts - 1), 30000)
+    const delay = base / 2 + Math.random() * (base / 2)
+    debug('Scheduling reconnection', { attempt: this._reconnectAttempts, delay })
     this.reconnectTimeout = self.setTimeout(() => {
       this.reconnectTimeout = null
       if (!this.isReconnecting) {
         this.connect(this.endpoint)
       }
-    }, 1000)
+    }, delay)
   }
 }
 

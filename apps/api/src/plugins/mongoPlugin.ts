@@ -7,12 +7,11 @@ export const registerMongo = async (
 ) => {
   const url = mongoUri || fastify.config.MONGO_URI
   try {
-    await fastify.register(import('@fastify/mongodb'), {
-      forceClose: true,
-      url,
-    })
+    // Removed the @fastify/mongodb registration: `server.mongo` was never used
+    // (all queries + change streams go through mongoose), so it opened a second
+    // idle Atlas connection pool for nothing. Also cap mongoose pool (was default 100).
     mongoose.set('strictQuery', true)
-    await mongoose.connect(process.env.MONGO_URI as string)
+    await mongoose.connect(url as string, { maxPoolSize: 10 })
 
     fastify.decorate('mongoose', mongoose)
 

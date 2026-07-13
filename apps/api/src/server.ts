@@ -7,7 +7,6 @@ import registerCloudinary from './plugins/cloudinaryPlugin'
 import config from './plugins/config'
 import registerEden2SessionUpdates from './plugins/eden2SessionUpdatePlugin'
 import registerEden2TaskUpdates from './plugins/eden2TaskUpdatePlugin'
-import registerEden2ThreadUpdates from './plugins/eden2ThreadUpdatePlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
 import { registerInternalMessages } from './plugins/internalMessagesPlugin'
@@ -55,6 +54,38 @@ const createServer = async (opts: CreateServerOpts) => {
     connectionTimeout: 60000,
     keepAliveTimeout: 30000,
     maxRequestsPerSocket: 0,
+  })
+
+  // Map malformed-input errors (bad ObjectIds, BSON casts, validation) to 4xx
+  // instead of 500. Previously any findOne({_id: <bad id>}) 500'd (e.g. the
+  // GET /v2/creations/bulk crash where "bulk" hit the :id handler).
+  server.setErrorHandler((error, request, reply) => {
+    const name = (error as any)?.name
+    const isBadInput =
+      name === 'CastError' ||
+      name === 'BSONError' ||
+      name === 'BSONTypeError' ||
+      name === 'ValidationError' ||
+      (error as any)?.statusCode === 400
+    if (isBadInput) {
+      request.log.warn(
+        { url: request.url, err: error?.message },
+        'bad input -> 400',
+      )
+      return reply
+        .status(400)
+        .send({ message: error?.message || 'Invalid request' })
+    }
+    if ((error as any)?.statusCode && (error as any).statusCode < 500) {
+      return reply
+        .status((error as any).statusCode)
+        .send({ message: error.message })
+    }
+    request.log.error(
+      { url: request.url, err: error },
+      'unhandled error -> 500',
+    )
+    return reply.status(500).send({ message: 'Something went wrong' })
   })
 
   server.addHook('onResponse', async (request, reply) => {
@@ -165,7 +196,8 @@ const createServer = async (opts: CreateServerOpts) => {
   await registerAssetUpload(server)
   await registerS3(server)
   await registerEden2TaskUpdates(server, opts)
-  await registerEden2ThreadUpdates(server, opts)
+  // registerEden2ThreadUpdates removed: it watched the dropped `threads3`
+  // collection (dead code holding an idle change-stream cursor on the M10).
   await registerEden2SessionUpdates(server, opts)
 
   registerTaskHandlers(server, opts.taskHandlers)

@@ -91,6 +91,12 @@ export const getModel = async (
     })
   }
 
+  // Guard dangling owner ref (populated user can be null if the user was
+  // deleted) — this was the `Cannot read properties of null (reading '_id')` crash.
+  if (!model.user?._id) {
+    return reply.status(404).send({ message: 'Model owner not found' })
+  }
+
   const isOwner = model.user._id.toString() === request.user?.userId.toString()
 
   if (!isOwner && !model.public) {
