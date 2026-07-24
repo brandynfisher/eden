@@ -22,8 +22,21 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { GatedResource, useGatedResource } from '@/hooks/use-gated-resource'
@@ -43,9 +56,25 @@ interface ToolsTabProps {
   agent?: { _id?: string; owner?: string | { _id: string } }
 }
 
+const GENERATION_IMAGE_MODEL_OPTIONS = [
+  { value: 'nano_banana', label: 'Nano Banana' },
+  { value: 'seedream', label: 'Seedream' },
+  { value: 'openai', label: 'OpenAI' },
+  { value: 'flux', label: 'Flux' },
+]
+
+const GENERATION_VIDEO_MODEL_OPTIONS = [
+  { value: 'kling', label: 'Kling' },
+  { value: 'wan', label: 'Wan' },
+  { value: 'seedance', label: 'Seedance' },
+  { value: 'veo', label: 'Veo' },
+]
+
 export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
   const hasReasoningFeature = user?.featureFlags?.includes('reasoning') || false
   const [showGigabrainGateDialog, setShowGigabrainGateDialog] = useState(false)
+  const [showPremiumModelsGateDialog, setShowPremiumModelsGateDialog] =
+    useState(false)
 
   // show reasoning option if user has reasoning feature flag
   // true / false controls if to show to user who doesn't have flag
@@ -53,6 +82,14 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
 
   const { isAllowed: isGigabrainAllowed } = useGatedResource(
     GatedResource.GigabrainTools,
+  )
+
+  const { isAllowed: isPremiumModelsAllowed } = useGatedResource(
+    GatedResource.PremiumGenerationModels,
+  )
+
+  const isPremiumModelsEnabled = Boolean(
+    form.watch('generation_settings.premium_models_enabled'),
   )
 
   const models = useFieldArray({
@@ -160,6 +197,250 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
             </FormItem>
           )}
         />
+
+        {/* Generation Settings */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-6">
+          <div className="mb-6">
+            <h3 className="text-base font-medium">Generation</h3>
+            <p className="text-sm text-muted-foreground">
+              Control which models this agent uses when creating images and
+              videos.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {/* Premium Models Switch */}
+            <FormField
+              control={form.control}
+              name="generation_settings.premium_models_enabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      Premium models
+                      {!isPremiumModelsAllowed && <Lock className="h-3 w-3" />}
+                    </FormLabel>
+                    <FormDescription>
+                      Allow this agent to use premium models (Seedance 2, GPT
+                      Image 2). These cost substantially more manna per
+                      generation.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={Boolean(field.value)}
+                      onCheckedChange={checked => {
+                        if (checked && !isPremiumModelsAllowed) {
+                          setShowPremiumModelsGateDialog(true)
+                          return
+                        }
+                        field.onChange(checked)
+                        if (
+                          !checked &&
+                          form.getValues(
+                            'generation_settings.default_quality',
+                          ) === 'pro'
+                        ) {
+                          form.setValue(
+                            'generation_settings.default_quality',
+                            'standard',
+                          )
+                        }
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Default Quality */}
+            <FormField
+              control={form.control}
+              name="generation_settings.default_quality"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium mb-3 block">
+                    Default quality
+                  </FormLabel>
+                  <FormControl>
+                    <div className="space-y-3">
+                      {/* Standard Option */}
+                      <div
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          field.value === 'standard' || !field.value
+                            ? 'border-primary bg-card text-foreground'
+                            : 'border-muted bg-muted/50 text-muted-foreground hover:border-muted-foreground/50'
+                        }`}
+                        onClick={() => field.onChange('standard')}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="text-sm font-medium">
+                                Standard
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                Recommended
+                              </Badge>
+                            </div>
+                            <p className="text-xs opacity-70">
+                              The agent uses cost-effective models unless the
+                              user explicitly asks for high quality.
+                            </p>
+                          </div>
+                          <div className="ml-3">
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 ${
+                                field.value === 'standard' || !field.value
+                                  ? 'border-primary bg-primary'
+                                  : 'border-muted-foreground/50'
+                              }`}
+                            >
+                              {(field.value === 'standard' || !field.value) && (
+                                <div className="w-2 h-2 bg-white rounded-full m-0.5" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* High Quality Option */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div
+                              className={`p-4 border rounded-lg transition-all ${
+                                !isPremiumModelsEnabled
+                                  ? 'border-muted bg-muted/30 cursor-not-allowed opacity-50'
+                                  : field.value === 'pro'
+                                  ? 'border-primary bg-card text-foreground cursor-pointer'
+                                  : 'border-muted bg-muted/50 text-muted-foreground hover:border-muted-foreground/50 cursor-pointer'
+                              }`}
+                              onClick={() =>
+                                isPremiumModelsEnabled && field.onChange('pro')
+                              }
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="text-sm font-medium flex items-center gap-2">
+                                      High quality
+                                      {!isPremiumModelsEnabled && (
+                                        <Lock className="h-3 w-3" />
+                                      )}
+                                    </div>
+                                  </div>
+                                  <p className="text-xs opacity-70">
+                                    The agent defaults to premium/pro models
+                                    unless the user asks to save cost. Warning:
+                                    pro generations typically cost 2-5x more
+                                    manna.
+                                  </p>
+                                </div>
+                                <div className="ml-3">
+                                  <div
+                                    className={`w-4 h-4 rounded-full border-2 ${
+                                      field.value === 'pro' &&
+                                      isPremiumModelsEnabled
+                                        ? 'border-primary bg-primary'
+                                        : 'border-muted-foreground/50'
+                                    }`}
+                                  >
+                                    {field.value === 'pro' &&
+                                      isPremiumModelsEnabled && (
+                                        <div className="w-2 h-2 bg-white rounded-full m-0.5" />
+                                      )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          {!isPremiumModelsEnabled && (
+                            <TooltipContent>
+                              <p>
+                                Enable premium models to set high quality as the
+                                default.
+                              </p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Preferred Image Model */}
+            <FormField
+              control={form.control}
+              name="generation_settings.image_model_preference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium mb-3 block">
+                    Preferred image model
+                  </FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value ?? 'auto'}
+                      onValueChange={value =>
+                        field.onChange(value === 'auto' ? null : value)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Auto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        {GENERATION_IMAGE_MODEL_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Preferred Video Model */}
+            <FormField
+              control={form.control}
+              name="generation_settings.video_model_preference"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium mb-3 block">
+                    Preferred video model
+                  </FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value ?? 'auto'}
+                      onValueChange={value =>
+                        field.onChange(value === 'auto' ? null : value)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Auto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        {GENERATION_VIDEO_MODEL_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         {/* LLM Preferences */}
         {showReasoningOption && (
@@ -587,6 +868,33 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
             <Button
               variant="outline"
               onClick={() => setShowGigabrainGateDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button asChild>
+              <Link href="/settings/subscription">View Subscription Plans</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showPremiumModelsGateDialog}
+        onOpenChange={setShowPremiumModelsGateDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Subscription Required</DialogTitle>
+            <DialogDescription>
+              Premium generation models are only available to subscribers.
+              Upgrade your subscription to let this agent use premium models
+              like Seedance 2 and GPT Image 2.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPremiumModelsGateDialog(false)}
             >
               Cancel
             </Button>

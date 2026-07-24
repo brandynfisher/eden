@@ -113,6 +113,16 @@ const AgentEditView: FC<{
         thinking_effort_instructions:
           agent?.llm_settings?.thinking_effort_instructions || '',
       },
+      generation_settings: {
+        default_quality:
+          agent?.generation_settings?.default_quality || 'standard',
+        image_model_preference:
+          agent?.generation_settings?.image_model_preference ?? null,
+        video_model_preference:
+          agent?.generation_settings?.video_model_preference ?? null,
+        premium_models_enabled:
+          agent?.generation_settings?.premium_models_enabled || false,
+      },
     },
   })
 
@@ -160,6 +170,16 @@ const AgentEditView: FC<{
             agent.llm_settings?.thinking_effort_cap || 'medium',
           thinking_effort_instructions:
             agent.llm_settings?.thinking_effort_instructions || '',
+        },
+        generation_settings: {
+          default_quality:
+            agent.generation_settings?.default_quality || 'standard',
+          image_model_preference:
+            agent.generation_settings?.image_model_preference ?? null,
+          video_model_preference:
+            agent.generation_settings?.video_model_preference ?? null,
+          premium_models_enabled:
+            agent.generation_settings?.premium_models_enabled || false,
         },
       })
     }

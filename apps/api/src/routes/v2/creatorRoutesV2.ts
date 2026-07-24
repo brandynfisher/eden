@@ -124,6 +124,19 @@ const creatorRoutes: FastifyPluginAsync = async server => {
           preferences: Type.Optional(
             Type.Object({
               agent_spend_threshold: Type.Optional(Type.Number()),
+              generation: Type.Optional(
+                Type.Object({
+                  default_quality: Type.Optional(
+                    Type.Union([Type.Literal('standard'), Type.Literal('pro')]),
+                  ),
+                  image_model_preference: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                  video_model_preference: Type.Optional(
+                    Type.Union([Type.String(), Type.Null()]),
+                  ),
+                }),
+              ),
             }),
           ),
         }),

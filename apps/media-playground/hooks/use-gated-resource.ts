@@ -46,6 +46,7 @@ export enum GatedResource {
   Deployments = 'Deployments',
   ApiKeys = 'ApiKeys',
   GigabrainTools = 'GigabrainTools',
+  PremiumGenerationModels = 'PremiumGenerationModels',
   LlmCallDetails = 'LlmCallDetails',
 }
 
@@ -124,6 +125,13 @@ const gatedResourceConfig: Record<GatedResource, GateConfig> = {
     type: 'subscription',
     featureName: 'Gigabrain tools',
     minimumSubscriptionTier: SubscriptionTier.Pro,
+    lockedBehavior: 'modal',
+  },
+  [GatedResource.PremiumGenerationModels]: {
+    type: 'subscription',
+    featureName: 'Premium generation models',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
+    allowPreviewFlag: FeatureFlag.FreeTools,
     lockedBehavior: 'modal',
   },
   [GatedResource.LlmCallDetails]: {
