@@ -341,6 +341,16 @@ export const getCreator = async (
   return reply.status(200).send({ creator })
 }
 
+const GENERATION_QUALITY_OPTIONS = ['standard', 'pro']
+const GENERATION_IMAGE_MODELS = [
+  'nano_banana',
+  'seedream',
+  'openai',
+  'flux',
+  'sdxl',
+]
+const GENERATION_VIDEO_MODELS = ['kling', 'wan', 'seedance', 'veo', 'runway']
+
 export const updateCreator = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -420,6 +430,62 @@ export const updateCreator = async (
       }
       creator.preferences.agent_spend_threshold =
         preferences.agent_spend_threshold
+    }
+
+    if (
+      preferences.generation !== undefined &&
+      preferences.generation !== null
+    ) {
+      const generation = creator.preferences.generation || {}
+
+      if (preferences.generation.default_quality !== undefined) {
+        if (
+          !GENERATION_QUALITY_OPTIONS.includes(
+            preferences.generation.default_quality,
+          )
+        ) {
+          return reply.status(400).send({
+            message: 'Default quality must be one of: standard, pro',
+          })
+        }
+        generation.default_quality = preferences.generation.default_quality
+      }
+
+      if (preferences.generation.image_model_preference !== undefined) {
+        if (
+          preferences.generation.image_model_preference !== null &&
+          !GENERATION_IMAGE_MODELS.includes(
+            preferences.generation.image_model_preference,
+          )
+        ) {
+          return reply.status(400).send({
+            message: `Image model preference must be null or one of: ${GENERATION_IMAGE_MODELS.join(
+              ', ',
+            )}`,
+          })
+        }
+        generation.image_model_preference =
+          preferences.generation.image_model_preference
+      }
+
+      if (preferences.generation.video_model_preference !== undefined) {
+        if (
+          preferences.generation.video_model_preference !== null &&
+          !GENERATION_VIDEO_MODELS.includes(
+            preferences.generation.video_model_preference,
+          )
+        ) {
+          return reply.status(400).send({
+            message: `Video model preference must be null or one of: ${GENERATION_VIDEO_MODELS.join(
+              ', ',
+            )}`,
+          })
+        }
+        generation.video_model_preference =
+          preferences.generation.video_model_preference
+      }
+
+      creator.preferences.generation = generation
     }
   }
 
