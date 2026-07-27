@@ -2,7 +2,12 @@ import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { DeploymentDocument } from './Deployment'
 import { UserDocument } from './User'
 import { ModelV2Document } from './v2/ModelV2'
-import { AgentStats, AgentSuggestion, LLMSettings } from '@edenlabs/eden-sdk'
+import {
+  AgentStats,
+  AgentSuggestion,
+  GenerationSettings,
+  LLMSettings,
+} from '@edenlabs/eden-sdk'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
@@ -24,6 +29,7 @@ export interface AgentSchema extends BaseUserSchema {
     use_when?: string
   }>
   llm_settings?: LLMSettings
+  generation_settings?: GenerationSettings
   discordChannelAllowlist?: {
     id: string
     note: string
@@ -211,6 +217,27 @@ const AgentSchema = new Schema<AgentDocument>(
         type: String,
         maxlength: 1000,
         default: '',
+      },
+    },
+    generation_settings: {
+      default_quality: {
+        type: String,
+        enum: ['standard', 'pro'],
+        default: 'standard',
+      },
+      image_model_preference: {
+        type: String,
+        enum: ['nano_banana', 'seedream', 'openai', 'flux', 'sdxl', null],
+        default: null,
+      },
+      video_model_preference: {
+        type: String,
+        enum: ['kling', 'wan', 'seedance', 'veo', 'runway', null],
+        default: null,
+      },
+      premium_models_enabled: {
+        type: Boolean,
+        default: false,
       },
     },
     // Permissions are now stored in AgentPermission collection

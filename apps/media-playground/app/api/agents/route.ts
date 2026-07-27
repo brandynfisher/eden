@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     models,
     tools,
     llm_settings,
+    generation_settings,
     owner_pays,
   } = requestJson as AgentsCreateArguments
 
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
       models,
       tools,
       llm_settings,
+      generation_settings,
       owner_pays: owner_pays || 'off', // Default to 'off' if not provided
     })
 

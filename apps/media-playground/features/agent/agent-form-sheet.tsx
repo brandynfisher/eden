@@ -127,6 +127,14 @@ export const agentSchema = z.object({
       thinking_effort_instructions: z.string().optional(),
     })
     .optional(),
+  generation_settings: z
+    .object({
+      default_quality: z.enum(['standard', 'pro']).optional(),
+      image_model_preference: z.string().nullable().optional(),
+      video_model_preference: z.string().nullable().optional(),
+      premium_models_enabled: z.boolean().optional(),
+    })
+    .optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -249,6 +257,17 @@ const AgentFormSheet = () => {
         thinking_effort_instructions:
           agentQuery.agent?.llm_settings?.thinking_effort_instructions || '',
       },
+      generation_settings: {
+        default_quality:
+          agentQuery.agent?.generation_settings?.default_quality || 'standard',
+        image_model_preference:
+          agentQuery.agent?.generation_settings?.image_model_preference ?? null,
+        video_model_preference:
+          agentQuery.agent?.generation_settings?.video_model_preference ?? null,
+        premium_models_enabled:
+          agentQuery.agent?.generation_settings?.premium_models_enabled ||
+          false,
+      },
     },
   })
 
@@ -283,6 +302,19 @@ const AgentFormSheet = () => {
           thinking_effort_instructions:
             agentQuery.agent.llm_settings?.thinking_effort_instructions || '',
         },
+        generation_settings: {
+          default_quality:
+            agentQuery.agent.generation_settings?.default_quality || 'standard',
+          image_model_preference:
+            agentQuery.agent.generation_settings?.image_model_preference ??
+            null,
+          video_model_preference:
+            agentQuery.agent.generation_settings?.video_model_preference ??
+            null,
+          premium_models_enabled:
+            agentQuery.agent.generation_settings?.premium_models_enabled ||
+            false,
+        },
       })
     } else {
       form.reset({
@@ -304,6 +336,12 @@ const AgentFormSheet = () => {
           thinking_policy: 'auto',
           thinking_effort_cap: 'medium',
           thinking_effort_instructions: '',
+        },
+        generation_settings: {
+          default_quality: 'standard',
+          image_model_preference: null,
+          video_model_preference: null,
+          premium_models_enabled: false,
         },
       })
     }
@@ -391,6 +429,12 @@ const AgentFormSheet = () => {
           thinking_policy: 'auto',
           thinking_effort_cap: 'medium',
           thinking_effort_instructions: '',
+        },
+        generation_settings: {
+          default_quality: 'standard',
+          image_model_preference: null,
+          video_model_preference: null,
+          premium_models_enabled: false,
         },
       })
     }

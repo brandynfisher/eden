@@ -37,6 +37,8 @@ import {
   AgentsDeleteArguments,
   AgentsListArguments,
   AgentsUpdateArguments,
+  FeatureFlag,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId, UpdateResult } from 'mongodb'
@@ -317,6 +319,32 @@ export const getAgent = async (
   return reply.status(200).send({ agent })
 }
 
+const PREMIUM_MODELS_FEATURE_FLAGS = [
+  FeatureFlag.EdenAdmin,
+  FeatureFlag.FreeTools,
+  FeatureFlag.Preview,
+  FeatureFlag.ToolAccessPremiumModels,
+]
+
+const canUserEnablePremiumModels = (user?: {
+  subscriptionTier?: SubscriptionTier
+  featureFlags?: FeatureFlag[]
+}): boolean => {
+  if (!user) {
+    return false
+  }
+
+  if (
+    (user.subscriptionTier ?? SubscriptionTier.Free) > SubscriptionTier.Free
+  ) {
+    return true
+  }
+
+  return PREMIUM_MODELS_FEATURE_FLAGS.some(flag =>
+    user.featureFlags?.includes(flag),
+  )
+}
+
 export const createAgent = async (
   _server: FastifyInstance,
   request: FastifyRequest,
@@ -338,6 +366,7 @@ export const createAgent = async (
     voice,
     tools,
     llm_settings,
+    generation_settings,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -345,6 +374,16 @@ export const createAgent = async (
   if (isPublic === false && !canUserCreatePrivateObject(request.user)) {
     return reply.status(401).send({
       error: 'You are not authorized to make an agent private',
+    })
+  }
+
+  if (
+    generation_settings?.premium_models_enabled === true &&
+    !canUserEnablePremiumModels(request.user)
+  ) {
+    return reply.status(422).send({
+      error:
+        'Premium models require a paid subscription. Please upgrade your plan to enable them.',
     })
   }
 
@@ -386,6 +425,7 @@ export const createAgent = async (
     models: models || [],
     tools,
     llm_settings: llm_settings,
+    generation_settings: generation_settings,
   })
 
   try {
@@ -431,11 +471,22 @@ export const updateAgent = async (
     owner_pays,
     tools,
     llm_settings,
+    generation_settings,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
     return reply.status(422).send({
       error: 'Cannot have more than 10 models',
+    })
+  }
+
+  if (
+    generation_settings?.premium_models_enabled === true &&
+    !canUserEnablePremiumModels(request.user)
+  ) {
+    return reply.status(422).send({
+      error:
+        'Premium models require a paid subscription. Please upgrade your plan to enable them.',
     })
   }
 
@@ -470,6 +521,7 @@ export const updateAgent = async (
     owner_pays,
     tools,
     llm_settings: llm_settings,
+    generation_settings: generation_settings,
   }
 
   // Handle models array — filter out deleted or inaccessible models

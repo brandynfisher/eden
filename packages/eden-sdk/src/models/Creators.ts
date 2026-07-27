@@ -29,12 +29,23 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
   userId: string
 }
 
+// Generation quality levels for media generation
+export type GenerationQuality = 'standard' | 'pro'
+
+// Generation preferences shared by users and agents (null model = Auto)
+export type GenerationPreferences = {
+  default_quality?: GenerationQuality
+  image_model_preference?: string | null
+  video_model_preference?: string | null
+}
+
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
   userImage?: string
   instagramHandle?: string
   preferences?: {
     agent_spend_threshold?: number
+    generation?: GenerationPreferences
   }
 }
 
@@ -233,6 +244,7 @@ export type Creator = {
   subscriptionTier?: SubscriptionTier
   preferences?: {
     agent_spend_threshold?: number
+    generation?: GenerationPreferences
   }
   stripeCustomerId?: string
   lastDailyLoginBonus?: Date
@@ -269,6 +281,7 @@ export enum FeatureFlag {
   SessionsV2 = 'sessions_v2',
   ToolAccessVeo3 = 'tool_access_veo3',
   ToolAccessPremiumSocialMedia = 'tool_access_premium_social_media',
+  ToolAccessPremiumModels = 'tool_access_premium_models',
   EdenAdmin = 'eden_admin',
   MarsCollege26 = 'mars_college_26',
 }

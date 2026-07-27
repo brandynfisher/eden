@@ -182,6 +182,34 @@ const agentRoutes: FastifyPluginAsync = async server => {
             thinking_effort_instructions: Type.Optional(Type.String()),
           }),
         ),
+        generation_settings: Type.Optional(
+          Type.Object({
+            default_quality: Type.Optional(
+              Type.Union([Type.Literal('standard'), Type.Literal('pro')]),
+            ),
+            image_model_preference: Type.Optional(
+              Type.Union([
+                Type.Literal('nano_banana'),
+                Type.Literal('seedream'),
+                Type.Literal('openai'),
+                Type.Literal('flux'),
+                Type.Literal('sdxl'),
+                Type.Null(),
+              ]),
+            ),
+            video_model_preference: Type.Optional(
+              Type.Union([
+                Type.Literal('kling'),
+                Type.Literal('wan'),
+                Type.Literal('seedance'),
+                Type.Literal('veo'),
+                Type.Literal('runway'),
+                Type.Null(),
+              ]),
+            ),
+            premium_models_enabled: Type.Optional(Type.Boolean()),
+          }),
+        ),
       }),
       response: {
         200: {
@@ -268,6 +296,34 @@ const agentRoutes: FastifyPluginAsync = async server => {
               ]),
             ),
             thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
+        generation_settings: Type.Optional(
+          Type.Object({
+            default_quality: Type.Optional(
+              Type.Union([Type.Literal('standard'), Type.Literal('pro')]),
+            ),
+            image_model_preference: Type.Optional(
+              Type.Union([
+                Type.Literal('nano_banana'),
+                Type.Literal('seedream'),
+                Type.Literal('openai'),
+                Type.Literal('flux'),
+                Type.Literal('sdxl'),
+                Type.Null(),
+              ]),
+            ),
+            video_model_preference: Type.Optional(
+              Type.Union([
+                Type.Literal('kling'),
+                Type.Literal('wan'),
+                Type.Literal('seedance'),
+                Type.Literal('veo'),
+                Type.Literal('runway'),
+                Type.Null(),
+              ]),
+            ),
+            premium_models_enabled: Type.Optional(Type.Boolean()),
           }),
         ),
       }),

@@ -7,7 +7,7 @@ import {
 } from '../../types'
 import { AllowlistItem } from './Deployments'
 import { AxiosRequestConfig } from 'axios'
-import { Creator } from 'src/models/Creators'
+import { Creator, GenerationPreferences } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
 import { Trigger } from 'src/models/v2/Trigger'
@@ -43,6 +43,11 @@ export type LLMSettings = {
   thinking_policy?: ThinkingPolicy
   thinking_effort_cap?: ThinkingEffortCap
   thinking_effort_instructions?: string
+}
+
+// Generation settings type (generation preferences + premium model access)
+export type GenerationSettings = GenerationPreferences & {
+  premium_models_enabled?: boolean
 }
 
 // Types
@@ -88,6 +93,7 @@ export type Agent = Omit<
     use_when?: string
   }[]
   llm_settings?: LLMSettings
+  generation_settings?: GenerationSettings
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -162,6 +168,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   llm_settings?: LLMSettings
+  generation_settings?: GenerationSettings
   owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
 }
 
@@ -190,6 +197,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   llm_settings?: LLMSettings
+  generation_settings?: GenerationSettings
   owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
   agent_extras?: {
     permissions?: {

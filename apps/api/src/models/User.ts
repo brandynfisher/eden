@@ -1,5 +1,5 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
-import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { GenerationPreferences, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { Schema, Types } from 'mongoose'
 
 export interface UserSchema extends BaseUserSchema {
@@ -13,6 +13,7 @@ export interface UserSchema extends BaseUserSchema {
   highestMonthlySubscriptionTier?: SubscriptionTier
   preferences?: {
     agent_spend_threshold?: number
+    generation?: GenerationPreferences
   }
   stripeCustomerId?: string
   stripeSubscriptionId?: string
@@ -79,6 +80,24 @@ const UserSchema = new Schema<UserDocument>(
         agent_spend_threshold: {
           type: Number,
           default: 50,
+        },
+        generation: {
+          type: {
+            default_quality: {
+              type: String,
+              enum: ['standard', 'pro'],
+            },
+            image_model_preference: {
+              type: String,
+              enum: ['nano_banana', 'seedream', 'openai', 'flux', 'sdxl', null],
+            },
+            video_model_preference: {
+              type: String,
+              enum: ['kling', 'wan', 'seedance', 'veo', 'runway', null],
+            },
+          },
+          required: false,
+          _id: false,
         },
       },
       default: () => ({ agent_spend_threshold: 50 }),
