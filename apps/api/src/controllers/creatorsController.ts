@@ -18,13 +18,41 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+// Creator profiles are served to anonymous callers (`GET /v2/creators` has no
+// preHandler, `/v2/creators/:id` only maybeAuth), and the response schema is
+// Type.Any(), so whatever survives this function is public. It previously
+// stripped four fields and let email, normalizedEmail and stripeCustomerId
+// through — a full PII dump, since `limit` is caller-controlled. Allow-list the
+// public shape instead of denying field-by-field, so a new sensitive column on
+// User cannot silently become public.
+const PUBLIC_CREATOR_FIELDS = [
+  '_id',
+  'userId',
+  'username',
+  'userImage',
+  'type',
+  'createdAt',
+  'updatedAt',
+  'creationCount',
+  'creationsCount',
+  'likedCreationsCount',
+  'followerCount',
+  'followingCount',
+  'isFollowing',
+  'stats',
+  'deleted',
+] as const
+
 const removePrivateFields = (creator: any) => {
-  const creatorObject = creator.toObject()
-  delete creatorObject.featureFlags
-  delete creatorObject.subscriptionTier
-  delete creatorObject.isAdmin
-  delete creatorObject.isWeb2
-  return creatorObject
+  const creatorObject =
+    typeof creator?.toObject === 'function' ? creator.toObject() : creator
+  const publicCreator: Record<string, unknown> = {}
+  for (const field of PUBLIC_CREATOR_FIELDS) {
+    if (creatorObject[field] !== undefined) {
+      publicCreator[field] = creatorObject[field]
+    }
+  }
+  return publicCreator
 }
 
 const findCreatorByIdOrUsername = async (userId: string) => {
@@ -52,9 +80,11 @@ export const listCreators = async (
     },
   )
 
-  creators.docs = creators.docs.map(creator => {
-    return removePrivateFields(creator)
-  })
+  // The sanitized shape is deliberately narrower than UserDocument; the route's
+  // response schema is Type.Any(), so this is the boundary that defines it.
+  creators.docs = creators.docs.map(creator =>
+    removePrivateFields(creator),
+  ) as unknown as typeof creators.docs
 
   return reply.status(200).send(creators)
 }
