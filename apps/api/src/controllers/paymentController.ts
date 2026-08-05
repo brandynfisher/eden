@@ -239,9 +239,15 @@ const handleNewSubscription = async (
   let mannaAmountInt: number
 
   try {
+    // The ceiling is the only thing gating repeat proration credits, so it must
+    // never move DOWN here: buying a cheaper second subscription used to lower
+    // it, which re-armed the credit for a tier the customer already holds.
     await user.updateOne({
       subscriptionTier,
-      highestMonthlySubscriptionTier: subscriptionTier,
+      highestMonthlySubscriptionTier: Math.max(
+        subscriptionTier,
+        user.highestMonthlySubscriptionTier || 0,
+      ),
     })
 
     try {
@@ -601,15 +607,53 @@ const handleSubscriptionDeleted = async (
   }
 
   try {
-    user.subscriptionTier = SubscriptionTier.Free
-    user.highestMonthlySubscriptionTier = SubscriptionTier.Free
+    // A customer can hold more than one subscription, and this fires per
+    // subscription. Zeroing the tier and the proration ceiling unconditionally
+    // meant cancelling a cheap second subscription reset the ceiling to 0 while
+    // a higher-tier subscription was still active — which re-armed the
+    // proration credit on the surviving subscription, repeatable every cycle.
+    // 116 users currently sit with highestMonthlySubscriptionTier below their
+    // subscriptionTier, which is the footprint of exactly this reset.
+    let remainingTier = SubscriptionTier.Free
+    try {
+      const active = await server.stripe.subscriptions.list({
+        customer: customerId,
+        status: 'active',
+        limit: 100,
+        expand: ['data.items.data.price.product'],
+      })
+      for (const subscription of active.data) {
+        const product = subscription.items.data[0]?.price
+          ?.product as Stripe.Product
+        const tier = parseInt(product?.metadata?.subscriptionTier ?? '0')
+        if (Number.isInteger(tier) && tier > remainingTier) {
+          remainingTier = tier
+        }
+      }
+    } catch (error) {
+      server.log.error(
+        { err: error, customerId },
+        'could not list remaining subscriptions; treating customer as unsubscribed',
+      )
+    }
+
+    user.subscriptionTier = remainingTier
+    // Only release the ceiling once nothing is left to farm against.
+    if (remainingTier === SubscriptionTier.Free) {
+      user.highestMonthlySubscriptionTier = SubscriptionTier.Free
+    }
     await user.save()
 
     // The subscription allowance is for the period that just ended, so it
     // expires with the subscription. Previously only the tier was reset and
     // subscriptionBalance survived cancellation indefinitely — nothing else in
     // the codebase ever clears it — so a subscribe/cancel cycle kept the full
-    // tier grant for free.
+    // tier grant for free. Only expire it once no subscription remains,
+    // otherwise cancelling one of two subscriptions would wipe an allowance the
+    // customer is still paying for.
+    if (remainingTier !== SubscriptionTier.Free) {
+      return reply.status(200).send({})
+    }
     await expireSubscriptionBalance(
       user,
       'stripe_subscription_deleted',
@@ -700,7 +744,11 @@ const handleRenewal = async (
 
   const subscriptionTier = parseInt(metadata.subscriptionTier)
   user.subscriptionTier = subscriptionTier
-  user.highestMonthlySubscriptionTier = subscriptionTier
+  // Never lower the ceiling on a renewal either — see handleNewSubscription.
+  user.highestMonthlySubscriptionTier = Math.max(
+    subscriptionTier,
+    user.highestMonthlySubscriptionTier || 0,
+  )
   await user.save()
 
   const manna = await Manna.findOne({
@@ -805,6 +853,22 @@ const handlePaymentSuccess = async (
     })
   }
 
+  // checkout.session.completed also fires for sessions that were never paid:
+  // payment_status 'unpaid' (delayed/async payment methods) and
+  // 'no_payment_required' (a 100%-off coupon, or a trial configured on the
+  // price). Nothing here checked, so those credited full manna. Card-only
+  // checkout limits today's exposure, but the discount codes in discountMap are
+  // applied to top-ups and a 100%-off code would mint manna outright.
+  if (session.payment_status !== 'paid') {
+    server.log.warn(
+      { eventId, sessionId, payment_status: session.payment_status },
+      'checkout session completed without payment; not crediting manna',
+    )
+    return reply
+      .status(200)
+      .send({ message: `not paid - ${session.payment_status}` })
+  }
+
   await updateStripeCustomer(server, user, session)
 
   // @ts-ignore
@@ -898,10 +962,37 @@ export const createCheckoutSession = async (
     })
   }
 
+  // paymentMode is passed straight through to Stripe's `mode`; constrain it to
+  // the two modes this flow supports rather than letting the client choose.
+  if (paymentMode && !['payment', 'subscription'].includes(paymentMode)) {
+    return reply.status(400).send({
+      message: 'Invalid paymentMode',
+    })
+  }
+
   if (!server.stripe) {
     return reply.status(500).send({
       message: 'Stripe is not configured',
     })
+  }
+
+  // priceId is client-supplied and is NOT allow-listed: the manna granted comes
+  // from the price's PRODUCT metadata, and a product can carry several prices,
+  // so an archived, promotional or test price attached to a high-manna product
+  // would grant full manna for whatever that price charges. Rejecting inactive
+  // prices closes the archived/test-price case; a strict allow-list of live
+  // price ids is the complete fix and needs the product catalogue.
+  try {
+    const price = await server.stripe.prices.retrieve(priceId)
+    if (!price.active) {
+      server.log.warn(
+        { userId, priceId },
+        'checkout attempted with an inactive price',
+      )
+      return reply.status(400).send({ message: 'Invalid priceId' })
+    }
+  } catch (error) {
+    return reply.status(400).send({ message: 'Invalid priceId' })
   }
 
   const customer_creation =
