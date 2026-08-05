@@ -101,5 +101,18 @@ export const listApiKeys = async (
     },
   )
 
+  // The route description already promised "Only partial key values are
+  // returned", but the full secret was being sent — so any XSS, shared screen,
+  // or logged response handed over working credentials, and keys are stored in
+  // plaintext with no expiry, so one leak is permanent account access. The full
+  // value is shown once at creation; afterwards only enough to identify which
+  // key a row refers to.
+  apiKeys.docs = apiKeys.docs.map((doc: any) => {
+    const key = typeof doc?.apiKey === 'string' ? doc.apiKey : ''
+    const masked = key ? `${key.slice(0, 6)}…${key.slice(-4)}` : ''
+    const plain = typeof doc?.toObject === 'function' ? doc.toObject() : doc
+    return { ...plain, apiKey: masked, apiSecret: undefined }
+  })
+
   return reply.status(200).send(apiKeys)
 }

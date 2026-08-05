@@ -40,6 +40,18 @@ export const createNewUser = async (
     balance: server.config.MANNA_BONUS_SIGNUP,
   })
   await newManna.save()
+
+  // Record the grant. Seeding the balance without a matching transaction made
+  // the ledger unreconcilable from day one: every account's stored balance sat
+  // exactly MANNA_BONUS_SIGNUP above the sum of its transactions.
+  if (server.config.MANNA_BONUS_SIGNUP > 0) {
+    await new Transaction({
+      manna: newManna._id,
+      amount: server.config.MANNA_BONUS_SIGNUP,
+      type: 'signup_bonus',
+    }).save()
+  }
+
   return newUser
 }
 
@@ -224,7 +236,12 @@ export const discordOAuth = async (
       { $set: { user: user._id, eden_user_id: user.eden_user_id } },
     )
 
-    await Manna.findOneAndUpdate({ user: user._id }, { $inc: { balance: 50 } })
+    // NOTE: an unguarded, unlogged `$inc: {balance: 50}` used to sit here — a
+    // second grant on top of the flag-guarded discord_link_bonus above, with no
+    // claimed-check and no transaction, so it re-granted on every re-link. This
+    // v1 handler is not routed (authRoutes only registers claimDailyLoginBonus
+    // and disconnectDiscord; the live callback is authControllerV2.discordOAuth),
+    // so it was never reachable — removed before it ever became reachable.
 
     if (isPopupFlow) {
       return sendPopupResponse(true)
@@ -326,50 +343,79 @@ export const claimDailyLoginBonus = async (
     })
   }
 
-  const userManna = await Manna.findOne({ user: user._id })
+  const now = new Date()
+  const startOfUtcDay = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  )
 
-  if (!userManna) {
+  // Claim the day atomically. The previous read-then-write let concurrent
+  // requests all observe "not claimed yet" and each grant a bonus — 16 real
+  // user-days in production carry 2-3 bonuses because of it. Conditioning the
+  // update on the stored timestamp makes exactly one request per UTC day win.
+  const claimed = await User.updateOne(
+    {
+      _id: user._id,
+      $or: [
+        { lastDailyLoginBonus: { $exists: false } },
+        { lastDailyLoginBonus: null },
+        { lastDailyLoginBonus: { $lt: startOfUtcDay } },
+      ],
+    },
+    { $set: { lastDailyLoginBonus: now } },
+  )
+
+  if (claimed.modifiedCount !== 1) {
+    return reply.status(200).send({
+      claimed: 0,
+      lastDailyLogin: user.lastDailyLoginBonus,
+    })
+  }
+
+  // Top up rather than accumulate: bring the user up to the daily target if
+  // they are below it, and do nothing if they already hold at least that much.
+  // Expressed as balance = max(balance, TARGET - subscriptionBalance) so the
+  // check is against TOTAL manna, the write is atomic against concurrent task
+  // charges, and a balance can never be reduced by claiming.
+  const target = server.config.MANNA_BONUS_DAILY_LOGIN
+  const before = await Manna.findOneAndUpdate(
+    { user: user._id },
+    [
+      {
+        $set: {
+          balance: {
+            $max: [
+              '$balance',
+              { $subtract: [target, { $ifNull: ['$subscriptionBalance', 0] }] },
+            ],
+          },
+        },
+      },
+    ],
+    { returnDocument: 'before' },
+  )
+
+  if (!before) {
     return reply.status(400).send({
       message: 'User manna not found',
     })
   }
 
-  const now = new Date()
-  const lastDailyLogin = user.lastDailyLoginBonus
+  // The update applied a pure function of the pre-image, so the delta is exact.
+  const newBalance = Math.max(
+    before.balance,
+    target - (before.subscriptionBalance || 0),
+  )
+  const granted = newBalance - before.balance
 
-  const claimAmount = server.config.MANNA_BONUS_DAILY_LOGIN
-
-  const isSameUtcDay = (a: Date, b: Date) =>
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCDate() === b.getUTCDate()
-
-  const hasClaimedToday =
-    lastDailyLogin instanceof Date && isSameUtcDay(lastDailyLogin, now)
-
-  if (!hasClaimedToday) {
-    await User.updateOne(
-      { _id: user._id },
-      { $set: { lastDailyLoginBonus: now } },
-    )
-
-    userManna.balance += claimAmount
-    await userManna.save()
-
-    const transaction = new Transaction({
-      manna: userManna._id,
-      amount: claimAmount,
+  if (granted > 0) {
+    await new Transaction({
+      manna: before._id,
+      amount: granted,
       type: 'daily_login_bonus',
-    })
-    await transaction.save()
-
-    return reply.status(200).send({
-      claimed: claimAmount,
-    })
+    }).save()
   }
 
   return reply.status(200).send({
-    claimed: 0,
-    lastDailyLogin: user.lastDailyLoginBonus,
+    claimed: granted,
   })
 }

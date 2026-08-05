@@ -16,7 +16,7 @@ export const modifyManna = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, amount } = request.body as MannaModifyRequestBody
+  const { userId, amount, source } = request.body as MannaModifyRequestBody
 
   const user = await User.findOne({ userId })
 
@@ -43,10 +43,17 @@ export const modifyManna = async (
     newManna = manna
   }
 
+  // Attribution: record which admin identity/key made the grant and why, so an
+  // `admin_modify` row is never ambiguous again. Stripe top-ups pass
+  // source='stripe_topup'; a manual comp has no source and reads as 'manual'.
+  const caller = request.user as { userId?: any; apiKeyId?: any } | undefined
   const transaction = new Transaction({
     manna: newManna._id,
     amount,
     type: 'admin_modify',
+    initiatedBy: caller?.userId,
+    initiatedByApiKey: caller?.apiKeyId,
+    source: source || 'manual',
   })
   await transaction.save()
 
@@ -73,7 +80,16 @@ const validActions = [
   VoucherAction.MarsCollege26,
 ]
 
+// A single opaque failure for every "you can't use this code" case. The
+// distinct messages (not found / legacy / expired / exhausted / not in allow
+// list) told a guesser exactly when they had hit a real code even while being
+// refused it, which combined with low-entropy admin-chosen codes and
+// case-insensitive lookup made codes enumerable. Reasons are logged instead.
+const VOUCHER_REJECTED = 'Invalid or expired voucher code'
+
 const DEFAULT_VOUCHER_TTL_SECONDS = 60 * 60 * 24
+// 1 manna = $0.01, so this caps a single voucher at $10,000 of credit.
+const MAX_VOUCHER_AMOUNT = 1_000_000
 const MARS_COLLEGE_DAILY_MANNA_TARGET = 1000
 
 export const createMannaVoucher = async (
@@ -92,6 +108,21 @@ export const createMannaVoucher = async (
   }
 
   const maxUses = numberOfUses ?? 1
+
+  // `amount` was the only create parameter with no validation at all, so a
+  // negative voucher (which debits its redeemer), a fractional one, or a 1e18
+  // one all passed straight through to real balances.
+  if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount < 0) {
+    return reply.status(400).send({
+      message: 'amount must be a non-negative integer',
+    })
+  }
+
+  if (amount > MAX_VOUCHER_AMOUNT) {
+    return reply.status(400).send({
+      message: `Maximum amount is ${MAX_VOUCHER_AMOUNT}, you requested ${amount}`,
+    })
+  }
 
   if (maxUses <= 0) {
     return reply.status(400).send({
@@ -124,7 +155,10 @@ export const createMannaVoucher = async (
 
   const expiresAt = new Date(Date.now() + expiresInSeconds * 1000)
   const mannaVoucher = new MannaVoucher({
-    allowedUserIds: allowedUserIds || null,
+    // Normalize "unrestricted" to null here so the redeem check can stay
+    // fail-closed. `[]` is truthy, so `|| null` alone would store an empty
+    // array and lock every user out of the voucher.
+    allowedUserIds: allowedUserIds?.length ? allowedUserIds : null,
     amount,
     code: newCode,
     action,
@@ -180,7 +214,12 @@ export const redeemMannaVoucher = async (
   reply: FastifyReply,
 ) => {
   const userId = request.user.userId
-  const { code } = request.body as MannaVouchersRedeemArguments
+  const { code: rawCode } = request.body as MannaVouchersRedeemArguments
+
+  // The collation on the lookup below makes it case-insensitive but not
+  // whitespace-tolerant, so a pasted or mobile-autocompleted code carrying a
+  // trailing space read as "voucher not found".
+  const code = rawCode?.trim()
 
   const user = await User.findById(userId)
 
@@ -196,13 +235,13 @@ export const redeemMannaVoucher = async (
 
   if (!voucher) {
     return reply.status(400).send({
-      message: `Voucher ${code} not found`,
+      message: VOUCHER_REJECTED,
     })
   }
 
   if (!voucher.maxUses) {
     return reply.status(400).send({
-      message: `Voucher ${code} is legacy and no longer supported`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -320,9 +359,6 @@ const applyMarsCollegeVoucher = async (
     throw createVoucherError('User already has Mars College flag')
   }
 
-  user.featureFlags = [...(user.featureFlags || []), FeatureFlag.MarsCollege26]
-  await user.save()
-
   const manna = await Manna.findOne({ user: user._id })
 
   let transactionId: string | undefined
@@ -364,6 +400,13 @@ const applyMarsCollegeVoucher = async (
     transactionId = transaction._id
   }
 
+  // Grant the perk LAST. MarsCollege26 is in PREVIEW_ACCESS_FEATURE_FLAGS, so it
+  // satisfies every tier gate permanently — if it were written first, a failure
+  // in the manna writes above would roll back the redemption record (restoring
+  // eligibility) while leaving the user holding the perk for free.
+  user.featureFlags = [...(user.featureFlags || []), FeatureFlag.MarsCollege26]
+  await user.save()
+
   return {
     action: 'Mars College access granted',
     success: true,
@@ -403,7 +446,7 @@ const redeemMannaVoucherV2 = async (
 
   if (voucher.expiresAt && voucher.expiresAt <= now) {
     return reply.status(400).send({
-      message: `Voucher ${voucher.code} expired`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -413,9 +456,13 @@ const redeemMannaVoucherV2 = async (
     })
   }
 
+  // Deliberately fail-closed: a present-but-empty allow list rejects everyone
+  // rather than opening the voucher to the world. An allow list computed from a
+  // query that matched nothing must not silently publish a restricted voucher.
+  // Unrestricted vouchers are normalized to null at creation, not to [].
   if (voucher.allowedUserIds && !voucher.allowedUserIds.includes(user.userId)) {
     return reply.status(400).send({
-      message: `User not in allow list of this voucher`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -445,30 +492,47 @@ const redeemMannaVoucherV2 = async (
   )
   if (!claimedVoucher) {
     return reply.status(400).send({
-      message: `Manna voucher ${voucher.code} already finished`,
+      message: VOUCHER_REJECTED,
     })
   }
 
+  // Record the redemption before applying it. The unique {voucher, user}
+  // index is the only thing that stops two concurrent requests from the same
+  // user, so the credit must happen on the far side of it — otherwise both
+  // requests apply the action and only the loser is rejected.
   try {
-    const result = await applyVoucherAction(user, voucher)
     await MannaVoucherRedemption.create({
       voucher: voucher._id,
       user: user._id,
       code: voucher.code,
     })
+  } catch (error) {
+    await MannaVoucher.updateOne(
+      { _id: voucher._id },
+      { $inc: { usedCount: -1 } },
+    )
+    if (isDuplicateKeyError(error)) {
+      return reply.status(400).send({
+        message: `User has already redeemed this voucher`,
+      })
+    }
+    throw error
+  }
+
+  try {
+    const result = await applyVoucherAction(user, voucher)
     return reply.status(200).send(result)
   } catch (error) {
+    await MannaVoucherRedemption.deleteOne({
+      voucher: voucher._id,
+      user: user._id,
+    })
     await MannaVoucher.updateOne(
       { _id: voucher._id },
       { $inc: { usedCount: -1 } },
     )
     if (isVoucherApplyError(error)) {
       return reply.status(error.statusCode).send({ message: error.message })
-    }
-    if (isDuplicateKeyError(error)) {
-      return reply.status(400).send({
-        message: `User has already redeemed this voucher`,
-      })
     }
     throw error
   }

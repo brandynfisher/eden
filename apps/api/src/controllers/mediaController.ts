@@ -294,7 +294,13 @@ export const receiveMediaTranscodeUpdate = async (
     s3key: string
   }
 
-  if (secret !== server.config.WEBHOOK_SECRET) {
+  // WEBHOOK_SECRET is optional in config, so when it is unset this compared
+  // `undefined !== undefined` and every unauthenticated caller passed. Require
+  // the secret to be configured AND to match.
+  if (
+    !server.config.WEBHOOK_SECRET ||
+    secret !== server.config.WEBHOOK_SECRET
+  ) {
     return reply.status(401).send({
       message: 'Invalid webhook secret',
     })

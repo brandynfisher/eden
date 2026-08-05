@@ -51,6 +51,11 @@ const mannavoucher = new Schema<MannaVoucherDocument>(
     },
     allowedUserIds: {
       type: [String],
+      // Mongoose defaults array paths to `[]`, which is indistinguishable from
+      // an allow list that intentionally names nobody. Leaving the path unset
+      // keeps the three states distinct: absent = unrestricted, [] = nobody,
+      // populated = those users. The redeem check is fail-closed on [].
+      default: undefined,
     },
     redeemedBy: {
       type: Schema.Types.ObjectId,
