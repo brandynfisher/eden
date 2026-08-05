@@ -15,6 +15,9 @@ export interface TransactionSchema {
   code?: string
   stripeEventId?: string
   stripeEventType?: string
+  // Links a credit to the Stripe payment that funded it, so a later refund or
+  // dispute can claw back exactly that credit instead of guessing an amount.
+  stripePaymentIntentId?: string
   stripeEventData?: Stripe.Event.Data
   // Attribution for admin_modify grants: the admin user + API key that made
   // the call, and a source tag (e.g. 'stripe_topup' vs 'manual').
@@ -56,6 +59,9 @@ const transaction = new Schema<TransactionDocument>(
     stripeEventData: {
       type: Schema.Types.Mixed,
     },
+    stripePaymentIntentId: {
+      type: Schema.Types.String,
+    },
     amount: {
       type: Number,
       required: true,
@@ -77,6 +83,7 @@ const transaction = new Schema<TransactionDocument>(
   },
 )
 
+transaction.index({ stripePaymentIntentId: 1 }, { sparse: true })
 transaction.index({ manna: 1, createdAt: -1 })
 transaction.index({ type: -1 })
 transaction.index(
