@@ -16,6 +16,11 @@ export interface TransactionSchema {
   stripeEventId?: string
   stripeEventType?: string
   stripeEventData?: Stripe.Event.Data
+  // Attribution for admin_modify grants: the admin user + API key that made
+  // the call, and a source tag (e.g. 'stripe_topup' vs 'manual').
+  initiatedBy?: Schema.Types.ObjectId
+  initiatedByApiKey?: Schema.Types.ObjectId
+  source?: string
   createdAt?: Date
 }
 
@@ -54,6 +59,17 @@ const transaction = new Schema<TransactionDocument>(
     amount: {
       type: Number,
       required: true,
+    },
+    initiatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+    },
+    initiatedByApiKey: {
+      type: Schema.Types.ObjectId,
+      ref: 'apikeys',
+    },
+    source: {
+      type: Schema.Types.String,
     },
   },
   {

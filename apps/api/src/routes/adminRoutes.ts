@@ -6,6 +6,7 @@ import { FastifyPluginAsync } from 'fastify'
 export interface MannaModifyRequestBody {
   userId: string
   amount: number
+  source?: string
 }
 
 const adminRoutes: FastifyPluginAsync = async server => {
@@ -20,6 +21,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         body: Type.Object({
           userId: Type.String(),
           amount: Type.Number(),
+          source: Type.Optional(Type.String()),
         }),
       },
       response: {

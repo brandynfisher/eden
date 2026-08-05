@@ -16,7 +16,7 @@ export const modifyManna = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId, amount } = request.body as MannaModifyRequestBody
+  const { userId, amount, source } = request.body as MannaModifyRequestBody
 
   const user = await User.findOne({ userId })
 
@@ -43,10 +43,17 @@ export const modifyManna = async (
     newManna = manna
   }
 
+  // Attribution: record which admin identity/key made the grant and why, so an
+  // `admin_modify` row is never ambiguous again. Stripe top-ups pass
+  // source='stripe_topup'; a manual comp has no source and reads as 'manual'.
+  const caller = request.user as { userId?: any; apiKeyId?: any } | undefined
   const transaction = new Transaction({
     manna: newManna._id,
     amount,
     type: 'admin_modify',
+    initiatedBy: caller?.userId,
+    initiatedByApiKey: caller?.apiKeyId,
+    source: source || 'manual',
   })
   await transaction.save()
 

@@ -134,7 +134,11 @@ export const verifyApiKey = async (
       highestMonthlySubscriptionTier:
         user.highestMonthlySubscriptionTier || SubscriptionTier.Free,
       featureFlags: user.featureFlags || [],
-      isAdmin: user.isAdmin || false,
+      // A character-scoped key belongs to a deployed agent, not a human admin.
+      // Admin routes (e.g. /admin/manna/modify) gate only on `isAdmin`, so
+      // letting a character key inherit its owner's admin bit means any agent
+      // key could grant manna. Admin power requires a non-character key.
+      isAdmin: (user.isAdmin && !apiKey.character) || false,
       apiKeyId: apiKey._id,
     },
   } satisfies ApiKeyAuthResult

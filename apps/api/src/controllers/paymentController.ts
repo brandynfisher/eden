@@ -141,6 +141,7 @@ const handleTopUp = async (
     {
       userId: user.userId,
       amount: mannaAmountInt,
+      source: 'stripe_topup',
     },
     {
       headers: getAdminHeaders(server),
