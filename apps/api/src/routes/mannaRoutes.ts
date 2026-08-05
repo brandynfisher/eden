@@ -5,6 +5,19 @@ import { FastifyPluginAsync } from 'fastify'
 
 const mannaRoutes: FastifyPluginAsync = async server => {
   server.post('/manna/vouchers/redeem', {
+    config: {
+      // Redeeming is not the risk — the unique {voucher,user} index already
+      // caps that at one per person. Guessing is: admin-chosen codes can be
+      // low-entropy words, the lookup is case-insensitive, and the global
+      // limit is 10k/min per IP, so a dictionary attack is free. Key on the
+      // user so it survives IP rotation.
+      rateLimit: {
+        max: 10,
+        timeWindow: '1 minute',
+        keyGenerator: (request: any) =>
+          String(request.user?.userId ?? request.ip),
+      },
+    },
     schema: {
       tags: ['Manna'],
       summary: 'Redeem Manna Voucher',

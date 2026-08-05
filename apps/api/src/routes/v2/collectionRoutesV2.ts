@@ -125,7 +125,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createCollection(request, reply),
   })
 
@@ -174,7 +174,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateCollection(request, reply),
   })
 
@@ -196,7 +196,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteCollection(request, reply),
   })
 
@@ -222,7 +222,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => addCreationsToCollection(request, reply),
   })
 
@@ -248,7 +248,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => removeCreationsFromCollection(request, reply),
   })
 }

@@ -215,8 +215,12 @@ export const MessageInput = ({
   const subscriptionTier = user?.subscriptionTier ?? SubscriptionTier.Free
   const characterLimit = getCharacterLimit(subscriptionTier)
 
-  // Check if user has access to realtime features (requires Preview flag)
-  const hasRealtimeAccess = hasPreviewAccess(user?.featureFlags)
+  // Realtime is disabled: its tool-execution endpoint (/v2/realtime/tool) runs
+  // generations through eve's unbilled code path, so every call was free GPU
+  // work. The API now rejects it with 403, and the entry point is hidden here
+  // so nobody lands on a broken conversation. Restore to
+  // `hasPreviewAccess(user?.featureFlags)` once realtime tool calls are billed.
+  const hasRealtimeAccess = false && hasPreviewAccess(user?.featureFlags)
 
   // Tap-to-record for voice input
   const handleVoiceTranscription = useCallback(

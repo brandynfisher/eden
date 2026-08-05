@@ -190,9 +190,8 @@ describe('redeemMannaVoucher', () => {
 
     const rejected = await redeem(blocked._id.toString(), 'workshop')
     expect(rejected.statusCode).toBe(400)
-    expect(rejected.body?.message).toBe(
-      'User not in allow list of this voucher',
-    )
+    // Opaque on purpose: a refusal must not confirm that the code is real.
+    expect(rejected.body?.message).toBe('Invalid or expired voucher code')
   })
 
   it('does not consume a use when the voucher pool is exhausted', async () => {
