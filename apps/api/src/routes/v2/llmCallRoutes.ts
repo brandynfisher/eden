@@ -1,3 +1,4 @@
+import { isAdmin } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -5,6 +6,12 @@ import mongoose from 'mongoose'
 
 const llmCallRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/llm-calls/:id', {
+    // This returns a raw llm_calls document — full prompts, system prompts,
+    // model output and tool-call arguments for whichever user made the call.
+    // It had no preHandler at all, so any anonymous caller who knew or guessed
+    // an ObjectId could read another user's conversation. It is a debug
+    // endpoint, so it is admin-only rather than merely authenticated.
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
     schema: {
       tags: ['LLM Calls'],
       summary: 'Get LLM Call Data',
