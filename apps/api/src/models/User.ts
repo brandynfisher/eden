@@ -108,9 +108,13 @@ const UserSchema = new Schema<UserDocument>(
     stripeSubscriptionId: {
       type: String,
     },
+    // No default: `default: new Date()` evaluated once at module load, so every
+    // user created by a given process got that process's boot timestamp rather
+    // than their own. When the API restarted on the same UTC day a new signup
+    // was created, `isSameUtcDay` matched and they were denied their first daily
+    // bonus. Leaving it unset lets the first claim through, which is the intent.
     lastDailyLoginBonus: {
       type: Date,
-      default: new Date(),
     },
     discordLinkBonusClaimed: {
       type: Boolean,

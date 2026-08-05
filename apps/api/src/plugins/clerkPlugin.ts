@@ -26,7 +26,15 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       })
 
       if (!user) {
-        throw new Error('User not found')
+        // The user row is created only by the Clerk `user.created` webhook, but
+        // the frontend treats the user as signed in the moment Clerk finishes.
+        // Every call in that gap 401s and nothing on the client retries, so a
+        // fresh signup who acts immediately — redeeming a voucher, claiming the
+        // daily bonus — silently loses the action. Name the race so the message
+        // is actionable instead of reading like a dead account.
+        throw new Error(
+          'Account is still being provisioned, please retry in a moment',
+        )
       }
 
       if (!isAllowedAccess(fastify, userId)) {

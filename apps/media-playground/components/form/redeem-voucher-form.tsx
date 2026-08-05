@@ -25,8 +25,24 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const formSchema = z.object({
-  code: z.string().min(3, { message: 'Code is required' }),
+  code: z.string().trim().min(3, { message: 'Code is required' }),
 })
+
+const getErrorMessage = (err: unknown): string => {
+  if (err instanceof Error) {
+    return err.message
+  }
+  if (typeof err === 'string') {
+    return err
+  }
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    const { message } = err as { message?: unknown }
+    if (typeof message === 'string' && message.length) {
+      return message
+    }
+  }
+  return 'Unknown Error'
+}
 
 type RedeemVoucherFormProps = {
   onSuccess?: () => void
@@ -59,7 +75,7 @@ const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
 
       const response: MannaVoucherRedeemResponse =
         await eden.manna.redeemVoucher({
-          code: values.code,
+          code: values.code.trim(),
         })
 
       toast.success(`Code redeemed`, {
@@ -76,7 +92,12 @@ const RedeemVoucherForm = ({ onSuccess }: RedeemVoucherFormProps) => {
       onSuccess?.()
     } catch (err) {
       console.error(err)
-      const message = err instanceof Error ? err.message : 'Unknown Error'
+      // openapi-fetch resolves non-2xx into `{ error }` holding the parsed body,
+      // and the SDK rethrows that body as-is — a plain object, never an Error.
+      // Reading only `err.message` off an Error therefore threw away every
+      // server-side reason ("voucher expired", "already redeemed", 401 "User
+      // not found") and showed "Unknown Error" for all of them.
+      const message = getErrorMessage(err)
 
       toast.error(`Failed to redeem code!`, {
         description: JSON.stringify(message),
