@@ -59,6 +59,26 @@ const authCacheSet = async (
   }
 }
 
+/**
+ * Drop a key's cached credential immediately. The cache holds the ApiKey and
+ * User documents for 60s, so without this a revoked key kept authenticating for
+ * up to a minute after deletion — exactly the window that matters during an
+ * incident.
+ */
+export const invalidateApiKeyCache = async (
+  server: FastifyInstance,
+  apiKeyValue: string,
+): Promise<void> => {
+  if (!server.redis) return
+  try {
+    await server.redis.del(
+      `${server.redisEnvPrefix}:auth:apikey:${hashKey(apiKeyValue)}`,
+    )
+  } catch (err) {
+    server.log.warn({ err }, 'failed to invalidate api key cache')
+  }
+}
+
 export interface ApiKeyAuthResult {
   apiKey: ApiKeyDocument
   user: UserDocument
@@ -104,6 +124,19 @@ export const verifyApiKey = async (
       apiKey: apiKeyValue,
     }).lean()) as ApiKeyDocument | null
     await authCacheSet(server, apiKeyCacheKey, apiKey)
+
+    // Record usage on the cache-miss path only, so this is at most one write
+    // per key per cache TTL rather than one per request. There was previously
+    // no usage signal at all, which made it impossible to tell which of the
+    // ~570 keys are still live — and therefore unsafe to revoke any of them.
+    if (apiKey) {
+      ApiKey.updateOne(
+        { _id: apiKey._id },
+        { $set: { lastUsedAt: new Date() } },
+      ).catch(err =>
+        server.log.warn({ err }, 'failed to stamp apiKey.lastUsedAt'),
+      )
+    }
   }
 
   if (!apiKey) {

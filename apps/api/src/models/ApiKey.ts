@@ -12,6 +12,7 @@ export interface ApiKeySchema {
   apiSecret?: string
   note?: string
   createdAt?: Date
+  lastUsedAt?: Date
 }
 
 export interface ApiKeyInput {
@@ -41,6 +42,12 @@ const apiKey = new Schema<ApiKeyDocument>(
     apiSecret: {
       type: String,
       required: false,
+    },
+    // Stamped on cache-miss authentication (so at most ~once per key per cache
+    // TTL, not once per request). Without this there was no way to tell which
+    // of ~570 keys are live, which made revoking or rotating them guesswork.
+    lastUsedAt: {
+      type: Date,
     },
     note: {
       type: String,
