@@ -1,5 +1,4 @@
 import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
-import { getAdminHeaders } from '../lib/util'
 import { Manna } from '../models/Manna'
 import { Transaction } from '../models/Transaction'
 import { User, UserDocument } from '../models/User'
@@ -8,7 +7,6 @@ import {
   PaymentsSubscriptionArguments,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
-import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
 
@@ -93,6 +91,77 @@ const updateStripeCustomer = async (
   await user.save()
 }
 
+const extractPaymentIntentId = (
+  eventData?: Stripe.Event.Data,
+): string | undefined => {
+  const object = (eventData as { object?: Record<string, unknown> })?.object
+  const paymentIntent = object?.payment_intent
+  if (typeof paymentIntent === 'string') return paymentIntent
+  if (paymentIntent && typeof paymentIntent === 'object') {
+    const id = (paymentIntent as { id?: unknown }).id
+    return typeof id === 'string' ? id : undefined
+  }
+  return undefined
+}
+
+const isDuplicateKeyError = (error: unknown): boolean =>
+  typeof error === 'object' &&
+  error !== null &&
+  'code' in error &&
+  (error as { code?: number }).code === 11000
+
+/**
+ * Credit manna for a Stripe event exactly once.
+ *
+ * The transaction is written FIRST, so the unique sparse index on
+ * {stripeEventId, stripeEventType} is what arbitrates a duplicate delivery —
+ * the loser gets a duplicate-key error and never touches the balance. The
+ * balance is then moved with an atomic $inc rather than a read-modify-write,
+ * so it cannot clobber a concurrent spend.
+ *
+ * Returns false when the event was already processed.
+ */
+const creditMannaForStripeEvent = async ({
+  mannaId,
+  amount,
+  bucket,
+  eventId,
+  eventType,
+  eventData,
+  source,
+  paymentIntentId,
+}: {
+  mannaId: unknown
+  amount: number
+  bucket: 'balance' | 'subscriptionBalance'
+  eventId: string
+  eventType: string
+  eventData?: Stripe.Event.Data
+  source?: string
+  paymentIntentId?: string
+}): Promise<boolean> => {
+  try {
+    await new Transaction({
+      stripeEventId: eventId,
+      stripeEventType: eventType,
+      stripeEventData: eventData,
+      type: 'credit_stripe',
+      manna: mannaId,
+      amount,
+      source,
+      stripePaymentIntentId: paymentIntentId,
+    }).save()
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      return false
+    }
+    throw error
+  }
+
+  await Manna.updateOne({ _id: mannaId }, { $inc: { [bucket]: amount } })
+  return true
+}
+
 const handleTopUp = async (
   server: FastifyInstance,
   reply: FastifyReply,
@@ -109,44 +178,50 @@ const handleTopUp = async (
     })
   }
 
-  if (!eventId) {
+  if (!eventId || !eventType) {
     return reply.status(400).send({
-      message: 'No eventId found in payload',
+      message: 'No eventId or eventType found in payload',
     })
   }
 
-  if (!eventType) {
+  // parseInt never throws, so the old try/catch was dead code and a malformed
+  // metadata value reached the credit as NaN ("1e10" also silently became 1).
+  const mannaAmountInt = Number(mannaAmount)
+  if (!Number.isInteger(mannaAmountInt) || mannaAmountInt <= 0) {
     return reply.status(400).send({
-      message: 'No eventType found in payload',
+      message: `Invalid manna amount: ${mannaAmount}`,
     })
   }
 
-  if (!eventData) {
-    return reply.status(400).send({
-      message: 'No eventData found in payload',
-    })
+  const manna = await Manna.findOne({ user: user._id })
+  if (!manna) {
+    return reply.status(400).send({ message: 'Manna not found' })
   }
 
-  let mannaAmountInt: number
-  try {
-    mannaAmountInt = parseInt(mannaAmount)
-  } catch (error) {
-    return reply.status(400).send({
-      message: 'Invalid manna amount',
-    })
-  }
+  // Previously this POSTed to its own /admin/manna/modify endpoint, which wrote
+  // an `admin_modify` transaction carrying no Stripe event id. The unique index
+  // is sparse, so those rows were exempt from it and every Stripe retry —
+  // routine after a timeout, a deploy mid-webhook, or a dashboard resend —
+  // credited the manna again. Crediting inline puts top-ups under the same
+  // idempotency guard as every other credit path, and stops shipping the admin
+  // API key + secret over the network on each purchase.
+  const credited = await creditMannaForStripeEvent({
+    mannaId: manna._id,
+    amount: mannaAmountInt,
+    bucket: 'balance',
+    eventId,
+    eventType,
+    eventData,
+    source: 'stripe_topup',
+    paymentIntentId: extractPaymentIntentId(eventData),
+  })
 
-  await axios.post(
-    `${server.config.API_URL}/admin/manna/modify`,
-    {
-      userId: user.userId,
-      amount: mannaAmountInt,
-      source: 'stripe_topup',
-    },
-    {
-      headers: getAdminHeaders(server),
-    },
-  )
+  if (!credited) {
+    server.log.info(
+      { eventId, eventType },
+      'stripe top-up already processed, ignoring duplicate delivery',
+    )
+  }
 
   return reply.status(200).send({})
 }
@@ -182,55 +257,33 @@ const handleNewSubscription = async (
     }
 
     if (mannaAmountInt > 0) {
-      try {
-        if (mannaAmountInt > 0) {
-          const manna = await Manna.findOne({
-            user: user._id,
-          })
+      const manna = await Manna.findOne({
+        user: user._id,
+      })
 
-          if (!manna) {
-            return reply.status(400).send({
-              message: 'Manna not found',
-            })
-          }
+      if (!manna) {
+        return reply.status(400).send({
+          message: 'Manna not found',
+        })
+      }
 
-          try {
-            const existingTransaction = await Transaction.exists({
-              stripeEventType: stripeEventData.eventType,
-              stripeEventId: stripeEventData.eventId,
-            })
+      // An already-processed event is the SUCCESS case for an at-least-once
+      // webhook. This used to answer 500, so Stripe retried it for three days
+      // and — after enough sustained failures — disables the endpoint, at
+      // which point legitimate purchases stop being credited at all.
+      const credited = await creditMannaForStripeEvent({
+        mannaId: manna._id,
+        amount: mannaAmountInt,
+        bucket: 'subscriptionBalance',
+        eventId: stripeEventData.eventId,
+        eventType: stripeEventData.eventType,
+        eventData: stripeEventData.eventData,
+        source: 'stripe_subscription',
+      })
 
-            if (existingTransaction !== null) {
-              return reply.status(500).send({
-                message: `Error inserting transaction, eventId already exists: ${stripeEventData.eventId} | ${stripeEventData.eventType}`,
-              })
-            }
-
-            const transaction = new Transaction({
-              stripeEventId: stripeEventData.eventId,
-              stripeEventType: stripeEventData.eventType,
-              stripeEventData: stripeEventData.eventData,
-              type: 'credit_stripe',
-              manna: manna._id,
-              amount: mannaAmountInt,
-            })
-            await transaction.save()
-          } catch (e) {
-            return reply.status(500).send({
-              message: 'Error inserting transaction, manna not updated',
-            })
-          }
-
-          if (!manna.subscriptionBalance) {
-            manna.subscriptionBalance = mannaAmountInt
-          } else {
-            manna.subscriptionBalance += mannaAmountInt
-          }
-          await manna.save()
-        }
-      } catch (error) {
-        return reply.status(500).send({
-          message: 'Error adding manna',
+      if (!credited) {
+        return reply.status(200).send({
+          message: 'event already processed',
         })
       }
     }
@@ -383,11 +436,154 @@ const handleSubscriptionUpdated = async (
   }
 }
 
+/**
+ * Debit manna in response to a Stripe event (cancellation, refund, dispute),
+ * recording it so the ledger explains the movement. Idempotent per event via
+ * the same unique {stripeEventId, stripeEventType} index used for credits.
+ *
+ * The balance is allowed to go negative: clamping at zero would let a user
+ * spend everything and then charge back for free. A negative balance simply
+ * blocks further spending until it is settled.
+ */
+const debitMannaForStripeEvent = async ({
+  mannaId,
+  amount,
+  bucket,
+  eventId,
+  eventType,
+  eventData,
+  source,
+}: {
+  mannaId: unknown
+  amount: number
+  bucket: 'balance' | 'subscriptionBalance'
+  eventId: string
+  eventType: string
+  eventData?: Stripe.Event.Data
+  source: string
+}): Promise<boolean> => {
+  if (amount <= 0) return false
+
+  try {
+    await new Transaction({
+      stripeEventId: eventId,
+      stripeEventType: eventType,
+      stripeEventData: eventData,
+      type: 'spend',
+      manna: mannaId,
+      amount: -amount,
+      source,
+    }).save()
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      return false
+    }
+    throw error
+  }
+
+  await Manna.updateOne({ _id: mannaId }, { $inc: { [bucket]: -amount } })
+  return true
+}
+
+const expireSubscriptionBalance = async (
+  user: UserDocument,
+  source: string,
+  { eventId, eventType, eventData }: StripeDataObject,
+) => {
+  const manna = await Manna.findOne({ user: user._id })
+  const remaining = manna?.subscriptionBalance || 0
+  if (!manna || remaining <= 0 || !eventId || !eventType) return
+
+  await debitMannaForStripeEvent({
+    mannaId: manna._id,
+    amount: remaining,
+    bucket: 'subscriptionBalance',
+    eventId,
+    eventType,
+    eventData,
+    source,
+  })
+}
+
+/**
+ * Claw manna back when Stripe reverses a payment (refund or dispute).
+ *
+ * Before this existed, `charge.refunded` and `charge.dispute.*` fell through to
+ * the default no-op: a user could buy manna, spend it, charge back, and keep
+ * the output. The reversal is linked to its funding credit through the payment
+ * intent so the exact granted amount is debited (prorated for a partial
+ * refund) — never a guess. A credit predating this linkage cannot be matched,
+ * so it is logged loudly for manual handling rather than silently ignored.
+ */
+const handleChargeReversal = async (
+  server: FastifyInstance,
+  reply: FastifyReply,
+  stripeEventData: StripeDataObject,
+  rawStripeEventDataObject: Stripe.Event.Data.Object,
+) => {
+  const { eventId, eventType, eventData } = stripeEventData
+  const charge = rawStripeEventDataObject as unknown as Record<string, any>
+
+  const paymentIntentId =
+    typeof charge?.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge?.payment_intent?.id
+
+  if (!paymentIntentId) {
+    server.log.error(
+      { eventId, eventType },
+      'stripe reversal carried no payment_intent; manna NOT clawed back',
+    )
+    return reply.status(200).send({ message: 'no payment intent' })
+  }
+
+  const credit = await Transaction.findOne({
+    stripePaymentIntentId: paymentIntentId,
+    type: 'credit_stripe',
+  })
+
+  if (!credit) {
+    server.log.error(
+      { eventId, eventType, paymentIntentId },
+      'stripe reversal could not be matched to a credit (likely predates payment-intent linkage); manna NOT clawed back — handle manually',
+    )
+    return reply.status(200).send({ message: 'unmatched reversal' })
+  }
+
+  // Partial refunds claw back the same fraction of the manna that was granted.
+  const amountRefunded = Number(charge?.amount_refunded ?? 0)
+  const amountTotal = Number(charge?.amount ?? 0)
+  const fraction =
+    eventType.startsWith('charge.dispute') || !amountTotal || !amountRefunded
+      ? 1
+      : Math.min(amountRefunded / amountTotal, 1)
+
+  const clawback = Math.round(credit.amount * fraction)
+
+  const debited = await debitMannaForStripeEvent({
+    mannaId: credit.manna,
+    amount: clawback,
+    bucket: 'balance',
+    eventId,
+    eventType,
+    eventData,
+    source: `stripe_reversal:${eventType}`,
+  })
+
+  server.log.warn(
+    { eventId, eventType, paymentIntentId, clawback, debited },
+    'stripe payment reversed; manna clawed back',
+  )
+
+  return reply.status(200).send({ message: 'reversal processed' })
+}
+
 const handleSubscriptionDeleted = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  { customerId }: StripeDataObject,
+  stripeEventData: StripeDataObject,
 ) => {
+  const { customerId } = stripeEventData
   const user = await User.findOne({
     stripeCustomerId: customerId,
   })
@@ -408,6 +604,17 @@ const handleSubscriptionDeleted = async (
     user.subscriptionTier = SubscriptionTier.Free
     user.highestMonthlySubscriptionTier = SubscriptionTier.Free
     await user.save()
+
+    // The subscription allowance is for the period that just ended, so it
+    // expires with the subscription. Previously only the tier was reset and
+    // subscriptionBalance survived cancellation indefinitely — nothing else in
+    // the codebase ever clears it — so a subscribe/cancel cycle kept the full
+    // tier grant for free.
+    await expireSubscriptionBalance(
+      user,
+      'stripe_subscription_deleted',
+      stripeEventData,
+    )
 
     return reply.status(200).send({})
   } catch (error) {
@@ -506,48 +713,37 @@ const handleRenewal = async (
     })
   }
 
-  let mannaAmountInt: number
-  try {
-    mannaAmountInt = parseInt(metadata.manna)
-  } catch (error) {
+  const mannaAmountInt = Number(metadata.manna)
+  if (!Number.isInteger(mannaAmountInt) || mannaAmountInt < 0) {
     return reply.status(400).send({
-      message: 'Invalid manna amount',
+      message: `Invalid manna amount: ${metadata.manna}`,
     })
   }
 
-  const newAmount = Math.max(manna.subscriptionBalance || 0, mannaAmountInt)
+  // A renewal refills the allowance up to the tier amount rather than stacking
+  // on top of it, so the credit is the shortfall. The delta used to be computed
+  // as `newAmount - manna.subscriptionBalance` AFTER subscriptionBalance had
+  // already been overwritten with newAmount, so it was always exactly 0: 1,779
+  // of 2,392 credit_stripe rows in production record a zero-value renewal while
+  // the balance actually moved. That made manna issuance impossible to
+  // reconstruct from the ledger, which is what an audit needs most.
+  const currentBalance = manna.subscriptionBalance || 0
+  const topUp = Math.max(mannaAmountInt - currentBalance, 0)
 
-  if (newAmount > 0) {
-    manna.subscriptionBalance = newAmount
+  if (topUp > 0) {
+    const credited = await creditMannaForStripeEvent({
+      mannaId: manna._id,
+      amount: topUp,
+      bucket: 'subscriptionBalance',
+      eventId,
+      eventType,
+      eventData,
+      source: 'stripe_renewal',
+    })
 
-    try {
-      const existingTransaction = await Transaction.exists({
-        stripeEventType: eventType,
-        stripeEventId: eventId,
-      })
-
-      if (existingTransaction !== null) {
-        return reply.status(500).send({
-          message: `Error inserting transaction, eventId already exists: ${eventId} | ${eventType}`,
-        })
-      }
-
-      const transaction = new Transaction({
-        stripeEventId: eventId,
-        stripeEventType: eventType,
-        stripeEventData: eventData,
-        type: 'credit_stripe',
-        manna: manna._id,
-        amount: newAmount - (manna.subscriptionBalance || 0),
-      })
-      await transaction.save()
-    } catch (e) {
-      return reply.status(500).send({
-        message: 'Error inserting transaction, manna not updated',
-      })
+    if (!credited) {
+      return reply.status(200).send({ message: 'event already processed' })
     }
-
-    await manna.save()
   }
 
   return reply.status(200).send({})
@@ -868,9 +1064,23 @@ export const handlePaymentEvent = async (
 
     case 'invoice.payment_succeeded':
       if (billing_reason !== 'subscription_cycle') {
-        return
+        // This returned without ever calling reply.send(), so Fastify never
+        // answered: the request hung until the 60s connection timeout, Stripe
+        // timed out and retried for three days, and every new subscription and
+        // mid-cycle upgrade produced one. Answer it.
+        return reply
+          .status(200)
+          .send({ message: `ignored billing_reason - ${billing_reason}` })
       }
       await handleRenewal(server, reply, stripeDataObject)
+      return
+
+    // Payment reversals — without these a user could buy manna, spend it, then
+    // charge back and keep the output.
+    case 'charge.refunded':
+    case 'charge.dispute.created':
+    case 'charge.dispute.funds_withdrawn':
+      await handleChargeReversal(server, reply, stripeDataObject, dataObject)
       return
 
     // subscription events
