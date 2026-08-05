@@ -3,6 +3,18 @@ import { isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
+// DISABLED: this route executes tools via eve's `handle_realtime_tool`, which
+// calls `tool.async_run()` — the code path that does NOT bill. All charging
+// lives in `handle_start_task` (calculate_cost -> check_manna -> spend_manna),
+// so every call here ran real GPU generation for free, with no task record and
+// no transaction, for any authenticated user. `create` alone reaches veo3 /
+// kling / seedance at ~100-500 manna a call. It also skipped the
+// toolAccessCheck and taskRateLimitCheck that /v2/tasks/create applies.
+//
+// Flip back to true only once realtime tool calls are routed through
+// `async_start_task` (or bill explicitly) — see the audit notes.
+const REALTIME_TOOLS_ENABLED = false
+
 const realtimeToolRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/realtime/tool', {
     schema: {
@@ -49,7 +61,18 @@ const realtimeToolRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => executeRealtimeTool(server, request, reply),
+    handler: (request, reply) => {
+      if (!REALTIME_TOOLS_ENABLED) {
+        request.log.warn(
+          { userId: request.user?.userId },
+          'blocked call to disabled unbilled realtime tool endpoint',
+        )
+        return reply
+          .status(403)
+          .send({ message: 'Realtime tool execution is disabled' })
+      }
+      return executeRealtimeTool(server, request, reply)
+    },
   })
 }
 

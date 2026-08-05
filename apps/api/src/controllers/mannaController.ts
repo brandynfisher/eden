@@ -80,6 +80,13 @@ const validActions = [
   VoucherAction.MarsCollege26,
 ]
 
+// A single opaque failure for every "you can't use this code" case. The
+// distinct messages (not found / legacy / expired / exhausted / not in allow
+// list) told a guesser exactly when they had hit a real code even while being
+// refused it, which combined with low-entropy admin-chosen codes and
+// case-insensitive lookup made codes enumerable. Reasons are logged instead.
+const VOUCHER_REJECTED = 'Invalid or expired voucher code'
+
 const DEFAULT_VOUCHER_TTL_SECONDS = 60 * 60 * 24
 // 1 manna = $0.01, so this caps a single voucher at $10,000 of credit.
 const MAX_VOUCHER_AMOUNT = 1_000_000
@@ -228,13 +235,13 @@ export const redeemMannaVoucher = async (
 
   if (!voucher) {
     return reply.status(400).send({
-      message: `Voucher ${code} not found`,
+      message: VOUCHER_REJECTED,
     })
   }
 
   if (!voucher.maxUses) {
     return reply.status(400).send({
-      message: `Voucher ${code} is legacy and no longer supported`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -439,7 +446,7 @@ const redeemMannaVoucherV2 = async (
 
   if (voucher.expiresAt && voucher.expiresAt <= now) {
     return reply.status(400).send({
-      message: `Voucher ${voucher.code} expired`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -455,7 +462,7 @@ const redeemMannaVoucherV2 = async (
   // Unrestricted vouchers are normalized to null at creation, not to [].
   if (voucher.allowedUserIds && !voucher.allowedUserIds.includes(user.userId)) {
     return reply.status(400).send({
-      message: `User not in allow list of this voucher`,
+      message: VOUCHER_REJECTED,
     })
   }
 
@@ -485,7 +492,7 @@ const redeemMannaVoucherV2 = async (
   )
   if (!claimedVoucher) {
     return reply.status(400).send({
-      message: `Manna voucher ${voucher.code} already finished`,
+      message: VOUCHER_REJECTED,
     })
   }
 

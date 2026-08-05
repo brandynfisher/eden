@@ -86,6 +86,11 @@ const authRoutes: FastifyPluginAsync = async server => {
         guildId: Type.String(),
       }),
     },
+    // Was the only route in this Discord group without a guard, while it calls
+    // Discord with the shared platform bot token — so anyone could enumerate
+    // channel names/ids for any guild the bot has joined, and burn the shared
+    // token's rate limit for every deployment. Matches its /roles sibling now.
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) =>
       getDiscordGuildChannels(server, request, reply),
   })
