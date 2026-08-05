@@ -27,3 +27,4 @@ export type TransactionType =
   | 'discord_link_bonus'
   | 'twitter_link_bonus'
   | 'daily_topup_mars_college_26'
+  | 'signup_bonus'
