@@ -976,18 +976,39 @@ export const createCheckoutSession = async (
     })
   }
 
-  // priceId is client-supplied and is NOT allow-listed: the manna granted comes
-  // from the price's PRODUCT metadata, and a product can carry several prices,
-  // so an archived, promotional or test price attached to a high-manna product
-  // would grant full manna for whatever that price charges. Rejecting inactive
-  // prices closes the archived/test-price case; a strict allow-list of live
-  // price ids is the complete fix and needs the product catalogue.
+  // priceId is client-supplied, and the manna granted comes from the price's
+  // PRODUCT metadata — a product can carry several prices, so an archived,
+  // promotional or mis-priced price attached to a high-manna product would
+  // grant the full manna for whatever that price happens to charge.
+  //
+  // Rather than hard-code a list of ids that goes stale the moment a price is
+  // added, require the price to be sellable: the price active, its product
+  // active, and the product actually carrying the metadata this flow reads.
+  // That admits every current self-serve price and rejects the legacy/test
+  // ones (e.g. the 1-cent "1 manna" price and the $0.50 price whose product is
+  // archived) as well as invoice-only products like "Services" that have no
+  // manna metadata and were never meant to be bought through checkout.
   try {
-    const price = await server.stripe.prices.retrieve(priceId)
-    if (!price.active) {
+    const price = await server.stripe.prices.retrieve(priceId, {
+      expand: ['product'],
+    })
+    const product = price.product as Stripe.Product
+    const sellable =
+      price.active &&
+      product &&
+      !('deleted' in product && product.deleted) &&
+      product.active &&
+      (product.metadata?.manna || product.metadata?.subscriptionTier)
+
+    if (!sellable) {
       server.log.warn(
-        { userId, priceId },
-        'checkout attempted with an inactive price',
+        {
+          userId,
+          priceId,
+          priceActive: price.active,
+          productActive: (product as Stripe.Product)?.active,
+        },
+        'checkout attempted with a price that is not sellable',
       )
       return reply.status(400).send({ message: 'Invalid priceId' })
     }
