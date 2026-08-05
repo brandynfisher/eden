@@ -1,4 +1,5 @@
 import { randomId } from '../lib/util'
+import { invalidateApiKeyCache } from '../middleware/authMiddleware'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
 import { User } from '../models/User'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
@@ -77,6 +78,10 @@ export const deleteApiKey = async (
   }
 
   await dbApiKey.delete()
+
+  // Revocation has to reach the auth cache too, otherwise the deleted key keeps
+  // authenticating for up to the 60s cache TTL.
+  await invalidateApiKeyCache(request.server, apiKey)
 
   return reply.status(200).send({})
 }
