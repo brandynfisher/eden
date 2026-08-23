@@ -69,9 +69,18 @@ export const listArtifacts = async (
     filter.user = new ObjectId(filterUserId)
   }
 
-  // If not the owner, only show public artifacts
-  if (!userId || (filterUserId && filterUserId !== userId.toString())) {
+  // Scope private artifacts to their owner. The previous condition left the
+  // filter entirely unscoped for an authenticated caller who omitted `userId`
+  // (both arms were false), which returned every user's private artifacts.
+  // Mirrors the V3 behaviour in artifactControllerV3.ts.
+  if (!userId) {
     filter.public = true
+  } else if (filterUserId) {
+    if (filterUserId !== userId.toString()) {
+      filter.public = true
+    }
+  } else {
+    filter.$or = [{ user: new ObjectId(userId) }, { public: true }]
   }
 
   if (type) {

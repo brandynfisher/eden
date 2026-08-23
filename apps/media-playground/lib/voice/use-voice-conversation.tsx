@@ -39,7 +39,6 @@ export function useVoiceConversation(
   config: VoiceProviderConfig & { edenAgentId: string },
 ): VoiceConversation {
   // eslint-disable-next-line no-unused-vars
-  const [_apiKey, setApiKey] = useState<string | null>(null)
   const [agentId, setAgentId] = useState<string | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
@@ -448,10 +447,9 @@ export function useVoiceConversation(
         throw new Error('Failed to fetch configuration')
       }
       const data = await response.json()
-      setApiKey(data.apiKey)
       setAgentId(data.agentId)
       addDebugLog('Configuration loaded successfully', 'success')
-      return { apiKey: data.apiKey, agentId: data.agentId }
+      return { agentId: data.agentId }
     } catch (error) {
       addDebugLog('Failed to fetch ElevenLabs configuration', 'error')
       return null

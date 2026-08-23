@@ -2931,6 +2931,7 @@ export const addPassiveMessage = async (
   reply: FastifyReply,
 ) => {
   const { session_id, user_id, role, content } = request.body
+  const { userId: authedUserId, isAdmin } = request.user
 
   // Validation
   if (!session_id) {
@@ -2944,6 +2945,18 @@ export const addPassiveMessage = async (
       message: 'user_id is required',
     })
   }
+
+  // The acting user is the AUTHENTICATED caller, never the body field. `user_id`
+  // is still accepted so existing clients keep working (they always send the
+  // caller's own id, resolved from their own token) but it is not trusted for
+  // authorization — doing so let any caller post as any user.
+  if (!isAdmin && user_id.toString() !== authedUserId.toString()) {
+    return reply.status(403).send({
+      message: 'user_id does not match the authenticated user',
+    })
+  }
+
+  const actingUserId = isAdmin ? user_id.toString() : authedUserId.toString()
 
   if (!role || !['user', 'assistant'].includes(role)) {
     return reply.status(400).send({
@@ -2967,19 +2980,19 @@ export const addPassiveMessage = async (
     }
 
     // Verify user exists
-    const user = await User.findById(user_id)
+    const user = await User.findById(actingUserId)
     if (!user) {
       return reply.status(404).send({
         message: 'User not found',
       })
     }
 
-    const userIdStr = user_id.toString()
+    const userIdStr = actingUserId
     const isSessionOwner = session.owner.toString() === userIdStr
     const isSessionUser = isUserInList(session.users, userIdStr)
     const sessionPermission = await SessionPermission.findOne({
       session: session_id,
-      user: user_id,
+      user: actingUserId,
     })
 
     if (
@@ -3009,14 +3022,14 @@ export const addPassiveMessage = async (
           ? firstAgent
           : new ObjectId((firstAgent as any)._id || firstAgent)
     } else {
-      senderId = new ObjectId(user_id)
+      senderId = new ObjectId(actingUserId)
     }
 
     // Create and save the message directly to MongoDB
     const message = new Message({
       session: [new ObjectId(session_id)],
       sender: senderId,
-      eden_user_id: new ObjectId(user_id),
+      eden_user_id: new ObjectId(actingUserId),
       role: role,
       content: content,
     })
@@ -3091,6 +3104,17 @@ export const addToolCallToMessage = async (
     return reply.status(400).send({ message: 'tool_name is required' })
   }
 
+  // As in addPassiveMessage: authorize against the authenticated caller, not
+  // the body field. `user_id` is accepted for backwards compatibility only.
+  const { userId: authedUserId, isAdmin } = request.user
+  if (!isAdmin && user_id.toString() !== authedUserId.toString()) {
+    return reply.status(403).send({
+      message: 'user_id does not match the authenticated user',
+    })
+  }
+
+  const actingUserId = isAdmin ? user_id.toString() : authedUserId.toString()
+
   try {
     // Verify session exists
     const session = await Session.findById(session_id)
@@ -3099,18 +3123,18 @@ export const addToolCallToMessage = async (
     }
 
     // Verify user exists
-    const user = await User.findById(user_id)
+    const user = await User.findById(actingUserId)
     if (!user) {
       return reply.status(404).send({ message: 'User not found' })
     }
 
     // Check user permission
-    const userIdStr = user_id.toString()
+    const userIdStr = actingUserId
     const isSessionOwner = session.owner.toString() === userIdStr
     const isSessionUser = isUserInList(session.users, userIdStr)
     const sessionPermission = await SessionPermission.findOne({
       session: session_id,
-      user: user_id,
+      user: actingUserId,
     })
 
     if (
@@ -3195,7 +3219,7 @@ export const addToolCallToMessage = async (
       message = new Message({
         session: [new ObjectId(session_id)],
         sender: senderId,
-        eden_user_id: new ObjectId(user_id),
+        eden_user_id: new ObjectId(actingUserId),
         role: 'assistant',
         content: '',
         tool_calls: [],

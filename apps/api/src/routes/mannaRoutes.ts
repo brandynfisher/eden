@@ -14,6 +14,11 @@ const mannaRoutes: FastifyPluginAsync = async server => {
       rateLimit: {
         max: 10,
         timeWindow: '1 minute',
+        // Must run on preHandler: @fastify/rate-limit defaults to onRequest,
+        // which fires BEFORE isAuth (itself a preHandler), so request.user was
+        // always undefined here and the limiter silently degraded to per-IP —
+        // exactly the IP-rotation case the keyGenerator below exists to defeat.
+        hook: 'preHandler',
         keyGenerator: (request: any) =>
           String(request.user?.userId ?? request.ip),
       },
