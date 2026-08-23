@@ -57,6 +57,20 @@ export const getCreation = async (
     })
   }
 
+  // Private creations are readable only by their owner. This gate existed but
+  // was commented out, and the route uses maybeAuth — so any caller, including
+  // an anonymous one, could read any creation by id together with the
+  // populated task.args holding the full prompt. 404 rather than 401 so the
+  // endpoint is not an existence oracle for private ids.
+  if (!creation.public) {
+    const ownerId = (creation.user as unknown as { _id?: unknown })?._id
+    if (!userId || ownerId?.toString() !== userId.toString()) {
+      return reply.status(404).send({
+        message: 'Creation not found',
+      })
+    }
+  }
+
   // Check if user has liked this creation
   if (userId) {
     const userLike = await LikeV2.findOne({
@@ -66,15 +80,6 @@ export const getCreation = async (
     })
     creation.isLiked = !!userLike
   }
-
-  // if (!creation.public) {
-  //   if (creation.user._id.toString() !== request.user?.userId.toString()) {
-  //     console.error('User not authorized to view this')
-  //     return reply.status(401).send({
-  //       message: 'User not authorized to view this',
-  //     })
-  //   }
-  // }
 
   creation.url = s3Url(server, creation.filename || '')
   creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)

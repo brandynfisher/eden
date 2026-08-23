@@ -102,6 +102,60 @@ const hasAgentEditAccess = async (
   return !!permission
 }
 
+type MemoryDocAccess =
+  | { ok: false; status: number; message: string }
+  | { ok: true; collection: any; doc: any; agent: AgentDocument }
+
+/**
+ * Facts and reflections are agent-scoped documents, so editing one is editing
+ * that agent. Resolve the owning agent and require edit access on it.
+ *
+ * These handlers previously carried the comment "Authorization is handled by
+ * visibility - if user can see the X, they can edit it", but nothing ever
+ * established that precondition: the queries matched on _id alone, so any
+ * authenticated caller could rewrite or delete any agent's memory by id. Fact
+ * content is interpolated into that agent's system prompt
+ * (agentMemoryContextController), which makes an unscoped write a persistent
+ * prompt injection into someone else's agent, not merely data loss.
+ */
+const loadMemoryDocForEdit = async (
+  server: FastifyInstance,
+  collectionName: 'memory2_facts' | 'memory2_reflections',
+  docId: string,
+  userId: string,
+): Promise<MemoryDocAccess> => {
+  if (!server.mongoose.Types.ObjectId.isValid(docId)) {
+    return { ok: false, status: 400, message: 'Invalid id' }
+  }
+
+  const collection = server.mongoose.connection.db.collection(collectionName)
+  const doc = await collection.findOne({
+    _id: new server.mongoose.Types.ObjectId(docId),
+  })
+
+  if (!doc) {
+    return { ok: false, status: 404, message: 'Not found' }
+  }
+
+  // agent_id is written as either an ObjectId or its string form (see
+  // matchIdField in agentMemoryContextController); findById casts both.
+  const agent = await Agent.findById(doc.agent_id)
+
+  if (!agent || agent.deleted) {
+    return { ok: false, status: 404, message: 'Not found' }
+  }
+
+  if (!(await hasAgentEditAccess(agent, userId))) {
+    return {
+      ok: false,
+      status: 403,
+      message: "Not authorized to modify this agent's memory",
+    }
+  }
+
+  return { ok: true, collection, doc, agent }
+}
+
 /**
  * GET /v2/agents/:agentId/memory2
  * Get user-scoped memory2 data (consolidated content + unabsorbed reflections)
@@ -417,12 +471,17 @@ export const updateMemory2Reflection = async (
   }
 
   try {
-    const reflectionsCollection = server.mongoose.connection.db.collection(
+    const access = await loadMemoryDocForEdit(
+      server,
       'memory2_reflections',
+      reflectionId,
+      userId.toString(),
     )
+    if (!access.ok) {
+      return reply.status(access.status).send({ error: access.message })
+    }
 
-    // Authorization is handled by visibility - if user can see the reflection, they can edit it
-    const result = await reflectionsCollection.updateOne(
+    const result = await access.collection.updateOne(
       { _id: new server.mongoose.Types.ObjectId(reflectionId) },
       {
         $set: {
@@ -460,12 +519,17 @@ export const deleteMemory2Reflection = async (
   }
 
   try {
-    const reflectionsCollection = server.mongoose.connection.db.collection(
+    const access = await loadMemoryDocForEdit(
+      server,
       'memory2_reflections',
+      reflectionId,
+      userId.toString(),
     )
+    if (!access.ok) {
+      return reply.status(access.status).send({ error: access.message })
+    }
 
-    // Authorization is handled by visibility - if user can see the reflection, they can delete it
-    const result = await reflectionsCollection.deleteOne({
+    const result = await access.collection.deleteOne({
       _id: new server.mongoose.Types.ObjectId(reflectionId),
     })
 
@@ -498,20 +562,21 @@ export const updateMemory2Fact = async (
   }
 
   try {
-    const factsCollection =
-      server.mongoose.connection.db.collection('memory2_facts')
-
-    // Get the fact to retrieve previous content for history
-    const fact = await factsCollection.findOne({
-      _id: new server.mongoose.Types.ObjectId(factId),
-    })
-
-    if (!fact) {
-      return reply.status(404).send({ error: 'Fact not found' })
+    const access = await loadMemoryDocForEdit(
+      server,
+      'memory2_facts',
+      factId,
+      userId.toString(),
+    )
+    if (!access.ok) {
+      return reply.status(access.status).send({ error: access.message })
     }
 
+    const factsCollection = access.collection
+    // Previous content is kept for history.
+    const fact = access.doc
+
     // Update the content and compute new hash
-    // Authorization is handled by visibility - if user can see the fact, they can edit it
     const newHash = crypto
       .createHash('md5')
       .update(content || '')
@@ -555,11 +620,17 @@ export const deleteMemory2Fact = async (
   }
 
   try {
-    const factsCollection =
-      server.mongoose.connection.db.collection('memory2_facts')
+    const access = await loadMemoryDocForEdit(
+      server,
+      'memory2_facts',
+      factId,
+      userId.toString(),
+    )
+    if (!access.ok) {
+      return reply.status(access.status).send({ error: access.message })
+    }
 
-    // Authorization is handled by visibility - if user can see the fact, they can delete it
-    const result = await factsCollection.deleteOne({
+    const result = await access.collection.deleteOne({
       _id: new server.mongoose.Types.ObjectId(factId),
     })
 
@@ -588,6 +659,11 @@ export const updateUserMemoryEnabled = async (
 ) => {
   const { agentId } = request.params
   const { user_memory_enabled } = request.body
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
 
   server.log.info(
     { agentId, user_memory_enabled },
@@ -596,8 +672,8 @@ export const updateUserMemoryEnabled = async (
 
   try {
     // Validate agent access
-    const { error } = await validateAgentAccess(agentId)
-    if (error) {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error || !agent) {
       server.log.warn(
         { agentId, error },
         '[Memory Toggle] Agent access validation failed',
@@ -605,7 +681,14 @@ export const updateUserMemoryEnabled = async (
       return reply.status(404).send({ error })
     }
 
-    // Permission check is handled by validateAgentAccess (same as other memory operations)
+    // validateAgentAccess only checks that the agent EXISTS — it takes no
+    // userId — so it is not a permission check. Without this, any authenticated
+    // caller could toggle memory on any agent.
+    if (!(await hasAgentEditAccess(agent, userId.toString()))) {
+      return reply
+        .status(403)
+        .send({ error: "Not authorized to modify this agent's memory" })
+    }
 
     // Update the agent's user_memory_enabled field in users3 collection
     const updateResult = await Agent.updateOne(
@@ -659,6 +742,11 @@ export const updateAgentMemoryEnabled = async (
 ) => {
   const { agentId } = request.params
   const { agent_memory_enabled } = request.body
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
 
   server.log.info(
     { agentId, agent_memory_enabled },
@@ -667,8 +755,8 @@ export const updateAgentMemoryEnabled = async (
 
   try {
     // Validate agent access
-    const { error } = await validateAgentAccess(agentId)
-    if (error) {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error || !agent) {
       server.log.warn(
         { agentId, error },
         '[Memory Toggle] Agent access validation failed',
@@ -676,7 +764,14 @@ export const updateAgentMemoryEnabled = async (
       return reply.status(404).send({ error })
     }
 
-    // Permission check is handled by validateAgentAccess (same as other memory operations)
+    // validateAgentAccess only checks that the agent EXISTS — it takes no
+    // userId — so it is not a permission check. Without this, any authenticated
+    // caller could toggle memory on any agent.
+    if (!(await hasAgentEditAccess(agent, userId.toString()))) {
+      return reply
+        .status(403)
+        .send({ error: "Not authorized to modify this agent's memory" })
+    }
 
     // Update the agent's agent_memory_enabled field in users3 collection
     const updateResult = await Agent.updateOne(

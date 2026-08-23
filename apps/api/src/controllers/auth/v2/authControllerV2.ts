@@ -910,6 +910,24 @@ export const disconnectInstagram = async (
       })
     }
 
+    // Verify the caller owns the agent. These disconnect handlers previously
+    // deleted a Deployment keyed only on the agentId from the query string and
+    // never read request.user, so any authenticated caller could unlink any
+    // agent's social account. Same check used by createFarcasterManagedSigner
+    // and googleCalendarOAuthInit in this file.
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Not authorized to modify this agent',
+      })
+    }
+
     await Deployment.deleteOne({
       agent: agentId,
       platform: 'instagram',
@@ -940,6 +958,24 @@ export const disconnectTikTok = async (
     }
 
     // Remove TikTok deployment
+    // Verify the caller owns the agent. These disconnect handlers previously
+    // deleted a Deployment keyed only on the agentId from the query string and
+    // never read request.user, so any authenticated caller could unlink any
+    // agent's social account. Same check used by createFarcasterManagedSigner
+    // and googleCalendarOAuthInit in this file.
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Not authorized to modify this agent',
+      })
+    }
+
     await Deployment.deleteOne({
       agent: agentId,
       platform: 'tiktok',
@@ -1170,6 +1206,24 @@ export const disconnectTwitterIntegration = async (
     }
 
     // Remove Twitter deployment
+    // Verify the caller owns the agent. These disconnect handlers previously
+    // deleted a Deployment keyed only on the agentId from the query string and
+    // never read request.user, so any authenticated caller could unlink any
+    // agent's social account. Same check used by createFarcasterManagedSigner
+    // and googleCalendarOAuthInit in this file.
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Not authorized to modify this agent',
+      })
+    }
+
     await Deployment.deleteOne({
       agent: agentId,
       platform: 'twitter',
@@ -1665,6 +1719,24 @@ export const disconnectGoogleCalendar = async (
     }
 
     // Remove Google Calendar deployment
+    // Verify the caller owns the agent. These disconnect handlers previously
+    // deleted a Deployment keyed only on the agentId from the query string and
+    // never read request.user, so any authenticated caller could unlink any
+    // agent's social account. Same check used by createFarcasterManagedSigner
+    // and googleCalendarOAuthInit in this file.
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      return reply.status(403).send({
+        message: 'Not authorized to modify this agent',
+      })
+    }
+
     await Deployment.deleteOne({
       agent: agentId,
       platform: 'google_calendar',
