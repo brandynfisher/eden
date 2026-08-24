@@ -57,8 +57,10 @@ export const listUserConcepts = async (
   const { agent } = request.query as { agent?: string }
 
   // Build query: if agent is provided, filter by agent; otherwise filter by user
+  // The agent branch previously dropped user scoping, listing every user's
+  // concepts for that agent. Filter by agent AND owner.
   const query = agent
-    ? { agent: new Types.ObjectId(agent) }
+    ? { agent: new Types.ObjectId(agent), user: user._id }
     : { user: user._id }
 
   const concepts = await conceptsRepository.query(query, {
@@ -195,6 +197,12 @@ export const updateConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
+    // Concepts are strictly user-owned — there is no public/shared field on
+    // ConceptV2 — so scope every lookup by owner. Matching on _id alone let any
+    // authenticated caller read, rename, repoint `agent` at their own agent
+    // (triggering a retrain), replace the training images, or soft-delete
+    // anyone else's concept.
+    user: userId,
   })
 
   if (!concept) {
@@ -277,6 +285,12 @@ export const getConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
+    // Concepts are strictly user-owned — there is no public/shared field on
+    // ConceptV2 — so scope every lookup by owner. Matching on _id alone let any
+    // authenticated caller read, rename, repoint `agent` at their own agent
+    // (triggering a retrain), replace the training images, or soft-delete
+    // anyone else's concept.
+    user: userId,
   }).populate([
     {
       path: 'user',
@@ -320,6 +334,12 @@ export const deleteConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
+    // Concepts are strictly user-owned — there is no public/shared field on
+    // ConceptV2 — so scope every lookup by owner. Matching on _id alone let any
+    // authenticated caller read, rename, repoint `agent` at their own agent
+    // (triggering a retrain), replace the training images, or soft-delete
+    // anyone else's concept.
+    user: userId,
   })
 
   if (!concept) {

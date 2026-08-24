@@ -129,6 +129,24 @@ export const getCollectionCreations = async (
     })
   }
 
+  // Same visibility gate getCollection applies. Without it this endpoint —
+  // and the bulk ZIP export built on it — returned the contents of any private
+  // collection to any caller who knew its id.
+  const currentUserId = request.user ? request.user.userId : undefined
+  const isOwnCollection =
+    currentUserId && collection.user.toString() === currentUserId.toString()
+  const isContributor = currentUserId
+    ? collection.contributors?.filter(
+        contributor => contributor.toString() === currentUserId?.toString(),
+      )[0]
+    : false
+
+  if (!isOwnCollection && !isContributor && !collection.public) {
+    return reply.status(401).send({
+      error: 'User not authorized to view this collection',
+    })
+  }
+
   const sortDirection = direction === 1 ? 1 : -1
   const sortField = orderBy || 'createdAt'
   const creationsRepository = new CreationV2Repository(CreationV2)

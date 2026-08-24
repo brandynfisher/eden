@@ -28,27 +28,41 @@ const checkUserBalanceIsSufficient = (
 const spendManna = async (
   manna: MannaDocument,
   cost: number,
-): Promise<void> => {
-  let remainingCost = cost
-
-  // Spend subscription balance first
-  if (manna.subscriptionBalance > 0) {
-    if (manna.subscriptionBalance >= remainingCost) {
-      manna.subscriptionBalance -= remainingCost
-      remainingCost = 0
-    } else {
-      remainingCost -= manna.subscriptionBalance
-      manna.subscriptionBalance = 0
-    }
+): Promise<boolean> => {
+  if (cost <= 0) {
+    return true
   }
 
-  // If there's still cost remaining, spend the normal balance
-  if (remainingCost > 0 && manna.balance >= remainingCost) {
-    manna.balance -= remainingCost
-    remainingCost = 0
+  // Atomic, guarded debit. The previous implementation mutated the loaded
+  // document and called save(), which emits a $set of a value read earlier —
+  // clobbering the concurrent $inc debits eve performs on the same document —
+  // and, when the balance was short, silently skipped the balance leg while
+  // still zeroing subscriptionBalance and reporting nothing to the caller.
+  const fromSubscription = Math.min(manna.subscriptionBalance, cost)
+  const fromBalance = cost - fromSubscription
+
+  const updated = await Manna.findOneAndUpdate(
+    {
+      _id: manna._id,
+      subscriptionBalance: { $gte: fromSubscription },
+      balance: { $gte: fromBalance },
+    },
+    {
+      $inc: {
+        subscriptionBalance: -fromSubscription,
+        balance: -fromBalance,
+      },
+    },
+    { new: true },
+  )
+
+  if (!updated) {
+    return false
   }
 
-  await manna.save()
+  manna.subscriptionBalance = updated.subscriptionBalance
+  manna.balance = updated.balance
+  return true
 }
 
 /**
@@ -151,8 +165,18 @@ export const startRealtimeSession = async (
     }
   }
 
-  // Create the realtime session
+  // Bill for the first minute BEFORE creating the session, so a failed debit
+  // cannot leave an active unbilled session behind.
   const now = new Date()
+  const charged = await spendManna(manna, REALTIME_BILLING.COST_PER_MINUTE)
+
+  if (!charged) {
+    return reply.status(402).send({
+      message: 'Insufficient manna balance to start a realtime session',
+      currentBalance: manna.balance + manna.subscriptionBalance,
+    })
+  }
+
   const realtimeSession = await RealtimeSession.create({
     user: userId,
     agent: agentId,
@@ -162,9 +186,6 @@ export const startRealtimeSession = async (
     lastActivityAt: now,
     totalMinutesBilled: 1, // Initial billing
   })
-
-  // Bill for the first minute
-  await spendManna(manna, REALTIME_BILLING.COST_PER_MINUTE)
 
   // Create transaction record
   const transaction = await createBillingTransaction(
@@ -280,9 +301,16 @@ export const processHeartbeat = async (
 
   let billedThisTick = false
 
-  // Check if we need to bill for additional minutes
-  if (minutesElapsed > realtimeSession.totalMinutesBilled) {
-    // Get user's manna balance
+  // Bill every whole minute that has elapsed but has not yet been billed.
+  //
+  // This previously charged exactly ONE minute per heartbeat and advanced
+  // totalMinutesBilled by 1, regardless of how much time had actually passed.
+  // Heartbeat cadence is entirely client-controlled, so the same 60-minute
+  // call billed 60 minutes when heartbeated once a minute and 1 minute when
+  // heartbeated once.
+  const minutesOwed = minutesElapsed - realtimeSession.totalMinutesBilled
+
+  if (minutesOwed > 0) {
     const manna = await Manna.findOne({ user: userId })
     if (!manna) {
       // No manna, close session
@@ -297,14 +325,48 @@ export const processHeartbeat = async (
       })
     }
 
-    // Check if user has enough balance for next minute
-    if (
-      !checkUserBalanceIsSufficient(manna, REALTIME_BILLING.COST_PER_MINUTE)
-    ) {
-      // Insufficient balance, close session
+    // Collect as much of the debt as the balance covers rather than dropping
+    // it entirely, then close if the session cannot be paid for in full.
+    const totalBalance = manna.balance + manna.subscriptionBalance
+    const affordableMinutes = Math.max(
+      0,
+      Math.min(
+        minutesOwed,
+        Math.floor(totalBalance / REALTIME_BILLING.COST_PER_MINUTE),
+      ),
+    )
+
+    if (affordableMinutes > 0) {
+      const cost = affordableMinutes * REALTIME_BILLING.COST_PER_MINUTE
+      const spent = await spendManna(manna, cost)
+
+      if (spent) {
+        const transaction = await createBillingTransaction(
+          manna,
+          realtimeSession,
+          cost,
+        )
+
+        const firstMinute = realtimeSession.totalMinutesBilled + 1
+        await RealtimeBillingTick.insertMany(
+          Array.from({ length: affordableMinutes }, (_, i) => ({
+            realtimeSession: realtimeSession._id,
+            transaction: transaction._id,
+            minuteNumber: firstMinute + i,
+            billedAt: now,
+          })),
+        )
+
+        realtimeSession.totalMinutesBilled = firstMinute + affordableMinutes - 1
+        billedThisTick = true
+      }
+    }
+
+    if (affordableMinutes < minutesOwed) {
       realtimeSession.status = 'closed'
       realtimeSession.closedAt = now
       realtimeSession.closedReason = 'insufficient_balance'
+      realtimeSession.lastActivityAt = now
       await realtimeSession.save()
 
       return reply.status(402).send({
@@ -312,28 +374,6 @@ export const processHeartbeat = async (
         realtimeSession: realtimeSession.toObject(),
       })
     }
-
-    // Bill for the next minute
-    await spendManna(manna, REALTIME_BILLING.COST_PER_MINUTE)
-
-    // Create transaction
-    const transaction = await createBillingTransaction(
-      manna,
-      realtimeSession,
-      REALTIME_BILLING.COST_PER_MINUTE,
-    )
-
-    // Create billing tick
-    const newMinuteNumber = realtimeSession.totalMinutesBilled + 1
-    await RealtimeBillingTick.create({
-      realtimeSession: realtimeSession._id,
-      transaction: transaction._id,
-      minuteNumber: newMinuteNumber,
-      billedAt: now,
-    })
-
-    realtimeSession.totalMinutesBilled = newMinuteNumber
-    billedThisTick = true
   }
 
   // Update last activity
