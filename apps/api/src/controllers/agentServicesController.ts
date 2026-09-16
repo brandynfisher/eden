@@ -231,6 +231,13 @@ export const deployAgent = async (
   const { agentId } = request.params as AgentsDeployArguments
   const { platform, secrets, config } = request.body as AgentsDeployArguments
 
+  if (platform === 'google_calendar') {
+    return reply.status(410).send({
+      message:
+        'Google Calendar is retired in old Eden. Use new Eden at https://dev.eden.art.',
+    })
+  }
+
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
 
@@ -353,6 +360,13 @@ export const updateAgentDeployment = async (
   const { agentId } = request.params as { agentId: string }
   const { platform, config, secrets } =
     request.body as AgentsUpdateDeploymentArguments
+
+  if (platform === 'google_calendar') {
+    return reply.status(410).send({
+      message:
+        'Google Calendar is retired in old Eden. Use new Eden at https://dev.eden.art.',
+    })
+  }
 
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
@@ -512,6 +526,13 @@ export const deleteAgentDeployment = async (
 ) => {
   const currentUserId = request.user.userId
   const { agentId, platform } = request.params as AgentsStopDeploymentArguments
+
+  if (platform === 'google_calendar') {
+    return reply.status(410).send({
+      message:
+        'Google Calendar is retired in old Eden. Use new Eden at https://dev.eden.art.',
+    })
+  }
 
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)

@@ -106,7 +106,7 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
   {
     platform: 'google_calendar',
     label: 'Google Calendar',
-    description: 'Schedule and manage calendar events.',
+    description: 'Retired in old Eden. Use Google Calendar in new Eden.',
     category: 'utilities',
     icon: GoogleBrandIcon,
   },

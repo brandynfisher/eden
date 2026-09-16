@@ -347,31 +347,20 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/auth/google-calendar/init', {
     schema: {
       tags: ['Auth'],
-      summary: 'Initialize Google Calendar OAuth',
-      description:
-        'Returns the Google OAuth URL to redirect the user to for calendar access.',
+      summary: 'Google Calendar retired',
+      description: 'Calendar is retired in old Eden. Use https://dev.eden.art.',
       hide: true,
-      querystring: Type.Object({
-        agentId: Type.String(),
-      }),
     },
     handler: (request, reply) =>
       googleCalendarOAuthInit(server, request, reply),
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 
   server.get('/v2/auth/google-calendar/callback', {
     schema: {
       tags: ['Auth'],
-      summary: 'Google Calendar OAuth Callback',
-      description:
-        'Handle Google OAuth callback, exchange code for tokens, and create deployment.',
+      summary: 'Google Calendar retired',
+      description: 'Old OAuth callbacks are refused without exchanging codes.',
       hide: true,
-      querystring: Type.Object({
-        code: Type.Optional(Type.String()),
-        state: Type.String(),
-        error: Type.Optional(Type.String()),
-      }),
     },
     handler: (request, reply) =>
       googleCalendarOAuthCallback(server, request, reply),
@@ -380,15 +369,12 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/auth/google-calendar/disconnect', {
     schema: {
       tags: ['Auth'],
-      summary: 'Disconnect Google Calendar',
-      description: 'Remove Google Calendar integration from an agent.',
+      summary: 'Google Calendar retired',
+      description:
+        'Saved credentials and shared Google grants are not revoked.',
       hide: true,
-      querystring: Type.Object({
-        agentId: Type.String(),
-      }),
     },
     handler: (request, reply) => disconnectGoogleCalendar(request, reply),
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }
 
